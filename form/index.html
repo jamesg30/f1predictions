@@ -8,42 +8,13 @@
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Container for the image and overlay */
-        .full-width-image-container {
-            position: relative; /* Allows for absolute positioning of overlay */
-            width: 100%;        /* Full width of the container */
-            height: 200px;      /* Fixed height for the image */
-            overflow: hidden;   /* Prevents anything from overflowing */
-        }
-
-        /* Image styling */
-        .full-width-image {
-            width: 100%;        /* Full width of the container */
-            height: 100%;       /* Full height of the container */
-            object-fit: cover;  /* Ensures the image scales proportionally and fills the container */
-        }
-
-        /* Transparent overlay styling */
-        .overlay {
-            position: absolute;   /* Positioned relative to the parent container */
-            top: 0;               /* Start at the top of the container */
-            left: 0;              /* Start at the left of the container */
-            width: 100%;          /* Full width of the container */
-            height: 100%;         /* Full height of the container (200px) */
-            background-color: rgba(0, 0, 0, 0.4); /* Transparent black overlay */
-        }
-        body {
-        background-color: white !important;
-        }
-    </style>
 </head>
 <body>
     <header class="bg-light text-black py-3 d-flex align-items-center">
         <!-- Logo (Top-left) -->
         <img src="media/f1_predictions_logo.png" alt="Logo" style="height: 50px;" class="ms-3 me-3">
         <!-- Heading -->
-        <h4 class="mb-0 fw-bold">F1 Predictions Form</h4>
+        <h4 class="mb-0 fw-bold">Form</h4>
     </header>
 
     <!-- Full-Width Image Section -->
@@ -58,9 +29,7 @@
         </div>
         <p class="lead text-center">Latest Form:</p>
         <div class="d-flex justify-content-center">
-            <a href="/form">
-                <button type="button" class="btn btn-outline-dark">Australian GP Form</button>
-            </a>
+            <button type="button" class="btn btn-outline-dark">Australian GP Form</button>
         </div>
     </main>
 
