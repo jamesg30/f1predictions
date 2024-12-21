@@ -13,12 +13,31 @@
     <script defer src="/script.js"></script>
 </head>
 <body>
-    <header class="bg-light text-black py-3 d-flex align-items-center">
-        <!-- Logo (Top-left) -->
-        <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 50px;" class="ms-3 me-3">
-        <!-- Heading -->
-        <h4 class="mb-0 fw-bold">F1 Predictions Form</h4>
-    </header>
+    <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between">
+        <!-- Left Section: Logo and Heading -->
+        <div class="d-flex align-items-center">
+            <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
+                <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
+            </a>
+            <a href="/" class="text-decoration-none text-black">
+                <h4 class="mb-0 fw-bold">F1 Predictions</h4>
+            </a>
+        </div>
+        
+        <!-- Right Section: Hamburger Menu -->
+        <div class="dropdown me-3">
+            <button class="btn btn-outline-dark dropdown-toggle" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                Menu
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
+                <li><a class="dropdown-item" href="/form">Form</a></li>
+                <li><a class="dropdown-item" href="/results">Results</a></li>
+                <li><a class="dropdown-item" href="/team">Team</a></li>
+                <li><hr class="dropdown-divider"></li> <!-- Spacer -->
+                <li><a class="dropdown-item" href="/admin">Admin</a></li>
+            </ul>
+        </div>
+    </header>    
     
     <main class="container my-5">
         <div class="container my-5">
