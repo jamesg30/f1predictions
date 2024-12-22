@@ -4,10 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F1 Predictions</title>
+    <link rel="icon" href="/media/f1_predictions_logo.png" type="image/png">
     <!-- Bootstrap CSS (Local) -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/style.css">
+    <style>
+        #pin-input-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: calc(100vh - 70px); /* Full height minus header */
+            text-align: center;
+        }
+        #pin-error {
+            color: red;
+            margin-top: 10px;
+        }
+        #admin-content {
+            display: none; /* Hidden until PIN is verified */
+        }
+    </style>
 </head>
 <body>
     <header class="bg-dark text-white py-2.5 d-flex align-items-center justify-content-between">
@@ -27,6 +45,8 @@
                 Menu
             </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
+                <li><a class="dropdown-item" href="/">Home</a></li>
+                <li><hr class="dropdown-divider"></li> <!-- Spacer -->
                 <li><a class="dropdown-item" href="/form">Form</a></li>
                 <li><a class="dropdown-item" href="/results">Results</a></li>
                 <li><a class="dropdown-item" href="/register">Register</a></li>
@@ -36,17 +56,48 @@
             </ul>
         </div>
     </header>    
-    
-    <main class="container my-5">
+
+    <!-- PIN Input Section -->
+    <main id="pin-input-section">
+        <input type="password" id="pin-input" class="form-control w-25 text-center" placeholder="Enter Password">
+        <button class="btn btn-dark mt-3" onclick="validatePin()">Submit</button>
+        <p id="pin-error" style="display: none;">Incorrect Password. Please try again.</p>
+    </main>
+
+    <!-- Admin Content -->
+    <main id="admin-content" class="container my-5">
         <div class="d-flex justify-content-left">
             <h2 class="mb-3">Admin</h2>
+        </div>
+        <div>
+            <p>Manage your website content here.</p>
+            <!-- Additional admin functionalities can go here -->
         </div>
     </main>
  
     <footer class="bg-light text-black text-center py-1">
         <p>&copy; 2024 F1 Predictions Form</p>
     </footer>
+
     <!-- Bootstrap JS Bundle (Local) -->
     <script src="/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const correctPin = "9364"; // Set your admin PIN here
+
+        function validatePin() {
+            const inputPin = document.getElementById("pin-input").value;
+
+            if (inputPin === correctPin) {
+                document.getElementById("pin-input-section").style.display = "none";
+                document.getElementById("admin-content").style.display = "block";
+            } else {
+                const errorElement = document.getElementById("pin-error");
+                errorElement.style.display = "block";
+                setTimeout(() => {
+                    errorElement.style.display = "none";
+                }, 3000); // Hide error message after 3 seconds
+            }
+        }
+    </script>
 </body>
 </html>
