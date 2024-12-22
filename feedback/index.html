@@ -34,6 +34,7 @@
                 <li><a class="dropdown-item" href="/results">Results</a></li>
                 <li><a class="dropdown-item" href="/register">Register</a></li>
                 <li><a class="dropdown-item" href="/feedback">Feedback</a></li>
+                <li><a class="dropdown-item" href="/rules">Rules</a></li>
                 <li><hr class="dropdown-divider"></li> <!-- Spacer -->
                 <li><a class="dropdown-item" href="/admin">Admin</a></li>
             </ul>
@@ -41,8 +42,22 @@
     </header>    
     
     <main class="container my-5">
-        <div class="d-flex justify-content-left">
+        <div class="container my-5">
             <h2 class="mb-3">Feedback</h2>
+            <form id="feedbackForm">
+                <!-- Name Selection -->
+                <div class="mb-3">
+                    <label for="nameDropdown" class="form-label">Name</label>
+                    <select id="nameDropdown" class="form-select" aria-label="Select participant" required>
+                        <option value="" disabled selected hidden>Select one option</option>
+                    </select>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
         </div>
     </main>
  
