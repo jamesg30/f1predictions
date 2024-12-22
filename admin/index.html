@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F1 Predictions</title>
+    <title>F1 Predictions Admin</title>
     <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
-    <!-- Bootstrap CSS (Local) -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="/style.css">
     <style>
         #pin-input-section {
@@ -15,7 +13,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: calc(100vh - 70px); /* Full height minus header */
+            height: calc(100vh - 70px);
             text-align: center;
         }
         #pin-error {
@@ -23,13 +21,12 @@
             margin-top: 10px;
         }
         #admin-content {
-            display: none; /* Hidden until PIN is verified */
+            display: none;
         }
     </style>
 </head>
 <body>
     <header class="bg-dark text-white py-2.5 d-flex align-items-center justify-content-between">
-        <!-- Left Section: Logo and Heading -->
         <div class="d-flex align-items-center">
             <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
                 <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
@@ -38,110 +35,134 @@
                 <h5 class="mb-0 fw-bold">F1 Predictions Admin</h5>
             </a>
         </div>
-        
-        <!-- Right Section: Hamburger Menu -->
         <div class="dropdown me-3">
             <button class="btn btn-dark dropdown-toggle" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
                 Menu
             </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
                 <li><a class="dropdown-item" href="/">Home</a></li>
-                <li><hr class="dropdown-divider"></li> <!-- Spacer -->
+                <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="/form">Form</a></li>
                 <li><a class="dropdown-item" href="/results">Results</a></li>
                 <li><a class="dropdown-item" href="/register">Register</a></li>
                 <li><a class="dropdown-item" href="/feedback">Feedback</a></li>
                 <li><a class="dropdown-item" href="/rules">Rules</a></li>
-                <li><hr class="dropdown-divider"></li> <!-- Spacer -->
+                <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="/admin">Admin</a></li>
             </ul>
         </div>
-    </header>    
+    </header>
 
-    <!-- PIN Input Section -->
     <main id="pin-input-section">
         <input type="password" id="pin-input" class="form-control w-25 text-center" placeholder="Enter Password">
         <button class="btn btn-dark mt-3" onclick="validatePin()">Submit</button>
         <p id="pin-error" style="display: none;">Incorrect Password. Please try again.</p>
     </main>
 
-    <!-- Admin Content -->
     <main id="admin-content" class="container my-5">
         <div class="d-flex justify-content-left">
             <h2 class="mb-3">Admin</h2>
         </div>
-        <!-- Tabs Navigation -->
-        <ul class="nav nav-tabs mb-4" id="tabs" role="tablist">
+        <ul class="nav nav-underline mb-4" id="tabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="register-player-tab" data-bs-toggle="tab" href="#register-player" role="tab" aria-controls="register-player" aria-selected="true">Edit Questions</a>
+                <a class="nav-link active" id="edit-form-tab" data-bs-toggle="tab" href="#edit-form" role="tab">Edit Form</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="register-team-tab" data-bs-toggle="tab" href="#register-team" role="tab" aria-controls="register-team" aria-selected="false">Weekly Results</a>
+                <a class="nav-link" id="form-results-tab" data-bs-toggle="tab" href="#form-results" role="tab">Form Results</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="register-team-tab" data-bs-toggle="tab" href="#register-team" role="tab" aria-controls="register-team" aria-selected="false">Season Results</a>
+                <a class="nav-link" id="season-totals-tab" data-bs-toggle="tab" href="#season-totals" role="tab">Season Totals</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="register-team-tab" data-bs-toggle="tab" href="#register-team" role="tab" aria-controls="register-team" aria-selected="false">Edit Players</a>
+                <a class="nav-link" id="edit-players-tab" data-bs-toggle="tab" href="#edit-players" role="tab">Edit Players</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="join-team-tab" data-bs-toggle="tab" href="#join-team" role="tab" aria-controls="join-team" aria-selected="false">Edit Teams</a>
+                <a class="nav-link" id="edit-teams-tab" data-bs-toggle="tab" href="#edit-teams" role="tab">Edit Teams</a>
             </li>
         </ul>
 
-        <!-- Tabs Content -->
         <div class="tab-content" id="tab-content">
-            <!-- Register Player -->
-            <div id="register-player" class="tab-pane fade show active" role="tabpanel" aria-labelledby="register-player-tab">
+            <div id="edit-form" class="tab-pane fade show active" role="tabpanel">
+                <form id="form-config">
+                    <h4>Form Configuration</h4>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Enabled</th>
+                                <th>Scoring Type</th>
+                                <th>Custom Text</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Question 1</td>
+                                <td><input type="checkbox" checked></td>
+                                <td>
+                                    <select class="form-select">
+                                        <option value="p1">P1 Type (3 points)</option>
+                                        <option value="p2">P2 Type (2 points)</option>
+                                        <option value="p3">P3 Type (1 point)</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" class="form-control" value="Who will win the race?"></td>
+                            </tr>
+                            <tr>
+                                <td>Question 2</td>
+                                <td><input type="checkbox"></td>
+                                <td>
+                                    <select class="form-select">
+                                        <option value="p1">P1 Type (3 points)</option>
+                                        <option value="p2">P2 Type (2 points)</option>
+                                        <option value="p3">P3 Type (1 point)</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" class="form-control" value="Who will get pole position?"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+            <div id="form-results" class="tab-pane fade" role="tabpanel">
+                <h4>Game Results</h4>
+                <ul id="results-list" class="list-group"></ul>
+            </div>
+            <div id="season-totals" class="tab-pane fade" role="tabpanel">
+                <h4>Season Totals</h4>
+                <ul id="totals-list" class="list-group"></ul>
+            </div>
+            <div id="edit-players" class="tab-pane fade" role="tabpanel">
                 <div class="mb-3">
-                    <label for="player-name" class="form-label">Enter Name:</label>
+                    <label for="player-name" class="form-label">Player Name:</label>
                     <input type="text" id="player-name" class="form-control">
                 </div>
-                <button id="register-player-btn" class="btn btn-primary mb-4">Register</button>
-                <h4>Registered Players List</h4>
-                <ul id="player-list" class="list-group"></ul>
+                <button class="btn btn-primary">Add Player</button>
+                <h4>Players</h4>
+                <ul id="players-list" class="list-group"></ul>
             </div>
-
-            <!-- Register Team -->
-            <div id="register-team" class="tab-pane fade" role="tabpanel" aria-labelledby="register-team-tab">
+            <div id="edit-teams" class="tab-pane fade" role="tabpanel">
                 <div class="mb-3">
-                    <label for="team-name" class="form-label">Enter Team:</label>
+                    <label for="team-name" class="form-label">Team Name:</label>
                     <input type="text" id="team-name" class="form-control">
                 </div>
-                <button id="register-team-btn" class="btn btn-primary mb-4">Register</button>
-                <h4>Registered Teams List</h4>
-                <ul id="team-list" class="list-group"></ul>
-            </div>
-
-            <!-- Join Team -->
-            <div id="join-team" class="tab-pane fade" role="tabpanel" aria-labelledby="join-team-tab">
-                <div class="mb-3">
-                    <label for="join-player-name" class="form-label">Select Name:</label>
-                    <select id="join-player-name" class="form-select"></select>
-                </div>
-                <div class="mb-3">
-                    <label for="team-select" class="form-label">Select Team:</label>
-                    <select id="team-select" class="form-select"></select>
-                </div>
-                <button id="join-team-btn" class="btn btn-primary mb-4">Join Team</button>
-                <h4>Registered Teams and Players List</h4>
-                <ul id="teams-with-players" class="list-group"></ul>
+                <button class="btn btn-primary">Add Team</button>
+                <h4>Teams</h4>
+                <ul id="teams-list" class="list-group"></ul>
             </div>
         </div>
     </main>
- 
+
     <footer class="bg-light text-black text-center py-1">
         <p>&copy; 2024 F1 Predictions Form</p>
     </footer>
 
-    <!-- Bootstrap JS Bundle (Local) -->
     <script src="/js/bootstrap.bundle.min.js"></script>
     <script>
-        const correctPin = "9364"; // Set your admin PIN here
+        const correctPin = "9364";
 
         function validatePin() {
             const inputPin = document.getElementById("pin-input").value;
-
             if (inputPin === correctPin) {
                 document.getElementById("pin-input-section").style.display = "none";
                 document.getElementById("admin-content").style.display = "block";
@@ -150,7 +171,7 @@
                 errorElement.style.display = "block";
                 setTimeout(() => {
                     errorElement.style.display = "none";
-                }, 3000); // Hide error message after 3 seconds
+                }, 3000);
             }
         }
     </script>

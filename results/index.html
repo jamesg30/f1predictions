@@ -45,6 +45,55 @@
         <div class="d-flex justify-content-left">
             <h2 class="mb-3">Results</h2>
         </div>
+        <!-- Tabs Navigation -->
+        <ul class="nav nav-underline mb-4" id="tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="register-player-tab" data-bs-toggle="tab" href="#register-player" role="tab" aria-controls="register-player" aria-selected="true">Player</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="register-team-tab" data-bs-toggle="tab" href="#register-team" role="tab" aria-controls="register-team" aria-selected="false">Team</a>
+            </li>
+        </ul>
+
+        <!-- Tabs Content -->
+        <div class="tab-content" id="tab-content">
+            <!-- Register Player -->
+            <div id="register-player" class="tab-pane fade show active" role="tabpanel" aria-labelledby="register-player-tab">
+                <div class="mb-3">
+                    <label for="player-name" class="form-label">Enter Name:</label>
+                    <input type="text" id="player-name" class="form-control">
+                </div>
+                <button id="register-player-btn" class="btn btn-primary mb-4">Register</button>
+                <h4>Registered Players List</h4>
+                <ul id="player-list" class="list-group"></ul>
+            </div>
+
+            <!-- Register Team -->
+            <div id="register-team" class="tab-pane fade" role="tabpanel" aria-labelledby="register-team-tab">
+                <div class="mb-3">
+                    <label for="team-name" class="form-label">Enter Team:</label>
+                    <input type="text" id="team-name" class="form-control">
+                </div>
+                <button id="register-team-btn" class="btn btn-primary mb-4">Register</button>
+                <h4>Registered Teams List</h4>
+                <ul id="team-list" class="list-group"></ul>
+            </div>
+
+            <!-- Join Team -->
+            <div id="join-team" class="tab-pane fade" role="tabpanel" aria-labelledby="join-team-tab">
+                <div class="mb-3">
+                    <label for="join-player-name" class="form-label">Select Name:</label>
+                    <select id="join-player-name" class="form-select"></select>
+                </div>
+                <div class="mb-3">
+                    <label for="team-select" class="form-label">Select Team:</label>
+                    <select id="team-select" class="form-select"></select>
+                </div>
+                <button id="join-team-btn" class="btn btn-primary mb-4">Join Team</button>
+                <h4>Registered Teams and Players List</h4>
+                <ul id="teams-with-players" class="list-group"></ul>
+            </div>
+        </div>
     </main>
  
     <footer class="bg-light text-black text-center py-1">
