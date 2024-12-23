@@ -24,6 +24,7 @@
             display: none;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
     <header class="bg-dark text-white py-2.5 d-flex align-items-center justify-content-between">
@@ -63,6 +64,19 @@
         <div class="d-flex justify-content-left">
             <h2 class="mb-3">Admin</h2>
         </div>
+        <div class="d-flex justify-content-left">
+            <p>
+                Current Form: Australian GP 2025<br>
+                Form Responses: 13<br>
+                Status: OPEN
+            </p>
+        </div>
+            <button type="button" class="btn btn-success btn-sm" disabled>Open Form</button>
+            <button type="button" class="btn btn-danger btn-sm">Close Form</button>
+        <div>
+        
+        <hr>
+
         <ul class="nav nav-underline mb-4" id="tabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <a class="nav-link active" id="edit-form-tab" data-bs-toggle="tab" href="#edit-form" role="tab">Edit Form</a>
@@ -80,7 +94,6 @@
                 <a class="nav-link" id="edit-teams-tab" data-bs-toggle="tab" href="#edit-teams" role="tab">Edit Teams</a>
             </li>
         </ul>
-
         <div class="tab-content" id="tab-content">
             <div id="edit-form" class="tab-pane fade show active" role="tabpanel">
                 <form id="form-config">
@@ -258,7 +271,7 @@
                 </form>
             </div>
             <div id="form-results" class="tab-pane fade" role="tabpanel">
-                <h4>Game Results</h4>
+                <h4>Form Results</h4>
                 <ul id="results-list" class="list-group"></ul>
             </div>
             <div id="season-totals" class="tab-pane fade" role="tabpanel">
@@ -266,21 +279,25 @@
                 <ul id="totals-list" class="list-group"></ul>
             </div>
             <div id="edit-players" class="tab-pane fade" role="tabpanel">
+                <div>
+                    <h4>Edit Players</h4>
+                </div>
                 <div class="mb-3">
                     <label for="player-name" class="form-label">Player Name:</label>
                     <input type="text" id="player-name" class="form-control">
                 </div>
                 <button class="btn btn-primary">Add Player</button>
-                <h4>Players</h4>
                 <ul id="players-list" class="list-group"></ul>
             </div>
             <div id="edit-teams" class="tab-pane fade" role="tabpanel">
+                <div>
+                    <h4>Edit Teams</h4>
+                </div>
                 <div class="mb-3">
                     <label for="team-name" class="form-label">Team Name:</label>
                     <input type="text" id="team-name" class="form-control">
                 </div>
                 <button class="btn btn-primary">Add Team</button>
-                <h4>Teams</h4>
                 <ul id="teams-list" class="list-group"></ul>
             </div>
         </div>
@@ -292,11 +309,17 @@
 
     <script src="/js/bootstrap.bundle.min.js"></script>
     <script>
-        const correctPin = "9364";
-
+        const hashedPin = "4e668929edb3bf915e1a3a9d96c3c97e";
+        // Validate the PIN
         function validatePin() {
-            const inputPin = document.getElementById("pin-input").value;
-            if (inputPin === correctPin) {
+            const inputPin = document.getElementById("pin-input").value.trim(); // Trim whitespace
+            const hashedInputPin = CryptoJS.MD5(inputPin).toString();
+
+            console.log("Input PIN:", inputPin);
+            console.log("Computed Hash:", hashedInputPin);
+            console.log("Expected Hash:", hashedPin);
+
+            if (hashedInputPin === hashedPin) {
                 document.getElementById("pin-input-section").style.display = "none";
                 document.getElementById("admin-content").style.display = "block";
             } else {
