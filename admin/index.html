@@ -113,12 +113,6 @@
                         <h4>Form Configuration</h4>
                     </div>
                     <div>
-                        <label for="winningTeamDropdown" class="form-label">Race:</label>
-                        <select id="winningTeamDropdown" class="form-select" aria-label="Select winning team" required>
-                            <option value="" disabled selected hidden>Select one option</option>
-                        </select>
-                    </div>
-                    <div>
                         <table class="table">
                             <thead>
                                 <tr>
@@ -308,23 +302,75 @@
                 <div>
                     <h4>Edit Players</h4>
                 </div>
-                <div class="mb-3">
-                    <label for="player-name" class="form-label">Player Name:</label>
-                    <input type="text" id="player-name" class="form-control">
+                <div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Player</th>
+                                <th>Update</th>
+                                <th>Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><input type="text" class="form-control" value="Ethan"></td>
+                                <td><button class="btn btn-secondary">Update Name</button></td>
+                                <td><button class="btn btn-danger">Delete Player</button></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><input type="text" class="form-control" value="James"></td>
+                                <td><button class="btn btn-secondary">Update Name</button></td>
+                                <td><button class="btn btn-danger">Delete Player</button></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td><input type="text" class="form-control" value="Josh 2004"></td>
+                                <td><button class="btn btn-secondary">Update Name</button></td>
+                                <td><button class="btn btn-danger">Delete Player</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <button class="btn btn-primary">Add Player</button>
-                <ul id="players-list" class="list-group"></ul>
             </div>
             <div id="edit-teams" class="tab-pane fade" role="tabpanel">
                 <div>
                     <h4>Edit Teams</h4>
                 </div>
-                <div class="mb-3">
-                    <label for="team-name" class="form-label">Team Name:</label>
-                    <input type="text" id="team-name" class="form-control">
+                <div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Team</th>
+                                <th>Update</th>
+                                <th>Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><input type="text" class="form-control" value="Scuderia Tow Mator"></td>
+                                <td><button class="btn btn-secondary">Update Name</button></td>
+                                <td><button class="btn btn-danger">Delete Team</button></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><input type="text" class="form-control" value="Comeng"></td>
+                                <td><button class="btn btn-secondary">Update Name</button></td>
+                                <td><button class="btn btn-danger">Delete Team</button></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td><input type="text" class="form-control" value="Xtrapolis 200"></td>
+                                <td><button class="btn btn-secondary">Update Name</button></td>
+                                <td><button class="btn btn-danger">Delete Team</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <button class="btn btn-primary">Add Team</button>
-                <ul id="teams-list" class="list-group"></ul>
             </div>
             <div id="edit-drivers" class="tab-pane fade" role="tabpanel">
                 <div>
