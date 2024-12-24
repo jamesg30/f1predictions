@@ -8,15 +8,15 @@
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/style.css">
     <style>
-        #pin-input-section {
+        #password-input-section {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: calc(100vh - 70px);
+            height: calc(100vh - 200px);
             text-align: center;
         }
-        #pin-error {
+        #password-error {
             color: red;
             margin-top: 10px;
         }
@@ -42,22 +42,24 @@
             </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
                 <li><a class="dropdown-item" href="/">Home</a></li>
-                <li><hr class="dropdown-divider"></li>
+                <li><hr class="dropdown-divider"></li> <!-- Spacer -->
                 <li><a class="dropdown-item" href="/form">Form</a></li>
                 <li><a class="dropdown-item" href="/results">Results</a></li>
                 <li><a class="dropdown-item" href="/register">Register</a></li>
                 <li><a class="dropdown-item" href="/feedback">Feedback</a></li>
                 <li><a class="dropdown-item" href="/rules">Rules</a></li>
-                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/testing">Testing</a></li>
+                <li><hr class="dropdown-divider"></li> <!-- Spacer -->
                 <li><a class="dropdown-item" href="/admin">Admin</a></li>
             </ul>
         </div>
     </header>
 
-    <main id="pin-input-section">
-        <input type="password" id="pin-input" class="form-control w-25 text-center" placeholder="Enter Password">
-        <button class="btn btn-dark mt-3" onclick="validatePin()">Submit</button>
-        <p id="pin-error" style="display: none;">Incorrect Password. Please try again.</p>
+    <main id="password-input-section">
+        <h4>Admin Page</h4>
+        <input type="password" id="password-input" class="form-control w-25 text-center" placeholder="Enter Password">
+        <button class="btn btn-dark mt-3" onclick="validatePassword()">Submit</button>
+        <p id="password-error" style="display: none;">Incorrect Password. Please try again.</p>
     </main>
 
     <main id="admin-content" class="container my-5">
@@ -79,199 +81,223 @@
 
         <ul class="nav nav-underline mb-4" id="tabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="edit-form-tab" data-bs-toggle="tab" href="#edit-form" role="tab">Edit Form</a>
+                <a class="nav-link active" id="form-configuration-tab" data-bs-toggle="tab" href="#form-configuration" role="tab">Form Configuration</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="form-results-tab" data-bs-toggle="tab" href="#form-results" role="tab">Form Results</a>
+                <a class="nav-link" id="results-entry-tab" data-bs-toggle="tab" href="#results-entry" role="tab">Results Entry</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="results-preview-tab" data-bs-toggle="tab" href="#results-preview" role="tab">Results Preview</a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link" id="season-totals-tab" data-bs-toggle="tab" href="#season-totals" role="tab">Season Totals</a>
             </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link" id="edit-players-tab" data-bs-toggle="tab" href="#edit-players" role="tab">Edit Players</a>
-            </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link" id="edit-teams-tab" data-bs-toggle="tab" href="#edit-teams" role="tab">Edit Teams</a>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="edit-lists-dropdown" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">
+                    Edit Lists
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="edit-lists-dropdown">
+                    <li><a class="dropdown-item" id="edit-players-tab" data-bs-toggle="tab" href="#edit-players" role="tab">Edit Players</a></li>
+                    <li><a class="dropdown-item" id="edit-teams-tab" data-bs-toggle="tab" href="#edit-teams" role="tab">Edit Teams</a></li>
+                    <li><a class="dropdown-item" id="edit-drivers-tab" data-bs-toggle="tab" href="#edit-drivers" role="tab">Edit Drivers</a></li>
+                    <li><a class="dropdown-item" id="edit-constructors-tab" data-bs-toggle="tab" href="#edit-constructors" role="tab">Edit Constructors</a></li>
+                    <li><a class="dropdown-item" id="edit-calendar-tab" data-bs-toggle="tab" href="#edit-calendar" role="tab">Edit Calendar</a></li>
+                </ul>
             </li>
         </ul>
+        
         <div class="tab-content" id="tab-content">
-            <div id="edit-form" class="tab-pane fade show active" role="tabpanel">
-                <form id="form-config">
-                    <h4>Form Configuration</h4>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Enabled</th>
-                                <th>Text</th>
-                                <th>Response Type</th>
-                                <th>Scoring Type</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" role="switch" id="enabledSwitch1" checked>
-                                        <label class="form-check-label" for="enabledSwitch1"></label>
-                                    </div>
-                                </td>
-                                <td><input type="text" class="form-control" value="Who will win the race?"></td>
-                                <td>
-                                    <select class="form-select">
-                                        <option value="R1">Select - Driver List</option>
-                                        <option value="R2">Select - Driver List + DNF</option>
-                                        <option value="R3">Select - Team List</option>
-                                        <option value="R4">Select - Name List</option>
-                                        <option value="R5">Number - Integer</option>
-                                        <option value="R6">Number - Decimal</option>
-                                        <option value="R7">Yes/No</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <select class="form-select">
-                                        <option value="S1">P1 Type (3)</option>
-                                        <option value="S2">P2 Type (2)</option>
-                                        <option value="S3">P3 Type (2)</option>
-                                        <option value="S4">P4 Type (2)</option>
-                                        <option value="S5">P5 Type (2)</option>
-                                        <option value="S6">P6 Type (2)</option>
-                                        <option value="S7">Simple (1)</option>
-                                        <option value="S8">Driver + Team (2)</option>
-                                        <option value="S9">Closest (1)</option>
-                                        <option value="S10">Plus Minus One (2)</option>
-                                        <option value="S11">Off (0)</option>
-                                        <option value="S1">P1 Q (1)</option>
-                                        <option value="S2">P2 Q (1)</option>
-                                        <option value="S3">P3 Q (1)</option>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" role="switch" id="enabledSwitch2">
-                                        <label class="form-check-label" for="enabledSwitch2"></label>
-                                    </div>
-                                </td>
-                                <td><input type="text" class="form-control" value="What will be the winning margin?"></td>
-                                <td>
-                                    <select class="form-select">
-                                        <option value="R1">Select - Driver List</option>
-                                        <option value="R2">Select - Driver List + DNF</option>
-                                        <option value="R3">Select - Team List</option>
-                                        <option value="R4">Select - Name List</option>
-                                        <option value="R5">Number - Integer</option>
-                                        <option value="R6">Number - Decimal</option>
-                                        <option value="R7">Yes/No</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <select class="form-select">
-                                        <option value="S1">P1 Type (3)</option>
-                                        <option value="S2">P2 Type (2)</option>
-                                        <option value="S3">P3 Type (2)</option>
-                                        <option value="S4">P4 Type (2)</option>
-                                        <option value="S5">P5 Type (2)</option>
-                                        <option value="S6">P6 Type (2)</option>
-                                        <option value="S7">Simple (1)</option>
-                                        <option value="S8">Driver + Team (2)</option>
-                                        <option value="S9">Closest (1)</option>
-                                        <option value="S10">Plus Minus One (2)</option>
-                                        <option value="S11">Off (0)</option>
-                                        <option value="S1">P1 Q (1)</option>
-                                        <option value="S2">P2 Q (1)</option>
-                                        <option value="S3">P3 Q (1)</option>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" role="switch" id="enabledSwitch1" checked>
-                                        <label class="form-check-label" for="enabledSwitch1"></label>
-                                    </div>
-                                </td>
-                                <td><input type="text" class="form-control" value="Who will win the race?"></td>
-                                <td>
-                                    <select class="form-select">
-                                        <option value="R1">Select - Driver List</option>
-                                        <option value="R2">Select - Driver List + DNF</option>
-                                        <option value="R3">Select - Team List</option>
-                                        <option value="R4">Select - Name List</option>
-                                        <option value="R5">Number - Integer</option>
-                                        <option value="R6">Number - Decimal</option>
-                                        <option value="R7">Yes/No</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <select class="form-select">
-                                        <option value="S1">P1 Type (3)</option>
-                                        <option value="S2">P2 Type (2)</option>
-                                        <option value="S3">P3 Type (2)</option>
-                                        <option value="S4">P4 Type (2)</option>
-                                        <option value="S5">P5 Type (2)</option>
-                                        <option value="S6">P6 Type (2)</option>
-                                        <option value="S7">Simple (1)</option>
-                                        <option value="S8">Driver + Team (2)</option>
-                                        <option value="S9">Closest (1)</option>
-                                        <option value="S10">Plus Minus One (2)</option>
-                                        <option value="S11">Off (0)</option>
-                                        <option value="S1">P1 Q (1)</option>
-                                        <option value="S2">P2 Q (1)</option>
-                                        <option value="S3">P3 Q (1)</option>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>4</td>
-                                <td>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" role="switch" id="enabledSwitch2">
-                                        <label class="form-check-label" for="enabledSwitch2"></label>
-                                    </div>
-                                </td>
-                                <td><input type="text" class="form-control" value="What will be the winning margin?"></td>
-                                <td>
-                                    <select class="form-select">
-                                        <option value="R1">Select - Driver List</option>
-                                        <option value="R2">Select - Driver List + DNF</option>
-                                        <option value="R3">Select - Team List</option>
-                                        <option value="R4">Select - Name List</option>
-                                        <option value="R5">Number - Integer</option>
-                                        <option value="R6">Number - Decimal</option>
-                                        <option value="R7">Yes/No</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <select class="form-select">
-                                        <option value="S1">P1 Type (3)</option>
-                                        <option value="S2">P2 Type (2)</option>
-                                        <option value="S3">P3 Type (2)</option>
-                                        <option value="S4">P4 Type (2)</option>
-                                        <option value="S5">P5 Type (2)</option>
-                                        <option value="S6">P6 Type (2)</option>
-                                        <option value="S7">Simple (1)</option>
-                                        <option value="S8">Driver + Team (2)</option>
-                                        <option value="S9">Closest (1)</option>
-                                        <option value="S10">Plus Minus One (2)</option>
-                                        <option value="S11">Off (0)</option>
-                                        <option value="S1">P1 Q (1)</option>
-                                        <option value="S2">P2 Q (1)</option>
-                                        <option value="S3">P3 Q (1)</option>
-                                    </select>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div id="form-configuration" class="tab-pane fade show active" role="tabpanel">
+                <form id="form-configuration-form">
+                    <div>
+                        <h4>Form Configuration</h4>
+                    </div>
+                    <div>
+                        <label for="winningTeamDropdown" class="form-label">Race:</label>
+                        <select id="winningTeamDropdown" class="form-select" aria-label="Select winning team" required>
+                            <option value="" disabled selected hidden>Select one option</option>
+                        </select>
+                    </div>
+                    <div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Enabled</th>
+                                    <th>Text</th>
+                                    <th>Response Type</th>
+                                    <th>Scoring Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="enabledSwitch1" checked>
+                                            <label class="form-check-label" for="enabledSwitch1"></label>
+                                        </div>
+                                    </td>
+                                    <td><input type="text" class="form-control" value="Who will win the race?"></td>
+                                    <td>
+                                        <select class="form-select">
+                                            <option value="R1">Select - Driver List</option>
+                                            <option value="R2">Select - Driver List + DNF</option>
+                                            <option value="R3">Select - Team List</option>
+                                            <option value="R4">Select - Name List</option>
+                                            <option value="R5">Number - Integer</option>
+                                            <option value="R6">Number - Decimal</option>
+                                            <option value="R7">Yes/No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select class="form-select">
+                                            <option value="S1">P1 Type (3)</option>
+                                            <option value="S2">P2 Type (2)</option>
+                                            <option value="S3">P3 Type (2)</option>
+                                            <option value="S4">P4 Type (2)</option>
+                                            <option value="S5">P5 Type (2)</option>
+                                            <option value="S6">P6 Type (2)</option>
+                                            <option value="S7">Simple (1)</option>
+                                            <option value="S8">Driver + Team (2)</option>
+                                            <option value="S9">Closest (1)</option>
+                                            <option value="S10">Plus Minus One (2)</option>
+                                            <option value="S11">Off (0)</option>
+                                            <option value="S1">P1 Q (1)</option>
+                                            <option value="S2">P2 Q (1)</option>
+                                            <option value="S3">P3 Q (1)</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="enabledSwitch2">
+                                            <label class="form-check-label" for="enabledSwitch2"></label>
+                                        </div>
+                                    </td>
+                                    <td><input type="text" class="form-control" value="What will be the winning margin?"></td>
+                                    <td>
+                                        <select class="form-select">
+                                            <option value="R1">Select - Driver List</option>
+                                            <option value="R2">Select - Driver List + DNF</option>
+                                            <option value="R3">Select - Team List</option>
+                                            <option value="R4">Select - Name List</option>
+                                            <option value="R5">Number - Integer</option>
+                                            <option value="R6">Number - Decimal</option>
+                                            <option value="R7">Yes/No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select class="form-select">
+                                            <option value="S1">P1 Type (3)</option>
+                                            <option value="S2">P2 Type (2)</option>
+                                            <option value="S3">P3 Type (2)</option>
+                                            <option value="S4">P4 Type (2)</option>
+                                            <option value="S5">P5 Type (2)</option>
+                                            <option value="S6">P6 Type (2)</option>
+                                            <option value="S7">Simple (1)</option>
+                                            <option value="S8">Driver + Team (2)</option>
+                                            <option value="S9">Closest (1)</option>
+                                            <option value="S10">Plus Minus One (2)</option>
+                                            <option value="S11">Off (0)</option>
+                                            <option value="S1">P1 Q (1)</option>
+                                            <option value="S2">P2 Q (1)</option>
+                                            <option value="S3">P3 Q (1)</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="enabledSwitch1" checked>
+                                            <label class="form-check-label" for="enabledSwitch1"></label>
+                                        </div>
+                                    </td>
+                                    <td><input type="text" class="form-control" value="Who will win the race?"></td>
+                                    <td>
+                                        <select class="form-select">
+                                            <option value="R1">Select - Driver List</option>
+                                            <option value="R2">Select - Driver List + DNF</option>
+                                            <option value="R3">Select - Team List</option>
+                                            <option value="R4">Select - Name List</option>
+                                            <option value="R5">Number - Integer</option>
+                                            <option value="R6">Number - Decimal</option>
+                                            <option value="R7">Yes/No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select class="form-select">
+                                            <option value="S1">P1 Type (3)</option>
+                                            <option value="S2">P2 Type (2)</option>
+                                            <option value="S3">P3 Type (2)</option>
+                                            <option value="S4">P4 Type (2)</option>
+                                            <option value="S5">P5 Type (2)</option>
+                                            <option value="S6">P6 Type (2)</option>
+                                            <option value="S7">Simple (1)</option>
+                                            <option value="S8">Driver + Team (2)</option>
+                                            <option value="S9">Closest (1)</option>
+                                            <option value="S10">Plus Minus One (2)</option>
+                                            <option value="S11">Off (0)</option>
+                                            <option value="S1">P1 Q (1)</option>
+                                            <option value="S2">P2 Q (1)</option>
+                                            <option value="S3">P3 Q (1)</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="enabledSwitch2">
+                                            <label class="form-check-label" for="enabledSwitch2"></label>
+                                        </div>
+                                    </td>
+                                    <td><input type="text" class="form-control" value="What will be the winning margin?"></td>
+                                    <td>
+                                        <select class="form-select">
+                                            <option value="R1">Select - Driver List</option>
+                                            <option value="R2">Select - Driver List + DNF</option>
+                                            <option value="R3">Select - Team List</option>
+                                            <option value="R4">Select - Name List</option>
+                                            <option value="R5">Number - Integer</option>
+                                            <option value="R6">Number - Decimal</option>
+                                            <option value="R7">Yes/No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select class="form-select">
+                                            <option value="S1">P1 Type (3)</option>
+                                            <option value="S2">P2 Type (2)</option>
+                                            <option value="S3">P3 Type (2)</option>
+                                            <option value="S4">P4 Type (2)</option>
+                                            <option value="S5">P5 Type (2)</option>
+                                            <option value="S6">P6 Type (2)</option>
+                                            <option value="S7">Simple (1)</option>
+                                            <option value="S8">Driver + Team (2)</option>
+                                            <option value="S9">Closest (1)</option>
+                                            <option value="S10">Plus Minus One (2)</option>
+                                            <option value="S11">Off (0)</option>
+                                            <option value="S1">P1 Q (1)</option>
+                                            <option value="S2">P2 Q (1)</option>
+                                            <option value="S3">P3 Q (1)</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                     <button class="btn btn-primary">Save Changes</button>
                 </form>
             </div>
-            <div id="form-results" class="tab-pane fade" role="tabpanel">
-                <h4>Form Results</h4>
+            <div id="results-entry" class="tab-pane fade" role="tabpanel">
+                <h4>Results Entry</h4>
+                <ul id="results-list" class="list-group"></ul>
+            </div>
+            <div id="results-preview" class="tab-pane fade" role="tabpanel">
+                <h4>Results Preview</h4>
                 <ul id="results-list" class="list-group"></ul>
             </div>
             <div id="season-totals" class="tab-pane fade" role="tabpanel">
@@ -300,6 +326,21 @@
                 <button class="btn btn-primary">Add Team</button>
                 <ul id="teams-list" class="list-group"></ul>
             </div>
+            <div id="edit-drivers" class="tab-pane fade" role="tabpanel">
+                <div>
+                    <h4>Edit Drivers</h4>
+                </div>
+            </div>
+            <div id="edit-constructors" class="tab-pane fade" role="tabpanel">
+                <div>
+                    <h4>Edit Constructors</h4>
+                </div>
+            </div>
+            <div id="edit-calendar" class="tab-pane fade" role="tabpanel">
+                <div>
+                    <h4>Edit Calendar</h4>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -309,21 +350,17 @@
 
     <script src="/js/bootstrap.bundle.min.js"></script>
     <script>
-        const hashedPin = "4e668929edb3bf915e1a3a9d96c3c97e";
-        // Validate the PIN
-        function validatePin() {
-            const inputPin = document.getElementById("pin-input").value.trim(); // Trim whitespace
-            const hashedInputPin = CryptoJS.MD5(inputPin).toString();
+        const hashedPassword = "4e668929edb3bf915e1a3a9d96c3c97e";
+        // Validate the Password
+        function validatePassword() {
+            const inputPassword = document.getElementById("password-input").value.trim(); // Trim whitespace
+            const hashedInputPassword = CryptoJS.MD5(inputPassword).toString();
 
-            console.log("Input PIN:", inputPin);
-            console.log("Computed Hash:", hashedInputPin);
-            console.log("Expected Hash:", hashedPin);
-
-            if (hashedInputPin === hashedPin) {
-                document.getElementById("pin-input-section").style.display = "none";
+            if (hashedInputPassword === hashedPassword) {
+                document.getElementById("password-input-section").style.display = "none";
                 document.getElementById("admin-content").style.display = "block";
             } else {
-                const errorElement = document.getElementById("pin-error");
+                const errorElement = document.getElementById("password-error");
                 errorElement.style.display = "block";
                 setTimeout(() => {
                     errorElement.style.display = "none";
