@@ -75,13 +75,16 @@
         </div>
             <button type="button" class="btn btn-success btn-sm" disabled>Open Form</button>
             <button type="button" class="btn btn-danger btn-sm">Close Form</button>
-        <div>
+        <div>  
         
         <hr>
 
         <ul class="nav nav-underline mb-4" id="tabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <a class="nav-link active" id="form-configuration-tab" data-bs-toggle="tab" href="#form-configuration" role="tab">Form Configuration</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="grid-upload-tab" data-bs-toggle="tab" href="#grid-upload" role="tab">Grid Upload</a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link" id="results-entry-tab" data-bs-toggle="tab" href="#results-entry" role="tab">Results Entry</a>
@@ -290,6 +293,16 @@
                 <h4>Results Entry</h4>
                 <ul id="results-list" class="list-group"></ul>
             </div>
+            <div id="grid-upload" class="tab-pane fade" role="tabpanel">
+                <h4>Grid Upload</h4>
+                <div>
+                    <p>Current Photo:</p>
+                </div>
+                <div class="input-group mb-3">
+                    <input type="file" class="form-control" id="inputGroupFile02">
+                    <label class="input-group-text" for="inputGroupFile02">Upload</label>
+                </div>
+            </div>
             <div id="results-preview" class="tab-pane fade" role="tabpanel">
                 <h4>Results Preview</h4>
                 <ul id="results-list" class="list-group"></ul>
@@ -308,28 +321,36 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Player</th>
-                                <th>Update</th>
+                                <th>Update Name</th>
                                 <th>Delete</th>
+                                <th>Team</th>
+                                <th>Unlink Team</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 <td>1</td>
                                 <td><input type="text" class="form-control" value="Ethan"></td>
-                                <td><button class="btn btn-secondary">Update Name</button></td>
-                                <td><button class="btn btn-danger">Delete Player</button></td>
+                                <td><button class="btn btn-secondary">Update</button></td>
+                                <td><button class="btn btn-danger">Delete</button></td>
+                                <td>Comeng</td>
+                                <td><button class="btn btn-danger">Unlink</button></td>
                             </tr>
                             <tr>
                                 <td>2</td>
                                 <td><input type="text" class="form-control" value="James"></td>
-                                <td><button class="btn btn-secondary">Update Name</button></td>
-                                <td><button class="btn btn-danger">Delete Player</button></td>
+                                <td><button class="btn btn-secondary">Update</button></td>
+                                <td><button class="btn btn-danger">Delete</button></td>
+                                <td>Xtrapolis 200</td>
+                                <td><button class="btn btn-danger">Unlink</button></td>
                             </tr>
                             <tr>
                                 <td>3</td>
                                 <td><input type="text" class="form-control" value="Josh 2004"></td>
-                                <td><button class="btn btn-secondary">Update Name</button></td>
-                                <td><button class="btn btn-danger">Delete Player</button></td>
+                                <td><button class="btn btn-secondary">Update</button></td>
+                                <td><button class="btn btn-danger">Delete</button></td>
+                                <td>Scuderia Tow Mator</td>
+                                <td><button class="btn btn-danger">Unlink</button></td>
                             </tr>
                         </tbody>
                     </table>
@@ -345,7 +366,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Team</th>
-                                <th>Update</th>
+                                <th>Update Name</th>
                                 <th>Delete</th>
                             </tr>
                         </thead>
@@ -353,20 +374,20 @@
                             <tr>
                                 <td>1</td>
                                 <td><input type="text" class="form-control" value="Scuderia Tow Mator"></td>
-                                <td><button class="btn btn-secondary">Update Name</button></td>
-                                <td><button class="btn btn-danger">Delete Team</button></td>
+                                <td><button class="btn btn-secondary">Update</button></td>
+                                <td><button class="btn btn-danger">Delete</button></td>
                             </tr>
                             <tr>
                                 <td>2</td>
                                 <td><input type="text" class="form-control" value="Comeng"></td>
-                                <td><button class="btn btn-secondary">Update Name</button></td>
-                                <td><button class="btn btn-danger">Delete Team</button></td>
+                                <td><button class="btn btn-secondary">Update</button></td>
+                                <td><button class="btn btn-danger">Delete</button></td>
                             </tr>
                             <tr>
                                 <td>3</td>
                                 <td><input type="text" class="form-control" value="Xtrapolis 200"></td>
-                                <td><button class="btn btn-secondary">Update Name</button></td>
-                                <td><button class="btn btn-danger">Delete Team</button></td>
+                                <td><button class="btn btn-secondary">Update</button></td>
+                                <td><button class="btn btn-danger">Delete</button></td>
                             </tr>
                         </tbody>
                     </table>
@@ -376,16 +397,159 @@
                 <div>
                     <h4>Edit Drivers</h4>
                 </div>
+                <div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Driver</th>
+                                <th>Abbreviation</th>
+                                <th>Team</th>
+                                <th>Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><input type="text" class="form-control" value="Max Verstappen"></td>
+                                <td><input type="text" class="form-control" value="VER"></td>
+                                <td>
+                                    <select class="form-select">
+                                        <option value="R1">Red Bull Racing</option>
+                                        <option value="R2">McLaren</option>
+                                        <option value="R3">Ferrari</option>
+                                    </select>
+                                </td>
+                                <td><button class="btn btn-danger">Delete</button></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><input type="text" class="form-control" value="Lewis Hamilton"></td>
+                                <td><input type="text" class="form-control" value="HAM"></td>
+                                <td>
+                                    <select class="form-select">
+                                        <option value="R1">Red Bull Racing</option>
+                                        <option value="R2">McLaren</option>
+                                        <option value="R3">Ferrari</option>
+                                    </select>
+                                </td>
+                                <td><button class="btn btn-danger">Delete</button></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td><input type="text" class="form-control" value="Oscar Piastri"></td>
+                                <td><input type="text" class="form-control" value="PIA"></td>
+                                <td>
+                                    <select class="form-select">
+                                        <option value="R1">Red Bull Racing</option>
+                                        <option value="R2">McLaren</option>
+                                        <option value="R3">Ferrari</option>
+                                    </select>
+                                </td>
+                                <td><button class="btn btn-danger">Delete</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="btn btn-primary">Save Changes</button>
+                </div>
             </div>
             <div id="edit-constructors" class="tab-pane fade" role="tabpanel">
                 <div>
                     <h4>Edit Constructors</h4>
+                </div>
+                <div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Constructor</th>
+                                <th>Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><input type="text" class="form-control" value="McLaren"></td>
+                                <td><button class="btn btn-danger">Delete</button></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><input type="text" class="form-control" value="Ferrari"></td>
+                                <td><button class="btn btn-danger">Delete</button></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td><input type="text" class="form-control" value="Red Bull"></td>
+                                <td><button class="btn btn-danger">Delete</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="btn btn-primary">Save Changes</button>
                 </div>
             </div>
             <div id="edit-calendar" class="tab-pane fade" role="tabpanel">
                 <div>
                     <h4>Edit Calendar</h4>
                 </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Race Number</th>
+                            <th>Race Name</th>
+                            <th>Country</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><input type="text" class="form-control" value="1"></td>
+                            <td><input type="text" class="form-control" value="Australian"></td>
+                            <td>
+                                <select class="form-select">
+                                    <option value="R1">Australia</option>
+                                    <option value="R2">Italy</option>
+                                    <option value="R3">Abu Dhabi</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="date" id="race-date" name="race-date">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><input type="text" class="form-control" value="2"></td>
+                            <td><input type="text" class="form-control" value="Italian"></td>
+                            <td>
+                                <select class="form-select">
+                                    <option value="R1">Australia</option>
+                                    <option value="R2">Italy</option>
+                                    <option value="R3">Abu Dhabi</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="date" id="race-date" name="race-date">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><input type="text" class="form-control" value="3"></td>
+                            <td><input type="text" class="form-control" value="Abu Dhabi"></td>
+                            <td>
+                                <select class="form-select">
+                                    <option value="R1">Australia</option>
+                                    <option value="R2">Italy</option>
+                                    <option value="R3">Abu Dhabi</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="date" id="race-date" name="race-date">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="btn btn-primary">Save Changes</button>
             </div>
         </div>
     </main>
