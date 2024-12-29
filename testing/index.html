@@ -1,92 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F1 Predictions</title>
-    <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supabase Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
-    <header class="bg-light text-dark py-2.5 d-flex align-items-center justify-content-between">
-        <div class="d-flex align-items-center">
-            <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
-                <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
-            </a>
-            <a href="/" class="text-decoration-none text-dark">
-                <h5 class="mb-0 fw-bold">F1 Predictions</h5>
-            </a>
-        </div>
-        <div class="dropdown me-3">
-            <button class="btn btn-light dropdown-toggle" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
-                Menu
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
-                <li><a class="dropdown-item" href="/">Home</a></li>
-                <li><a class="dropdown-item" href="/form">Form</a></li>
-                <li><a class="dropdown-item" href="/results">Results</a></li>
-                <li><a class="dropdown-item" href="/register">Register</a></li>
-                <li><a class="dropdown-item" href="/feedback">Feedback</a></li>
-                <li><a class="dropdown-item" href="/rules">Rules</a></li>
-                <li><a class="dropdown-item" href="/testing">Testing</a></li>
-                <li><a class="dropdown-item" href="/admin">Admin</a></li>
-            </ul>
-        </div>
-    </header>
-    
-    <main class="container my-5">
-        <div class="container my-5">
-            <h2 class="mb-3">Testing</h2>
-            <ul id="participant-list" class="list-group"></ul>
-        </div>
-    </main>
+  <h1>Supabase Connection Test</h1>
+  <button id="test-button">Test Supabase Connection</button>
+  <pre id="result"></pre>
 
-    <footer class="bg-light text-black text-center py-1">
-        <p>&copy; 2024 F1 Predictions Form</p>
-    </footer>
-    <script src="/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Initialize Supabase
-        const supabaseUrl = 'https://your-supabase-url.supabase.co';
-        const supabaseKey = 'your-supabase-anon-key';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+  <script>
+    // Initialize Supabase
+    const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        async function testConnection() {
-            console.log("Testing connection to Supabase...");
-            const { data, error } = await supabase.from('participants').select('*').limit(1);
-            if (error) {
-                console.error('Connection failed:', error);
-                alert('Supabase connection failed. Check credentials.');
-            } else {
-                console.log('Connection successful:', data);
-                alert('Supabase connection successful!');
-            }
+    // Function to test connection
+    async function testSupabaseConnection() {
+      const resultElement = document.getElementById('result');
+      resultElement.textContent = 'Testing connection...';
+
+      try {
+        const { data, error } = await supabase.from('participants').select('*');
+        if (error) {
+          console.error('Error:', error);
+          resultElement.textContent = `Error: ${error.message}`;
+        } else {
+          console.log('Data:', data);
+          resultElement.textContent = `Connection successful! Data: ${JSON.stringify(data, null, 2)}`;
         }
+      } catch (err) {
+        console.error('Unexpected error:', err);
+        resultElement.textContent = `Unexpected error: ${err.message}`;
+      }
+    }
 
-        async function fetchParticipants() {
-            console.log("Fetching participants...");
-            const { data, error } = await supabase.from('participants').select('*');
-            if (error) {
-                console.error('Error fetching participants:', error);
-                return;
-            }
-            console.log("Participants data:", data);
-
-            const list = document.getElementById('participant-list');
-            data.forEach(participant => {
-                console.log("Adding participant:", participant);
-                const listItem = document.createElement('li');
-                listItem.textContent = `${participant.id}: ${participant.name}`;
-                listItem.className = 'list-group-item';
-                list.appendChild(listItem);
-            });
-        }
-
-        // Fetch participants on page load
-        testConnection();
-        fetchParticipants();
-    </script>
+    // Add event listener to the button
+    document.getElementById('test-button').addEventListener('click', testSupabaseConnection);
+  </script>
 </body>
 </html>
