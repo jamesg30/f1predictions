@@ -87,28 +87,34 @@
 
             <!-- Register Team -->
             <div id="register-team" class="tab-pane fade" role="tabpanel" aria-labelledby="register-team-tab">
+                <div class="d-flex justify-content-left">
+                    <h2>Register Team</h2>
+                </div>
                 <div class="mb-3">
-                    <label for="team-name" class="form-label">Enter Team:</label>
+                    <label for="team-name" class="form-label">Enter Team Name:</label>
                     <input type="text" id="team-name" class="form-control">
                 </div>
                 <button id="register-team-btn" class="btn btn-primary mb-4">Register</button>
+                
                 <h4>Registered Teams List</h4>
-                <ul id="team-list" class="list-group"></ul>
+                <ul id="team-list" class="list-group">
+                    <!-- Registered players will be displayed here -->
+                </ul>
             </div>
 
             <!-- Join Team -->
             <div id="join-team" class="tab-pane fade" role="tabpanel" aria-labelledby="join-team-tab">
-                <div class="mb-3">
-                    <label for="join-player-name" class="form-label">Select Name:</label>
-                    <select id="join-player-name" class="form-select"></select>
+                <div id="join-team">
+                    <div class="mb-3">
+                        <label for="join-player-name" class="form-label">Select Player:</label>
+                        <select id="join-player-name" class="form-select"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="team-select" class="form-label">Select Team:</label>
+                        <select id="team-select" class="form-select"></select>
+                    </div>
+                    <button id="join-team-btn" class="btn btn-primary">Join Team</button>
                 </div>
-                <div class="mb-3">
-                    <label for="team-select" class="form-label">Select Team:</label>
-                    <select id="team-select" class="form-select"></select>
-                </div>
-                <button id="join-team-btn" class="btn btn-primary mb-4">Join Team</button>
-                <h4>Registered Teams and Players List</h4>
-                <ul id="teams-with-players" class="list-group"></ul>
             </div>
         </div>
     </main>
@@ -143,6 +149,29 @@
             }
         }
 
+        async function fetchTeams() {
+            try {
+                const { data, error } = await supabase.from('participant_teams').select('name');
+                const teamList = document.getElementById('team-list');
+
+                if (error) {
+                    console.error('Error fetching teams:', error);
+                    teamList.innerHTML = '<li class="list-group-item text-danger">Error fetching teams.</li>';
+                } else {
+                    teamList.innerHTML = ''; // Clear the list
+                    data.forEach((team) => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = team.name;
+                        listItem.classList.add('list-group-item');
+                        teamList.appendChild(listItem);
+                    });
+                }
+            } catch (err) {
+                console.error('Unexpected error:', err);
+                document.getElementById('team-list').innerHTML = '<li class="list-group-item text-danger">Unexpected error occurred.</li>';
+            }
+        }
+
         // Register a new player
         async function registerPlayer() {
             const playerNameInput = document.getElementById('player-name');
@@ -170,11 +199,115 @@
             }
         }
 
+        // Register a new team
+        async function registerTeam() {
+        const teamNameInput = document.getElementById('team-name');
+        const teamName = teamNameInput.value.trim();
+
+            if (teamName === '') {
+                alert('Please enter a valid name.');
+                return;
+            }
+
+            try {
+                const { error } = await supabase.from('participant_teams').insert([{ name: teamName }]);
+
+                if (error) {
+                    console.error('Error registering team:', error);
+                    alert('Error registering team. Please try again.');
+                } else {
+                    alert('Player registered successfully!');
+                    teamNameInput.value = ''; // Clear input field
+                    fetchTeams(); // Reload team list
+                }
+            } catch (err) {
+                console.error('Unexpected error:', err);
+                alert('An unexpected error occurred. Please try again.');
+            }
+        }
+
+        // Fetch players from the database and populate dropdown
+        async function populatePlayersDropdown() {
+            const { data: players, error } = await supabase.from('participants').select('id, name');
+            const playerDropdown = document.getElementById('join-player-name');
+
+            if (error) {
+                console.error('Error fetching players:', error);
+                return;
+            }
+
+            playerDropdown.innerHTML = '<option value="">Select a player</option>';
+            players.forEach(player => {
+                const option = document.createElement('option');
+                option.value = player.id;
+                option.textContent = player.name;
+                playerDropdown.appendChild(option);
+            });
+        }
+
+        // Fetch teams from the database and populate dropdown
+        async function populateTeamsDropdown() {
+            const { data: teams, error } = await supabase.from('participant_teams').select('id, name');
+            const teamDropdown = document.getElementById('team-select');
+
+            if (error) {
+                console.error('Error fetching teams:', error);
+                return;
+            }
+
+            teamDropdown.innerHTML = '<option value="">Select a team</option>';
+            teams.forEach(team => {
+                const option = document.createElement('option');
+                option.value = team.id;
+                option.textContent = team.name;
+                teamDropdown.appendChild(option);
+            });
+        }
+
+        // Assign a player to a team
+        async function joinTeam() {
+            const playerId = document.getElementById('join-player-name').value;
+            const teamId = document.getElementById('team-select').value;
+
+            if (!playerId || !teamId) {
+                alert('Please select both a player and a team.');
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('participants')
+                    .update({ participant_team_id: teamId })
+                    .eq('id', playerId);
+
+                if (error) {
+                    console.error('Error updating participant_team_id:', error);
+                    alert('Failed to join the team. Please try again.');
+                } else {
+                    alert('Player successfully joined the team!');
+                }
+            } catch (err) {
+                console.error('Unexpected error:', err);
+                alert('An unexpected error occurred. Please try again.');
+            }
+        }
+
+        // Event listeners for DOM content loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            populatePlayersDropdown();
+            populateTeamsDropdown();
+
+            document.getElementById('join-team-btn').addEventListener('click', joinTeam);
+        });
+
         // Attach event listener after DOM loads
         document.addEventListener('DOMContentLoaded', () => {
             fetchPlayers(); // Load players on page load
-            const registerButton = document.getElementById('register-player-btn');
-            registerButton.addEventListener('click', registerPlayer);
+            fetchTeams(); // Load teams on page load
+            const registerPlayerButton = document.getElementById('register-player-btn');
+            const registerTeamButton = document.getElementById('register-team-btn');
+            registerPlayerButton.addEventListener('click', registerPlayer);
+            registerTeamButton.addEventListener('click', registerTeam);
         });
     </script>
     <script src="/js/bootstrap.bundle.min.js"></script>
