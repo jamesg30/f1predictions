@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/style.css">
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
     <header class="bg-light text-dark py-2.5 d-flex align-items-center justify-content-between">
@@ -45,6 +47,9 @@
     <main class="container my-5">
         <div class="container my-5">
             <h2 class="mb-3">Testing</h2>
+            <ul id="participant-list" class="list-group">
+                <!-- Participants will be dynamically loaded here -->
+            </ul>
         </div>
     </main>
  
@@ -53,5 +58,32 @@
     </footer>
     <!-- Bootstrap JS Bundle (Local) -->
     <script src="/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize Supabase
+        const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Fetch participants and display them
+        async function fetchParticipants() {
+            const { data, error } = await supabase.from('participants').select('*');
+            if (error) {
+                console.error('Error fetching participants:', error);
+                return;
+            }
+
+            // Populate the participant list
+            const list = document.getElementById('participant-list');
+            data.forEach(participant => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${participant.id}: ${participant.name}`;
+                listItem.className = 'list-group-item';
+                list.appendChild(listItem);
+            });
+        }
+
+        // Call the function on page load
+        fetchParticipants();
+    </script>
 </body>
 </html>
