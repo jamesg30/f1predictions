@@ -7,11 +7,18 @@
     <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
     <!-- Bootstrap CSS (Local) -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/style.css">
+    <script>
+        // Initialize Supabase globally
+        const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
+        var supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    </script>
 </head>
 <body>
-    <header class="bg-light text-dark py-2.5 d-flex align-items-center justify-content-between">
+    <header class="bg-light text-dark py-2.5 d-flex align-items-center justify-content-between sticky-top">
         <!-- Left Section: Logo and Heading -->
         <div class="d-flex align-items-center">
             <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
@@ -35,7 +42,6 @@
                 <li><a class="dropdown-item" href="/register">Register</a></li>
                 <li><a class="dropdown-item" href="/feedback">Feedback</a></li>
                 <li><a class="dropdown-item" href="/rules">Rules</a></li>
-                <li><a class="dropdown-item" href="/testing">Testing</a></li>
                 <li><hr class="dropdown-divider"></li> <!-- Spacer -->
                 <li><a class="dropdown-item" href="/admin">Admin</a></li>
             </ul>
@@ -48,12 +54,13 @@
             <form id="feedbackForm">
                 <!-- Name Selection -->
                 <div class="mb-3">
-                    <label for="nameDropdown" class="form-label">Name</label>
-                    <select id="nameDropdown" class="form-select" aria-label="Select participant" required>
-                        <option value="" disabled selected hidden>Select one option</option>
-                    </select>
+                    <label for="join-player-name" class="form-label">Select Name:</label>
+                    <select id="join-player-name" class="form-select"></select>
                 </div>
-
+                <div class="mb-3">
+                    <label for="exampleFormControlTextarea1" class="form-label">Message:</label>
+                    <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                </div>
                 <!-- Submit Button -->
                 <div class="text-center">
                     <button type="submit" class="btn btn-primary">Submit</button>
@@ -65,7 +72,102 @@
     <footer class="bg-light text-black text-center py-1">
         <p>&copy; 2024 F1 Predictions Form</p>
     </footer>
+
     <!-- Bootstrap JS Bundle (Local) -->
+     <script>
+        // Fetch players from the database
+        async function fetchPlayers() {
+            try {
+                const { data, error } = await supabase.from('participants').select('name');
+                const playerList = document.getElementById('player-list');
+
+                if (error) {
+                    console.error('Error fetching players:', error);
+                    playerList.innerHTML = '<li class="list-group-item text-danger">Error fetching players.</li>';
+                } else {
+                    playerList.innerHTML = ''; // Clear the list
+                    data.forEach((player) => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = player.name;
+                        listItem.classList.add('list-group-item');
+                        playerList.appendChild(listItem);
+                    });
+                }
+            } catch (err) {
+                console.error('Unexpected error:', err);
+                document.getElementById('player-list').innerHTML = '<li class="list-group-item text-danger">Unexpected error occurred.</li>';
+            }
+        }
+        
+        // Fetch players from the database and populate dropdown
+        async function populatePlayersDropdown() {
+            const { data: players, error } = await supabase.from('participants').select('id, name').order('name', { ascending: true });
+            const playerDropdown = document.getElementById('join-player-name');
+
+            if (error) {
+                console.error('Error fetching players:', error);
+                return;
+            }
+
+            // Create the default option and make it non-selectable
+            playerDropdown.innerHTML = ''; // Clear existing options
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Select a player';
+            defaultOption.disabled = true; // Make it non-selectable
+            defaultOption.selected = true; // Ensure it's selected by default
+            playerDropdown.appendChild(defaultOption);
+            
+            players.forEach(player => {
+                const option = document.createElement('option');
+                option.value = player.id;
+                option.textContent = player.name;
+                playerDropdown.appendChild(option);
+            });
+        }
+
+        // Handle feedback form submission
+document.getElementById('feedbackForm').addEventListener('submit', async (event) => {
+    event.preventDefault(); // Prevent default form submission
+
+    // Get the selected player ID and the feedback message
+    const playerId = document.getElementById('join-player-name').value;
+    const feedbackMessage = document.getElementById('exampleFormControlTextarea1').value;
+
+    // Validate inputs
+    if (!playerId || !feedbackMessage) {
+        alert('Please select a name and enter a message.');
+        return;
+    }
+
+    try {
+        // Insert feedback into the database
+        const { data, error } = await supabase.from('feedback').insert([
+            {
+                player_id: parseInt(playerId), // Save the player ID
+                message: feedbackMessage,     // Save the feedback message
+            },
+        ]);
+
+        if (error) {
+            console.error('Error inserting feedback:', error);
+            alert('Failed to submit feedback. Please try again.');
+        } else {
+            alert('Feedback submitted successfully!');
+            // Clear the form
+            document.getElementById('feedbackForm').reset();
+        }
+    } catch (err) {
+        console.error('Unexpected error:', err);
+        alert('An unexpected error occurred. Please try again.');
+    }
+});
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populatePlayersDropdown();
+        });
+     </script>
     <script src="/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
