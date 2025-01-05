@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Page Details -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Page</title>
+    <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
+    <title>F1 Predictions | Register</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <link rel="stylesheet" href="/style.css">
-    <!-- Include Supabase library -->
+    <!-- Supabase Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script>
         // Initialize Supabase globally
         const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
         var supabase = supabase.createClient(supabaseUrl, supabaseKey);
     </script>
+    <script type="module" src="/script.js"></script>
 </head>
 <body>
     <!-- Header Section -->
@@ -138,215 +141,7 @@
         <p>&copy; 2024 F1 Predictions Form</p>
     </footer>
 
-    <script>
-        // Fetch players from the database
-        async function fetchPlayers() {
-            try {
-                const { data, error } = await supabase.from('participants').select('name');
-                const playerList = document.getElementById('player-list');
-
-                if (error) {
-                    console.error('Error fetching players:', error);
-                    playerList.innerHTML = '<li class="list-group-item text-danger">Error fetching players.</li>';
-                } else {
-                    playerList.innerHTML = ''; // Clear the list
-                    data.forEach((player) => {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = player.name;
-                        listItem.classList.add('list-group-item');
-                        playerList.appendChild(listItem);
-                    });
-                }
-            } catch (err) {
-                console.error('Unexpected error:', err);
-                document.getElementById('player-list').innerHTML = '<li class="list-group-item text-danger">Unexpected error occurred.</li>';
-            }
-        }
-
-        // Fetch teams from the database
-        async function fetchTeams() {
-            try {
-                const { data, error } = await supabase.from('participant_teams').select('name');
-                const teamList = document.getElementById('team-list');
-
-                if (error) {
-                    console.error('Error fetching teams:', error);
-                    teamList.innerHTML = '<li class="list-group-item text-danger">Error fetching teams.</li>';
-                } else {
-                    teamList.innerHTML = ''; // Clear the list
-                    data.forEach((team) => {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = team.name;
-                        listItem.classList.add('list-group-item');
-                        teamList.appendChild(listItem);
-                    });
-                }
-            } catch (err) {
-                console.error('Unexpected error:', err);
-                document.getElementById('team-list').innerHTML = '<li class="list-group-item text-danger">Unexpected error occurred.</li>';
-            }
-        }
-
-        // Display teams and team members
-        async function fetchTeamsAndMembers() {
-    try {
-        // Get all teams
-        const { data: teams, error: teamsError } = await supabase
-            .from('participant_teams')
-            .select('id, name');
-
-        if (teamsError) {
-            console.error('Error fetching teams:', teamsError);
-            return;
-        }
-
-        const teamList = document.getElementById('join-team-list'); // Unique ID for Join Team tab
-        teamList.innerHTML = '';
-
-        for (const team of teams) {
-            // Get members of the current team
-            const { data: members, error: membersError } = await supabase
-                .from('participants')
-                .select('name')
-                .eq('participant_team_id', team.id);
-
-            if (membersError) {
-                console.error(`Error fetching members for team ${team.name}:`, membersError);
-                continue;
-            }
-
-            // Create a list item for the team
-            const teamItem = document.createElement('li');
-            teamItem.innerHTML = `<strong>${team.name}</strong>`;
-            teamItem.classList.add('list-group-item');
-
-            // Create a sublist for team members
-            const memberList = document.createElement('ul');
-            members.forEach(member => {
-                const memberItem = document.createElement('li');
-                memberItem.textContent = member.name;
-                memberList.appendChild(memberItem);
-            });
-
-            teamItem.appendChild(memberList);
-            teamList.appendChild(teamItem);
-        }
-    } catch (err) {
-        console.error('Unexpected error fetching teams and members:', err);
-    }
-}
-
-        // Register a new player
-        async function registerPlayer() {
-            const playerNameInput = document.getElementById('player-name');
-            const playerName = playerNameInput.value.trim();
-
-            if (playerName === '') {
-                alert('Please enter a valid name.');
-                return;
-            }
-
-            try {
-                const { error } = await supabase.from('participants').insert([{ name: playerName }]);
-
-                if (error) {
-                    console.error('Error registering player:', error);
-                    alert('Error registering player. Please try again.');
-                } else {
-                    alert('Player registered successfully!');
-                    playerNameInput.value = ''; // Clear input field
-                    fetchPlayers(); // Reload player list
-                }
-            } catch (err) {
-                console.error('Unexpected error:', err);
-                alert('An unexpected error occurred. Please try again.');
-            }
-        }
-
-        // Register a new team
-        async function registerTeam() {
-        const teamNameInput = document.getElementById('team-name');
-        const teamName = teamNameInput.value.trim();
-
-            if (teamName === '') {
-                alert('Please enter a valid name.');
-                return;
-            }
-
-            try {
-                const { error } = await supabase.from('participant_teams').insert([{ name: teamName }]);
-
-                if (error) {
-                    console.error('Error registering team:', error);
-                    alert('Error registering team. Please try again.');
-                } else {
-                    alert('Player registered successfully!');
-                    teamNameInput.value = ''; // Clear input field
-                    fetchTeams(); // Reload team list
-                }
-            } catch (err) {
-                console.error('Unexpected error:', err);
-                alert('An unexpected error occurred. Please try again.');
-            }
-        }
-
-        // Fetch players from the database and populate dropdown
-        async function populatePlayersDropdown() {
-            const { data: players, error } = await supabase
-        .from('participants')
-        .select('id, name')
-        .order('name', { ascending: true }); // Order by name alphabetically
-            
-            const playerDropdown = document.getElementById('join-player-name');
-
-            if (error) {
-                console.error('Error fetching players:', error);
-                return;
-            }
-            // Create the default option and make it non-selectable
-            playerDropdown.innerHTML = ''; // Clear existing options
-            const defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.textContent = 'Select a player';
-            defaultOption.disabled = true; // Make it non-selectable
-            defaultOption.selected = true; // Ensure it's selected by default
-            playerDropdown.appendChild(defaultOption);
-            
-            players.forEach(player => {
-                const option = document.createElement('option');
-                option.value = player.id;
-                option.textContent = player.name;
-                playerDropdown.appendChild(option);
-            });
-        }
-
-        // Fetch teams from the database and populate dropdown
-        async function populateTeamsDropdown() {
-            const { data: teams, error } = await supabase.from('participant_teams').select('id, name').order('name', { ascending: true });
-            const teamDropdown = document.getElementById('team-select');
-
-            if (error) {
-                console.error('Error fetching teams:', error);
-                return;
-            }
-
-            // Create the default option and make it non-selectable
-            teamDropdown.innerHTML = ''; // Clear existing options
-            const defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.textContent = 'Select a team';
-            defaultOption.disabled = true; // Make it non-selectable
-            defaultOption.selected = true; // Ensure it's selected by default
-            teamDropdown.appendChild(defaultOption);
-
-            teams.forEach(team => {
-                const option = document.createElement('option');
-                option.value = team.id;
-                option.textContent = team.name;
-                teamDropdown.appendChild(option);
-            });
-        }
-
+    <script type="module">
         // Assign a player to a team
         async function joinTeam() {
             const playerId = document.getElementById('join-player-name').value;
@@ -394,13 +189,15 @@
             }
         }
 
+        import { populatePlayerDropdown, populateTeamDropdown, fetchTeamsAndMembers, fetchPlayers, fetchTeams } from '/script.js';
+
         // Event listeners for DOM content loaded
         document.addEventListener('DOMContentLoaded', () => {
-            populatePlayersDropdown();
-            populateTeamsDropdown();
-            fetchTeamsAndMembers();
             fetchPlayers(); // Load players on page load
             fetchTeams(); // Load teams on page load
+            fetchTeamsAndMembers();
+            populatePlayerDropdown();
+            populateTeamDropdown();
             const registerPlayerButton = document.getElementById('register-player-btn');
             const registerTeamButton = document.getElementById('register-team-btn');
             registerPlayerButton.addEventListener('click', registerPlayer);

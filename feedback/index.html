@@ -1,21 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Page Details -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F1 Predictions</title>
     <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
-    <!-- Bootstrap CSS (Local) -->
-    <link rel="stylesheet" href="/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <!-- Custom CSS -->
+    <title>F1 Predictions | Feedback</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/style.css">
+    <!-- Supabase Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script>
         // Initialize Supabase globally
         const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
         var supabase = supabase.createClient(supabaseUrl, supabaseKey);
     </script>
+    <script type="module" src="/script.js"></script>
 </head>
 <body>
     <header class="bg-light text-dark py-2.5 d-flex align-items-center justify-content-between sticky-top">
@@ -74,68 +76,19 @@
     </footer>
 
     <!-- Bootstrap JS Bundle (Local) -->
-     <script>
-        // Fetch players from the database
-        async function fetchPlayers() {
-            try {
-                const { data, error } = await supabase.from('participants').select('name');
-                const playerList = document.getElementById('player-list');
-
-                if (error) {
-                    console.error('Error fetching players:', error);
-                    playerList.innerHTML = '<li class="list-group-item text-danger">Error fetching players.</li>';
-                } else {
-                    playerList.innerHTML = ''; // Clear the list
-                    data.forEach((player) => {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = player.name;
-                        listItem.classList.add('list-group-item');
-                        playerList.appendChild(listItem);
-                    });
-                }
-            } catch (err) {
-                console.error('Unexpected error:', err);
-                document.getElementById('player-list').innerHTML = '<li class="list-group-item text-danger">Unexpected error occurred.</li>';
-            }
-        }
-        
-        // Fetch players from the database and populate dropdown
-        async function populatePlayersDropdown() {
-            const { data: players, error } = await supabase.from('participants').select('id, name').order('name', { ascending: true });
-            const playerDropdown = document.getElementById('join-player-name');
-
-            if (error) {
-                console.error('Error fetching players:', error);
-                return;
-            }
-
-            // Create the default option and make it non-selectable
-            playerDropdown.innerHTML = ''; // Clear existing options
-            const defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.textContent = 'Select a player';
-            defaultOption.disabled = true; // Make it non-selectable
-            defaultOption.selected = true; // Ensure it's selected by default
-            playerDropdown.appendChild(defaultOption);
-            
-            players.forEach(player => {
-                const option = document.createElement('option');
-                option.value = player.id;
-                option.textContent = player.name;
-                playerDropdown.appendChild(option);
-            });
-        }
+     <script type="module">
+        import { populatePlayerDropdown, fetchPlayers } from '/script.js';
 
         // Handle feedback form submission
-document.getElementById('feedbackForm').addEventListener('submit', async (event) => {
-    event.preventDefault(); // Prevent default form submission
+        document.getElementById('feedbackForm').addEventListener('submit', async (event) => {
+        event.preventDefault(); // Prevent default form submission
 
-    // Get the selected player ID and the feedback message
-    const playerId = document.getElementById('join-player-name').value;
-    const feedbackMessage = document.getElementById('exampleFormControlTextarea1').value;
+        // Get the selected player ID and the feedback message
+        const playerId = document.getElementById('join-player-name').value;
+        const feedbackMessage = document.getElementById('exampleFormControlTextarea1').value;
 
-    // Validate inputs
-    if (!playerId || !feedbackMessage) {
+        // Validate inputs
+        if (!playerId || !feedbackMessage) {
         alert('Please select a name and enter a message.');
         return;
     }
@@ -163,9 +116,8 @@ document.getElementById('feedbackForm').addEventListener('submit', async (event)
     }
 });
 
-
         document.addEventListener('DOMContentLoaded', () => {
-            populatePlayersDropdown();
+            populatePlayerDropdown();
         });
      </script>
     <script src="/js/bootstrap.bundle.min.js"></script>
