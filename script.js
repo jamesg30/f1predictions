@@ -28,82 +28,55 @@ export async function fetchData(table, fields = '*') {
             console.error(`Error fetching ${table}:`, error);
             return [];
         }
-        return data;
+        return data || [];
     } catch (err) {
         console.error(`Unexpected error fetching ${table}:`, err);
         return [];
     }
 }
 
-// 3. Create Dropdowns
-export async function createDropdown(container, id, table, defaultText) {
-    const data = await fetchData(table, 'id, name');
+// Helper function to create a dropdown
+// Helper function to create a dropdown
+function createDropdown(parent, options = [], inputId, defaultText = 'Select an option') {
     const select = document.createElement('select');
-    select.id = id;
-    select.name = id;
+    select.id = inputId;
+    select.name = inputId;
     select.className = 'form-select'; // Bootstrap styling for dropdowns
 
+    // Add a default "Select ..." option
     const defaultOption = document.createElement('option');
-    defaultOption.value = '';
+    defaultOption.value = ''; // No value for the default option
     defaultOption.textContent = defaultText;
-    defaultOption.disabled = true;
-    defaultOption.selected = true;
+    defaultOption.disabled = true; // Disable selection
+    defaultOption.selected = true; // Make it selected by default
     select.appendChild(defaultOption);
 
-    data.forEach(item => {
-        const option = document.createElement('option');
-        option.value = item.id;
-        option.textContent = item.name;
-        select.appendChild(option);
+    // Ensure options is an array
+    if (!Array.isArray(options)) {
+        console.error('Invalid options passed to createDropdown:', options);
+        return;
+    }
+
+    // Add the rest of the options
+    options.forEach(option => {
+        const opt = document.createElement('option');
+        opt.value = option.id; // Use 'id' as value
+        opt.textContent = option.name; // Use 'name' for display
+        select.appendChild(opt);
     });
 
-    container.appendChild(select);
+    parent.appendChild(select); // Add the dropdown to the parent container
 }
 
-export async function createDriverDropdown(container, id) {
-    await createDropdown(container, id, 'drivers', 'Select a driver');
-}
-
-export async function createConstructorDropdown(container, id) {
-    await createDropdown(container, id, 'constructors', 'Select a constructor');
-}
-
-export async function createPlayerDropdown(container, id) {
-    await createDropdown(container, id, 'players', 'Select a name');
-}
-
-export async function createTeamDropdown(container, id) {
-    await createDropdown(container, id, 'teams', 'Select a team');
-}
 
 // Dropdown with custom option (e.g., "No DNFs")
 export async function createDriverDropdownWithDNF(container, id) {
     const drivers = await fetchData('drivers', 'id, name');
-    const select = document.createElement('select');
-    select.id = id;
-    select.name = id;
-    select.className = 'form-select'; // Bootstrap styling for dropdowns
-
-    const defaultOption = document.createElement('option');
-    defaultOption.value = '';
-    defaultOption.textContent = 'Select a driver or No DNFs';
-    defaultOption.disabled = true;
-    defaultOption.selected = true;
-    select.appendChild(defaultOption);
-
-    drivers.forEach(driver => {
-        const option = document.createElement('option');
-        option.value = driver.id;
-        option.textContent = driver.name;
-        select.appendChild(option);
-    });
-
-    const noDnfOption = document.createElement('option');
-    noDnfOption.value = 'no-dnf';
-    noDnfOption.textContent = 'No DNFs';
-    select.appendChild(noDnfOption);
-
-    container.appendChild(select);
+    const options = [
+        ...drivers.map(driver => ({ id: driver.id, name: driver.name })),
+        { id: 'no-dnf', name: 'No DNFs' }, // Add the custom option
+    ];
+    createDropdown(container, options, id);
 }
 
 // Number input field
@@ -113,7 +86,7 @@ export function createNumberInput(container, id, isDecimal) {
     input.id = id;
     input.name = id;
     input.step = isDecimal ? '0.01' : '1';
-    input.placeholder = isDecimal ? 'Enter a decimal value' : 'Enter an integer';
+    input.placeholder = isDecimal ? 'Enter a number (2 decimal places)' : 'Enter a number (0-20)';
     container.appendChild(input);
 }
 
@@ -128,12 +101,12 @@ export function createYesNoInput(container, id) {
         input.id = `${id}-${value.toLowerCase()}`;
         input.name = id;
         input.value = value.toLowerCase();
-        input.className = 'form-check-input'; // Bootstrap styling
+        input.className = 'form-check-input'; // Bootstrap class for proper styling
 
         const label = document.createElement('label');
         label.htmlFor = `${id}-${value.toLowerCase()}`;
         label.textContent = value;
-        label.className = 'form-check-label'; // Bootstrap styling for labels
+        label.className = 'form-check-label'; // Bootstrap class for labels
 
         div.appendChild(input);
         div.appendChild(label);
@@ -141,51 +114,71 @@ export function createYesNoInput(container, id) {
     });
 }
 
+
+// Generate form blocks dynamically
 export async function generateFormBlocks() {
-    const formConfig = await fetchFormConfiguration();
+    // Get the loading indicator and form sections
+    const formContainer1 = document.getElementById('form-section-1');
+    const formContainer2 = document.getElementById('form-section-2');
+    const formContainer3 = document.getElementById('form-section-3');
+    const formContainer4 = document.getElementById('form-section-4');
 
-    // Define the containers for each group
-    const group1Container = document.getElementById('group-1-container');
-    const group2Container = document.getElementById('group-2-container');
-    const group3Container = document.getElementById('group-3-container');
-    const group4Container = document.getElementById('group-4-container');
+    try {
+        // Clear any existing content
+        formContainer1.innerHTML = '';
+        formContainer2.innerHTML = '';
+        formContainer3.innerHTML = '';
+        formContainer4.innerHTML = '';
 
-    // Clear the containers to avoid duplication
-    group1Container.innerHTML = '';
-    group2Container.innerHTML = '';
-    group3Container.innerHTML = '';
-    group4Container.innerHTML = '';
+        // Fetch data
+        const [formConfig, drivers, constructors, players] = await Promise.all([
+            fetchFormConfiguration(),
+            fetchData('drivers', 'id, name, constructor_id'),
+            fetchData('constructors', 'id, name'),
+            fetchData('players', 'id, name'),
+        ]);
 
-    // Define group boundaries
-    const group1 = formConfig.filter(config => config.id === 1);
-    const group2 = formConfig.filter(config => config.id >= 2 && config.id <= 7);
-    const group3 = formConfig.filter(config => config.id >= 8 && config.id <= 27);
-    const group4 = formConfig.filter(config => config.id === 28);
+        // Map constructor IDs to names for quick lookup
+        const constructorMap = Object.fromEntries(constructors.map(c => [c.id, c.name]));
 
-    // Function to generate a group of questions
-    async function generateGroup(configGroup, container) {
-        for (const config of configGroup) {
+        // Loop through form configurations
+        for (const config of formConfig) {
             const block = document.createElement('div');
-            block.className = 'mb-3'; // Add Bootstrap margin class for spacing
+            block.className = 'mb-3';
 
             const label = document.createElement('label');
             label.textContent = config.text;
-            label.className = 'form-label'; // Bootstrap styling for labels
+            label.className = 'form-label';
             block.appendChild(label);
 
+            // Determine input type based on response_type
             switch (config.response_type) {
-                case 'Select - Driver List':
-                    await createDriverDropdown(block, `input-${config.id}`);
+                case 'Select - Driver List': {
+                    const sortedDrivers = drivers.map(d => ({
+                        id: d.id,
+                        name: `${d.name} (${constructorMap[d.constructor_id] || 'Unknown'})`,
+                    }));
+                    createDropdown(block, sortedDrivers, `input-${config.id}`, 'Select a driver');
                     break;
-                case 'Select - Driver List + DNF':
-                    await createDriverDropdownWithDNF(block, `input-${config.id}`);
+                }
+                case 'Select - Driver List + DNF': {
+                    const sortedDrivers = drivers.map(d => ({
+                        id: d.id,
+                        name: `${d.name} (${constructorMap[d.constructor_id] || 'Unknown'})`,
+                    }));
+                    sortedDrivers.push({ id: 'no-dnf', name: 'No DNFs' });
+                    createDropdown(block, sortedDrivers, `input-${config.id}`, 'Select a driver or no DNFs');
                     break;
-                case 'Select - Team List':
-                    await createConstructorDropdown(block, `input-${config.id}`);
+                }
+                case 'Select - Team List': {
+                    createDropdown(block, constructors, `input-${config.id}`, 'Select a team');
                     break;
-                case 'Select - Name List':
-                    await createPlayerDropdown(block, `input-${config.id}`);
+                }
+                case 'Select - Name List': {
+                    const sortedPlayers = players.sort((a, b) => a.name.localeCompare(b.name));
+                    createDropdown(block, sortedPlayers, `input-${config.id}`, 'Select a name');
                     break;
+                }
                 case 'Number - Integer':
                     createNumberInput(block, `input-${config.id}`, false);
                     break;
@@ -199,23 +192,24 @@ export async function generateFormBlocks() {
                     console.error('Unknown response type:', config.response_type);
             }
 
-            // Add form-control class to all inputs and selects
             const inputs = block.querySelectorAll('input, select');
-            inputs.forEach(input => {
-                input.classList.add('form-control');
-            });
+            inputs.forEach(input => input.classList.add('form-control'));
 
-            container.appendChild(block);
+            // Assign blocks to the correct form sections
+            if (config.id === 1) {
+                formContainer1.appendChild(block);
+            } else if (config.id >= 2 && config.id <= 7) {
+                formContainer2.appendChild(block);
+            } else if (config.id >= 8 && config.id <= 27) {
+                formContainer3.appendChild(block);
+            } else if (config.id === 28) {
+                formContainer4.appendChild(block);
+            }
         }
+    } catch (error) {
+        console.error('Error generating form blocks:', error);
     }
-
-    // Generate groups into respective containers
-    await generateGroup(group1, group1Container);
-    await generateGroup(group2, group2Container);
-    await generateGroup(group3, group3Container);
-    await generateGroup(group4, group4Container);
 }
-
 
 
 // Register Page Functions

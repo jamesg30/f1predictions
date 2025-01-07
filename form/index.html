@@ -53,15 +53,15 @@
         <div class="container my-5">
             <h2 class="mb-3">Form</h2>
             <form id="prediction-form" action="/submit" method="POST">
-                <div id="group-1-container"></div>
+                <div id="form-section-1"></div>
                 <div><p><i>For detailed question rules, please see rules page</i></p></div>
                 
                 <hr>
                 
                 <!-- Starting Grid Block with Image -->
-                <div>
-                    <h5 class="fw-bold">Starting Grid</h5>
-                    <img src="/media/current_starting_grid.png" class="img-fluid" alt="...">
+                <div id="starting-grid">
+                    <h5>Starting Grid</h4>
+                    <img id="startingGridPlaceholder" src="" alt="Starting Grid" style="max-width: 100%; height: auto;" />
                 </div>
                 
                 <hr>
@@ -70,7 +70,7 @@
                     <h5 class="fw-bold">Top 6 Predictions</h5>
                     <p><i>Up to 2 points per prediction, 1 bonus point for winner</i></p>
                 </div>
-                <div id="group-2-container"></div>
+                <div id="form-section-2"></div>
 
                 <hr>
 
@@ -78,7 +78,7 @@
                     <h5 class="fw-bold">Other Predictions</h5>
                     <p><i>1 point per prediction, unless otherwise specified</i></p>
                 </div>
-                <div id="group-3-container"></div>
+                <div id="form-section-3"></div>
                 
                 <hr>
 
@@ -86,7 +86,7 @@
                     <h5 class="fw-bold">Winning Margin</h5>
                     <p><i>1 point for closest guess</i></p>
                 </div>
-                <div id="group-4-container"></div>
+                <div id="form-section-4"></div>
                     
                 <!-- Submit Button -->
                 <div class="text-center mt-4">
@@ -108,6 +108,31 @@
         document.addEventListener('DOMContentLoaded', () => {
             generateFormBlocks(); // Generates the form sections
         });
+
+        document.addEventListener("DOMContentLoaded", async () => {
+    const startingGridPlaceholder = document.getElementById("startingGridPlaceholder");
+    const bucketName = "media";
+    const fileName = "current_starting_grid.png";
+
+    // Load the starting grid image
+    async function loadStartingGridImage() {
+        const { data, error } = await supabase.storage
+            .from(bucketName)
+            .download(fileName);
+
+        if (error) {
+            console.error("Error loading starting grid image:", error.message);
+            startingGridPlaceholder.src = ""; // Reset if no image found
+        } else {
+            const url = URL.createObjectURL(data);
+            startingGridPlaceholder.src = url;
+        }
+    }
+
+    // Initial load
+    loadStartingGridImage();
+});
+
     </script>
     
     <!-- Bootstrap JS Bundle -->
