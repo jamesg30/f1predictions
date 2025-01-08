@@ -226,40 +226,4 @@ export async function fetchAndDisplayList(table, containerId) {
     });
 }
 
-export async function registerPlayer() {
-    const playerName = document.getElementById('player-name').value.trim();
-    if (!playerName) {
-        alert('Please enter a valid name.');
-        return;
-    }
 
-    try {
-        const { error } = await supabase.from('players').insert([{ name: playerName }]);
-        if (error) throw error;
-        alert('Player registered successfully!');
-        document.getElementById('player-name').value = '';
-        await fetchAndDisplayList('players', 'player-list');
-    } catch (err) {
-        console.error('Error registering player:', err);
-        alert('Failed to register player.');
-    }
-}
-
-export async function registerTeam() {
-    const teamName = document.getElementById('team-name').value.trim();
-    if (!teamName) {
-        alert('Please enter a valid team name.');
-        return;
-    }
-
-    try {
-        const { error } = await supabase.from('teams').insert([{ name: teamName }]);
-        if (error) throw error;
-        alert('Team registered successfully!');
-        document.getElementById('team-name').value = '';
-        await fetchAndDisplayList('teams', 'team-list');
-    } catch (err) {
-        console.error('Error registering team:', err);
-        alert('Failed to register team.');
-    }
-}

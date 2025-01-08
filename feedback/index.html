@@ -77,48 +77,57 @@
 
     <!-- Bootstrap JS Bundle (Local) -->
      <script type="module">
-        import { populatePlayerDropdown, fetchPlayers } from '/script.js';
+import { fetchData } from '/script.js';
 
-        // Handle feedback form submission
-        document.getElementById('feedbackForm').addEventListener('submit', async (event) => {
+async function populatePlayerDropdown() {
+    const { data: players } = await supabase.from('players').select('id, name').order('name');
+    document.getElementById('join-player-name').innerHTML = 
+        `<option value="">Select a Player</option>` + 
+        players.map(player => `<option value="${player.id}">${player.name}</option>`).join('');
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    populatePlayerDropdown();
+
+    // Handle feedback form submission
+    document.getElementById('feedbackForm').addEventListener('submit', async (event) => {
         event.preventDefault(); // Prevent default form submission
 
-        // Get the selected player ID and the feedback message
+        // Get the selected player ID and feedback message
         const playerId = document.getElementById('join-player-name').value;
         const feedbackMessage = document.getElementById('exampleFormControlTextarea1').value;
 
         // Validate inputs
         if (!playerId || !feedbackMessage) {
-        alert('Please select a name and enter a message.');
-        return;
-    }
-
-    try {
-        // Insert feedback into the database
-        const { data, error } = await supabase.from('feedback').insert([
-            {
-                player_id: parseInt(playerId), // Save the player ID
-                message: feedbackMessage,     // Save the feedback message
-            },
-        ]);
-
-        if (error) {
-            console.error('Error inserting feedback:', error);
-            alert('Failed to submit feedback. Please try again.');
-        } else {
-            alert('Feedback submitted successfully!');
-            // Clear the form
-            document.getElementById('feedbackForm').reset();
+            alert('Please select a name and enter a message.');
+            return;
         }
-    } catch (err) {
-        console.error('Unexpected error:', err);
-        alert('An unexpected error occurred. Please try again.');
-    }
+
+        try {
+            // Insert feedback into the database
+            const { data, error } = await supabase.from('feedback').insert([
+                {
+                    player_id: parseInt(playerId), // Save the player ID
+                    message: feedbackMessage,     // Save the feedback message
+                },
+            ]);
+
+            if (error) {
+                console.error('Error inserting feedback:', error);
+                alert('Failed to submit feedback. Please try again.');
+            } else {
+                alert('Feedback submitted successfully!');
+                // Clear the form
+                document.getElementById('feedbackForm').reset();
+            }
+        } catch (err) {
+            console.error('Unexpected error:', err);
+            alert('An unexpected error occurred. Please try again.');
+        }
+    });
 });
 
-        document.addEventListener('DOMContentLoaded', () => {
-            populatePlayerDropdown();
-        });
      </script>
     <script src="/js/bootstrap.bundle.min.js"></script>
 </body>
