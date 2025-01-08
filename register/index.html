@@ -187,15 +187,14 @@ async function refreshPage() {
 async function populatePlayerDropdown() {
     const { data: players } = await supabase.from('players').select('id, name').order('name');
     document.getElementById('join-player-name').innerHTML = 
-        `<option value="">Select a Player</option>` + 
+        `<option value="" disabled selected>Select a Player</option>` + 
         players.map(player => `<option value="${player.id}">${player.name}</option>`).join('');
 }
-
 
 async function populateTeamDropdown() {
     const teams = await fetchData('teams', 'id, name');
     const dropdown = document.getElementById('team-select');
-    dropdown.innerHTML = `<option value="">Select a Team</option>`;
+    dropdown.innerHTML = `<option value="" disabled selected>Select a Team</option>`;
     teams.forEach(team => {
         dropdown.innerHTML += `<option value="${team.id}">${team.name}</option>`;
     });

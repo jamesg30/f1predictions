@@ -82,9 +82,11 @@ import { fetchData } from '/script.js';
 async function populatePlayerDropdown() {
     const { data: players } = await supabase.from('players').select('id, name').order('name');
     document.getElementById('join-player-name').innerHTML = 
-        `<option value="">Select a Player</option>` + 
+        `<option value="" disabled selected>Select a Player</option>
+         <option value="anonymous">Anonymous</option>` + 
         players.map(player => `<option value="${player.id}">${player.name}</option>`).join('');
 }
+
 
 
 document.addEventListener('DOMContentLoaded', () => {
