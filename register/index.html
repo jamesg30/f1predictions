@@ -144,34 +144,76 @@
     <script type="module">
         import { fetchData, fetchAndDisplayList } from '/script.js';
 
-async function joinTeam() {
+        async function joinTeam() {
     const playerId = document.getElementById('join-player-name').value;
     const teamId = document.getElementById('team-select').value;
 
-    if (!playerId || !teamId) {
-        alert('Please select both a player and a team.');
+    if (!playerId) {
+        alert('Please select a player.');
         return;
     }
 
     try {
-        const teamMembers = await fetchData('players', 'id')
-            .then(data => data.filter(item => item.participant_team_id === teamId));
+        console.log('Player ID:', playerId);
+        console.log('Team ID:', teamId);
 
+        // Handle "Leave Teams"
+        if (teamId === "null") {
+            const { error: leaveError } = await supabase
+                .from('players')
+                .update({ participant_team_id: null })
+                .eq('id', playerId);
+
+            if (leaveError) {
+                console.error('Error removing player from team:', leaveError);
+                throw leaveError;
+            }
+
+            alert('Player successfully left the team!');
+            await refreshPage();
+            return;
+        }
+
+        // Fetch players already in the team
+        const { data: teamMembers, error: fetchError } = await supabase
+            .from('players')
+            .select('id')
+            .eq('participant_team_id', teamId);
+
+        if (fetchError) {
+            console.error('Error fetching team members:', fetchError);
+            throw fetchError;
+        }
+
+        console.log('Team Members:', teamMembers);
+
+        // Check if the team is already full
         if (teamMembers.length >= 2) {
             alert('This team is already full. Please choose another team.');
             return;
         }
 
-        const { error } = await supabase.from('players').update({ participant_team_id: teamId }).eq('id', playerId);
-        if (error) throw error;
+        // Update the player's team
+        const { error: updateError } = await supabase
+            .from('players')
+            .update({ participant_team_id: teamId })
+            .eq('id', playerId);
+
+        if (updateError) {
+            console.error('Error updating player:', updateError);
+            throw updateError;
+        }
 
         alert('Player successfully joined the team!');
-        await refreshPage();
+        await refreshPage(); // Refresh the data on the page
     } catch (err) {
-        console.error('Error joining team:', err);
+        console.error('Error in joinTeam:', err);
         alert('An error occurred. Please try again.');
     }
 }
+
+
+
 
 // Update the refreshPage function to include the new functionality
 async function refreshPage() {
@@ -194,11 +236,24 @@ async function populatePlayerDropdown() {
 async function populateTeamDropdown() {
     const teams = await fetchData('teams', 'id, name');
     const dropdown = document.getElementById('team-select');
-    dropdown.innerHTML = `<option value="" disabled selected>Select a Team</option>`;
+
+    dropdown.innerHTML = `
+        <option value="" disabled selected>Select a Team</option>
+    `;
+
+    // Add all team options
     teams.forEach(team => {
         dropdown.innerHTML += `<option value="${team.id}">${team.name}</option>`;
     });
+
+    // Add spacer and "Leave Teams" option
+    dropdown.innerHTML += `
+        <option disabled>──────────</option>
+        <option value="null">Unassign Team</option>
+    `;
 }
+
+
 
 async function registerPlayer() {
     const playerName = document.getElementById('player-name').value.trim();
