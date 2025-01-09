@@ -120,7 +120,7 @@
                     </div>
                     <hr>
                     <div class="mb-3">
-                        <label for="join-player-name" class="form-label">Select Player:</label>
+                        <label for="join-player-name" class="form-label">Select Name:</label>
                         <select id="join-player-name" class="form-select"></select>
                     </div>
                     <div class="mb-3">
@@ -155,7 +155,7 @@
     const teamId = document.getElementById('team-select').value;
 
     if (!playerId) {
-        alert('Please select a player.');
+        alert('Please select a name.');
         return;
     }
 
@@ -235,7 +235,7 @@ async function refreshPage() {
 async function populatePlayerDropdown() {
     const { data: players } = await supabase.from('players').select('id, name').order('name');
     document.getElementById('join-player-name').innerHTML = 
-        `<option value="" disabled selected>Select a Player</option>` + 
+        `<option value="" disabled selected>Select a name</option>` + 
         players.map(player => `<option value="${player.id}">${player.name}</option>`).join('');
 }
 
@@ -244,7 +244,7 @@ async function populateTeamDropdown() {
     const dropdown = document.getElementById('team-select');
 
     dropdown.innerHTML = `
-        <option value="" disabled selected>Select a Team</option>
+        <option value="" disabled selected>Select a team</option>
     `;
 
     // Add all team options
@@ -269,8 +269,26 @@ async function registerPlayer() {
     }
 
     try {
-        const { error } = await supabase.from('players').insert([{ name: playerName }]);
-        if (error) throw error;
+        // Check if the player name already exists
+        const { data: existingPlayer, error: checkError } = await supabase
+            .from('players')
+            .select('id')
+            .eq('name', playerName)
+            .single();
+
+        if (checkError && checkError.code !== 'PGRST116') {
+            throw checkError;
+        }
+
+        if (existingPlayer) {
+            alert('This player name is already taken. Please choose a different name.');
+            return;
+        }
+
+        // Add the new player
+        const { error: insertError } = await supabase.from('players').insert([{ name: playerName }]);
+        if (insertError) throw insertError;
+
         alert('Player registered successfully!');
         document.getElementById('player-name').value = '';
         await fetchAndDisplayList('players', 'player-list');
@@ -280,6 +298,7 @@ async function registerPlayer() {
     }
 }
 
+
 async function registerTeam() {
     const teamName = document.getElementById('team-name').value.trim();
     if (!teamName) {
@@ -288,8 +307,26 @@ async function registerTeam() {
     }
 
     try {
-        const { error } = await supabase.from('teams').insert([{ name: teamName }]);
-        if (error) throw error;
+        // Check if the team name already exists
+        const { data: existingTeam, error: checkError } = await supabase
+            .from('teams')
+            .select('id')
+            .eq('name', teamName)
+            .single();
+
+        if (checkError && checkError.code !== 'PGRST116') {
+            throw checkError;
+        }
+
+        if (existingTeam) {
+            alert('This team name is already taken. Please choose a different name.');
+            return;
+        }
+
+        // Add the new team
+        const { error: insertError } = await supabase.from('teams').insert([{ name: teamName }]);
+        if (insertError) throw insertError;
+
         alert('Team registered successfully!');
         document.getElementById('team-name').value = '';
         await fetchAndDisplayList('teams', 'team-list');
@@ -298,6 +335,7 @@ async function registerTeam() {
         alert('Failed to register team.');
     }
 }
+
 
 async function populateTeamListWithMembers() {
     const teamListElement = document.getElementById('join-team-list');
