@@ -114,6 +114,29 @@ export function createYesNoInput(container, id) {
     });
 }
 
+// Heads/Tails input field
+export function createHeadsTailsInput(container, id) {
+    ['Heads', 'Tails'].forEach(value => {
+        const div = document.createElement('div');
+        div.className = 'form-check'; // Bootstrap styling for radio buttons
+
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.id = `${id}-${value.toLowerCase()}`;
+        input.name = id;
+        input.value = value.toLowerCase();
+        input.className = 'form-check-input'; // Bootstrap class for proper styling
+
+        const label = document.createElement('label');
+        label.htmlFor = `${id}-${value.toLowerCase()}`;
+        label.textContent = value;
+        label.className = 'form-check-label'; // Bootstrap class for labels
+
+        div.appendChild(input);
+        div.appendChild(label);
+        container.appendChild(div);
+    });
+}
 
 // Generate form blocks dynamically
 export async function generateFormBlocks() {
@@ -187,6 +210,9 @@ export async function generateFormBlocks() {
                     break;
                 case 'Radio - Yes/No':
                     createYesNoInput(block, `input-${config.id}`);
+                    break;
+                case 'Radio - Heads/Tails':
+                    createHeadsTailsInput(block, `input-${config.id}`);
                     break;
                 default:
                     console.error('Unknown response type:', config.response_type);

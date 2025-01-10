@@ -40,6 +40,7 @@
                 <li><a class="dropdown-item" href="/">Home</a></li>
                 <li><hr class="dropdown-divider"></li> <!-- Spacer -->
                 <li><a class="dropdown-item" href="/form">Form</a></li>
+                <li><a class="dropdown-item" href="/teams">Teams</a></li>
                 <li><a class="dropdown-item" href="/results">Results</a></li>
                 <li><a class="dropdown-item" href="/register">Register</a></li>
                 <li><a class="dropdown-item" href="/feedback">Feedback</a></li>
@@ -90,7 +91,7 @@ import { fetchData } from '/script.js';
 async function populatePlayerDropdown() {
     const { data: players } = await supabase.from('players').select('id, name').order('name');
     document.getElementById('join-player-name').innerHTML = 
-        `<option value="" disabled selected>Select a Player</option>
+        `<option value="" disabled selected>Select a name</option>
          <option value="anonymous">Anonymous</option>` + 
         players.map(player => `<option value="${player.id}">${player.name}</option>`).join('');
 }

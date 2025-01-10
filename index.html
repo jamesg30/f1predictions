@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/style.css">
-    <style>
+    <style> 
         /* Container for the image and overlay */
         .full-width-image-container {
             position: relative; /* Allows for absolute positioning of overlay */
@@ -34,7 +34,28 @@
             height: 100%;         /* Full height of the container (200px) */
             background-color: rgba(0, 0, 0, 0.4); /* Transparent black overlay */
         }
+        .centered-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;               /* White text for contrast */
+    font-size: clamp(1.5rem, 5vw, 2.5rem); /* Dynamic size for responsiveness */
+    font-weight: bold;          /* Bold for emphasis */
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7); /* Optional shadow for readability */
+    text-align: center;         /* Ensure text is centered in smaller containers */
+    z-index: 2;                 /* Above the overlay */
+    white-space: nowrap;        /* Prevent wrapping */
+}
+
     </style>
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script>
+        // Initialize Supabase globally
+        const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
+        var supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    </script>
 </head>
 <body>
     <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
@@ -57,6 +78,7 @@
                 <li><a class="dropdown-item" href="/">Home</a></li>
                 <li><hr class="dropdown-divider"></li> <!-- Spacer -->
                 <li><a class="dropdown-item" href="/form">Form</a></li>
+                <li><a class="dropdown-item" href="/teams">Teams</a></li>
                 <li><a class="dropdown-item" href="/results">Results</a></li>
                 <li><a class="dropdown-item" href="/register">Register</a></li>
                 <li><a class="dropdown-item" href="/feedback">Feedback</a></li>
@@ -67,30 +89,63 @@
         </div>
     </header>    
 
-    <!-- Full-Width Image Section -->
-    <section class="full-width-image-container">
-        <img src="/media/ferrari_background.png" alt="Full Width Image" class="full-width-image">
-        <div class="overlay"></div> <!-- Transparent black layer -->
-    </section>
-    
-    <main class="container my-5">
-        <div class="d-flex justify-content-center">
-            <h5 class="mb-3">F1 Predictions Form</h5>
-        </div>
-        <p class="lead text-center">Latest Form:</p>
-        <div class="d-flex justify-content-center">
-            <a href="/form">
-                <button type="button" class="btn btn-outline-dark">Australian GP Form</button>
-            </a>
-        </div>
-    </main>
+    <!-- Full-Width Image Section with Centered Text -->
+<section class="full-width-image-container">
+    <img src="/media/ferrari_background.png" alt="Full Width Image" class="full-width-image">
+    <div class="overlay"></div> <!-- Transparent black layer -->
 
-    <main class="bg-light-subtle">
-        <div class="container my-5 d-flex justify-content-left">
+    <!-- Centered Text -->
+    <h2 class="centered-text">F1 Predictions Form</h2>
+</section>
+
+    <main class="container my-5">
+        <div class="row g-4">
+            <!-- Left Column: Latest Form -->
+            <div class="col-md-6">
+                <div class="text-center">
+                    <h5 class="mb-3">Latest Form:</h5>
+                    <a href="/form">
+                        <button type="button" class="btn btn-dark">Australian GP Form</button>
+                    </a>
+                </div>
+            </div>
+    
+            <!-- Right Column: Quick Links -->
+        <div class="col-md-6">
+            <div class="text-center">
+                <h5 class="mb-3">Quick Links:</h5>
+                <!-- Changed to flex-row for horizontal alignment -->
+                <div class="d-flex flex-row justify-content-center gap-3">
+                    <a href="/results">
+                        <button type="button" class="btn btn-dark">Results</button>
+                    </a>
+                    <a href="/teams">
+                        <button type="button" class="btn btn-dark">Teams</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        </div>
+    
+        <!-- Next Race Section -->
+        <div class="text-center mt-5">
+            <h5>Next Race:</h5>
+            <div id="next-race-info" class="mt-3">
+                <p>Loading next race...</p>
+            </div>
+        </div>
+    
+        <div class="container my-3 d-flex justify-content-left">
             <h4 class="mb-3">Latest Results</h4>
         </div>
-        <div class="container my-5">
-            <h4 class="mb-3">2024 Abu Dhabi Grand Prix Results</h4>
+        <div class="container my-4">
+            <h5 class="mb-3">2024 Abu Dhabi Grand Prix Results</h5>
+            <p>
+                🥇 Damien<br>
+                🥈 Ethan<br>
+                🥉 Max
+            </p>
             <!-- Scrollable container -->
             <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
                 <table class="table table-sm table-bordered">
@@ -168,6 +223,76 @@
         </div>
         
 
+        <div class="row g-4">
+            <!-- Left Column: Latest Form -->
+            <div class="col-md-6">
+                <h5>Player Standings</h5>
+                <table class="table table-sm table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Name</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1 (=)</td>
+                            <td>James</td>
+                            <td>58</td>
+                        </tr>
+                        <tr>
+                            <td>2 (+1)</td>
+                            <td>Ethan</td>
+                            <td>57.5</td>
+                        </tr>
+                        <tr>
+                            <td>3 (-1)</td>
+                            <td>Josh 2004</td>
+                            <td>52</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+    
+            <!-- Right Column: Quick Links -->
+        <div class="col-md-6">
+            <h5>Team Standings</h5>
+                <table class="table table-sm table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Team</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1 (+1)</td>
+                            <td>Comeng</td>
+                            <td>123</td>
+                        </tr>
+                        <tr>
+                            <td>2 (-1)</td>
+                            <td>Scuderia Latifi</td>
+                            <td>117</td>
+                        </tr>
+                        <tr>
+                            <td>3 (=)</td>
+                            <td>Freedom Racing Inc</td>
+                            <td>112</td>
+                        </tr>
+                    </tbody>
+                </table>
+        </div>
+        <div class="container my-5">
+            <h4 class="mb-3">Past Champions 🏆</h4>
+            <p>
+                2024 - James<br>
+                2023 - Ethan<br>
+                2022 - Ethan
+            </p>
+        </div>
     </main>
  
     <footer class="bg-light text-black text-center py-1">
@@ -176,5 +301,44 @@
 
     <!-- Bootstrap JS Bundle (Local) -->
     <script src="/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        async function fetchNextRace() {
+            const today = new Date().toISOString().split('T')[0];
+
+            // Fetch the next race based on the closest upcoming date
+            const { data, error } = await supabase
+                .from('2025_calendar')
+                .select('*')
+                .gt('date', today)
+                .order('date', { ascending: true })
+                .limit(1);
+
+            if (error) {
+                console.error('Error fetching next race:', error);
+                document.getElementById('next-race-info').innerHTML = '<p>Error loading next race.</p>';
+                return;
+            }
+
+            if (data && data.length > 0) {
+                const race = data[0];
+                const raceDate = new Date(race.date);
+                const daysUntilRace = Math.ceil((raceDate - new Date()) / (1000 * 60 * 60 * 24));
+
+                const flagUrl = `/media/flags/${race.country.toLowerCase()}.png`; // Assuming flags are stored here
+
+                document.getElementById('next-race-info').innerHTML = `
+                    <img src="${flagUrl}" alt="${race.country} Flag" style="width: 60px; height: 40px;">
+                    <h6 class="mt-2">${race.race} GP</h6>
+                    <p>${daysUntilRace} day(s) remaining</p>
+                `;
+            } else {
+                document.getElementById('next-race-info').innerHTML = '<p>No upcoming races.</p>';
+            }
+        }
+
+        fetchNextRace();
+</script>
+
 </body>
 </html>
