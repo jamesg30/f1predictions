@@ -171,246 +171,120 @@
                 <h4>Season Totals</h4>
                 <ul id="totals-list" class="list-group"></ul>
             </div>
-            <div id="edit-players" class="tab-pane fade" role="tabpanel">
-                <div>
-                    <h4>Edit Players</h4>
-                </div>
-                <div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Player</th>
-                                <th>Update Name</th>
-                                <th>Delete</th>
-                                <th>Team</th>
-                                <th>Unlink Team</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td><input type="text" class="form-control" value="Ethan"></td>
-                                <td><button class="btn btn-secondary">Update</button></td>
-                                <td><button class="btn btn-danger">Delete</button></td>
-                                <td>Comeng</td>
-                                <td><button class="btn btn-danger">Unlink</button></td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td><input type="text" class="form-control" value="James"></td>
-                                <td><button class="btn btn-secondary">Update</button></td>
-                                <td><button class="btn btn-danger">Delete</button></td>
-                                <td>Xtrapolis 200</td>
-                                <td><button class="btn btn-danger">Unlink</button></td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td><input type="text" class="form-control" value="Josh 2004"></td>
-                                <td><button class="btn btn-secondary">Update</button></td>
-                                <td><button class="btn btn-danger">Delete</button></td>
-                                <td>Scuderia Tow Mator</td>
-                                <td><button class="btn btn-danger">Unlink</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div id="edit-teams" class="tab-pane fade" role="tabpanel">
-                <div>
-                    <h4>Edit Teams</h4>
-                </div>
-                <div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Team</th>
-                                <th>Update Name</th>
-                                <th>Delete</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td><input type="text" class="form-control" value="Scuderia Tow Mator"></td>
-                                <td><button class="btn btn-secondary">Update</button></td>
-                                <td><button class="btn btn-danger">Delete</button></td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td><input type="text" class="form-control" value="Comeng"></td>
-                                <td><button class="btn btn-secondary">Update</button></td>
-                                <td><button class="btn btn-danger">Delete</button></td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td><input type="text" class="form-control" value="Xtrapolis 200"></td>
-                                <td><button class="btn btn-secondary">Update</button></td>
-                                <td><button class="btn btn-danger">Delete</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div id="edit-drivers" class="tab-pane fade" role="tabpanel">
-                <div>
-                    <h4>Edit Drivers</h4>
-                </div>
-                <div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Driver</th>
-                                <th>Abbreviation</th>
-                                <th>Team</th>
-                                <th>Delete</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td><input type="text" class="form-control" value="Max Verstappen"></td>
-                                <td><input type="text" class="form-control" value="VER"></td>
-                                <td>
-                                    <select class="form-select">
-                                        <option value="R1">Red Bull Racing</option>
-                                        <option value="R2">McLaren</option>
-                                        <option value="R3">Ferrari</option>
-                                    </select>
-                                </td>
-                                <td><button class="btn btn-danger">Delete</button></td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td><input type="text" class="form-control" value="Lewis Hamilton"></td>
-                                <td><input type="text" class="form-control" value="HAM"></td>
-                                <td>
-                                    <select class="form-select">
-                                        <option value="R1">Red Bull Racing</option>
-                                        <option value="R2">McLaren</option>
-                                        <option value="R3">Ferrari</option>
-                                    </select>
-                                </td>
-                                <td><button class="btn btn-danger">Delete</button></td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td><input type="text" class="form-control" value="Oscar Piastri"></td>
-                                <td><input type="text" class="form-control" value="PIA"></td>
-                                <td>
-                                    <select class="form-select">
-                                        <option value="R1">Red Bull Racing</option>
-                                        <option value="R2">McLaren</option>
-                                        <option value="R3">Ferrari</option>
-                                    </select>
-                                </td>
-                                <td><button class="btn btn-danger">Delete</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <button class="btn btn-primary">Save Changes</button>
-                </div>
-            </div>
-            <div id="edit-constructors" class="tab-pane fade" role="tabpanel">
-                <div>
-                    <h4>Edit Constructors</h4>
-                </div>
-                <div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Constructor</th>
-                                <th>Delete</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td><input type="text" class="form-control" value="McLaren"></td>
-                                <td><button class="btn btn-danger">Delete</button></td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td><input type="text" class="form-control" value="Ferrari"></td>
-                                <td><button class="btn btn-danger">Delete</button></td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td><input type="text" class="form-control" value="Red Bull"></td>
-                                <td><button class="btn btn-danger">Delete</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <button class="btn btn-primary">Save Changes</button>
-                </div>
-            </div>
-            <div id="edit-calendar" class="tab-pane fade" role="tabpanel">
-                <div>
-                    <h4>Edit Calendar</h4>
-                </div>
+            <!-- Edit Players -->
+            <div class="tab-pane fade" id="edit-players" role="tabpanel" aria-labelledby="edit-players-tab">
+                <h4>Edit Players</h4>
                 <table class="table">
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Race Number</th>
-                            <th>Race Name</th>
-                            <th>Country</th>
-                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Team</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td><input type="text" class="form-control" value="1"></td>
-                            <td><input type="text" class="form-control" value="Australian"></td>
-                            <td>
-                                <select class="form-select">
-                                    <option value="R1">Australia</option>
-                                    <option value="R2">Italy</option>
-                                    <option value="R3">Abu Dhabi</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="date" id="race-date" name="race-date">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td><input type="text" class="form-control" value="2"></td>
-                            <td><input type="text" class="form-control" value="Italian"></td>
-                            <td>
-                                <select class="form-select">
-                                    <option value="R1">Australia</option>
-                                    <option value="R2">Italy</option>
-                                    <option value="R3">Abu Dhabi</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="date" id="race-date" name="race-date">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>3</td>
-                            <td><input type="text" class="form-control" value="3"></td>
-                            <td><input type="text" class="form-control" value="Abu Dhabi"></td>
-                            <td>
-                                <select class="form-select">
-                                    <option value="R1">Australia</option>
-                                    <option value="R2">Italy</option>
-                                    <option value="R3">Abu Dhabi</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="date" id="race-date" name="race-date">
-                            </td>
-                        </tr>
-                    </tbody>
+                    <tbody id="players-table"></tbody>
                 </table>
-                <button class="btn btn-primary">Save Changes</button>
             </div>
+
+            <!-- Edit Teams -->
+            <div class="tab-pane fade" id="edit-teams" role="tabpanel" aria-labelledby="edit-teams-tab">
+                <h4>Edit Teams</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teams-table"></tbody>
+                </table>
+            </div>
+
+            <!-- Edit Drivers -->
+            <div class="tab-pane fade" id="edit-drivers" role="tabpanel" aria-labelledby="edit-drivers-tab">
+                <h4>Edit Drivers</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Abbreviation</th>
+                            <th>Constructor</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="drivers-table"></tbody>
+                </table>
+                <button class="btn btn-primary" id="save-drivers">Save Changes</button>
+                <h5>Add Driver</h5>
+                <div>
+                    <input type="text" id="new-driver-name" placeholder="Name">
+                    <input type="text" id="new-driver-abbr" placeholder="Abbreviation">
+                    <select id="new-driver-constructor"></select>
+                    <button class="btn btn-success" id="add-driver">Add Driver</button>
+                </div>
+            </div>
+
+            <!-- Edit Constructors -->
+            <div class="tab-pane fade" id="edit-constructors" role="tabpanel" aria-labelledby="edit-constructors-tab">
+                <h4>Edit Constructors</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Background Colour</th>
+                            <th>Text Colour</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="constructors-table"></tbody>
+                </table>
+                <button class="btn btn-primary" id="save-constructors">Save Changes</button>
+                <h5>Add Constructor</h5>
+                <div>
+                    <input type="text" id="new-constructor-name" placeholder="Name">
+                    <input type="text" id="new-constructor-bg" placeholder="Background Colour">
+                    <input type="text" id="new-constructor-text" placeholder="Text Colour">
+                    <button class="btn btn-success" id="add-constructor">Add Constructor</button>
+                </div>
+            </div>
+
+            <!-- Edit Calendar -->
+<!-- Edit Calendar -->
+<!-- Edit Calendar -->
+<!-- Edit Calendar -->
+<div class="tab-pane fade" id="edit-calendar" role="tabpanel" aria-labelledby="edit-calendar-tab">
+    <h4>Edit Calendar</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Race Number</th>
+                <th>Race Name</th>
+                <th>Country</th>
+                <th>Date & Time (UTC+<span id="utc-offset"></span>)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="calendar-table"></tbody>
+    </table>
+    <button class="btn btn-primary" id="save-calendar">Save Changes</button>
+    <h5>Add Race</h5>
+    <div>
+        <input type="number" id="new-race-number" placeholder="Race Number" class="form-control-inline">
+        <input type="text" id="new-race-name" placeholder="Race Name" class="form-control-inline">
+        <input type="text" id="new-race-country" placeholder="Country" class="form-control-inline">
+        <input type="datetime-local" id="new-race-date" step="1" class="form-control-inline">
+        <button class="btn btn-success" id="add-race">Add Race</button>
+    </div>
+</div>
+
+
+
+
         </div>
     </main>
 
@@ -495,10 +369,8 @@ async function fetchAndRenderFormConfiguration() {
     });
 }
 
-
-
 // Save changes to Supabase
-async function saveChanges() {
+async function saveFormConfigurationChanges() {
     const rows = document.querySelectorAll('#form-configuration-rows tr');
     const updates = Array.from(rows).map(row => {
         const id = row.children[0].innerText;
@@ -522,14 +394,14 @@ async function saveChanges() {
         }
     }
 
-    alert('Changes saved successfully!');
+    alert('Form configuration changes saved successfully!');
 }
 
 // Initialize
 document.addEventListener('DOMContentLoaded', fetchAndRenderFormConfiguration);
 document.querySelector('#form-configuration-form').addEventListener('submit', event => {
     event.preventDefault();
-    saveChanges();
+    saveFormConfigurationChanges();
 });
 
 // Function to initialize the save button and add event listeners
@@ -635,8 +507,620 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Initial load
     loadGridImage();
 });
+// --- Utility Functions --- //
+
+// Fetch data from Supabase
+async function fetchData(table) {
+    const { data, error } = await supabase.from(table).select('*').order('id', { ascending: true });
+    if (error) {
+        console.error(`Error fetching ${table}:`, error);
+        return [];
+    }
+    return data;
+}
+
+// Update a record in Supabase
+async function updateData(table, id, updates) {
+    const { error } = await supabase.from(table).update(updates).eq('id', id);
+    if (error) {
+        console.error(`Error updating ${table} ID ${id}:`, error);
+        return false;
+    }
+    return true;
+}
+
+// --- Utility function to enable the Update button when a change is detected ---
+function enableUpdateButton(inputId, buttonId, originalValue) {
+    const input = document.getElementById(inputId);
+    const button = document.getElementById(buttonId);
+
+    input.addEventListener('input', () => {
+        // Enable the button only if the input value has changed
+        button.disabled = input.value.trim() === originalValue.trim();
+    });
+}
+
+// Delete a record from Supabase
+async function deleteData(table, id) {
+    const { error } = await supabase.from(table).delete().eq('id', id);
+    if (error) {
+        console.error(`Error deleting from ${table} ID ${id}:`, error);
+        return false;
+    }
+    return true;
+}
+
+// Insert a new record into Supabase
+async function insertData(table, data) {
+    const { error } = await supabase.from(table).insert(data);
+    if (error) {
+        console.error(`Error inserting into ${table}:`, error);
+        return false;
+    }
+    return true;
+}
+
+// --- Populate Tables --- //
+
+// --- Populate Players Table ---
+async function populatePlayers() {
+    const players = await fetchData('players');
+    const teams = await fetchData('teams');
+    const table = document.getElementById('players-table');
+
+    table.innerHTML = players.map(player => `
+        <tr>
+            <td>${player.id}</td>
+            <td><input type="text" class="form-control" id="player-name-${player.id}" value="${player.name}"></td>
+            <td>${teams.find(team => team.id === player.participant_team_id)?.name || 'Unassigned'}</td>
+            <td>
+                <button class="btn btn-primary btn-sm" id="update-player-${player.id}" onclick="updatePlayer(${player.id})" disabled>Update</button>
+                <button class="btn btn-danger btn-sm" onclick="deletePlayer(${player.id})">Delete</button>
+            </td>
+        </tr>
+    `).join('');
+
+    // Add change detection to enable "Update" buttons
+    players.forEach(player => {
+        enableUpdateButton(`player-name-${player.id}`, `update-player-${player.id}`, player.name);
+    });
+}
+
+// --- Populate Teams Table ---
+async function populateTeams() {
+    const teams = await fetchData('teams');
+    const table = document.getElementById('teams-table');
+
+    table.innerHTML = teams.map(team => `
+        <tr>
+            <td>${team.id}</td>
+            <td><input type="text" class="form-control" id="team-name-${team.id}" value="${team.name}"></td>
+            <td>
+                <button class="btn btn-primary btn-sm" id="update-team-${team.id}" onclick="updateTeam(${team.id})" disabled>Update</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteTeam(${team.id})">Delete</button>
+            </td>
+        </tr>
+    `).join('');
+
+    // Add change detection to enable "Update" buttons
+    teams.forEach(team => {
+        enableUpdateButton(`team-name-${team.id}`, `update-team-${team.id}`, team.name);
+    });
+}
+
+// Populate Drivers Table
+async function populateDrivers() {
+    const drivers = await fetchData('drivers');
+    const constructors = await fetchData('constructors');
+    const table = document.getElementById('drivers-table');
+    table.innerHTML = drivers.map(driver => `
+        <tr>
+            <td>${driver.id}</td>
+            <td><input type="text" class="form-control" data-id="${driver.id}" data-field="name" value="${driver.name}"></td>
+            <td><input type="text" class="form-control" data-id="${driver.id}" data-field="abbreviation" value="${driver.abbreviation}"></td>
+            <td>
+                <select class="form-select" data-id="${driver.id}" data-field="constructor_id">
+                    ${constructors.map(c => `<option value="${c.id}" ${driver.constructor_id === c.id ? 'selected' : ''}>${c.name}</option>`).join('')}
+                </select>
+            </td>
+            <td>
+                <button class="btn btn-danger btn-sm" onclick="deleteDriver(${driver.id})">Delete</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Populate Constructors Table
+async function populateConstructors() {
+    const constructors = await fetchData('constructors');
+    const table = document.getElementById('constructors-table');
+    table.innerHTML = constructors.map(constructor => `
+        <tr>
+            <td>${constructor.id}</td>
+            <td><input type="text" class="form-control" data-id="${constructor.id}" data-field="name" value="${constructor.name}"></td>
+            <td><input type="text" class="form-control" data-id="${constructor.id}" data-field="background_colour" value="${constructor.background_colour}"></td>
+            <td><input type="text" class="form-control" data-id="${constructor.id}" data-field="text_colour" value="${constructor.text_colour}"></td>
+            <td>
+                <button class="btn btn-danger btn-sm" onclick="deleteConstructor(${constructor.id})">Delete</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Populate Calendar Table
+// Populate Calendar Table
+async function populateCalendar() {
+    const { data, error } = await supabase
+        .from("calendar")
+        .select("*")
+        .order("race_number", { ascending: true });
+
+    if (error) {
+        console.error("Error fetching calendar:", error);
+        return;
+    }
+
+    const table = document.getElementById("calendar-table");
+    table.innerHTML = ""; // Clear the table
+
+    data.forEach((event) => {
+        let formattedDateTime = "";
+
+        if (event.date) {
+            // Parse the date to ensure it's valid
+            const eventDate = new Date(event.date);
+            if (!isNaN(eventDate)) {
+                // Format as 'YYYY-MM-DDTHH:mm'
+                formattedDateTime = eventDate.toISOString().slice(0, 16);
+            } else {
+                console.error("Invalid date format:", event.date);
+            }
+        }
+
+        table.innerHTML += `
+            <tr>
+                <td>${event.id}</td>
+                <td>
+                    <input type="number" class="form-control" value="${event.race_number || ""}" 
+                           data-id="${event.id}" data-field="race_number" required>
+                </td>
+                <td>
+                    <input type="text" class="form-control" value="${event.name || ""}" 
+                           data-id="${event.id}" data-field="name" required>
+                </td>
+                <td>
+                    <input type="text" class="form-control" value="${event.country || ""}" 
+                           data-id="${event.id}" data-field="country" required>
+                </td>
+                <td>
+                    <input type="datetime-local" class="form-control" value="${formattedDateTime}" 
+                           data-id="${event.id}" data-field="date" required>
+                </td>
+                <td>
+                    <button class="btn btn-danger" onclick="deleteRace(${event.id})">Delete</button>
+                </td>
+            </tr>
+        `;
+    });
+}
 
 
+
+// --- Save Changes --- //
+async function saveChanges(table) {
+    const inputs = document.querySelectorAll(`#${table}-table input, #${table}-table select`);
+    for (const input of inputs) {
+        const id = input.dataset.id;
+        const field = input.dataset.field;
+        const value = input.value;
+        if (id && field) {
+            await updateData(table, id, { [field]: value });
+        }
+    }
+    // alert(`${table} updated successfully!`); commented out for now
+}
+
+// --- Update/Delete for Players and Teams --- //
+async function updatePlayer(id) {
+    const nameInput = document.getElementById(`player-name-${id}`);
+    const name = nameInput.value.trim();
+
+    if (!name) {
+        alert('Name cannot be empty.');
+        return;
+    }
+
+    if (await updateData('players', id, { name })) {
+        alert('Player updated successfully!');
+        populatePlayers();
+    }
+}
+
+async function deletePlayer(id) {
+    if (await deleteData('players', id)) populatePlayers();
+}
+
+async function updateTeam(id) {
+    const nameInput = document.getElementById(`team-name-${id}`);
+    const name = nameInput.value.trim();
+
+    if (!name) {
+        alert('Name cannot be empty.');
+        return;
+    }
+
+    if (await updateData('teams', id, { name })) {
+        alert('Team updated successfully!');
+        populateTeams();
+    }
+}
+
+async function deleteTeam(id) {
+    if (await deleteData('teams', id)) populateTeams();
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    // Fetch and render data
+    await fetchDrivers();
+    await fetchConstructors();
+    await fetchCalendar();
+
+    // Populate the constructor dropdown in the "Add Driver" section
+    await populateConstructorDropdown();
+
+    // Add event listeners for save buttons
+    const saveDriversButton = document.getElementById("save-drivers");
+    const saveConstructorsButton = document.getElementById("save-constructors");
+    const saveCalendarButton = document.getElementById("save-calendar");
+
+    saveDriversButton.disabled = true;
+    saveConstructorsButton.disabled = true;
+    saveCalendarButton.disabled = true;
+
+    document.getElementById("drivers-table").addEventListener("input", () => {
+        saveDriversButton.disabled = false;
+    });
+
+    document.getElementById("constructors-table").addEventListener("input", () => {
+        saveConstructorsButton.disabled = false;
+    });
+
+    document.getElementById("calendar-table").addEventListener("input", () => {
+        saveCalendarButton.disabled = false;
+    });
+
+    // Add event listeners for add buttons
+    document.getElementById("add-driver").addEventListener("click", addDriver);
+    document.getElementById("add-constructor").addEventListener("click", addConstructor);
+    document.getElementById("add-race").addEventListener("click", addRace);
+
+    // Add event listeners for save functionality
+    saveDriversButton.addEventListener("click", saveDrivers);
+    saveConstructorsButton.addEventListener("click", saveConstructors);
+    saveCalendarButton.addEventListener("click", saveCalendar);
+});
+
+// --- Populate Constructor Dropdown ---
+async function populateConstructorDropdown() {
+    const { data, error } = await supabase.from("constructors").select("id, name");
+    if (error) {
+        console.error("Error fetching constructors for dropdown:", error);
+        return;
+    }
+
+    const dropdown = document.getElementById("new-driver-constructor");
+    dropdown.innerHTML = `<option value="">Select Constructor</option>`;
+    data.forEach(constructor => {
+        dropdown.innerHTML += `<option value="${constructor.id}">${constructor.name}</option>`;
+    });
+}
+
+// --- Drivers ---
+async function fetchDrivers() {
+    const { data, error } = await supabase.from("drivers").select("*").order("id", { ascending: true });
+    if (error) {
+        console.error("Error fetching drivers:", error);
+        return;
+    }
+
+    const table = document.getElementById("drivers-table");
+    table.innerHTML = "";
+    data.forEach(driver => {
+        table.innerHTML += `
+            <tr>
+                <td>${driver.id}</td>
+                <td><input type="text" class="form-control" value="${driver.name}" data-id="${driver.id}" data-field="name"></td>
+                <td><input type="text" class="form-control" value="${driver.abbreviation}" data-id="${driver.id}" data-field="abbreviation"></td>
+                <td><input type="text" class="form-control" value="${driver.constructor}" data-id="${driver.id}" data-field="constructor"></td>
+            </tr>
+        `;
+    });
+}
+
+async function saveDrivers() {
+    const inputs = document.querySelectorAll("#drivers-table input");
+    const updates = Array.from(inputs).map(input => {
+        const id = input.dataset.id;
+        const field = input.dataset.field;
+        return { id, [field]: input.value };
+    });
+
+    // Group updates by ID
+    const groupedUpdates = updates.reduce((acc, update) => {
+        const id = update.id;
+        if (!acc[id]) acc[id] = { id };
+        Object.assign(acc[id], update);
+        return acc;
+    }, {});
+
+    // Perform batch update
+    const { error } = await supabase.from("drivers").upsert(Object.values(groupedUpdates));
+    if (error) {
+        console.error("Error saving drivers:", error);
+        alert("Failed to save drivers!");
+        return;
+    }
+
+    alert("Drivers saved successfully!");
+    document.getElementById("save-drivers").disabled = true; // Re-disable button
+}
+
+async function addDriver() {
+    const name = document.getElementById("new-driver-name").value.trim();
+    const abbreviation = document.getElementById("new-driver-abbr").value.trim();
+    const constructor = document.getElementById("new-driver-constructor").value.trim();
+
+    if (!name || !abbreviation || !constructor) {
+        alert("All fields are required to add a driver.");
+        return;
+    }
+
+    const { error } = await supabase.from("drivers").insert([{ name, abbreviation, constructor }]);
+    if (error) {
+        console.error("Error adding driver:", error);
+        return;
+    }
+    await fetchDrivers();
+    alert("Driver added successfully!");
+}
+
+// --- Constructors ---
+async function fetchConstructors() {
+    const { data, error } = await supabase.from("constructors").select("*").order("id", { ascending: true });
+    if (error) {
+        console.error("Error fetching constructors:", error);
+        return;
+    }
+
+    const table = document.getElementById("constructors-table");
+    table.innerHTML = "";
+    data.forEach(constructor => {
+        table.innerHTML += `
+            <tr>
+                <td>${constructor.id}</td>
+                <td><input type="text" class="form-control" value="${constructor.name}" data-id="${constructor.id}" data-field="name"></td>
+                <td><input type="text" class="form-control" value="${constructor.background_colour}" data-id="${constructor.id}" data-field="background_colour"></td>
+                <td><input type="text" class="form-control" value="${constructor.text_colour}" data-id="${constructor.id}" data-field="text_colour"></td>
+            </tr>
+        `;
+    });
+}
+
+async function saveConstructors() {
+    const inputs = document.querySelectorAll("#constructors-table input");
+    const updates = Array.from(inputs).map(input => {
+        const id = input.dataset.id;
+        const field = input.dataset.field;
+        return { id, [field]: input.value };
+    });
+
+    // Group updates by ID
+    const groupedUpdates = updates.reduce((acc, update) => {
+        const id = update.id;
+        if (!acc[id]) acc[id] = { id };
+        Object.assign(acc[id], update);
+        return acc;
+    }, {});
+
+    // Perform batch update
+    const { error } = await supabase.from("constructors").upsert(Object.values(groupedUpdates));
+    if (error) {
+        console.error("Error saving constructors:", error);
+        alert("Failed to save constructors!");
+        return;
+    }
+
+    alert("Constructors saved successfully!");
+    document.getElementById("save-constructors").disabled = true; // Re-disable button
+}
+
+async function addConstructor() {
+    const name = document.getElementById("new-constructor-name").value.trim();
+    const background_colour = document.getElementById("new-constructor-bg").value.trim();
+    const text_colour = document.getElementById("new-constructor-text").value.trim();
+
+    if (!name || !background_colour || !text_colour) {
+        alert("All fields are required to add a constructor.");
+        return;
+    }
+
+    const { error } = await supabase.from("constructors").insert([{ name, background_colour, text_colour }]);
+    if (error) {
+        console.error("Error adding constructor:", error);
+        return;
+    }
+    await fetchConstructors();
+    await populateConstructorDropdown(); // Update dropdown
+    alert("Constructor added successfully!");
+}
+
+// --- Calendar ---
+// --- Calendar ---
+// --- Calendar ---
+// --- Calendar ---
+async function fetchCalendar() {
+    const { data, error } = await supabase
+        .from("calendar")
+        .select("*")
+        .order("race_number", { ascending: true });
+    if (error) {
+        console.error("Error fetching calendar:", error);
+        alert("Failed to fetch calendar data. Please try again.");
+        return;
+    }
+
+    const table = document.getElementById("calendar-table");
+    table.innerHTML = ""; // Clear the table
+
+    data.forEach(event => {
+    // Convert stored UTC time to a valid Date object
+    const dateInUTC = event.date ? new Date(event.date) : null;
+
+    if (!dateInUTC || isNaN(dateInUTC)) {
+        console.error("Invalid date found for event:", event);
+        return;
+    }
+
+    // Format the date for datetime-local input (YYYY-MM-DDTHH:mm)
+    const dateTimeLocal = dateInUTC.toISOString().slice(0, 16);
+
+    table.innerHTML += `
+        <tr>
+            <td>${event.id}</td>
+            <td>
+                <input type="number" class="form-control" value="${event.race_number || ''}" 
+                       data-id="${event.id}" data-field="race_number" required>
+            </td>
+            <td>
+                <input type="text" class="form-control" value="${event.name || ''}" 
+                       data-id="${event.id}" data-field="name" required>
+            </td>
+            <td>
+                <input type="text" class="form-control" value="${event.country || ''}" 
+                       data-id="${event.id}" data-field="country" required>
+            </td>
+            <td>
+                <input type="datetime-local" class="form-control" value="${dateTimeLocal}" 
+                       data-id="${event.id}" data-field="date" required>
+            </td>
+            <td>
+                <button class="btn btn-danger" onclick="deleteRace(${event.id})">Delete</button>
+            </td>
+        </tr>
+    `;
+});
+}
+
+async function saveCalendar() {
+    const inputs = document.querySelectorAll("#calendar-table input");
+    const updates = Array.from(inputs).map((input) => {
+        const id = input.dataset.id;
+        const field = input.dataset.field;
+        let value = input.value;
+
+        if (field === "date") {
+            const localDate = new Date(value); // Parse as local datetime
+            if (!isNaN(localDate)) {
+                value = localDate.toISOString(); // Save as UTC
+            } else {
+                console.error("Invalid date value:", value);
+                return null;
+            }
+        }
+
+        return { id, [field]: value };
+    });
+
+    // Filter out invalid updates
+    const filteredUpdates = updates.filter((update) => update !== null);
+
+    const groupedUpdates = filteredUpdates.reduce((acc, update) => {
+        const id = update.id;
+        if (!acc[id]) acc[id] = { id };
+        Object.assign(acc[id], update);
+        return acc;
+    }, {});
+
+    const { error } = await supabase.from("calendar").upsert(Object.values(groupedUpdates));
+    if (error) {
+        console.error("Error saving calendar entries:", error);
+        alert("Failed to save calendar!");
+        return;
+    }
+
+    alert("Calendar saved successfully!");
+    await fetchCalendar();
+}
+
+
+async function deleteRace(id) {
+    const success = await deleteData("calendar", id);
+    if (!success) {
+        alert("Failed to delete race!");
+        return;
+    }
+
+    await fetchCalendar();
+    alert("Race deleted successfully!");
+}
+
+// Add Race Function
+async function addRace() {
+    const race_number = document.getElementById("new-race-number").value.trim();
+    const name = document.getElementById("new-race-name").value.trim();
+    const country = document.getElementById("new-race-country").value.trim();
+    const date = document.getElementById("new-race-date").value.trim();
+
+    if (!race_number || !name || !country || !date) {
+        alert("All fields are required to add a race.");
+        return;
+    }
+
+    // Convert the provided date to a Date object
+    const localDate = new Date(date);
+
+    if (isNaN(localDate)) {
+        alert("Invalid date format!");
+        return;
+    }
+
+    // Convert to UTC by subtracting the time zone offset of Australia/Sydney
+    const timezoneOffset = -11 * 60; // Australia/Sydney is UTC+11 during daylight saving
+    const utcTimestamp = localDate.getTime() - timezoneOffset * 60 * 1000;
+    const utcDate = new Date(utcTimestamp);
+
+    // Format the date to ISO string
+    const isoDate = utcDate.toISOString();
+
+    const { error } = await supabase.from("calendar").insert([
+        { race_number, name, country, date: isoDate }
+    ]);
+    if (error) {
+        console.error("Error adding race:", error);
+        alert("Failed to add race!");
+        return;
+    }
+
+    await fetchCalendar();
+    alert("Race added successfully!");
+}
+
+
+// --- Initialization --- //
+document.addEventListener('DOMContentLoaded', async () => {
+    await populatePlayers();
+    await populateTeams();
+    await populateDrivers();
+    await populateConstructors();
+    await populateCalendar();
+    
+
+    document.getElementById('save-drivers').addEventListener('click', () => saveChanges('drivers'));
+    document.getElementById('save-constructors').addEventListener('click', () => saveChanges('constructors'));
+    document.getElementById('save-calendar').addEventListener('click', () => saveChanges('calendar'));
+
+    document.getElementById('add-race').addEventListener('click', addRace);
+});
     </script>
 </body>
 </html>

@@ -129,12 +129,17 @@
         </div>
     
         <!-- Next Race Section -->
-        <div class="text-center mt-5">
-            <h5>Next Race:</h5>
-            <div id="next-race-info" class="mt-3">
-                <p>Loading next race...</p>
-            </div>
-        </div>
+        <!-- Next Race Section -->
+<div class="text-center mt-5">
+    <h5>Next Race:</h5>
+    <div id="next-race-info" class="mt-3">
+        <p>Loading next race...</p>
+    </div>
+    <div id="countdown-timer" class="mt-2 text-danger" style="font-size: 1.2rem; display: none;">
+        <strong>Time left:</strong> <span id="countdown"></span>
+    </div>
+</div>
+
     
         <div class="container my-3 d-flex justify-content-left">
             <h4 class="mb-3">Latest Results</h4>
@@ -303,41 +308,90 @@
     <script src="/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        async function fetchNextRace() {
-            const today = new Date().toISOString().split('T')[0];
+ // Fetch the next race and initialize the countdown
+ async function fetchNextRace() {
+    const currentDate = new Date();
 
-            // Fetch the next race based on the closest upcoming date
-            const { data, error } = await supabase
-                .from('2025_calendar')
-                .select('*')
-                .gt('date', today)
-                .order('date', { ascending: true })
-                .limit(1);
+    const { data, error } = await supabase
+        .from("calendar")
+        .select("*")
+        .gt("date", currentDate.toISOString()) // Compare with current ISO string
+        .order("date", { ascending: true })
+        .limit(1);
 
-            if (error) {
-                console.error('Error fetching next race:', error);
-                document.getElementById('next-race-info').innerHTML = '<p>Error loading next race.</p>';
-                return;
-            }
+    if (error) {
+        console.error("Error fetching next race:", error);
+        document.getElementById("next-race-info").innerHTML = "<p>Error loading next race.</p>";
+        return;
+    }
 
-            if (data && data.length > 0) {
-                const race = data[0];
-                const raceDate = new Date(race.date);
-                const daysUntilRace = Math.ceil((raceDate - new Date()) / (1000 * 60 * 60 * 24));
+    if (data && data.length > 0) {
+        const race = data[0];
+        const raceDate = new Date(race.date);
 
-                const flagUrl = `/media/flags/${race.country.toLowerCase()}.png`; // Assuming flags are stored here
-
-                document.getElementById('next-race-info').innerHTML = `
-                    <img src="${flagUrl}" alt="${race.country} Flag" style="width: 60px; height: 40px;">
-                    <h6 class="mt-2">${race.race} GP</h6>
-                    <p>${daysUntilRace} day(s) remaining</p>
-                `;
-            } else {
-                document.getElementById('next-race-info').innerHTML = '<p>No upcoming races.</p>';
-            }
+        if (isNaN(raceDate)) {
+            console.error("Invalid date format for next race:", race.date);
+            document.getElementById("next-race-info").innerHTML = "<p>Invalid race date.</p>";
+            return;
         }
 
-        fetchNextRace();
+        // Calculate countdown
+        const timeDiff = raceDate - currentDate;
+        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+
+        const flagUrl = `/media/flags/${race.country.toLowerCase()}.png`; // Assuming flags are stored here
+
+        document.getElementById("next-race-info").innerHTML = `
+            <img src="${flagUrl}" alt="${race.country} Flag" style="width: 60px; height: 40px;">
+            <h6 class="mt-2">${race.name} GP</h6>
+            <p>${days} day(s), ${hours} hour(s), and ${minutes} minute(s) remaining</p>
+        `;
+    } else {
+        document.getElementById("next-race-info").innerHTML = "<p>No upcoming races.</p>";
+    }
+}
+
+
+// Start the countdown timer
+function startCountdown(raceDate) {
+    const countdownElement = document.getElementById("countdown");
+    const timerElement = document.getElementById("countdown-timer");
+
+    // Show the countdown timer
+    timerElement.style.display = "block";
+
+    function updateCountdown() {
+        const now = new Date();
+        const timeLeft = raceDate - now;
+
+        if (timeLeft <= 0) {
+            // Countdown has ended
+            countdownElement.textContent = "Race has started!";
+            clearInterval(timer);
+            timerElement.style.color = "green"; // Change color to indicate race started
+            return;
+        }
+
+        // Calculate days, hours, minutes, and seconds
+        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+        // Display countdown
+        countdownElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    // Update every second
+    updateCountdown(); // Initial update
+    const timer = setInterval(updateCountdown, 1000);
+}
+
+// Call the fetchNextRace function on page load
+fetchNextRace();
+
 </script>
 
 </body>
