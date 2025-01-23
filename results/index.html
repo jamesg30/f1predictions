@@ -52,29 +52,272 @@
     </header>    
     
     <main class="container my-5">
-        <div class="d-flex justify-content-left">
-            <h2 class="mb-3">Results</h2>
-        </div>
         <!-- Tabs Navigation -->
         <ul class="nav nav-underline mb-4" id="tabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="player-results-tab" data-bs-toggle="tab" href="#player-results" role="tab" aria-controls="register-player" aria-selected="true">Player</a>
+                <a class="nav-link active" id="race-results-tab" data-bs-toggle="tab" href="#race-results" role="tab" aria-controls="register-player" aria-selected="true">Race Results</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="team-results-tab" data-bs-toggle="tab" href="#team-results" role="tab" aria-controls="register-team" aria-selected="false">Team</a>
+                <a class="nav-link" id="season-player-tab" data-bs-toggle="tab" href="#season-player" role="tab" aria-controls="register-team" aria-selected="false">Season - Player</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="season-team-tab" data-bs-toggle="tab" href="#season-team" role="tab" aria-controls="register-team" aria-selected="false">Season - Team</a>
             </li>
         </ul>
 
         <!-- Tabs Content -->
         <div class="tab-content" id="tab-content">
             <!-- Player Results -->
-            <div id="player-results" class="tab-pane fade show active" role="tabpanel" aria-labelledby="player-results-tab">
-                <h4>Player Results</h4>
+            <div id="race-results" class="tab-pane fade show active" role="tabpanel" aria-labelledby="race-results-tab">
+                <h2>Race Results</h2>
+                <div class="mb-3">
+                    <label for="team-select" class="form-label">Viewing results for:</label>
+                    <select id="team-select" class="form-select"></select>
+                </div>
+                <h4>
+                    Player
+                </h4>
+                <!-- Scrollable container -->
+                <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Damien</th>
+                                <th>Josh 2001</th>
+                                <th>Noah</th>
+                                <th>Max</th>
+                                <th>Lewis</th>
+                                <th>Josh 2004</th>
+                                <th>Raf</th>
+                                <th>Anthony</th>
+                                <th>Adrian</th>
+                                <th>Ethan</th>
+                                <th>James</th>
+                                <th style="background-color: white; border-top: none; border-bottom: none;"></th> <!-- Spacer column -->
+                                <th>Results</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                                <td style="background-color: #e80220; color: white;">LEC</td>
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                                <td style="background-color: #229971; color: white;">ALO</td>
+                                <td style="background-color: #ff8001; color: white;">PIA</td>
+                                <td style="background-color: #3671c6; color: white;">VER</td>
+                                <td style="background-color: #3671c6; color: white;">VER</td>
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                                <td style="background-color: #229971; color: white;">ALO</td>
+                                <td style="background-color: white;"></td> <!-- Blank spacer column -->
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                                <td style="background-color: #e80220; color: white;">LEC</td>
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                                <td style="background-color: #229971; color: white;">ALO</td>
+                                <td style="background-color: #ff8001; color: white;">PIA</td>
+                                <td style="background-color: #3671c6; color: white;">VER</td>
+                                <td style="background-color: #3671c6; color: white;">VER</td>
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                                <td style="background-color: #229971; color: white;">ALO</td>
+                                <td style="background-color: white;"></td> <!-- Blank spacer column -->
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                                <td style="background-color: #e80220; color: white;">LEC</td>
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                                <td style="background-color: #3671c6; color: white;">VER</td>
+                                <td style="background-color: #3671c6; color: white;">VER</td>
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                                <td style="background-color: #e80220; color: white;">LEC</td>
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                                <td style="background-color: #229971; color: white;">ALO</td>
+                                <td style="background-color: white;"></td> <!-- Blank spacer column -->
+                                <td style="background-color: #ff8001; color: white;">NOR</td>
+                            </tr>
+                            <!-- More rows here -->
+                        </tbody>
+                    </table>
+                </div>
+                <h4>
+                    Team
+                </h4>
+                <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Team</th>
+                                <th>Player 1</th>
+                                <th>Player 1<br>Points</th>
+                                <th>Player 2</th>
+                                <th>Player 2<br>Points</th>
+                                <th>Sub-total</th>
+                                <th>Cards Played</th>
+                                <th>Card<br>Points</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Scuderia Latifi</td>
+                                <td>Bob</td>
+                                <td>15</td>
+                                <td>Gregory</td>
+                                <td>13</td>
+                                <td>28</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>28</td>
+                            </tr>
+                            <tr>
+                                <td>Narrow Gauge Racing Inc</td>
+                                <td>Andrew</td>
+                                <td>19</td>
+                                <td>Billiard</td>
+                                <td>11</td>
+                                <td>30</td>
+                                <td><img src="/media/cards/card_aero.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;"></td>
+                                <td>+8</td>
+                                <td>38</td>
+                            </tr>
+                            <tr>
+                                <td>Comeng</td>
+                                <td>Mike</td>
+                                <td>12</td>
+                                <td>Oxlong</td>
+                                <td>21</td>
+                                <td>33</td>
+                                <td><img src="/media/cards/card_report.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">(reported by Scuderia Latifi)</td>
+                                <td>-21</td>
+                                <td>12</td>
+                            </tr>
+                            <!-- More rows here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+
+            <!-- Season - Player Results -->
+            <div id="season-player" class="tab-pane fade" role="tabpanel" aria-labelledby="season-player-tab">
+                <h2>Season Player Results</h2>
+                <!-- Scrollable container -->
+                <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Player</th>
+                                <th>Total</th>
+                                <th>Australia</th>
+                                <th>Bahrain</th>
+                                <th>Baku</th>
+                                <th>Canada</th>
+                                <th>Abu Dhabi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1 (=)</td>
+                                <td>Benji</td>
+                                <td>239</td>
+                                <td>18</td>
+                                <td>48</td>
+                                <td>28</td>
+                                <td>15</td>
+                                <td>36</td>
+                            </tr>
+                            <tr>
+                                <td>2 (-1)</td>
+                                <td>Kimberly</td>
+                                <td>234</td>
+                                <td>18</td>
+                                <td>48</td>
+                                <td>28</td>
+                                <td>15</td>
+                                <td>36</td>
+                            </tr>
+                            <tr>
+                                <td>3 (+1)</td>
+                                <td>Johnson P</td>
+                                <td>229</td>
+                                <td>18</td>
+                                <td>48</td>
+                                <td>28</td>
+                                <td>15</td>
+                                <td>36</td>
+                            </tr>
+                            <!-- More rows here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <!-- Team Results -->
-            <div id="team-results" class="tab-pane fade" role="tabpanel" aria-labelledby="team-results-tab">
-                <h4>Team Results</h4>
+            <!-- Season Team Results -->
+            <div id="season-team" class="tab-pane fade" role="tabpanel" aria-labelledby="season-team-tab">
+                <h2>Season Team Results</h2>
+                <!-- Scrollable container -->
+                <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Team</th>
+                                <th>Total</th>
+                                <th>Australia</th>
+                                <th>Bahrain</th>
+                                <th>Baku</th>
+                                <th>Canada</th>
+                                <th>Abu Dhabi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1 (=)</td>
+                                <td>Scuderia Latifi</td>
+                                <td>239</td>
+                                <td><img src="/media/cards/card_aero.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">18</td>
+                                <td>48</td>
+                                <td>28</td>
+                                <td>15</td>
+                                <td>36</td>
+                            </tr>
+                            <tr>
+                                <td>2 (-1)</td>
+                                <td>Narrow Gauge Racing inc</td>
+                                <td>234</td>
+                                <td>18</td>
+                                <td>48</td>
+                                <td>28</td>
+                                <td><img src="/media/cards/card_report.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">15</td>
+                                <td>36</td>
+                            </tr>
+                            <tr>
+                                <td>3 (+1)</td>
+                                <td>Scuderia Latifi</td>
+                                <td>229</td>
+                                <td>18</td>
+                                <td><img src="/media/cards/card_double.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">48</td>
+                                <td>28</td>
+                                <td>15</td>
+                                <td>36</td>
+                            </tr>
+                            <!-- More rows here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </main>
