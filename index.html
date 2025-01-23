@@ -34,6 +34,7 @@
             height: 100%;         /* Full height of the container (200px) */
             background-color: rgba(0, 0, 0, 0.4); /* Transparent black overlay */
         }
+        
         .centered-text {
     position: absolute;
     top: 50%;
@@ -146,11 +147,30 @@
         </div>
         <div class="container my-4">
             <h5 class="mb-3">2024 Abu Dhabi Grand Prix Results</h5>
-            <p>
-                🥇 Damien<br>
-                🥈 Ethan<br>
-                🥉 Max
-            </p>
+            
+            <table>
+                <tbody>
+                    <td style="vertical-align: center;">
+                        <p>
+                            <img src="/media/awards/medal_first.png" style="float:left; width: 15px; height: 30px; image-rendering: pixelated;">
+                            Damien
+                        </p>
+                    </td>
+                    <td style="vertical-align: center;">
+                        <p>
+                            <img src="/media/awards/medal_second.png" style="float:left; width: 15px; height: 30px; image-rendering: pixelated;">
+                            Ethan
+                        </p>
+                    </td>
+                    <td style="vertical-align: center;">
+                        <p>
+                            <img src="/media/awards/medal_third.png" style="float:left; width: 15px; height: 30px; image-rendering: pixelated;">
+                            Max
+                        </p>
+                    </td>
+                </tbody>
+            </table>
+          
             <!-- Scrollable container -->
             <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
                 <table class="table table-sm table-bordered">
@@ -344,7 +364,7 @@
         const flagUrl = `/media/flags/${race.country.toLowerCase()}.png`; // Assuming flags are stored here
 
         document.getElementById("next-race-info").innerHTML = `
-            <img src="${flagUrl}" alt="${race.country} Flag" style="width: 60px; height: 40px;">
+            <img src="${flagUrl}" alt="${race.country} Flag" style="width: 64px; height: 36px; image-rendering: pixelated;">
             <h6 class="mt-2">${race.name} GP</h6>
             <p>${days} day(s), ${hours} hour(s), and ${minutes} minute(s) remaining</p>
         `;

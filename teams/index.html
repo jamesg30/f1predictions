@@ -52,29 +52,62 @@
     </header>    
     
     <main class="container my-5">
-        <div class="d-flex justify-content-left">
-            <h2 class="mb-3">Teams</h2>
-        </div>
         <!-- Tabs Navigation -->
         <ul class="nav nav-underline mb-4" id="tabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="player-results-tab" data-bs-toggle="tab" href="#player-results" role="tab" aria-controls="register-player" aria-selected="true">Player</a>
+                <a class="nav-link active" id="team-standings-and-cards-tab" data-bs-toggle="tab" href="#team-standings-and-cards" role="tab" aria-controls="register-player" aria-selected="true">Team Standings and Cards</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="team-results-tab" data-bs-toggle="tab" href="#team-results" role="tab" aria-controls="register-team" aria-selected="false">Team</a>
+                <a class="nav-link" id="submit-cards-tab" data-bs-toggle="tab" href="#submit-cards" role="tab" aria-controls="register-team" aria-selected="false">Submit Cards</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link disabled" id="casino-tab" data-bs-toggle="tab" href="#casino" role="tab" aria-controls="register-team" aria-selected="false"  aria-disabled="true">Casino</a>
             </li>
         </ul>
 
         <!-- Tabs Content -->
         <div class="tab-content" id="tab-content">
-            <!-- Player Results -->
-            <div id="player-results" class="tab-pane fade show active" role="tabpanel" aria-labelledby="player-results-tab">
-                <h4>Player Results</h4>
+            <!-- Team Standings and Cards -->
+            <div id="team-standings-and-cards" class="tab-pane fade show active" role="tabpanel" aria-labelledby="team-standings-and-cards-tab">
+                <h2>Team Standings and Cards</h2>
             </div>
 
-            <!-- Team Results -->
-            <div id="team-results" class="tab-pane fade" role="tabpanel" aria-labelledby="team-results-tab">
-                <h4>Team Results</h4>
+            <!-- Submit Cards -->
+            <div id="submit-cards" class="tab-pane fade" role="tabpanel" aria-labelledby="submit-cards-tab">
+                <h2>Submit Cards</h2>
+                <div>
+                    <p>You are submitting cards for:</p>
+                    <ul class="list-group">
+                        <li class="list-group-item">Australian GP</li>
+                    </ul>
+                </div>
+                <div class="mb-3">
+                    <label for="team-select" class="form-label">Select Team:</label>
+                    <select id="team-select" class="form-select"></select>
+                </div>
+                <div class="mb-3">
+                    <label for="card-select" class="form-label">Select Card:</label>
+                    <select id="card-select" class="form-select"></select>
+                </div>
+                <div class="mb-3">
+                    <button id="submit-card-btn" class="btn btn-primary">Submit Card</button>
+                </div>
+                <div class="alert alert-info" role="alert">
+                    <h4 class="alert-heading">Tips:</h4>
+                    <p class="mb-0">
+                        To remove a card you have played, select the 'Play no cards' option
+                    </p>
+                    <hr>
+                    <p>
+                        There is no way to view cards once they have been played. This ensures other players cannot see what card you have played, and avoids requiring log-ins on the site.<br>
+                        If you are unsure what card you played, remove it using 'Play no cards' and then resubmit. 
+                    </p>
+                  </div>
+            </div>
+
+            <!-- Casino -->
+            <div id="casino" class="tab-pane fade" role="tabpanel" aria-labelledby="casino-tab">
+                <h2>Casino</h2>
             </div>
         </div>
     </main>

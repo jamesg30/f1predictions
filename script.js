@@ -237,7 +237,6 @@ export async function generateFormBlocks() {
     }
 }
 
-
 // Register Page Functions
 export async function fetchAndDisplayList(table, containerId) {
     const data = await fetchData(table, 'name');
