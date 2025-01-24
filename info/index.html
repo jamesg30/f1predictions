@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Page Details -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
+    <title>F1 Predictions | Rules</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <!-- Supabase Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script>
+        // Initialize Supabase globally
+        const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
+        var supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    </script>
+    <script type="module" src="/script.js"></script>
+</head>
+<body>
+    <header class="bg-light text-dark py-2.5 d-flex align-items-center justify-content-between sticky-top">
+        <!-- Left Section: Logo and Heading -->
+        <div class="d-flex align-items-center">
+            <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
+                <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
+            </a>
+            <a href="/" class="text-decoration-none text-dark">
+                <h5 class="mb-0 fw-bold">F1 Predictions</h5>
+            </a>
+        </div>
+        
+        <!-- Right Section: Hamburger Menu -->
+        <div class="dropdown me-3">
+            <button class="btn btn-light dropdown-toggle" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                Menu
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
+                <li><a class="dropdown-item" href="/">Home</a></li>
+                <li><hr class="dropdown-divider"></li> <!-- Spacer -->
+                <li><a class="dropdown-item" href="/form">Form</a></li>
+                <li><a class="dropdown-item" href="/teams">Teams</a></li>
+                <li><a class="dropdown-item" href="/results">Results</a></li>
+                <li><a class="dropdown-item" href="/register">Register</a></li>
+                <li><a class="dropdown-item" href="/feedback">Feedback</a></li>
+                <li><a class="dropdown-item" href="/info">Info</a></li>
+                <li><hr class="dropdown-divider"></li> <!-- Spacer -->
+                <li><a class="dropdown-item" href="/admin">Admin</a></li>
+            </ul>
+        </div>
+    </header>    
+    
+    <main class="container my-5">
+        <!-- Tabs Navigation -->
+        <ul class="nav nav-underline mb-4" id="tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="form-rules-tab" data-bs-toggle="tab" href="#form-rules" role="tab" aria-controls="register-player" aria-selected="true">Form Rules</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="card-rules-tab" data-bs-toggle="tab" href="#card-rules" role="tab" aria-controls="register-team" aria-selected="false">Card Rules</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="other-faq-tab" data-bs-toggle="tab" href="#other-faq" role="tab" aria-controls="register-team" aria-selected="false">Other FAQ</a>
+            </li>
+        </ul>
+
+        <!-- Tabs Content -->
+        <div class="tab-content" id="tab-content">
+            <!-- Form Rules -->
+            <div id="form-rules" class="tab-pane fade show active" role="tabpanel" aria-labelledby="form-rules-tab">
+                <div class="d-flex justify-content-left">
+                    <h2 class="mb-3">Form Rules</h2>
+                </div>
+                <div>
+                    <h5><strong>Top 6 Predictions</strong></h5>
+                </div>
+                <div>
+                    <p>
+                        Each prediction is worth up to 2 points:<br>
+                        2 points for perfect prediction<br>
+                        1.5 for 1 place away<br>
+                        1 for 2 places away<br>
+                        0.5 for 3 places away<br>
+                        0 points for 4 or more places away, or if the driver did not finish in the top 6<br>
+                        There is also 1 bonus point if you correctly predict the winner<br>
+                        Total 12 points + 1 bonus point = 13 points<br>
+                    </p>
+                </div>
+                <div>
+                    <h5><strong>Other Predictions</strong></h5>
+                </div>
+                <div>
+                    <p>
+                        <i>First Pit Stop</i><br>
+                        2 points for correct team and correct driver<br>
+                        1 point if you only get the correct team<br>
+                        Regular pit stop is one that is for the regular strategy. Pit stops under SC or VSC and pit stops related to retiring the car or damage (e.g. puncture or change front wing) are not counted.<br>
+                        In cases where everyone pits because of a SC, VSC or Red Flag everyone scores 0.<br>
+                    </p>
+                </div>
+                <div>
+                    <p>
+                        <i>Number of DNFs</i><br>
+                        Number of DNFs is calculated as the number of "DNF" classifications on the official FIA race results. This does not include DNS or DSQ.<br>
+                    </p>
+                </div>
+                <div>
+                    <h5><strong>Season Scoring</strong></h5>
+                </div>
+                <div>
+                    <p>
+                        <i>Lowest Score</i><br>
+                        In the event a player misses a round, they will be awarded the lowest score that was achieved that round.<br>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Card Rules -->
+            <div id="card-rules" class="tab-pane fade" role="tabpanel" aria-labelledby="card-rules-tab">
+                <div class="d-flex justify-content-left">
+                    <h2 class="mb-3">Card Rules</h2>
+                </div>
+                <div class="mb-3">
+                    At the beginning of the season, each new team will be given a set of cards which they can use to impact the scoring for that round. Playing these cards will be done before the race (same as the form) through the teams page. You can play one card each round. You will be given one of each card except the halo card which you will get 3 of.<br>
+                </div>
+                <div class="mb-3">
+                    There are 5 types of cards:
+                </div>
+                <div class="mb-3"> 
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <img src="/media/cards/card_aero.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                            Aero Upgrade: Both drivers will receive the higher of their 2 scores (e.g. if they score 14 & 22, team score will be 22+22=44)
+                        </li>
+                        <li class="list-group-item">
+                            <img src="/media/cards/card_double.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                            Double Points: The points of the highest scoring team member is doubled (e.g if they score 14 & 22, team score will be 14+(2x22)=14+44=58)
+                        </li>
+                        <li class="list-group-item">
+                            <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                            Halo: Protect yourself from any cards being applied to you.
+                        </li>
+                        <li class="list-group-item">
+                            <img src="/media/cards/card_report.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                            Report: Report another team to the FIA, and their highest scoring driver will receive 0 (e.g. if they score 14 & 22, team score will be 14 + 0 = 14). Important to note, if more than one team reports the same team in the same round, that teams highest scoring driver will instead score double points.
+                        </li>
+                        <li class="list-group-item">
+                            <img src="/media/cards/card_swap.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                            Swap: The team nominates another team they would like to swap points with. This is applied after any other cards.
+                        </li>
+                    </ul>
+                </div>
+                <div class="mb-3">
+                    Cards will be applied in the following order:<br>
+                    Aero, Double, Halo, Report, Swap. Cards are applied in championship order (or in order of team creation for the first round)<br>
+                </div>
+            </div>
+            <!-- Other FAQ -->
+            <div id="other-faq" class="tab-pane fade" role="tabpanel" aria-labelledby="other-faq-tab">
+                <div class="d-flex justify-content-left">
+                    <h2 class="mb-3">Other FAQ</h2>
+                </div>
+                <div class="mb-3">
+                    <b>What is the individual competition?</b><br>
+                    The individual competition involves predicting various questions and submitting the predictions <b>before</b> the race starts through the form (hence the URL).<br>
+                    The form is typically released after qualifying. Last season, this would typically be around 3-4pm for the typical 11pm race (Melbourne Time)<br>
+                    Each race will feature:
+                    <ul>
+                        <li>Top 6 Predictions</li>
+                        <li>10 random questions (typically 5 yes/no)</li>
+                        <li>Winning Margin Prediction</li>
+                    </ul>
+                    The individual competition will remain <b>unchanged</b> from previous years. I have no plans to change the individual format.<br>
+                    In some races, there may be one or two extra questions in the middle section. Typically, the last race will have many more questions. Please read both the Form Rules and Card Rules tab to understand all the scoring details
+                </div>
+                <div class="mb-3">
+                    <b>What is the teams competition?</b><br>
+                    New for the 2025 season, there is now a team championship!<br>
+                    Players will now be able to create teams, with one other player (teams of max size 2). As a basic concept, the scores of both players will be combined each week (as in F1) to form our teams championship.
+                    However, simply adding the scores would probably prove rather uninteresting.<br>
+                    There are 5 cards (read the Card Rules tab) which will help to add some twists to the team championship, and additionally Casino rounds to reward (or penalise) more daring players! All Casino rounds/cards will need to be submitted <b>before</b> the race, alongside the regular forms.
+                </div>
+                <div class="mb-3">
+                    <b>What is a casino round?</b><br>
+                    These rounds occur during the Monaco and Las Vegas GP. During these rounds, no cards can be played.<br>
+                    In these rounds, the Casino will open instead of the card playing form. In the casino, you can bet some of your teams points on different questions, each with different odds. 
+                    e.g. Lance Stroll finishes on the podium: odds 10:1<br>
+                    There will be 3 questions, and each one can have up to either 5 or 10 points bet on it.
+                </div>
+                <div class="mb-3">
+                    <b>Can you earn more cards throughout the season?</b><br>
+                    No, the cards you get at the start will be all you get for the season.<br>
+                    However, to encourage closer competition, at the mid-year break I plan to issue bonus cards to lower-scoring teams. The current plan is:<br>
+                    2nd last - +1 halo<br>
+                    Last - +1 halo, +1 aero
+                </div>
+            </div>
+        </div>
+    </main>
+ 
+    <footer class="bg-light text-black text-center py-1">
+        <p>&copy; 2024 F1 Predictions Form</p>
+    </footer>
+
+    <!-- Bootstrap JS Bundle (Local) -->
+    <script src="/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

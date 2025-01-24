@@ -44,7 +44,7 @@
                 <li><a class="dropdown-item" href="/results">Results</a></li>
                 <li><a class="dropdown-item" href="/register">Register</a></li>
                 <li><a class="dropdown-item" href="/feedback">Feedback</a></li>
-                <li><a class="dropdown-item" href="/rules">Rules</a></li>
+                <li><a class="dropdown-item" href="/info">Info</a></li>
                 <li><hr class="dropdown-divider"></li> <!-- Spacer -->
                 <li><a class="dropdown-item" href="/admin">Admin</a></li>
             </ul>
@@ -61,7 +61,7 @@
                 <a class="nav-link" id="submit-cards-tab" data-bs-toggle="tab" href="#submit-cards" role="tab" aria-controls="register-team" aria-selected="false">Submit Cards</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link disabled" id="casino-tab" data-bs-toggle="tab" href="#casino" role="tab" aria-controls="register-team" aria-selected="false"  aria-disabled="true">Casino</a>
+                <a class="nav-link" id="casino-tab" data-bs-toggle="tab" href="#casino" role="tab" aria-controls="register-team" aria-selected="false">Casino</a>
             </li>
         </ul>
 
@@ -70,6 +70,46 @@
             <!-- Team Standings and Cards -->
             <div id="team-standings-and-cards" class="tab-pane fade show active" role="tabpanel" aria-labelledby="team-standings-and-cards-tab">
                 <h2>Team Standings and Cards</h2>
+                <div class="list-group">
+                    <a href="#" class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">1. Comeng</h5>
+                            <small>248 pts</small>
+                        </div>
+                            <p class="mb-1">Players: Rodney, Gertrude</p>
+                            <p class="mb-1">Cards Left:</p>
+                        <div>
+                            <img src="/media/cards/card_double.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                            <img src="/media/cards/card_aero.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                        </div>
+                    </a>
+                    <a href="#" class="list-group-item">
+                      <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">2. Scuderia Latifi</h5>
+                        <small>237 pts</small>
+                      </div>
+                      <p class="mb-1">Players: Gwen, Leni</p>
+                      <p class="mb-1">Cards Left:</p>
+                      <div>
+                        <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                        <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                    </div>
+                    </a>
+                    <a href="#" class="list-group-item">
+                      <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Narrow Gauge Racing Inc</h5>
+                        <small>203 pts</small>
+                      </div>
+                      <p class="mb-1">Players: Josh 2004, Patrick</p>
+                      <p class="mb-1">Cards Left:</p>
+                      <div>
+                        <img src="/media/cards/card_report.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                        <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                        <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                        <img src="/media/cards/card_double.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                    </div>
+                    </a>
+                  </div>
             </div>
 
             <!-- Submit Cards -->
@@ -85,8 +125,47 @@
                     <label for="team-select" class="form-label">Select Team:</label>
                     <select id="team-select" class="form-select"></select>
                 </div>
+                <p>Select Card:</p>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <input class="form-check-input me-1" type="radio" name="card" value="aero" id="firstCheckboxStretched">
+                        <label class="form-check-label stretched-link" for="firstCheckboxStretched">
+                            <img src="/media/cards/card_aero.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                        </label>
+                    </li>
+                    <li class="list-group-item">
+                        <input class="form-check-input me-1" type="radio" name="card" value="double" id="secondCheckboxStretched">
+                        <label class="form-check-label stretched-link" for="secondCheckboxStretched">
+                            <img src="/media/cards/card_double.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                        </label>
+                    </li>
+                    <li class="list-group-item">
+                        <input class="form-check-input me-1" type="radio" name="card" value="halo" id="thirdCheckboxStretched">
+                        <label class="form-check-label stretched-link" for="thirdCheckboxStretched">
+                            <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                        </label>
+                    </li>
+                    <li class="list-group-item">
+                        <input class="form-check-input me-1" type="radio" name="card" value="report" id="fourthCheckboxStretched">
+                        <label class="form-check-label stretched-link" for="fourthCheckboxStretched">
+                            <img src="/media/cards/card_report.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                        </label>
+                    </li>
+                    <li class="list-group-item">
+                        <input class="form-check-input me-1" type="radio" name="card" value="swap" id="fifthCheckboxStretched">
+                        <label class="form-check-label stretched-link" for="fifthCheckboxStretched">
+                            <img src="/media/cards/card_swap.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                        </label>
+                    </li>
+                    <li class="list-group-item">
+                        <input class="form-check-input me-1" type="radio" name="card" value="swap" id="sixthCheckboxStretched">
+                        <label class="form-check-label stretched-link" for="sixthCheckboxStretched">
+                            Play no cards
+                        </label>
+                    </li>
+                </ul>
                 <div class="mb-3">
-                    <label for="card-select" class="form-label">Select Card:</label>
+                    <label for="card-select" class="form-label">(for Report/Swap only) Select team to report/swap:</label>
                     <select id="card-select" class="form-select"></select>
                 </div>
                 <div class="mb-3">
@@ -106,8 +185,14 @@
             </div>
 
             <!-- Casino -->
-            <div id="casino" class="tab-pane fade" role="tabpanel" aria-labelledby="casino-tab">
-                <h2>Casino</h2>
+            <div id="casino" class="tab-pane fade" role="tabpanel" aria-labelledby="casino-tab" style="background-color:#3e8948;">
+                <img src="/media/casino/casino.png" style="width: 174px; height: 66px; image-rendering: pixelated;">
+                <p style="color:white">The Casino opens during the Monaco and Las Vegas GP. Bet your team's points here on different questions.</p>
+                <div class="btn-group" role="group" aria-label="Default button group">
+                    <button type="button" class="btn btn-light">+</button>
+                    <button type="button" class="btn btn-light">-</button>
+                </div>
+                <img src="/media/casino/coin_7.png" style="width: 92.5px; height: 64px; image-rendering: pixelated;">
             </div>
         </div>
     </main>
