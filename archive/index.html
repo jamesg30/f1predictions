@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
-    <title>F1 Predictions | Results</title>
+    <title>F1 Predictions | Archive</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/style.css">
@@ -56,23 +56,23 @@
         <!-- Tabs Navigation -->
         <ul class="nav nav-underline mb-4" id="tabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="race-results-tab" data-bs-toggle="tab" href="#race-results" role="tab" aria-controls="register-player" aria-selected="true">Race Results</a>
+                <a class="nav-link active" id="race-results-archive-tab" data-bs-toggle="tab" href="#race-results-archive" role="tab" aria-controls="register-player" aria-selected="true">Race Results Archive</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="season-player-tab" data-bs-toggle="tab" href="#season-player" role="tab" aria-controls="register-team" aria-selected="false">Season - Player</a>
-            </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link" id="season-team-tab" data-bs-toggle="tab" href="#season-team" role="tab" aria-controls="register-team" aria-selected="false">Season - Team</a>
+                <a class="nav-link" id="season-results-archive-tab" data-bs-toggle="tab" href="#season-results-archive" role="tab" aria-controls="register-team" aria-selected="false">Season Results Archive</a>
             </li>
         </ul>
 
         <!-- Tabs Content -->
         <div class="tab-content" id="tab-content">
             <!-- Player Results -->
-            <div id="race-results" class="tab-pane fade show active" role="tabpanel" aria-labelledby="race-results-tab">
-                <h2>Race Results</h2>
+            <div id="race-results-archive" class="tab-pane fade show active" role="tabpanel" aria-labelledby="race-results-archive-tab">
+                <h2>Race Results Archive</h2>
                 <div class="mb-3">
-                    <label for="team-select" class="form-label">Viewing results for:</label>
+                    <label for="team-select" class="form-label">Year:</label>
+                    <select id="team-select" class="form-select"></select>
+                    
+                    <label for="team-select" class="form-label">Race:</label>
                     <select id="team-select" class="form-select"></select>
                 </div>
                 <h4>
@@ -232,9 +232,16 @@
             
 
             <!-- Season - Player Results -->
-            <div id="season-player" class="tab-pane fade" role="tabpanel" aria-labelledby="season-player-tab">
-                <h2>Season Player Results</h2>
+            <div id="season-results-archive" class="tab-pane fade" role="tabpanel" aria-labelledby="season-results-archive-tab">
+                <h2>Season Results Archive</h2>
                 <!-- Scrollable container -->
+                <div class="mb-3">
+                    <label for="team-select" class="form-label">Year:</label>
+                    <select id="team-select" class="form-select"></select>
+                </div>
+                <h4>
+                    Player
+                </h4>
                 <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
                     <table class="table table-sm table-bordered">
                         <thead>
@@ -284,12 +291,9 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-
-            <!-- Season Team Results -->
-            <div id="season-team" class="tab-pane fade" role="tabpanel" aria-labelledby="season-team-tab">
-                <h2>Season Team Results</h2>
-                <!-- Scrollable container -->
+                <h4>
+                    Team
+                </h4>
                 <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
                     <table class="table table-sm table-bordered">
                         <thead>
