@@ -16,7 +16,50 @@
         const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
         var supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    
+        // Function to update the form title based on the race name
+        async function updateFormTitle() {
+            try {
+                // Fetch the race number from form_details
+                const { data: formDetails, error: formDetailsError } = await supabase
+                    .from('form_details')
+                    .select('race_number')
+                    .eq('id', 1)
+                    .single();
+    
+                if (formDetailsError) {
+                    console.error('Error fetching form details:', formDetailsError);
+                    return;
+                }
+    
+                const raceNumber = formDetails.race_number;
+    
+                // Fetch the race name from the calendar table
+                const { data: raceDetails, error: raceDetailsError } = await supabase
+                    .from('calendar')
+                    .select('name')
+                    .eq('race_number', raceNumber)
+                    .single();
+    
+                if (raceDetailsError) {
+                    console.error('Error fetching race details:', raceDetailsError);
+                    return;
+                }
+    
+                const raceName = raceDetails.name;
+    
+                // Update the form title
+                const formTitle = document.getElementById('form-title');
+                formTitle.textContent = `${raceName} GP Form`;
+            } catch (error) {
+                console.error('Error updating form title:', error);
+            }
+        }
+    
+        // Call the function to update the form title as soon as possible
+        updateFormTitle();
     </script>
+    
 </head>
 <body>
     <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
@@ -53,9 +96,13 @@
     
     <main class="container my-5">
         <div class="container my-5">
-            <h2 class="mb-3">Form</h2>
+            <h2 id="form-title" class="mb-3">Form</h2>
             <form id="prediction-form" action="/submit" method="POST">
                 <div id="form-section-1"></div>
+                <!-- Add this to your HTML body, preferably near the player name input field -->
+<div id="repeated-predictions-alert" class="alert alert-warning d-none" role="alert">
+    Player has already submitted predictions. Submitting new predictions will override the previous ones.
+</div>
                 <div><p><i>For detailed question rules, please see rules page</i></p></div>
                 
                 <hr>
@@ -105,36 +152,180 @@
     <!-- Form Script -->
     <script type="module">
         import { generateFormBlocks } from '/script.js';
-
-        // Dynamically populate the form based on configuration
-        document.addEventListener('DOMContentLoaded', () => {
-            generateFormBlocks(); // Generates the form sections
+    
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Update the form title based on the race name
+            await updateFormTitle();
+    
+            const form = document.getElementById('prediction-form');
+            const alertContainer = document.getElementById('repeated-predictions-alert');
+            const startingGridPlaceholder = document.getElementById("startingGridPlaceholder");
+            const bucketName = "media";
+            const fileName = "current_starting_grid.png";
+            let existingSubmissions = [];
+    
+            // Fetch form configuration to determine required fields
+            let formConfig = [];
+            async function fetchFormConfig() {
+                const { data, error } = await supabase
+                    .from('form_configuration')
+                    .select('id, enabled');
+                if (error) {
+                    console.error('Error fetching form configuration:', error);
+                    return;
+                }
+                formConfig = data;
+            }
+    
+            await fetchFormConfig();
+    
+            // Load existing submissions on page load
+            async function loadExistingSubmissions() {
+                const { data: formDetails, error: formDetailsError } = await supabase
+                    .from('form_details')
+                    .select('race_number')
+                    .eq('id', 1)
+                    .single();
+    
+                if (formDetailsError) {
+                    console.error('Error fetching form details:', formDetailsError);
+                    return;
+                }
+    
+                const raceNumber = formDetails.race_number;
+    
+                const { data: submissions, error: submissionsError } = await supabase
+                    .from('form_scoring')
+                    .select('player_id')
+                    .eq('race_number', raceNumber);
+    
+                if (submissionsError) {
+                    console.error('Error fetching existing submissions:', submissionsError);
+                    return;
+                }
+    
+                existingSubmissions = submissions.map(submission => submission.player_id);
+                console.log('Existing Submissions:', existingSubmissions); // Debugging log
+            }
+    
+            await loadExistingSubmissions();
+    
+            // Load the starting grid image
+            async function loadStartingGridImage() {
+                const { data, error } = await supabase.storage
+                    .from(bucketName)
+                    .download(fileName);
+    
+                if (error) {
+                    console.error("Error loading starting grid image:", error.message);
+                    startingGridPlaceholder.src = ""; // Reset if no image found
+                } else {
+                    const url = URL.createObjectURL(data);
+                    startingGridPlaceholder.src = url;
+                }
+            }
+    
+            await loadStartingGridImage();
+    
+            // Dynamically populate the form based on configuration
+            await generateFormBlocks(); // Generates the form sections
+    
+            // Add event listener to player name input after form is generated
+            const playerNameInput = document.querySelector('#input-1'); // Select the input with id-1
+            if (playerNameInput) {
+                playerNameInput.addEventListener('change', () => {
+                    const playerId = Number(playerNameInput.value); // Convert to number
+                    if (existingSubmissions.includes(playerId)) {
+                        alertContainer.classList.remove('d-none');
+                    } else {
+                        alertContainer.classList.add('d-none');
+                    }
+                });
+            }
+    
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault(); // Prevent default form submission
+    
+                // Fetch form details
+                const { data: formDetails, error: formDetailsError } = await supabase
+                    .from('form_details')
+                    .select('race_number, form_enabled')
+                    .eq('id', 1)
+                    .single();
+    
+                if (formDetailsError) {
+                    alert('Error fetching form details');
+                    console.error('Error fetching form details:', formDetailsError);
+                    return;
+                }
+    
+                if (!formDetails.form_enabled) {
+                    alert('Form submissions are currently closed.');
+                    return;
+                }
+    
+                // Collect form data
+                const formData = new FormData(form);
+                const playerId = Number(formData.get('input-1')); // Convert to number
+                const raceNumber = formDetails.race_number;
+    
+                // Validate required fields
+                for (const config of formConfig) {
+                    if (config.enabled) {
+                        const value = formData.get(`input-${config.id}`);
+                        if (!value) {
+                            alert(`Please fill out all required fields.`);
+                            return;
+                        }
+                    }
+                }
+    
+                // Check if the player has already submitted predictions for this race
+                if (existingSubmissions.includes(playerId)) {
+                    alertContainer.classList.remove('d-none');
+                }
+    
+                // Prepare submission data
+                const submissionData = {
+                    submission_time: new Date().toISOString(),
+                    race_number: raceNumber,
+                    player_id: playerId,
+                };
+    
+                // Collect all form inputs
+                for (let i = 2; i <= 28; i++) {
+                    submissionData[`form_id_${i}`] = formData.get(`input-${i}`);
+                }
+    
+                // Save to Supabase (insert or update)
+                let saveError;
+                if (existingSubmissions.includes(playerId)) {
+                    const { error: updateError } = await supabase
+                        .from('form_scoring')
+                        .update(submissionData)
+                        .eq('player_id', playerId)
+                        .eq('race_number', raceNumber);
+                    saveError = updateError;
+                } else {
+                    const { error: insertError } = await supabase
+                        .from('form_scoring')
+                        .insert([submissionData]);
+                    saveError = insertError;
+                }
+    
+                if (saveError) {
+                    alert('Error saving form submission');
+                    console.error('Error saving form submission:', saveError);
+                    return;
+                }
+    
+                // Store submission data in local storage
+                localStorage.setItem('submissionData', JSON.stringify(submissionData));
+    
+                // Redirect to confirmation page
+                window.location.href = '/confirmation';
+            });
         });
-
-        document.addEventListener("DOMContentLoaded", async () => {
-    const startingGridPlaceholder = document.getElementById("startingGridPlaceholder");
-    const bucketName = "media";
-    const fileName = "current_starting_grid.png";
-
-    // Load the starting grid image
-    async function loadStartingGridImage() {
-        const { data, error } = await supabase.storage
-            .from(bucketName)
-            .download(fileName);
-
-        if (error) {
-            console.error("Error loading starting grid image:", error.message);
-            startingGridPlaceholder.src = ""; // Reset if no image found
-        } else {
-            const url = URL.createObjectURL(data);
-            startingGridPlaceholder.src = url;
-        }
-    }
-
-    // Initial load
-    loadStartingGridImage();
-});
-
     </script>
     
     <!-- Bootstrap JS Bundle -->

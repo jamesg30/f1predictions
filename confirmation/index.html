@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Predictions | Confirmation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <!-- Supabase Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script>
+        // Initialize Supabase globally
+        const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
+        var supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    </script>
+</head>
+<body>
+    <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
+        <div class="d-flex align-items-center">
+            <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
+                <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
+            </a>
+            <a href="/" class="text-decoration-none text-black">
+                <h5 class="mb-0 fw-bold">F1 Predictions</h5>
+            </a>
+        </div>
+    </header>
+
+    <main class="container my-5">
+        <h2 class="mb-3">Form Submission Confirmation</h2>
+        <p class="mb-3">Your predictions have been successfully submitted. Please find a copy of your predictions below:</p>
+        <div id="confirmation-details" class="mb-3">
+            <!-- User responses will be displayed here -->
+        </div>
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-primary">Back to Home</a>
+        </div>
+    </main>
+
+    <footer class="bg-light text-black text-center py-1">
+        <p>&copy; 2024 F1 Predictions Form</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const confirmationDetails = document.getElementById('confirmation-details');
+            const submissionData = JSON.parse(localStorage.getItem('submissionData'));
+
+            if (!submissionData) {
+                confirmationDetails.innerHTML = '<p>No submission data found.</p>';
+                return;
+            }
+
+            // Fetch form configuration
+            const { data: formConfig, error: formConfigError } = await supabase
+                .from('form_configuration')
+                .select('id, text, enabled, response_type');
+            if (formConfigError) {
+                console.error('Error fetching form configuration:', formConfigError);
+                confirmationDetails.innerHTML = '<p>Error loading confirmation details.</p>';
+                return;
+            }
+
+            // Fetch race name
+            const { data: raceDetails, error: raceDetailsError } = await supabase
+                .from('calendar')
+                .select('name')
+                .eq('race_number', submissionData.race_number)
+                .single();
+            if (raceDetailsError) {
+                console.error('Error fetching race details:', raceDetailsError);
+                confirmationDetails.innerHTML = '<p>Error loading race details.</p>';
+                return;
+            }
+            const raceName = `${raceDetails.name} GP`;
+
+            // Function to fetch name based on response type and ID
+            async function fetchName(responseType, id) {
+                let table, column;
+                switch (responseType) {
+                    case 'Select - Name List':
+                        table = 'players';
+                        column = 'name';
+                        break;
+                    case 'Select - Driver List':
+                    case 'Select - Driver List + DNF':
+                        table = 'drivers';
+                        column = 'name';
+                        break;
+                    case 'Select - Team List':
+                        table = 'constructors';
+                        column = 'name';
+                        break;
+                    default:
+                        return id; // Return the ID if the response type is not one of the above
+                }
+
+                const { data, error } = await supabase
+                    .from(table)
+                    .select(column)
+                    .eq('id', id)
+                    .single();
+
+                if (error) {
+                    console.error(`Error fetching ${responseType} name:`, error);
+                    return responseType === 'Select - Driver List + DNF' && id === 'no-dnf' ? 'No DNFs' : id;
+                }
+
+                return data ? data[column] : id;
+            }
+
+            // Display submission data
+            for (const [key, value] of Object.entries(submissionData)) {
+                if (key.startsWith('form_id_')) {
+                    const id = parseInt(key.replace('form_id_', ''));
+                    const config = formConfig.find(c => c.id === id);
+
+                    if (config && config.enabled) {
+                        const name = await fetchName(config.response_type, value);
+                        const div = document.createElement('div');
+                        div.className = 'list-group-item mb-2';
+                        div.innerHTML = `<strong>${config.text}:</strong><br>${name}`;
+                        confirmationDetails.appendChild(div);
+                    }
+                } else if (key === 'race_number') {
+                    const div = document.createElement('div');
+                    div.className = 'list-group-item mb-2';
+                    div.innerHTML = `<strong>Race:</strong><br>${raceName}`;
+                    confirmationDetails.appendChild(div);
+                } else if (key === 'player_id') {
+                    const playerName = await fetchName('Select - Name List', value);
+                    const div = document.createElement('div');
+                    div.className = 'list-group-item mb-2';
+                    div.innerHTML = `<strong>Player Name:</strong><br>${playerName}`;
+                    confirmationDetails.appendChild(div);
+                } else {
+                    const div = document.createElement('div');
+                    div.className = 'list-group-item mb-2';
+                    div.innerHTML = `<strong>${key.replace(/_/g, ' ')}:</strong><br>${value}`;
+                    confirmationDetails.appendChild(div);
+                }
+            }
+
+            // Clear local storage after displaying data
+            localStorage.removeItem('submissionData');
+        });
+    </script>
+</body>
+</html>

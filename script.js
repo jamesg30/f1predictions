@@ -172,6 +172,20 @@ export async function generateFormBlocks() {
             const label = document.createElement('label');
             label.textContent = config.text;
             label.className = 'form-label';
+
+            // Append additional text for specific scoring types
+            if (config.scoring_type === 'Plus Minus One (2)') {
+                const smallText = document.createElement('small');
+                smallText.textContent = ' (2 points for correct, 1 point for +/- 1)';
+                smallText.style.fontSize = 'smaller';
+                label.appendChild(smallText);
+            } else if (config.scoring_type === 'Driver + Team (2)') {
+                const smallText = document.createElement('small');
+                smallText.textContent = ' (2 points for correct driver, 1 point for correct team)';
+                smallText.style.fontSize = 'smaller';
+                label.appendChild(smallText);
+            }
+
             block.appendChild(label);
 
             // Determine input type based on response_type
