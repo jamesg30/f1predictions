@@ -106,8 +106,8 @@
             <div class="col-md-6">
                 <div class="text-center">
                     <h5 class="mb-3">Latest Form:</h5>
-                    <a href="/form">
-                        <button type="button" class="btn btn-dark">Australian GP Form</button>
+                    <a id="latest-form-link">
+                        <button id="latest-form-button" type="button" class="btn btn-dark" disabled>Loading...</button>
                     </a>
                 </div>
             </div>
@@ -345,91 +345,170 @@
     <script src="/js/bootstrap.bundle.min.js"></script>
 
     <script>
- // Fetch the next race and initialize the countdown
- async function fetchNextRace() {
-    const currentDate = new Date();
+        // Fetch the race details from form_details and calendar tables
+        async function fetchRaceDetails() {
+            try {
+                // Fetch the race number from form_details
+                const { data: formDetails, error: formDetailsError } = await supabase
+                    .from('form_details')
+                    .select('race_number')
+                    .eq('id', 1)
+                    .single();
+    
+                if (formDetailsError) {
+                    console.error('Error fetching form details:', formDetailsError);
+                    return null;
+                }
+    
+                const raceNumber = formDetails.race_number;
+    
+                // Fetch the race details from the calendar table
+                const { data: raceDetails, error: raceDetailsError } = await supabase
+                    .from('calendar')
+                    .select('*')
+                    .eq('race_number', raceNumber)
+                    .single();
+    
+                if (raceDetailsError) {
+                    console.error('Error fetching race details:', raceDetailsError);
+                    return null;
+                }
+    
+                return raceDetails;
+            } catch (error) {
+                console.error('Error fetching race details:', error);
+                return null;
+            }
+        }
+    
+        // Update the latest form button with the current race name
+        async function updateLatestFormButton(raceDetails) {
+            if (raceDetails) {
+                document.getElementById("latest-form-button").textContent = `${raceDetails.name} GP Form`;
+            } else {
+                document.getElementById("latest-form-button").textContent = "Error loading form";
+            }
+        }
+    
+        // Update the next race info and initialize the countdown
+        async function updateNextRaceInfo(raceDetails) {
+            if (!raceDetails) {
+                document.getElementById("next-race-info").innerHTML = "<p>Error loading next race.</p>";
+                return;
+            }
+    
+            const raceDate = new Date(raceDetails.date);
+    
+            if (isNaN(raceDate)) {
+                console.error("Invalid date format for next race:", raceDetails.date);
+                document.getElementById("next-race-info").innerHTML = "<p>Invalid race date.</p>";
+                return;
+            }
+    
+            const flagUrl = `/media/flags/${raceDetails.country.toLowerCase()}.png`; // Assuming flags are stored here
+    
+            document.getElementById("next-race-info").innerHTML = `
+                <img src="${flagUrl}" alt="${raceDetails.country} Flag" style="width: 64px; height: 36px; image-rendering: pixelated;">
+                <h6 class="mt-2">${raceDetails.name} GP</h6>
+                <div id="countdown-timer" class="mt-2" style="font-size: 1.1rem;">
+                    <strong>Time left:</strong> <span id="countdown"></span>
+                </div>
+            `;
+    
+            // Start the countdown timer
+            startCountdown(raceDate);
+        }
+    
+        // Start the countdown timer
+        function startCountdown(raceDate) {
+            const countdownElement = document.getElementById("countdown");
+    
+            function updateCountdown() {
+                const now = new Date();
+                const timeLeft = raceDate - now;
+    
+                if (timeLeft <= 0) {
+                    // Countdown has ended
+                    countdownElement.textContent = "Race has started!";
+                    clearInterval(timer);
+                    countdownElement.style.color = "green"; // Change color to indicate race started
+                    return;
+                }
+    
+                // Calculate days, hours, minutes, and seconds
+                const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+    
+                // Display countdown
+                countdownElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            }
+    
+            // Update every second
+            updateCountdown(); // Initial update
+            const timer = setInterval(updateCountdown, 1000);
+        }
+        
+        // Fetch the form status from form_details table
+async function fetchFormStatus() {
+    try {
+        const { data: formDetails, error: formDetailsError } = await supabase
+            .from('form_details')
+            .select('form_enabled')
+            .eq('id', 1)
+            .single();
 
-    const { data, error } = await supabase
-        .from("calendar")
-        .select("*")
-        .gt("date", currentDate.toISOString()) // Compare with current ISO string
-        .order("date", { ascending: true })
-        .limit(1);
-
-    if (error) {
-        console.error("Error fetching next race:", error);
-        document.getElementById("next-race-info").innerHTML = "<p>Error loading next race.</p>";
-        return;
-    }
-
-    if (data && data.length > 0) {
-        const race = data[0];
-        const raceDate = new Date(race.date);
-
-        if (isNaN(raceDate)) {
-            console.error("Invalid date format for next race:", race.date);
-            document.getElementById("next-race-info").innerHTML = "<p>Invalid race date.</p>";
-            return;
+        if (formDetailsError) {
+            console.error('Error fetching form status:', formDetailsError);
+            return false;
         }
 
-        // Calculate countdown
-        const timeDiff = raceDate - currentDate;
-        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+        return formDetails.form_enabled;
+    } catch (error) {
+        console.error('Error fetching form status:', error);
+        return false;
+    }
+}
 
-        const flagUrl = `/media/flags/${race.country.toLowerCase()}.png`; // Assuming flags are stored here
+// Update the latest form button based on form status
+async function updateFormButtonStatus() {
+    const formEnabled = await fetchFormStatus();
+    const formButton = document.getElementById('latest-form-button');
 
-        document.getElementById("next-race-info").innerHTML = `
-            <img src="${flagUrl}" alt="${race.country} Flag" style="width: 64px; height: 36px; image-rendering: pixelated;">
-            <h6 class="mt-2">${race.name} GP</h6>
-            <p>${days} day(s), ${hours} hour(s), and ${minutes} minute(s) remaining</p>
-        `;
+    if (formEnabled) {
+        formButton.disabled = false;
     } else {
-        document.getElementById("next-race-info").innerHTML = "<p>No upcoming races.</p>";
+        formButton.disabled = true;
     }
 }
 
+document.addEventListener('DOMContentLoaded', async () => {
+    // Fetch race details
+    const raceDetails = await fetchRaceDetails();
 
-// Start the countdown timer
-function startCountdown(raceDate) {
-    const countdownElement = document.getElementById("countdown");
-    const timerElement = document.getElementById("countdown-timer");
+    // Update the latest form button with the current race name
+    await updateLatestFormButton(raceDetails);
 
-    // Show the countdown timer
-    timerElement.style.display = "block";
+    // Update the next race info and initialize the countdown
+    await updateNextRaceInfo(raceDetails);
 
-    function updateCountdown() {
-        const now = new Date();
-        const timeLeft = raceDate - now;
+    // Update the form button status based on form_enabled
+    await updateFormButtonStatus();
 
-        if (timeLeft <= 0) {
-            // Countdown has ended
-            countdownElement.textContent = "Race has started!";
-            clearInterval(timer);
-            timerElement.style.color = "green"; // Change color to indicate race started
-            return;
+    // Add event listener to the form button
+    const formButton = document.getElementById('latest-form-button');
+    const formLink = document.getElementById('latest-form-link');
+
+    formButton.addEventListener('click', (event) => {
+        if (formButton.disabled) {
+            event.preventDefault();
+        } else {
+            formLink.href = '/form';
         }
-
-        // Calculate days, hours, minutes, and seconds
-        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-        // Display countdown
-        countdownElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-    }
-
-    // Update every second
-    updateCountdown(); // Initial update
-    const timer = setInterval(updateCountdown, 1000);
-}
-
-// Call the fetchNextRace function on page load
-fetchNextRace();
-
-</script>
+    });
+});
+    </script>
 
 </body>
 </html>

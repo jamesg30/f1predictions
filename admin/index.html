@@ -80,15 +80,58 @@
         <div class="d-flex justify-content-left">
             <h2 class="mb-3">Admin</h2>
         </div>
-        <div class="d-flex justify-content-left">
-            <p>
-                Current Form: Australian GP 2025<br>
-                Form Responses: 13<br>
-                Status: OPEN
-            </p>
+        <div class="container mt-4">
+            <div class="card">
+                <div class="card-header">
+                    Information Dashboard
+                </div>
+                <div class="card-body">
+                    <form id="dashboard-form">
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <label for="race-select" class="form-label">Current Race</label>
+                                <select class="form-select" id="race-select">
+                                    <!-- Options will be populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Number of Form Responses</label>
+                                <p id="form-responses" class="form-text">Loading...</p>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <label class="form-label">Form Status</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="form-status">
+                                    <label class="form-check-label" for="form-status" id="form-status-label">Loading...</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="current-year" class="form-label">Current Year</label>
+                                <input type="number" class="form-control" id="current-year" min="2000" max="2100">
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <label for="results-display-race-select" class="form-label">Results Display Race</label>
+                                <select class="form-select" id="results-display-race-select">
+                                    <!-- Options will be populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="results-display-type-select" class="form-label">Results Display Type</label>
+                                <select class="form-select" id="results-display-type-select">
+                                    <option value="Scored Results">Scored Results</option>
+                                    <option value="Unscored Predictions">Unscored Predictions</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="save-changes" disabled>Save Changes</button>
+                    </form>
+                </div>
+            </div>
         </div>
-            <button type="button" class="btn btn-success btn-sm" disabled>Open Form</button>
-            <button type="button" class="btn btn-danger btn-sm">Close Form</button>
         <div>  
         
         <hr>
@@ -104,7 +147,7 @@
                 <a class="nav-link" id="results-entry-tab" data-bs-toggle="tab" href="#results-entry" role="tab">Results Entry</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="results-preview-tab" data-bs-toggle="tab" href="#results-preview" role="tab">Results Preview</a>
+                <a class="nav-link" id="scoring-tab" data-bs-toggle="tab" href="#scoring" role="tab">Scoring</a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link" id="season-totals-tab" data-bs-toggle="tab" href="#season-totals" role="tab">Season Totals</a>
@@ -149,24 +192,50 @@
                 </form>
             </div>
             <div id="results-entry" class="tab-pane fade" role="tabpanel">
-                <h4>Results Entry</h4>
-                <ul id="results-list" class="list-group"></ul>
+                <h4 id="results-entry-title">Results Entry</h4>
+                <div id="repeated-results-alert" class="alert alert-warning d-none" role="alert">
+                    Results have already been submitted. New results will override the previous ones.
+                </div>
+                <form id="results-form">
+                    <div id="form-section-1" style="display: none;"></div> <!-- Hidden container for the first block -->
+                    <div id="form-section-2"></div>
+                    <div id="form-section-3"></div>
+                    <div id="form-section-4"></div>
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary">Submit Results</button>
+                    </div>
+                </form>
             </div>
             <div id="grid-upload" class="tab-pane fade" role="tabpanel">
                 <h4>Grid Upload</h4>
                 <div>
                     <p>Current Photo:</p>
-                    <img id="currentGridImage" src="" alt="Current Grid Image" style="max-width: 100%; height: auto; margin-bottom: 10px;" />
+                    <img id="currentGridImage" src="" alt="Current Grid Image" style="max-width: 100%; max-height: 150px; height: auto; margin-bottom: 10px;" />
                 </div>
                 <div class="input-group mb-3">
                     <input type="file" class="form-control" id="gridImageInput" accept="image/*">
                     <button class="btn btn-primary" id="uploadGridImageButton">Upload</button>
                 </div>
                 <p id="uploadStatus"></p>
-            </div>            
-            <div id="results-preview" class="tab-pane fade" role="tabpanel">
-                <h4>Results Preview</h4>
-                <ul id="results-list" class="list-group"></ul>
+            </div>         
+            <div id="scoring" class="tab-pane fade" role="tabpanel" aria-labelledby="scoring-tab">
+                <h4>Scoring</h4>
+                <button id="scoreRoundButton" class="btn btn-primary mb-3">Score Round</button>
+                <div class="progress mb-3">
+                    <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <div id="progressUpdates" class="mb-3"></div>
+                <table id="scoreTable" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>Grand Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Scores will be dynamically inserted here -->
+                    </tbody>
+                </table>
             </div>
             <div id="season-totals" class="tab-pane fade" role="tabpanel">
                 <h4>Season Totals</h4>
@@ -287,6 +356,23 @@
 
 
         </div>
+        <!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Submission Successful</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                The results have been successfully submitted.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
     </main>
 
     <footer class="bg-light text-black text-center py-1">
@@ -452,6 +538,7 @@ function initializeSaveChangesButton() {
 
 initializeSaveChangesButton();
 
+// Loading Starting Grid/Upload Handling
 document.addEventListener("DOMContentLoaded", async () => {
     const gridImageInput = document.getElementById("gridImageInput");
     const uploadGridImageButton = document.getElementById("uploadGridImageButton");
@@ -459,21 +546,45 @@ document.addEventListener("DOMContentLoaded", async () => {
     const uploadStatus = document.getElementById("uploadStatus");
 
     const bucketName = "media";
-    let fileName = "current_starting_grid";
+    const fileNamePrefix = "current_starting_grid";
+    const fileExtensions = ["png", "jpg", "jpeg"];
 
     // Load the existing image on page load
     async function loadGridImage() {
-        const { data, error } = await supabase.storage
-            .from(bucketName)
-            .list("", { limit: 1 });
+        console.log("Loading grid image...");
+        for (const ext of fileExtensions) {
+            const fileName = `${fileNamePrefix}.${ext}`;
+            const { data, error } = await supabase.storage
+                .from(bucketName)
+                .download(fileName);
 
-        if (error || data.length === 0) {
-            console.error("Error loading grid image:", error?.message || "No file found");
-            currentGridImage.src = ""; // Reset if no image found
-        } else {
-            const fileKey = data[0].name;
-            const { publicURL } = supabase.storage.from(bucketName).getPublicUrl(fileKey);
-            currentGridImage.src = publicURL;
+            if (error) {
+                console.log(`Error loading ${fileName}:`, error.message);
+            } else {
+                console.log(`Loaded ${fileName}`);
+                const url = URL.createObjectURL(data);
+                currentGridImage.src = url;
+                return; // Exit the loop once the file is found
+            }
+        }
+        console.error("No matching file found");
+        currentGridImage.src = ""; // Reset if no matching file found
+    }
+
+    // Delete existing files
+    async function deleteExistingFiles() {
+        console.log("Deleting existing files...");
+        for (const ext of fileExtensions) {
+            const fileName = `${fileNamePrefix}.${ext}`;
+            const { error } = await supabase.storage
+                .from(bucketName)
+                .remove([fileName]);
+
+            if (error) {
+                console.log(`Error deleting ${fileName}:`, error.message);
+            } else {
+                console.log(`Deleted ${fileName}`);
+            }
         }
     }
 
@@ -486,10 +597,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const file = gridImageInput.files[0];
         const fileExtension = file.name.split(".").pop(); // Get the file extension
-        const finalFileName = `${fileName}.${fileExtension}`; // Build the final file name
+        const finalFileName = `${fileNamePrefix}.${fileExtension}`; // Build the final file name
 
         uploadStatus.textContent = "Uploading...";
 
+        // Delete existing files before uploading the new one
+        await deleteExistingFiles();
+
+        console.log("Uploading file:", finalFileName);
         const { error } = await supabase.storage
             .from(bucketName)
             .upload(finalFileName, file, {
@@ -500,13 +615,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.error("Error uploading grid image:", error.message);
             uploadStatus.textContent = "Upload failed. Please try again.";
         } else {
+            console.log("Upload successful");
             uploadStatus.textContent = "Upload successful!";
-            loadGridImage(); // Reload the image preview
+            await loadGridImage(); // Reload the image preview
         }
     });
 
     // Initial load
-    loadGridImage();
+    await loadGridImage();
 });
 // --- Utility Functions --- //
 
@@ -1123,5 +1239,585 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('add-race').addEventListener('click', addRace);
 });
     </script>
+
+
+<script type="module">
+    // Results Entry Code
+    import { generateFormBlocks } from '/script.js';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Update the results entry title based on the race name
+        await updateResultsEntryTitle();
+
+        const form = document.getElementById('results-form');
+        let existingSubmissions = [];
+
+        // Fetch form configuration to determine required fields
+        let formConfig = [];
+        async function fetchFormConfig() {
+            const { data, error } = await supabase
+                .from('form_configuration')
+                .select('id, enabled');
+            if (error) {
+                console.error('Error fetching form configuration:', error);
+                return;
+            }
+            formConfig = data;
+        }
+
+        await fetchFormConfig();
+
+        // Load existing submissions on page load
+        async function loadExistingSubmissions() {
+            const { data: formDetails, error: formDetailsError } = await supabase
+                .from('form_details')
+                .select('race_number')
+                .eq('id', 1)
+                .single();
+
+            if (formDetailsError) {
+                console.error('Error fetching form details:', formDetailsError);
+                return;
+            }
+
+            const raceNumber = formDetails.race_number;
+
+            const { data: submissions, error: submissionsError } = await supabase
+                .from('form_raw')
+                .select('player_id')
+                .eq('race_number', raceNumber);
+
+            if (submissionsError) {
+                console.error('Error fetching existing submissions:', submissionsError);
+                return;
+            }
+
+            existingSubmissions = submissions.map(submission => submission.player_id);
+            console.log('Existing Submissions:', existingSubmissions); // Debugging log
+
+            // Check if any submission contains player_id = 0
+            if (existingSubmissions.includes(0)) {
+                document.getElementById('repeated-results-alert').classList.remove('d-none');
+            }
+        }
+
+        await loadExistingSubmissions();
+
+        // Dynamically populate the form based on configuration
+        await generateFormBlocks(); // Generates the form sections
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent default form submission
+
+            // Fetch form details
+            const { data: formDetails, error: formDetailsError } = await supabase
+                .from('form_details')
+                .select('race_number, form_enabled')
+                .eq('id', 1)
+                .single();
+
+            if (formDetailsError) {
+                alert('Error fetching form details');
+                console.error('Error fetching form details:', formDetailsError);
+                return;
+            }
+
+            if (!formDetails.form_enabled) {
+                alert('Form submissions are currently closed.');
+                return;
+            }
+
+            // Collect form data
+            const formData = new FormData(form);
+            const playerId = 0; // Always use player_id = 0 for admin entries
+            const raceNumber = formDetails.race_number;
+
+            // Validate required fields, skipping the first input
+            for (const config of formConfig) {
+                if (config.enabled && config.id !== 1) {
+                    const value = formData.get(`input-${config.id}`);
+                    if (!value) {
+                        alert(`Please fill out all required fields.`);
+                        return;
+                    }
+                }
+            }
+
+            // Prepare submission data
+            const submissionData = {
+                submission_time: new Date().toISOString(),
+                race_number: raceNumber,
+                player_id: playerId,
+            };
+
+            // Collect all form inputs, skipping the first input
+            for (let i = 2; i <= 28; i++) {
+                submissionData[`form_id_${i}`] = formData.get(`input-${i}`);
+            }
+
+            // Save to Supabase (insert or update)
+            let saveError;
+            if (existingSubmissions.includes(playerId)) {
+                const { error: updateError } = await supabase
+                    .from('form_raw')
+                    .update(submissionData)
+                    .eq('player_id', playerId)
+                    .eq('race_number', raceNumber);
+                saveError = updateError;
+            } else {
+                const { error: insertError } = await supabase
+                    .from('form_raw')
+                    .insert([submissionData]);
+                saveError = insertError;
+            }
+
+            if (saveError) {
+                alert('Error saving form submission');
+                console.error('Error saving form submission:', saveError);
+                return;
+            }
+
+            // Clear the form inputs
+            form.reset();
+
+            // Show confirmation modal
+            const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+            confirmationModal.show();
+        });
+    });
+
+    async function updateResultsEntryTitle() {
+        try {
+            // Fetch the race number from form_details
+            const { data: formDetails, error: formDetailsError } = await supabase
+                .from('form_details')
+                .select('race_number')
+                .eq('id', 1)
+                .single();
+
+            if (formDetailsError) {
+                console.error('Error fetching form details:', formDetailsError);
+                return;
+            }
+
+            const raceNumber = formDetails.race_number;
+
+            // Fetch the race name from the calendar table
+            const { data: raceDetails, error: raceDetailsError } = await supabase
+                .from('calendar')
+                .select('name')
+                .eq('race_number', raceNumber)
+                .single();
+
+            if (raceDetailsError) {
+                console.error('Error fetching race details:', raceDetailsError);
+                return;
+            }
+
+            const raceName = raceDetails.name;
+
+            // Update the results entry title
+            const resultsEntryTitle = document.getElementById('results-entry-title');
+            resultsEntryTitle.textContent = `Results Entry - ${raceName} GP`;
+        } catch (error) {
+            console.error('Error updating results entry title:', error);
+        }
+    }
+
+
+    // Information Dashboard
+    document.addEventListener('DOMContentLoaded', async () => {
+        const raceSelect = document.getElementById('race-select');
+        const resultsDisplayRaceSelect = document.getElementById('results-display-race-select');
+        const resultsDisplayTypeSelect = document.getElementById('results-display-type-select');
+        const formResponses = document.getElementById('form-responses');
+        const formStatus = document.getElementById('form-status');
+        const formStatusLabel = document.getElementById('form-status-label');
+        const currentYearInput = document.getElementById('current-year');
+        const saveChangesButton = document.getElementById('save-changes');
+
+        let currentRaceNumber;
+        let formEnabled;
+        let resultsDisplayRaceNumber;
+        let resultsDisplayType;
+        let currentYear;
+
+        // Fetch current race number, form status, results display settings, and current year
+        async function fetchFormDetails() {
+            const { data: formDetails, error: formDetailsError } = await supabase
+                .from('form_details')
+                .select('race_number, form_enabled, results_display_race_number, results_display_type, current_year')
+                .eq('id', 1)
+                .single();
+
+            if (formDetailsError) {
+                console.error('Error fetching form details:', formDetailsError);
+                return;
+            }
+
+            currentRaceNumber = formDetails.race_number;
+            formEnabled = formDetails.form_enabled;
+            resultsDisplayRaceNumber = formDetails.results_display_race_number;
+            resultsDisplayType = formDetails.results_display_type;
+            currentYear = formDetails.current_year;
+
+            // Update form status toggle
+            formStatus.checked = formEnabled;
+            formStatusLabel.textContent = formEnabled ? 'Enabled' : 'Disabled';
+
+            // Update results display type select
+            resultsDisplayTypeSelect.value = resultsDisplayType;
+
+            // Update current year input
+            currentYearInput.value = currentYear;
+        }
+
+        await fetchFormDetails();
+
+        // Fetch race options and populate the select lists
+        async function fetchRaceOptions() {
+            const { data: races, error: racesError } = await supabase
+                .from('calendar')
+                .select('race_number, name');
+
+            if (racesError) {
+                console.error('Error fetching race options:', racesError);
+                return;
+            }
+
+            races.forEach(race => {
+                const option = document.createElement('option');
+                option.value = race.race_number;
+                option.textContent = race.name;
+                if (race.race_number === currentRaceNumber) {
+                    option.selected = true;
+                }
+                raceSelect.appendChild(option);
+
+                const resultsOption = option.cloneNode(true);
+                if (race.race_number === resultsDisplayRaceNumber) {
+                    resultsOption.selected = true;
+                }
+                resultsDisplayRaceSelect.appendChild(resultsOption);
+            });
+        }
+
+        await fetchRaceOptions();
+
+        // Fetch number of form responses
+        async function fetchFormResponses() {
+            const { data: responses, error: responsesError } = await supabase
+                .from('form_raw')
+                .select('id')
+                .eq('race_number', currentRaceNumber);
+
+            if (responsesError) {
+                console.error('Error fetching form responses:', responsesError);
+                return;
+            }
+
+            formResponses.textContent = responses.length;
+        }
+
+        await fetchFormResponses();
+
+        // Enable save button when changes are made
+        raceSelect.addEventListener('change', () => {
+            saveChangesButton.disabled = false;
+        });
+
+        resultsDisplayRaceSelect.addEventListener('change', () => {
+            saveChangesButton.disabled = false;
+        });
+
+        resultsDisplayTypeSelect.addEventListener('change', () => {
+            saveChangesButton.disabled = false;
+        });
+
+        formStatus.addEventListener('change', () => {
+            saveChangesButton.disabled = false;
+        });
+
+        currentYearInput.addEventListener('input', () => {
+            saveChangesButton.disabled = false;
+        });
+
+        // Save changes
+        document.getElementById('dashboard-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const selectedRaceNumber = raceSelect.value;
+            const selectedFormStatus = formStatus.checked;
+            const selectedResultsDisplayRaceNumber = resultsDisplayRaceSelect.value;
+            const selectedResultsDisplayType = resultsDisplayTypeSelect.value;
+            const selectedCurrentYear = currentYearInput.value;
+
+            // Update form details in the database
+            const { error: updateError } = await supabase
+                .from('form_details')
+                .update({
+                    race_number: selectedRaceNumber,
+                    form_enabled: selectedFormStatus,
+                    results_display_race_number: selectedResultsDisplayRaceNumber,
+                    results_display_type: selectedResultsDisplayType,
+                    current_year: selectedCurrentYear
+                })
+                .eq('id', 1);
+
+            if (updateError) {
+                alert('Error saving changes');
+                console.error('Error saving changes:', updateError);
+                return;
+            }
+
+            // Update the UI
+            currentRaceNumber = selectedRaceNumber;
+            formEnabled = selectedFormStatus;
+            resultsDisplayRaceNumber = selectedResultsDisplayRaceNumber;
+            resultsDisplayType = selectedResultsDisplayType;
+            currentYear = selectedCurrentYear;
+            formStatusLabel.textContent = formEnabled ? 'Enabled' : 'Disabled';
+            saveChangesButton.disabled = true;
+
+            // Fetch updated form responses
+            await fetchFormResponses();
+
+            alert('Changes saved successfully');
+        });
+    });
+
+   // --- Form Scoring ---
+document.addEventListener("DOMContentLoaded", async () => {
+    // Function to retrieve data from a table
+    async function getTable(tableName) {
+        const { data, error } = await supabase
+            .from(tableName)
+            .select('*');
+        if (error) {
+            console.error(`Error retrieving data from ${tableName}:`, error.message);
+            return [];
+        }
+        return data;
+    }
+
+    // Step 1: Retrieve All Necessary Tables
+    const formRaw = await getTable('form_raw');
+    const formConfig = await getTable('form_configuration');
+    const calendar = await getTable('calendar');
+    const players = await getTable('players');
+    const drivers = await getTable('drivers');
+    const constructors = await getTable('constructors');
+    const formDetails = await getTable('form_details'); // Retrieve form_details table
+
+    // Get the relevant race number and current year from form_details
+    const relevantRaceNumber = formDetails[0].race_number;
+    const currentYear = formDetails[0].current_year;
+
+    // Step 2: Initialize Variables
+    let progressBar = document.getElementById('progressBar');
+    let progressUpdates = document.getElementById('progressUpdates');
+    let scoreTable = document.getElementById('scoreTable');
+    let scoreRoundButton = document.getElementById('scoreRoundButton');
+
+    // Step 3: Create Scoring Function
+    function calculateScore(response, result, scoringType) {
+        switch (scoringType) {
+            case 'Off (0)':
+                return 0;
+            case 'P1 Type (3)':
+                if (response === result) return 3;
+                if (response === results.form_id_3) return 1.5;
+                if (response === results.form_id_4) return 1;
+                if (response === results.form_id_5) return 0.5;
+                return 0;
+            case 'P2 Type (2)':
+                if (response === result) return 2;
+                if (response === results.form_id_2 || response === results.form_id_4) return 1.5;
+                if (response === results.form_id_5) return 1;
+                if (response === results.form_id_6) return 0.5;
+                return 0;
+            case 'P3 Type (2)':
+                if (response === result) return 2;
+                if (response === results.form_id_3 || response === results.form_id_5) return 1.5;
+                if (response === results.form_id_6) return 1;
+                if (response === results.form_id_2 || response === results.form_id_7) return 1;
+                return 0;
+            case 'P4 Type (2)':
+                if (response === result) return 2;
+                if (response === results.form_id_4 || response === results.form_id_6) return 1.5;
+                if (response === results.form_id_7) return 1;
+                if (response === results.form_id_3 || response === results.form_id_2) return 1;
+                return 0;
+            case 'P5 Type (2)':
+                if (response === result) return 2;
+                if (response === results.form_id_5 || response === results.form_id_7) return 1.5;
+                if (response === results.form_id_4) return 1;
+                if (response === results.form_id_3) return 0.5;
+                return 0;
+            case 'P6 Type (2)':
+                if (response === result) return 2;
+                if (response === results.form_id_6) return 1.5;
+                if (response === results.form_id_5) return 1;
+                if (response === results.form_id_4) return 0.5;
+                return 0;
+            case 'Simple (1)':
+                return response === result ? 1 : 0;
+            case 'Driver + Team (2)':
+                if (response === result) return 2;
+                let responseDriver = drivers.find(driver => driver.abbreviation === response);
+                let resultDriver = drivers.find(driver => driver.abbreviation === result);
+                return responseDriver.constructor_id === resultDriver.constructor_id ? 1 : 0;
+            case 'Plus Minus One (2)':
+                return response === result ? 2 : Math.abs(response - result) === 1 ? 1 : 0;
+            case 'Closest (1)':
+                // This will be handled separately
+                return 0;
+            default:
+                return 0;
+        }
+    }
+
+    function scoreResponses(playerResponses, results) {
+        let scores = {};
+        formConfig.forEach(question => {
+            if (question.enabled) {
+                let response = playerResponses[`form_id_${question.id}`];
+                let result = results[`form_id_${question.id}`];
+                scores[`form_id_${question.id}_score`] = calculateScore(response, result, question.scoring_type);
+            } else {
+                scores[`form_id_${question.id}_score`] = 0;
+            }
+        });
+        return scores;
+    }
+
+    function calculateGrandTotal(scores) {
+        let grandTotal = 0;
+        for (let key in scores) {
+            grandTotal += scores[key];
+        }
+        return grandTotal;
+    }
+
+    async function updateFormResponses2025(playerId, playerName, raceNumber, raceName, scores, grandTotal, entryType = 'player') {
+        // Construct the data object to be inserted/updated in the form_responses_2025 table
+        let data = {
+            player_id: playerId,
+            player_name: playerName,
+            race_number: raceNumber,
+            race_name: raceName,
+            entry_type: entryType,
+            grand_total: grandTotal,
+            ...scores
+        };
+
+        // Insert or update the data in the form_responses_2025 table
+        const { error } = await supabase
+            .from(`form_responses_${currentYear}`)
+            .upsert(data, { onConflict: ['player_id', 'race_number'] });
+
+        if (error) {
+            console.error(`Error updating form_responses_${currentYear}:`, error.message);
+            progressUpdates.innerHTML += `<p>Error updating form_responses_${currentYear} for player ${playerName}: ${error.message}</p>`;
+        } else {
+            console.log(`Updated form_responses_${currentYear} for player:`, playerName);
+            progressUpdates.innerHTML += `<p>Updated form_responses_${currentYear} for player: ${playerName}</p>`;
+        }
+    }
+
+    function updateProgressBar(progressBar, totalPlayers, currentPlayerIndex) {
+        progressBar.value = (currentPlayerIndex / totalPlayers) * 100;
+        progressBar.style.width = `${progressBar.value}%`;
+    }
+
+    function displayScores(scoreTable, formResponses) {
+        let tbody = scoreTable.querySelector('tbody');
+        tbody.innerHTML = ''; // Clear existing rows
+        formResponses.forEach(response => {
+            let row = document.createElement('tr');
+            let playerNameCell = document.createElement('td');
+            playerNameCell.textContent = response.player_name;
+            let grandTotalCell = document.createElement('td');
+            grandTotalCell.textContent = response.grand_total;
+            row.appendChild(playerNameCell);
+            row.appendChild(grandTotalCell);
+            tbody.appendChild(row);
+        });
+    }
+
+    function getLowestScore(responses) {
+        let lowestScore = Math.min(...responses.map(response => response.grand_total));
+        return lowestScore;
+    }
+
+    function handleClosestScoring(relevantResponses, formConfig) {
+        formConfig.forEach(question => {
+            if (question.scoring_type === 'Closest (1)' && question.enabled) {
+                let closestValue = null;
+                let closestDifference = Infinity;
+                relevantResponses.forEach(response => {
+                    let value = parseFloat(response[`form_id_${question.id}`]);
+                    let result = parseFloat(relevantResponses.find(r => r.player_id === 0)[`form_id_${question.id}`]);
+                    let difference = Math.abs(value - result);
+                    if (difference < closestDifference) {
+                        closestDifference = difference;
+                        closestValue = value;
+                    }
+                });
+                relevantResponses.forEach(response => {
+                    let value = parseFloat(response[`form_id_${question.id}`]);
+                    response[`form_id_${question.id}_score`] = (value === closestValue) ? 1 : 0;
+                });
+            }
+        });
+    }
+
+    // Step 4: Process Each Player's Responses
+    scoreRoundButton.addEventListener('click', async () => {
+        let relevantResponses = formRaw.filter(response => response.race_number === relevantRaceNumber);
+        let results = relevantResponses.find(response => response.player_id === 0);
+
+        handleClosestScoring(relevantResponses, formConfig);
+
+        for (let i = 0; i < relevantResponses.length; i++) {
+            let playerResponse = relevantResponses[i];
+            let playerId = playerResponse.player_id;
+            let player = players.find(player => player.id === playerId);
+            let playerName = player ? player.name : 'Unknown Player';
+            let raceNumber = playerResponse.race_number;
+            let race = calendar.find(race => race.race_number === raceNumber);
+            let raceName = race ? race.name : 'Unknown Race';
+
+            console.log(`Processing playerId: ${playerId}, playerName: ${playerName}, raceNumber: ${raceNumber}, raceName: ${raceName}`);
+
+            let scores = scoreResponses(playerResponse, results);
+            let grandTotal = calculateGrandTotal(scores);
+
+            // Step 5: Update form_responses_2025 Table
+            console.log(`Updating form_responses_${currentYear} for playerId: ${playerId}, playerName: ${playerName}`);
+            await updateFormResponses2025(playerId, playerName, raceNumber, raceName, scores, grandTotal);
+
+            // Update Progress Bar
+            updateProgressBar(progressBar, relevantResponses.length, i + 1);
+            console.log(`Progress: ${(i + 1) / relevantResponses.length * 100}%`);
+        }
+
+        // Step 6: Handle Players Without Responses
+        let playersWithoutResponses = players.filter(player => !relevantResponses.some(response => response.player_id === player.id));
+        console.log(`Players without responses: ${playersWithoutResponses.map(player => player.name).join(', ')}`);
+        playersWithoutResponses.forEach(async player => {
+            let lowestScore = getLowestScore(relevantResponses);
+            console.log(`Assigning lowest score to player: ${player.name}, score: ${lowestScore}`);
+            await updateFormResponses2025(player.id, player.name, relevantRaceNumber, raceName, {}, lowestScore, 'player_lowest_score');
+        });
+
+        // Step 7: Display Scores
+        console.log(`Retrieving updated form_responses_${currentYear} table`);
+        const formResponses = await getTable(`form_responses_${currentYear}`); // Retrieve updated form_responses table
+        displayScores(scoreTable, formResponses);
+        console.log(`Scores displayed`);
+    });
+});
+</script>
 </body>
 </html>
