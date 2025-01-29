@@ -1620,7 +1620,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let scoreRoundButton = document.getElementById('scoreRoundButton');
 
     // Step 3: Create Scoring Function
-    function calculateScore(response, result, scoringType) {
+    function calculateScore(response, result, scoringType, results) {
         switch (scoringType) {
             case 'Off (0)':
                 return 0;
@@ -1666,7 +1666,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (response === result) return 2;
                 let responseDriver = drivers.find(driver => driver.abbreviation === response);
                 let resultDriver = drivers.find(driver => driver.abbreviation === result);
+                if (responseDriver && resultDriver) {
                 return responseDriver.constructor_id === resultDriver.constructor_id ? 1 : 0;
+                } else {
+                    return 0;
+                }
             case 'Plus Minus One (2)':
                 return response === result ? 2 : Math.abs(response - result) === 1 ? 1 : 0;
             case 'Closest (1)':
@@ -1678,18 +1682,60 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function scoreResponses(playerResponses, results) {
-        let scores = {};
-        formConfig.forEach(question => {
-            if (question.enabled) {
-                let response = playerResponses[`form_id_${question.id}`];
-                let result = results[`form_id_${question.id}`];
-                scores[`form_id_${question.id}_score`] = calculateScore(response, result, question.scoring_type);
-            } else {
-                scores[`form_id_${question.id}_score`] = 0;
-            }
-        });
-        return scores;
+    if (playerResponses.player_id === 0) {
+        return {}; // Skip scoring for results
     }
+
+    let scores = { form_id_1_score: 0 }; // Ensure form_id_1_score is always 0
+    formConfig.forEach(question => {
+        if (question.id !== 1 && question.enabled) {
+            let response = playerResponses[`form_id_${question.id}`];
+            let result = results[`form_id_${question.id}`];
+            scores[`form_id_${question.id}_score`] = calculateScore(response, result, question.scoring_type, results);
+        } else if (question.id !== 1) {
+            scores[`form_id_${question.id}_score`] = 0;
+        }
+    });
+    return scores;
+}
+
+function convertResponseToText(response, responseType) {
+    // console.log(`Converting response: ${response} of type: ${responseType}`);
+    switch (responseType) {
+        case 'Select - Name List':
+            return players.find(player => player.id === parseInt(response))?.name || response;
+        case 'Select - Driver List':
+        case 'Select - Driver List + DNF':
+            if (response === 'no-dnf') {
+                return 'No DNFs';
+            }
+            return drivers.find(driver => driver.id === parseInt(response))?.abbreviation || response;
+        case 'Select - Team List':
+            return constructors.find(constructor => constructor.id === parseInt(response))?.name || response;
+        case 'Radio - Yes/No':
+            return response.toLowerCase() === 'yes' ? 'Yes' : 'No';
+        case 'Radio - Heads/Tails':
+            return response.toLowerCase() === 'heads' ? 'Heads' : 'Tails';
+        default:
+            return response;
+    }
+}
+
+    function calculateSubtotals(scores) {
+    let subtotal_1 = scores['form_id_1_score'] || 0;
+    let subtotal_2 = 0;
+    let subtotal_3 = 0;
+    let subtotal_4 = scores['form_id_28_score'] || 0;
+
+    for (let i = 2; i <= 7; i++) {
+        subtotal_2 += scores[`form_id_${i}_score`] || 0;
+    }
+    for (let i = 8; i <= 27; i++) {
+        subtotal_3 += scores[`form_id_${i}_score`] || 0;
+    }
+
+    return { subtotal_1, subtotal_2, subtotal_3, subtotal_4 };
+}
 
     function calculateGrandTotal(scores) {
         let grandTotal = 0;
@@ -1699,65 +1745,217 @@ document.addEventListener("DOMContentLoaded", async () => {
         return grandTotal;
     }
 
-    async function updateFormResponses2025(playerId, playerName, raceNumber, raceName, scores, grandTotal, entryType = 'player') {
-        // Construct the data object to be inserted/updated in the form_responses_2025 table
-        let data = {
+    async function updateFormResponses(playerId, playerName, raceNumber, raceName, scores, grandTotal, entryType = 'player', responses) {
+    let convertedResponses = {};
+    let subtotal_1 = 0, subtotal_2 = 0, subtotal_3 = 0, subtotal_4 = 0;
+
+    if (entryType === 'player_lowest_score') {
+        // Skip conversion and subtotals calculation
+        convertedResponses = {};
+        subtotal_1 = 0;
+        subtotal_2 = 0;
+        subtotal_3 = 0;
+        subtotal_4 = 0;
+
+    } else if (entryType === 'results') {
+        subtotal_1 = 0;
+        subtotal_2 = 0;
+        subtotal_3 = 0;
+        subtotal_4 = 0;
+
+        // Convert responses to text
+        formConfig.forEach(question => {
+            if (question.id !== 1 && question.enabled) {
+                let response = responses[`form_id_${question.id}`];
+                if (response !== undefined) { // Check if response is defined
+                    convertedResponses[`form_id_${question.id}`] = convertResponseToText(response, question.response_type);
+                } else {
+                    console.log(`No response found for form_id_${question.id}`);
+                }
+            }
+        });
+
+    } else {
+        // Calculate subtotals
+        let subtotals = calculateSubtotals(scores);
+        subtotal_1 = subtotals.subtotal_1;
+        subtotal_2 = subtotals.subtotal_2;
+        subtotal_3 = subtotals.subtotal_3;
+        subtotal_4 = subtotals.subtotal_4;
+
+        // Convert responses to text
+        formConfig.forEach(question => {
+            if (question.id !== 1 && question.enabled) {
+                let response = responses[`form_id_${question.id}`];
+                if (response !== undefined) { // Check if response is defined
+                    convertedResponses[`form_id_${question.id}`] = convertResponseToText(response, question.response_type);
+                } else {
+                    console.log(`No response found for form_id_${question.id}`);
+                }
+            }
+        });
+    }
+
+    // Construct the data object to be inserted/updated in the form_responses table
+    let data;
+    if (entryType === 'results') {
+        data = {
+            player_id: playerId,
+            player_name: playerName,
+            race_number: raceNumber,
+            race_name: raceName,
+            entry_type: entryType,
+            ...convertedResponses // Include converted responses for results
+        };
+    } else if (entryType === 'player_lowest_score') {
+        data = {
             player_id: playerId,
             player_name: playerName,
             race_number: raceNumber,
             race_name: raceName,
             entry_type: entryType,
             grand_total: grandTotal,
-            ...scores
         };
+    } else {
+        data = {
+            player_id: playerId,
+            player_name: playerName,
+            race_number: raceNumber,
+            race_name: raceName,
+            entry_type: entryType,
+            grand_total: grandTotal,
+            subtotal_1,
+            subtotal_2,
+            subtotal_3,
+            subtotal_4,
+            ...scores,
+            ...convertedResponses
+        };
+    }
 
-        // Insert or update the data in the form_responses_2025 table
-        const { error } = await supabase
+    // Log the data being uploaded
+    console.log('Data being uploaded:', data);
+
+    // Check if the record exists
+    const { data: existingRecord, error: selectError } = await supabase
+        .from(`form_responses_${currentYear}`)
+        .select('*')
+        .eq('player_id', playerId)
+        .eq('race_number', raceNumber)
+        .limit(1)
+        .single();
+
+    if (selectError && selectError.code !== 'PGRST116') { // PGRST116 means no rows found
+        console.error(`Error checking existing record in form_responses_${currentYear}:`, selectError.message);
+        progressUpdates.innerHTML += `<p>Error checking existing record in form_responses_${currentYear} for player ${playerName}: ${selectError.message}</p>`;
+        return;
+    }
+
+    // Insert or update based on the check
+    let upsertError;
+    if (existingRecord) {
+        const { error: updateError } = await supabase
             .from(`form_responses_${currentYear}`)
-            .upsert(data, { onConflict: ['player_id', 'race_number'] });
+            .update(data)
+            .eq('player_id', playerId)
+            .eq('race_number', raceNumber);
+        upsertError = updateError;
+    } else {
+        const { error: insertError } = await supabase
+            .from(`form_responses_${currentYear}`)
+            .insert(data);
+        upsertError = insertError;
+    }
+
+    if (upsertError) {
+        console.error(`Error updating form_responses_${currentYear}:`, upsertError.message);
+        progressUpdates.innerHTML += `<p>Error updating form_responses_${currentYear} for player ${playerName}: ${upsertError.message}</p>`;
+    } else {
+        console.log(`Updated form_responses_${currentYear} for player:`, playerName);
+        progressUpdates.innerHTML += `<p>Updated form_responses_${currentYear} for player: ${playerName}</p>`;
+    }
+}
+
+function updateProgressBar(progressBar, totalItems, currentItemIndex) {
+    progressBar.value = (currentItemIndex / totalItems) * 100;
+    progressBar.style.width = `${progressBar.value}%`;
+}
+
+function displayScores(scoreTable, formResponses) {
+    let tbody = scoreTable.querySelector('tbody');
+    tbody.innerHTML = ''; // Clear existing rows
+    formResponses.forEach(response => {
+        let row = document.createElement('tr');
+        let playerNameCell = document.createElement('td');
+        playerNameCell.textContent = response.entry_type === 'player_lowest_score' ? `${response.player_name} (lowest score)` : response.player_name;
+        let grandTotalCell = document.createElement('td');
+        grandTotalCell.textContent = response.entry_type === 'results' ? '' : (response.grand_total !== null ? response.grand_total : 'N/A');
+        row.appendChild(playerNameCell);
+        row.appendChild(grandTotalCell);
+        tbody.appendChild(row);
+    });
+}
+
+async function getLowestScore(year, raceNumber) {
+    // Request data from the form_responses table for the relevant year, filtered by entry_type 'player' and race_number
+    const { data: responses, error } = await supabase
+        .from(`form_responses_${year}`)
+        .select('grand_total')
+        .eq('entry_type', 'player')
+        .eq('race_number', raceNumber);
+
+    if (error) {
+        console.error(`Error retrieving data from form_responses_${year}:`, error.message);
+        return NaN;
+    }
+
+    // Calculate the minimum grand_total from the filtered data
+    let lowestScore = Math.min(...responses.map(response => response.grand_total));
+    console.log(`Filtered responses for lowest score calculation:`, responses);
+    console.log(`Calculated lowest score: ${lowestScore}`);
+    return lowestScore;
+}
+
+async function handleClosestScoring(year, raceNumber, formConfig) {
+    try {
+        // Retrieve all player responses for the relevant race
+        const { data: relevantResponses, error } = await supabase
+            .from(`form_responses_${year}`)
+            .select('*')
+            .eq('race_number', raceNumber)
+            .eq('entry_type', 'player');
 
         if (error) {
-            console.error(`Error updating form_responses_${currentYear}:`, error.message);
-            progressUpdates.innerHTML += `<p>Error updating form_responses_${currentYear} for player ${playerName}: ${error.message}</p>`;
-        } else {
-            console.log(`Updated form_responses_${currentYear} for player:`, playerName);
-            progressUpdates.innerHTML += `<p>Updated form_responses_${currentYear} for player: ${playerName}</p>`;
+            console.error(`Error retrieving data from form_responses_${year}:`, error.message);
+            return;
         }
-    }
 
-    function updateProgressBar(progressBar, totalPlayers, currentPlayerIndex) {
-        progressBar.value = (currentPlayerIndex / totalPlayers) * 100;
-        progressBar.style.width = `${progressBar.value}%`;
-    }
+        // Log the retrieved responses
+        console.log(`Retrieved player responses for closest scoring:`, relevantResponses);
 
-    function displayScores(scoreTable, formResponses) {
-        let tbody = scoreTable.querySelector('tbody');
-        tbody.innerHTML = ''; // Clear existing rows
-        formResponses.forEach(response => {
-            let row = document.createElement('tr');
-            let playerNameCell = document.createElement('td');
-            playerNameCell.textContent = response.player_name;
-            let grandTotalCell = document.createElement('td');
-            grandTotalCell.textContent = response.grand_total;
-            row.appendChild(playerNameCell);
-            row.appendChild(grandTotalCell);
-            tbody.appendChild(row);
-        });
-    }
+        // Retrieve the results entry
+        const { data: resultsEntry, error: resultsError } = await supabase
+            .from(`form_responses_${year}`)
+            .select('*')
+            .eq('race_number', raceNumber)
+            .eq('entry_type', 'results')
+            .single();
 
-    function getLowestScore(responses) {
-        let lowestScore = Math.min(...responses.map(response => response.grand_total));
-        return lowestScore;
-    }
+        if (resultsError) {
+            console.error(`Error retrieving results entry from form_responses_${year}:`, resultsError.message);
+            return;
+        }
 
-    function handleClosestScoring(relevantResponses, formConfig) {
+        // Log the retrieved results entry
+        console.log(`Retrieved results entry for closest scoring:`, resultsEntry);
+
         formConfig.forEach(question => {
             if (question.scoring_type === 'Closest (1)' && question.enabled) {
                 let closestValue = null;
                 let closestDifference = Infinity;
                 relevantResponses.forEach(response => {
                     let value = parseFloat(response[`form_id_${question.id}`]);
-                    let result = parseFloat(relevantResponses.find(r => r.player_id === 0)[`form_id_${question.id}`]);
+                    let result = parseFloat(resultsEntry[`form_id_${question.id}`]);
                     let difference = Math.abs(value - result);
                     if (difference < closestDifference) {
                         closestDifference = difference;
@@ -1770,20 +1968,66 @@ document.addEventListener("DOMContentLoaded", async () => {
                 });
             }
         });
+
+        // Update the scores for the 'Closest (1)' question
+        for (let response of relevantResponses) {
+            // Calculate subtotals and grand total
+            let scores = scoreResponses(response, resultsEntry);
+            let { subtotal_1, subtotal_2, subtotal_3, subtotal_4 } = calculateSubtotals(scores);
+            let grandTotal = calculateGrandTotal(scores);
+
+            // Update the form responses
+            await updateFormResponses(response.player_id, response.player_name, raceNumber, response.race_name, scores, grandTotal, 'player', response);
+        }
+    } catch (err) {
+        console.error(`Unexpected error in handleClosestScoring:`, err);
     }
+}
 
-    // Step 4: Process Each Player's Responses
-    scoreRoundButton.addEventListener('click', async () => {
-        let relevantResponses = formRaw.filter(response => response.race_number === relevantRaceNumber);
-        let results = relevantResponses.find(response => response.player_id === 0);
+   // Step 4: Process Each Player's Responses
+scoreRoundButton.addEventListener('click', async () => {
+    let relevantResponses = formRaw.filter(response => response.race_number === relevantRaceNumber);
+    let results = relevantResponses.find(response => response.player_id === 0);
 
-        handleClosestScoring(relevantResponses, formConfig);
+    
+
+    // Define raceName outside the loops
+    let race = calendar.find(race => race.race_number === relevantRaceNumber);
+    let raceName = race ? race.name : 'Unknown Race';
+
+    // Handle results entry
+    // Handle results entry
+// Handle results entry
+if (results) {
+    console.log(`Processing results entry for raceNumber: ${relevantRaceNumber}, raceName: ${raceName}`);
+    let formattedResults = {};
+    formConfig.forEach(question => {
+        if (question.id !== 1 && question.enabled) {
+            let response = results[`form_id_${question.id}`];
+            if (response !== undefined) {
+                formattedResults[`form_id_${question.id}`] = convertResponseToText(response, question.response_type);
+            }
+        }
+    });
+    await updateFormResponses(0, 'Results', relevantRaceNumber, raceName, formattedResults, 0, 'results', results);
+    console.log('Results entry updated with entry_type "results"');
+}
+
+    // Total number of items (players + 1 for results)
+    let totalItems = players.length;
+    let currentItemIndex = 0;
 
         for (let i = 0; i < relevantResponses.length; i++) {
             let playerResponse = relevantResponses[i];
             let playerId = playerResponse.player_id;
+
+            // Skip processing for results entry
+            if (playerId === 0) {
+                continue;
+            }
+
             let player = players.find(player => player.id === playerId);
-            let playerName = player ? player.name : 'Unknown Player';
+            let playerName = player ? player.name : players.find(p => p.id === playerId)?.name || 'Unknown Player';
             let raceNumber = playerResponse.race_number;
             let race = calendar.find(race => race.race_number === raceNumber);
             let raceName = race ? race.name : 'Unknown Race';
@@ -1795,21 +2039,31 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             // Step 5: Update form_responses_2025 Table
             console.log(`Updating form_responses_${currentYear} for playerId: ${playerId}, playerName: ${playerName}`);
-            await updateFormResponses2025(playerId, playerName, raceNumber, raceName, scores, grandTotal);
+            await updateFormResponses(playerId, playerName, raceNumber, raceName, scores, grandTotal, 'player', playerResponse);
 
             // Update Progress Bar
-            updateProgressBar(progressBar, relevantResponses.length, i + 1);
-            console.log(`Progress: ${(i + 1) / relevantResponses.length * 100}%`);
-        }
+            currentItemIndex++;
+            updateProgressBar(progressBar, totalItems, currentItemIndex);
+            console.log(`Progress: ${(currentItemIndex / totalItems) * 100}%`);
+        }       
 
         // Step 6: Handle Players Without Responses
         let playersWithoutResponses = players.filter(player => !relevantResponses.some(response => response.player_id === player.id));
         console.log(`Players without responses: ${playersWithoutResponses.map(player => player.name).join(', ')}`);
-        playersWithoutResponses.forEach(async player => {
-            let lowestScore = getLowestScore(relevantResponses);
+
+        // Calculate the lowest score once
+        let lowestScore = await getLowestScore(currentYear, relevantRaceNumber);
+        console.log(`Lowest score for the round: ${lowestScore}`);
+
+        for (let player of playersWithoutResponses) {
             console.log(`Assigning lowest score to player: ${player.name}, score: ${lowestScore}`);
-            await updateFormResponses2025(player.id, player.name, relevantRaceNumber, raceName, {}, lowestScore, 'player_lowest_score');
-        });
+            await updateFormResponses(player.id, player.name, relevantRaceNumber, raceName, {}, lowestScore, 'player_lowest_score');
+
+                // Update Progress Bar
+                currentItemIndex++;
+                updateProgressBar(progressBar, totalItems, currentItemIndex);
+                console.log(`Progress: ${(currentItemIndex / totalItems) * 100}%`);
+        }
 
         // Step 7: Display Scores
         console.log(`Retrieving updated form_responses_${currentYear} table`);
