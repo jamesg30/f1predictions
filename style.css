@@ -32,3 +32,35 @@ footer {
     color: #333;
     width: 100%;
 }
+
+#mainResultsTable th {
+    background-color: #ddd; /* Light grey background for header */
+}
+
+#mainResultsTable td {
+    border: 1px solid #ddd; /* Add border to cells */
+}
+
+#mainResultsTable {
+    width: 100%;
+    table-layout: auto; /* Allow columns to adjust width automatically */
+}
+
+#mainResultsTable th, #mainResultsTable td {
+    max-width: 10ch; /* Set maximum width to approximately 10 characters */
+    word-wrap: break-word; /* Wrap text in cells */
+    white-space: normal; /* Allow text to wrap */
+    padding: 1px; /* Add padding for better readability */
+    text-align: center; /* Center-align text */
+    vertical-align: middle; /* Center-align text vertically */
+}
+
+/* Apply lighter grey background to the first column, excluding spacer rows */
+#mainResultsTable td:first-child {
+    background-color: #eeeeee; /* Lighter grey background for the first column */
+}
+
+/* Exclude spacer rows from the lighter grey background */
+#mainResultsTable tr.spacer-row td:first-child {
+    background-color: white; /* Reset background color for spacer rows */
+}

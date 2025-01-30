@@ -1702,8 +1702,27 @@ document.addEventListener("DOMContentLoaded", async () => {
             case 'Plus Minus One (2)':
                 return response === result ? 2 : Math.abs(response - result) === 1 ? 1 : 0;
             case 'Closest (1)':
-                // This will be handled separately
-                return 0;
+                // Calculate closest score for form_id_28
+                const resultNumber = Number(results.form_id_28);
+
+                // Filter player responses for form_id_28 and convert them to numbers
+                const playerResponsesFor28 = formRaw
+                    .filter(response => response.race_number === relevantRaceNumber && response.player_id !== 0 && response.player_id !== -1 )
+                    .map(response => Number(response.form_id_28));
+
+                // Find the closest difference
+                let closestDifference = Infinity;
+                playerResponsesFor28.forEach(playerResponse => {
+                    const difference = Math.abs(playerResponse - resultNumber);
+                    if (difference < closestDifference) {
+                        closestDifference = difference;
+                    }
+                });
+
+                // Assign score based on the closest response
+                const responseDifference = Math.abs(Number(response) - resultNumber);
+                const score = responseDifference === closestDifference ? 1 : 0;
+                return score;
             default:
                 return 0;
         }
@@ -1904,6 +1923,65 @@ function convertResponseToText(response, responseType) {
     }
 }
 
+// Function to save questions
+async function saveQuestions(raceNumber, raceName) {
+    let questionsData = {
+        player_id: -1,
+        player_name: 'Questions',
+        race_number: raceNumber,
+        race_name: raceName,
+        entry_type: 'questions'
+    };
+
+    formConfig.forEach(question => {
+        if (question.id !== 1) {
+            questionsData[`form_id_${question.id}`] = question.text;
+        }
+    });
+
+    // Log the questions data being uploaded
+    console.log('Questions data being uploaded:', questionsData);
+
+    // Insert or update the questions data
+    const { data: existingRecord, error: selectError } = await supabase
+        .from(`form_responses_${currentYear}`)
+        .select('*')
+        .eq('player_id', -1)
+        .eq('race_number', raceNumber)
+        .limit(1)
+        .single();
+
+    if (selectError && selectError.code !== 'PGRST116') { // PGRST116 means no rows found
+        console.error(`Error checking existing record in form_responses_${currentYear}:`, selectError.message);
+        progressUpdates.innerHTML += `<p>Error checking existing record in form_responses_${currentYear} for questions: ${selectError.message}</p>`;
+        return;
+    }
+
+    // Insert or update based on the check
+    let upsertError;
+    if (existingRecord) {
+        const { error: updateError } = await supabase
+            .from(`form_responses_${currentYear}`)
+            .update(questionsData)
+            .eq('player_id', -1)
+            .eq('race_number', raceNumber);
+        upsertError = updateError;
+    } else {
+        const { error: insertError } = await supabase
+            .from(`form_responses_${currentYear}`)
+            .insert(questionsData);
+        upsertError = insertError;
+    }
+
+    if (upsertError) {
+        console.error(`Error updating form_responses_${currentYear} for questions:`, upsertError.message);
+        progressUpdates.innerHTML += `<p>Error updating form_responses_${currentYear} for questions: ${upsertError.message}</p>`;
+    } else {
+        console.log(`Updated form_responses_${currentYear} for questions`);
+        progressUpdates.innerHTML += `<p>Updated form_responses_${currentYear} for questions</p>`;
+    }
+}
+
 function updateProgressBar(progressBar, totalItems, currentItemIndex) {
     progressBar.value = (currentItemIndex / totalItems) * 100;
     progressBar.style.width = `${progressBar.value}%`;
@@ -1944,80 +2022,10 @@ async function getLowestScore(year, raceNumber) {
     return lowestScore;
 }
 
-async function handleClosestScoring(year, raceNumber, formConfig) {
-    try {
-        // Retrieve all player responses for the relevant race
-        const { data: relevantResponses, error } = await supabase
-            .from(`form_responses_${year}`)
-            .select('*')
-            .eq('race_number', raceNumber)
-            .eq('entry_type', 'player');
-
-        if (error) {
-            console.error(`Error retrieving data from form_responses_${year}:`, error.message);
-            return;
-        }
-
-        // Log the retrieved responses
-        console.log(`Retrieved player responses for closest scoring:`, relevantResponses);
-
-        // Retrieve the results entry
-        const { data: resultsEntry, error: resultsError } = await supabase
-            .from(`form_responses_${year}`)
-            .select('*')
-            .eq('race_number', raceNumber)
-            .eq('entry_type', 'results')
-            .single();
-
-        if (resultsError) {
-            console.error(`Error retrieving results entry from form_responses_${year}:`, resultsError.message);
-            return;
-        }
-
-        // Log the retrieved results entry
-        console.log(`Retrieved results entry for closest scoring:`, resultsEntry);
-
-        formConfig.forEach(question => {
-            if (question.scoring_type === 'Closest (1)' && question.enabled) {
-                let closestValue = null;
-                let closestDifference = Infinity;
-                relevantResponses.forEach(response => {
-                    let value = parseFloat(response[`form_id_${question.id}`]);
-                    let result = parseFloat(resultsEntry[`form_id_${question.id}`]);
-                    let difference = Math.abs(value - result);
-                    if (difference < closestDifference) {
-                        closestDifference = difference;
-                        closestValue = value;
-                    }
-                });
-                relevantResponses.forEach(response => {
-                    let value = parseFloat(response[`form_id_${question.id}`]);
-                    response[`form_id_${question.id}_score`] = (value === closestValue) ? 1 : 0;
-                });
-            }
-        });
-
-        // Update the scores for the 'Closest (1)' question
-        for (let response of relevantResponses) {
-            // Calculate subtotals and grand total
-            let scores = scoreResponses(response, resultsEntry);
-            let { subtotal_1, subtotal_2, subtotal_3, subtotal_4 } = calculateSubtotals(scores);
-            let grandTotal = calculateGrandTotal(scores);
-
-            // Update the form responses
-            await updateFormResponses(response.player_id, response.player_name, raceNumber, response.race_name, scores, grandTotal, 'player', response);
-        }
-    } catch (err) {
-        console.error(`Unexpected error in handleClosestScoring:`, err);
-    }
-}
-
    // Step 4: Process Each Player's Responses
 scoreRoundButton.addEventListener('click', async () => {
     let relevantResponses = formRaw.filter(response => response.race_number === relevantRaceNumber);
     let results = relevantResponses.find(response => response.player_id === 0);
-
-    
 
     // Define raceName outside the loops
     let race = calendar.find(race => race.race_number === relevantRaceNumber);
@@ -2074,6 +2082,14 @@ if (results) {
             updateProgressBar(progressBar, totalItems, currentItemIndex);
             console.log(`Progress: ${(currentItemIndex / totalItems) * 100}%`);
         }       
+        
+        // Call the function to save questions
+        let raceNumberTemp = relevantResponses[0].race_number;
+        console.log('Race Number: ',raceNumberTemp)
+        let raceTemp = calendar.find(race => race.race_number === raceNumberTemp);
+        let raceNameTemp = race ? race.name : 'Unknown Race';
+        console.log('Race Name: ',raceNameTemp)
+        await saveQuestions(raceNumberTemp, raceNameTemp);
 
         // Step 6: Handle Players Without Responses
         let playersWithoutResponses = players.filter(player => !relevantResponses.some(response => response.player_id === player.id));

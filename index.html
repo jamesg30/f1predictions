@@ -142,127 +142,56 @@
     </div>
 </div>
 
+<div> <!-- Scored Results Placeholder -->
+    <div class="container my-3 d-flex justify-content-left">
+        <h4 class="mb-3">Latest Results</h4>
+    </div>
+    <div class="container my-4">
+        <h5 id="raceTitle" class="mb-3"></h5>
+        
+        <table id="resultsTable">
+            <tbody>
+                <td style="vertical-align: center;">
+                    <p>
+                        <img src="/media/awards/medal_first.png" style="float:left; width: 15px; height: 30px; image-rendering: pixelated;">
+                        <span id="firstPlace"></span>
+                    </p>
+                </td>
+                <td style="vertical-align: center;">
+                    <p>
+                        <img src="/media/awards/medal_second.png" style="float:left; width: 15px; height: 30px; image-rendering: pixelated;">
+                        <span id="secondPlace"></span>
+                    </p>
+                </td>
+                <td style="vertical-align: center;">
+                    <p>
+                        <img src="/media/awards/medal_third.png" style="float:left; width: 15px; height: 30px; image-rendering: pixelated;">
+                        <span id="thirdPlace"></span>
+                    </p>
+                </td>
+            </tbody>
+        </table>
     
-        <div class="container my-3 d-flex justify-content-left">
-            <h4 class="mb-3">Latest Results</h4>
-        </div>
-        <div class="container my-4">
-            <h5 class="mb-3">2024 Abu Dhabi Grand Prix Results</h5>
-            
-            <table>
-                <tbody>
-                    <td style="vertical-align: center;">
-                        <p>
-                            <img src="/media/awards/medal_first.png" style="float:left; width: 15px; height: 30px; image-rendering: pixelated;">
-                            Damien
-                        </p>
-                    </td>
-                    <td style="vertical-align: center;">
-                        <p>
-                            <img src="/media/awards/medal_second.png" style="float:left; width: 15px; height: 30px; image-rendering: pixelated;">
-                            Ethan
-                        </p>
-                    </td>
-                    <td style="vertical-align: center;">
-                        <p>
-                            <img src="/media/awards/medal_third.png" style="float:left; width: 15px; height: 30px; image-rendering: pixelated;">
-                            Max
-                        </p>
-                    </td>
+        <!-- Scrollable container -->
+        <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
+            <table id="mainResultsTable" class="table table-sm table-bordered">
+                <thead id="tableHeader">
+                    <!-- Header row will be inserted here -->
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Data rows will be inserted here -->
                 </tbody>
             </table>
-          
-            <!-- Scrollable container -->
-            <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
-                <table class="table table-sm table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Damien</th>
-                            <th>Josh 2001</th>
-                            <th>Noah</th>
-                            <th>Max</th>
-                            <th>Lewis</th>
-                            <th>Josh 2004</th>
-                            <th>Raf</th>
-                            <th>Anthony</th>
-                            <th>Adrian</th>
-                            <th>Ethan</th>
-                            <th>James</th>
-                            <th style="background-color: white; border-top: none; border-bottom: none;"></th> <!-- Spacer column -->
-                            <th>Results</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                            <td style="background-color: #e80220; color: white;">LEC</td>
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                            <td style="background-color: #229971; color: white;">ALO</td>
-                            <td style="background-color: #ff8001; color: white;">PIA</td>
-                            <td style="background-color: #3671c6; color: white;">VER</td>
-                            <td style="background-color: #3671c6; color: white;">VER</td>
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                            <td style="background-color: #229971; color: white;">ALO</td>
-                            <td style="background-color: white;"></td> <!-- Blank spacer column -->
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                            <td style="background-color: #e80220; color: white;">LEC</td>
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                            <td style="background-color: #229971; color: white;">ALO</td>
-                            <td style="background-color: #ff8001; color: white;">PIA</td>
-                            <td style="background-color: #3671c6; color: white;">VER</td>
-                            <td style="background-color: #3671c6; color: white;">VER</td>
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                            <td style="background-color: #229971; color: white;">ALO</td>
-                            <td style="background-color: white;"></td> <!-- Blank spacer column -->
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                        </tr>
-                        <tr>
-                            <td>3</td>
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                            <td style="background-color: #e80220; color: white;">LEC</td>
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                            <td style="background-color: #3671c6; color: white;">VER</td>
-                            <td style="background-color: #3671c6; color: white;">VER</td>
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                            <td style="background-color: #e80220; color: white;">LEC</td>
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                            <td style="background-color: #229971; color: white;">ALO</td>
-                            <td style="background-color: white;"></td> <!-- Blank spacer column -->
-                            <td style="background-color: #ff8001; color: white;">NOR</td>
-                        </tr>
-                        <tr>
-                            <td>Totals</td>
-                            <td>12</td>
-                            <td>11</td>
-                            <td>18</td>
-                            <td>19</td>
-                            <td>21</td>
-                            <td>10</td>
-                            <td>14</td>
-                            <td>13</td>
-                            <td>17</td>
-                            <td>15</td>
-                            <td>22</td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        <!-- More rows here -->
-                    </tbody>
-                </table>
-            </div>
         </div>
+        <div class="form-check form-switch">
+            <label class="form-check-label" for="toggleScores">Show Scores</label>
+            <input class="form-check-input" type="checkbox" id="toggleScores">
+        </div>
+        <div id="lowestScores" class="mt-3">
+            <!-- Lowest scores will be displayed here -->
+        </div>
+    </div>
+</div>
         
 
         <div class="row g-4">
@@ -507,6 +436,247 @@ document.addEventListener('DOMContentLoaded', async () => {
             formLink.href = '/form';
         }
     });
+});
+
+// Results Table Formatting
+document.addEventListener("DOMContentLoaded", async () => {
+    // Fetch initial data
+    const { data: formDetails, error: formDetailsError } = await supabase
+        .from('form_details')
+        .select('*')
+        .eq('id', 1)
+        .single();
+
+    if (formDetailsError) {
+        console.error('Error fetching form details:', formDetailsError.message);
+        return;
+    }
+
+    const { results_display_race_number, results_display_type, current_year } = formDetails;
+
+    if (results_display_type === 'Unscored Predictions') {
+        return; // End function if unscored predictions
+    }
+
+    // Fetch race details
+    const { data: raceDetails, error: raceDetailsError } = await supabase
+        .from('calendar')
+        .select('*')
+        .eq('race_number', results_display_race_number)
+        .single();
+
+    if (raceDetailsError) {
+        console.error('Error fetching race details:', raceDetailsError.message);
+        return;
+    }
+
+    const raceName = `${raceDetails.name} GP`;
+
+    // Fetch form responses
+    const { data: formResponses, error: formResponsesError } = await supabase
+        .from(`form_responses_${current_year}`)
+        .select('*')
+        .eq('race_number', results_display_race_number);
+    if (formResponsesError) {
+        console.error('Error fetching form responses:', formResponsesError.message);
+        return;
+    }
+
+    // Fetch drivers and constructors
+    const { data: drivers, error: driversError } = await supabase
+        .from('drivers')
+        .select('*');
+    if (driversError) {
+        console.error('Error fetching drivers:', driversError.message);
+        return;
+    }
+
+    const { data: constructors, error: constructorsError } = await supabase
+        .from('constructors')
+        .select('*');
+    if (constructorsError) {
+        console.error('Error fetching constructors:', constructorsError.message);
+        return;
+    }
+
+    // Set race title
+    document.getElementById('raceTitle').textContent = `${raceName} ${current_year} - Results`;
+
+    // Process form responses
+    const questions = formResponses.find(response => response.entry_type === 'questions');
+    const results = formResponses.find(response => response.entry_type === 'results');
+console.log('Results object:', results); // Debugging output
+    const players = formResponses.filter(response => response.entry_type === 'player');
+    const lowestScores = formResponses.filter(response => response.entry_type === 'player_lowest_score');
+
+    // Create header row
+    const headerRow = document.createElement('tr');
+    headerRow.classList.add('header');
+    headerRow.innerHTML = '<th>Name</th>';
+    players.forEach(player => {
+        const th = document.createElement('th');
+        th.textContent = player.player_name;
+        headerRow.appendChild(th);
+    });
+    headerRow.innerHTML += '<th style="background-color: white; border-top: none; border-bottom: none;"></th><th>Results</th>';
+    document.getElementById('tableHeader').appendChild(headerRow);
+
+    // Create data rows
+    const tableBody = document.getElementById('tableBody');
+    const createRow = (id, label) => {
+    console.log(`Creating row for ID: ${id}, Label: ${label}`);
+    const isTotalColumn = ['subtotal_1', 'subtotal_2', 'subtotal_3', 'subtotal_4', 'grand_total'].includes(id);
+
+    if (isTotalColumn) {
+        console.log(`Checking total column: ${id}`);
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${label}</td>`;
+        players.forEach(player => {
+            console.log(`Processing player: ${player.player_name}, Player ID: ${player.player_id}`);
+            const td = document.createElement('td');
+            td.textContent = player[id];
+            console.log(`Player ${player.player_name} score for ${id}: ${player[id]}`);
+            td.className = `${id}_score`;
+            td.dataset.playerId = player.player_id;
+            row.appendChild(td);
+        });
+        row.innerHTML += `<td style="background-color: white;"></td><td></td>`;
+        console.log(`Appending row to table body: ${row.innerHTML}`);
+        tableBody.appendChild(row);
+    } else {
+        console.log(`Checking form_id column: form_id_${id}`);
+        if (results[`form_id_${id}`] !== null) {
+            console.log(`Results for form_id_${id}: ${results[`form_id_${id}`]}`);
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${label}</td>`;
+            players.forEach(player => {
+                console.log(`Processing player: ${player.player_name}, Player ID: ${player.player_id}`);
+                const td = document.createElement('td');
+                td.textContent = player[`form_id_${id}`];
+                console.log(`Player ${player.player_name} score for form_id_${id}: ${player[`form_id_${id}`]}`);
+                td.className = `form_id_${id}_score`;
+                td.dataset.playerId = player.player_id;
+                row.appendChild(td);
+            });
+            row.innerHTML += `<td style="background-color: white;"></td><td>${results[`form_id_${id}`]}</td>`;
+            console.log(`Appending row to table body: ${row.innerHTML}`);
+            tableBody.appendChild(row);
+        } else {
+            console.log(`No results found for form_id_${id}`);
+        }
+    }
+};
+
+// Add question rows
+for (let i = 2; i <= 7; i++) {
+    createRow(i, questions[`form_id_${i}`]);
+}
+
+createRow('subtotal_2', 'Subtotal');
+tableBody.innerHTML += '<tr class="spacer-row"><td colspan="100%" style="background-color: white;"></td></tr>'; // Divider
+
+for (let i = 8; i <= 27; i++) {
+    createRow(i, questions[`form_id_${i}`]);
+}
+
+createRow('subtotal_3', 'Subtotal');
+tableBody.innerHTML += '<tr class="spacer-row"><td colspan="100%" style="background-color: white;"></td></tr>'; // Divider
+
+createRow(28, questions[`form_id_28`]);
+tableBody.innerHTML += '<tr class="spacer-row"><td colspan="100%" style="background-color: white;"></td></tr>'; // Divider
+createRow('grand_total', 'Grand Total');
+
+    // Apply formatting
+    const applyFormatting = (cell, value) => {
+        if (/^[A-Z]{3}$/.test(value)) {
+            const driver = drivers.find(driver => driver.abbreviation === value);
+            if (driver) {
+                const constructor = constructors.find(constructor => constructor.id === driver.constructor_id);
+                if (constructor) {
+                    cell.style.backgroundColor = constructor.background_colour;
+                    cell.style.color = constructor.text_colour;
+                }
+            }
+        } else if (/^\d+$/.test(value)) {
+            // Leave unformatted
+        } else if (value === 'Yes') {
+            cell.style.color = 'green';
+            cell.style.backgroundColor = 'white';
+        } else if (value === 'No') {
+            cell.style.color = 'red';
+            cell.style.backgroundColor = 'white';
+        } else {
+            const constructor = constructors.find(constructor => constructor.name === value);
+            if (constructor) {
+                cell.style.backgroundColor = constructor.background_colour;
+                cell.style.color = constructor.text_colour;
+            }
+        }
+    };
+
+    document.querySelectorAll('#mainResultsTable tbody td').forEach(cell => {
+        applyFormatting(cell, cell.textContent);
+    });
+
+    // Highlight highest scores
+const highlightHighest = (selector, colors) => {
+    const cells = Array.from(document.querySelectorAll(selector));
+    const values = cells.map(cell => {
+        const value = parseFloat(cell.textContent);
+        console.log(`Cell value: ${value}`); // Debugging output
+        return value;
+    }).filter(value => !isNaN(value));
+    const sortedValues = [...new Set(values)].sort((a, b) => b - a); // Sort values in descending order and remove duplicates
+    console.log(`Sorted values: ${sortedValues}`); // Debugging output
+
+    cells.forEach(cell => {
+        const cellValue = parseFloat(cell.textContent);
+        const rank = sortedValues.indexOf(cellValue);
+        if (rank >= 0 && rank < colors.length) {
+            cell.style.backgroundColor = colors[rank];
+            cell.style.color = 'black';
+        }
+    });
+};
+
+// Highlight highest subtotals and grand total
+highlightHighest('td.subtotal_2_score', ['lightyellow']); // Subtotal 2
+highlightHighest('td.subtotal_3_score', ['lightyellow']); // Subtotal 3
+highlightHighest('td.grand_total_score', ['gold', 'silver', '#cd7f32']); // Grand Total
+
+    // Display top scorers
+    const grandTotals = players.map(player => ({
+        name: player.player_name,
+        total: parseFloat(player.grand_total)
+    })).sort((a, b) => b.total - a.total);
+
+    document.getElementById('firstPlace').textContent = grandTotals[0]?.name || '';
+    document.getElementById('secondPlace').textContent = grandTotals[1]?.name || '';
+    document.getElementById('thirdPlace').textContent = grandTotals[2]?.name || '';
+
+    // Toggle scores
+    document.getElementById('toggleScores').addEventListener('change', (event) => {
+    const showScores = event.target.checked;
+    document.querySelectorAll('#mainResultsTable tbody td').forEach(cell => {
+        const idMatch = cell.className.match(/form_id_(\d+)_score/);
+        if (idMatch) {
+            const scoreId = `form_id_${idMatch[1]}_score`;
+            const playerId = cell.dataset.playerId;
+            const player = players.find(player => player.player_id == playerId);
+            const playerScore = player ? player[scoreId] : null;
+            if (playerScore !== null) {
+                cell.textContent = showScores ? `${cell.textContent} (${playerScore})` : cell.textContent.split(' ')[0];
+            }
+        }
+    });
+});
+
+    // Display players with lowest scores
+    const lowestScoresDiv = document.getElementById('lowestScores');
+    if (lowestScores.length > 0) {
+        const lowestScoresText = lowestScores.map(player => player.player_name).join(', ');
+        lowestScoresDiv.textContent = `Lowest Score: ${lowestScoresText}`;
+    }
 });
     </script>
 
