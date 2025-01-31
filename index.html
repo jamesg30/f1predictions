@@ -184,7 +184,7 @@
             </table>
         </div>
         <div class="form-check form-switch">
-            <label class="form-check-label" for="toggleScores">Show Scores</label>
+            <label class="form-check-label" for="toggleScores">Show Detailed Scoring</label>
             <input class="form-check-input" type="checkbox" id="toggleScores">
         </div>
         <div id="lowestScores" class="mt-3">
@@ -639,10 +639,32 @@ const highlightHighest = (selector, colors) => {
     });
 };
 
+// Highlight closest score (lowest points) for form_id_28
+const highlightClosestScore = (selector, color) => {
+    const cells = Array.from(document.querySelectorAll(selector));
+    const values = cells.map(cell => {
+        const value = parseFloat(cell.textContent);
+        console.log(`Cell value: ${value}`); // Debugging output
+        return value;
+    }).filter(value => !isNaN(value));
+    const minValue = Math.min(...values);
+    console.log(`Min value: ${minValue}`); // Debugging output
+
+    cells.forEach(cell => {
+        if (parseFloat(cell.textContent) === minValue) {
+            cell.style.backgroundColor = color;
+            cell.style.color = 'black';
+        }
+    });
+};
+
 // Highlight highest subtotals and grand total
 highlightHighest('td.subtotal_2_score', ['lightyellow']); // Subtotal 2
 highlightHighest('td.subtotal_3_score', ['lightyellow']); // Subtotal 3
 highlightHighest('td.grand_total_score', ['gold', 'silver', '#cd7f32']); // Grand Total
+
+// Highlight closest score for form_id_28
+highlightClosestScore('td.form_id_28_score', 'lightyellow'); // Closest score (lowest points)
 
     // Display top scorers
     const grandTotals = players.map(player => ({
