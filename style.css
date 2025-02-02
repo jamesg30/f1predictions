@@ -106,16 +106,16 @@ footer {
 }
 
 .pixel-art-heading-2 {
-    font-family: 'Press Start 2P', Helvetica, sans-serif; /* Fallback fonts */
-    font-size: 1rem; /* Adjust as needed */
+    font-family: 'Pixeloid Sans Bold', Helvetica, sans-serif; /* Fallback fonts */
+    font-size: 1.3rem; /* Adjust as needed */
     color: #000000; /* Main text color */
-    letter-spacing: 1 px; /* For pixel art readability */
+    letter-spacing: 2 px; /* For pixel art readability */
     line-height: 1.2; /* Adjust for spacing */
 }
 
 .pixel-art-heading-3 {
-    font-family: 'Press Start 2P', Helvetica, sans-serif; /* Fallback fonts */
-    font-size: 1.4rem; /* Adjust as needed */
+    font-family: 'Pixeloid Sans Bold', Helvetica, sans-serif; /* Fallback fonts */
+    font-size: 1.8rem; /* Adjust as needed */
     color: #000000; /* Main text color */
     letter-spacing: 2 px; /* For pixel art readability */
     line-height: 1.2; /* Adjust for spacing */
@@ -140,13 +140,22 @@ footer {
     /* No background, padding, or text-shadow for standard body text */
 }
 
+.pixel-art-body-smallx {
+    font-family: 'Pixeloid Sans', Helvetica, sans-serif; /* Custom font with fallbacks */
+    font-size: 1rem; /* Adjust as needed */
+    color: #333; /* Main text color */
+    letter-spacing: 0.1em; /* For pixel art readability */
+    line-height: 1.5; /* Adjust for spacing */
+    /* No background, padding, or text-shadow for standard body text */
+}
+
 .centered-text {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     color: white;               /* White text for contrast */
-    font-size: clamp(1.5rem, 5vw, 2.5rem); /* Dynamic size for responsiveness */
+    font-size: clamp(0.8rem, 5vw, 2.5rem); /* Dynamic size for responsiveness */
     font-weight: bold;          /* Bold for emphasis */
     text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7); /* Optional shadow for readability */
     text-align: center;         /* Ensure text is centered in smaller containers */
@@ -364,27 +373,24 @@ footer {
     pointer-events: none;
   }
   
-  /* ===== 8-Bit Inspired Countdown Styles ===== */
-  
-  /* Pixel pulse animation for each tick update */
-  @keyframes pixelPulse {
-    0%   { transform: scale(1); }
-    50%  { transform: scale(1.05); }
-    100% { transform: scale(1); }
-  }
-  
-  /* Apply the pulse effect to countdown text updates */
-  .countdown-update {
-    animation: pixelPulse 0.5s ease;
-  }
-  
-  /* Generic countdown container styling for an 8-bit feel */
-  .countdown-container {
-    font-family: 'Press Start 2P', Helvetica, sans-serif;
-    font-size: 1.2rem;
-    background-color: #fff;
-    border: 2px solid #c0c0c0;
-    padding: 0.5rem;
-    box-shadow: 3px 3px 0 #a0a0a0;
-    display: inline-block;
-  }
+/* The countdown container */
+#countdown-timer {
+    background-color: #333;      /* Dark grey background */
+    color: #fff;                 /* White text */
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.8rem;           /* Smaller text for "Time left:" */
+    padding: 4px 8px;            /* Padding around the text */
+    border: 3px solid #555;      /* Darker grey pixel border */
+    display: inline-block;       /* Ensures the container wraps content */
+    text-align: center;
+    position: relative;
+    max-width: fit-content;      /* Ensures the container doesn't stretch beyond the content */
+    width: auto;                 /* Ensures the width is only as wide as content */
+}
+
+/* The countdown numbers */
+#countdown {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.8rem;           /* Slightly larger than "Time left:" */
+    letter-spacing: 0.05em;
+}
