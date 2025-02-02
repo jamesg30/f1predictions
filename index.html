@@ -34,21 +34,6 @@
             height: 100%;         /* Full height of the container (200px) */
             background-color: rgba(0, 0, 0, 0.4); /* Transparent black overlay */
         }
-        
-        .centered-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;               /* White text for contrast */
-    font-size: clamp(1.5rem, 5vw, 2.5rem); /* Dynamic size for responsiveness */
-    font-weight: bold;          /* Bold for emphasis */
-    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7); /* Optional shadow for readability */
-    text-align: center;         /* Ensure text is centered in smaller containers */
-    z-index: 2;                 /* Above the overlay */
-    white-space: nowrap;        /* Prevent wrapping */
-}
-
     </style>
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script>
@@ -66,13 +51,13 @@
                 <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
             </a>
             <a href="/" class="text-decoration-none text-black">
-                <h5 class="mb-0 fw-bold">F1 Predictions</h5>
+                <h5 class="mb-0 pixel-art-heading-2">F1 Predictions</h5>
             </a>
         </div>
         
         <!-- Right Section: Hamburger Menu -->
-        <div class="dropdown me-3">
-            <button class="btn btn-light dropdown-toggle" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="pixel-dropdown me-3">
+            <button class="pixel-button" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
                 Menu
             </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
@@ -97,7 +82,7 @@
     <div class="overlay"></div> <!-- Transparent black layer -->
 
     <!-- Centered Text -->
-    <h2 class="centered-text">F1 Predictions Form</h2>
+    <h2  class="centered-text-pixel-art-heading">F1 Predictions Form</h2>
 </section>
 
     <main class="container my-5">
@@ -105,9 +90,9 @@
             <!-- Left Column: Latest Form -->
             <div class="col-md-6">
                 <div class="text-center">
-                    <h5 class="mb-3">Latest Form:</h5>
+                    <h5 class="mb-3 pixel-art-body">Latest Form:</h5>
                     <a id="latest-form-link">
-                        <button id="latest-form-button" type="button" class="btn btn-dark" disabled>Loading...</button>
+                        <button id="latest-form-button" type="button" class="pixel-button" disabled>Loading...</button>
                     </a>
                 </div>
             </div>
@@ -115,14 +100,14 @@
             <!-- Right Column: Quick Links -->
         <div class="col-md-6">
             <div class="text-center">
-                <h5 class="mb-3">Quick Links:</h5>
+                <h5 class="mb-3 pixel-art-body">Quick Links:</h5>
                 <!-- Changed to flex-row for horizontal alignment -->
                 <div class="d-flex flex-row justify-content-center gap-3">
                     <a href="/results">
-                        <button type="button" class="btn btn-dark">Results</button>
+                        <button type="button" class="pixel-button">Results</button>
                     </a>
                     <a href="/teams">
-                        <button type="button" class="btn btn-dark">Teams</button>
+                        <button type="button" class="pixel-button">Teams</button>
                     </a>
                 </div>
             </div>
@@ -132,19 +117,20 @@
     
         <!-- Next Race Section -->
         <!-- Next Race Section -->
-<div class="text-center mt-5">
-    <h5>Next Race:</h5>
-    <div id="next-race-info" class="mt-3">
-        <p>Loading next race...</p>
-    </div>
-    <div id="countdown-timer" class="mt-2 text-danger" style="font-size: 1.2rem; display: none;">
-        <strong>Time left:</strong> <span id="countdown"></span>
-    </div>
-</div>
+        <div class="text-center mt-5">
+            <h5 class="pixel-art-body">Next Race:</h5>
+            <div id="next-race-info" class="mt-3">
+              <p class="pixel-art-body-small">Loading next race...</p>
+            </div>
+            <!-- Generic countdown container -->
+            <div id="countdown-timer" class="mt-2 text-danger" style="font-size: 1.2rem; display: none;">
+              <strong>Time left:</strong> <span id="countdown"></span>
+            </div>
+        </div>
 
 <div> <!-- Scored Results Placeholder -->
     <div class="container my-3 d-flex justify-content-left">
-        <h4 class="mb-3">Latest Results</h4>
+        <h4 class="mb-3 pixel-art-heading-3">Latest Results</h4>
     </div>
     <div class="container my-4">
         <h5 id="raceTitle" class="mb-3"></h5>
@@ -185,10 +171,31 @@
         </div>
         <div class="form-check form-switch">
             <label class="form-check-label" for="toggleScores">Show Detailed Scoring</label>
-            <input class="form-check-input" type="checkbox" id="toggleScores">
+            <input class="form-check-input form-switch-input" type="checkbox" id="toggleScores">
         </div>
         <div id="lowestScores" class="mt-3">
             <!-- Lowest scores will be displayed here -->
+        </div>
+    </div>
+</div>
+
+<div id="unscoredPredictions" style="display: none;"> <!-- Unscored Predictions Placeholder -->
+    <div class="container my-3 d-flex justify-content-left">
+        <h4 class="mb-3">Unscored Predictions</h4>
+    </div>
+    <div class="container my-4">
+        <h5 id="unscoredRaceTitle" class="mb-3"></h5>
+        
+        <!-- Scrollable container -->
+        <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
+            <table id="unscoredResultsTable" class="table table-sm table-bordered">
+                <thead id="unscoredTableHeader">
+                    <!-- Header row will be inserted here -->
+                </thead>
+                <tbody id="unscoredTableBody">
+                    <!-- Data rows will be inserted here -->
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -319,65 +326,94 @@
             }
         }
     
-        // Update the next race info and initialize the countdown
         async function updateNextRaceInfo(raceDetails) {
-            if (!raceDetails) {
-                document.getElementById("next-race-info").innerHTML = "<p>Error loading next race.</p>";
-                return;
-            }
+  if (!raceDetails) {
+    document.getElementById("next-race-info").innerHTML = "<p>Error loading next race.</p>";
+    return;
+  }
+
+  const raceDate = new Date(raceDetails.date);
+  if (isNaN(raceDate)) {
+    console.error("Invalid date format for next race:", raceDetails.date);
+    document.getElementById("next-race-info").innerHTML = "<p>Invalid race date.</p>";
+    return;
+  }
+
+  const flagUrl = `/media/flags/${raceDetails.country.toLowerCase()}.png`;
+
+  document.getElementById("next-race-info").innerHTML = `
+    <img src="${flagUrl}" alt="${raceDetails.country} Flag" style="width: 64px; height: 36px; image-rendering: pixelated;">
+    <h6 class="mt-2 pixel-art-body-small">${raceDetails.name} GP</h6>
+    <div id="countdown-timer" class="mt-2" style="font-size: 1.1rem;">
+      <strong>Time left:</strong> <span id="countdown"></span>
+    </div>
+  `;
+
+  // Show the countdown container
+  document.getElementById("countdown-timer").style.display = "block";
+
+  // Use the generic countdown function (pass the id of the span to update)
+  startGenericCountdown(raceDate, "countdown", function() {
+    // Optional callback when countdown ends (for example, change color)
+    const countdownEl = document.getElementById("countdown");
+    countdownEl.style.color = "green";
+  });
+}
     
-            const raceDate = new Date(raceDetails.date);
-    
-            if (isNaN(raceDate)) {
-                console.error("Invalid date format for next race:", raceDetails.date);
-                document.getElementById("next-race-info").innerHTML = "<p>Invalid race date.</p>";
-                return;
-            }
-    
-            const flagUrl = `/media/flags/${raceDetails.country.toLowerCase()}.png`; // Assuming flags are stored here
-    
-            document.getElementById("next-race-info").innerHTML = `
-                <img src="${flagUrl}" alt="${raceDetails.country} Flag" style="width: 64px; height: 36px; image-rendering: pixelated;">
-                <h6 class="mt-2">${raceDetails.name} GP</h6>
-                <div id="countdown-timer" class="mt-2" style="font-size: 1.1rem;">
-                    <strong>Time left:</strong> <span id="countdown"></span>
-                </div>
-            `;
-    
-            // Start the countdown timer
-            startCountdown(raceDate);
-        }
-    
-        // Start the countdown timer
-        function startCountdown(raceDate) {
-            const countdownElement = document.getElementById("countdown");
-    
-            function updateCountdown() {
-                const now = new Date();
-                const timeLeft = raceDate - now;
-    
-                if (timeLeft <= 0) {
-                    // Countdown has ended
-                    countdownElement.textContent = "Race has started!";
-                    clearInterval(timer);
-                    countdownElement.style.color = "green"; // Change color to indicate race started
-                    return;
-                }
-    
-                // Calculate days, hours, minutes, and seconds
-                const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-    
-                // Display countdown
-                countdownElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-            }
-    
-            // Update every second
-            updateCountdown(); // Initial update
-            const timer = setInterval(updateCountdown, 1000);
-        }
+        /**
+ * startGenericCountdown:
+ * Starts a countdown that updates every second.
+ * @param {Date} targetDate - The date/time to count down to.
+ * @param {string} countdownElementId - The id of the element where the countdown text will be displayed.
+ * @param {function} [onEnd] - Optional callback to execute when countdown ends.
+ */
+function startGenericCountdown(targetDate, countdownElementId, onEnd) {
+  const countdownElement = document.getElementById(countdownElementId);
+
+  if (!countdownElement) {
+    console.error(`Element with id "${countdownElementId}" not found.`);
+    return;
+  }
+
+  function updateCountdown() {
+    const now = new Date();
+    const timeLeft = targetDate - now;
+
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      countdownElement.textContent = "Time's up!";
+      countdownElement.classList.add("countdown-update");
+      if (typeof onEnd === "function") {
+        onEnd();
+      }
+      return;
+    }
+
+    // Calculate time parts
+    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+    // Build the countdown string—omit days if zero
+    let countdownStr = "";
+    if (days > 0) {
+      countdownStr += `${days}d `;
+    }
+    countdownStr += `${hours}h ${minutes}m ${seconds}s`;
+
+    countdownElement.textContent = countdownStr;
+
+    // Restart animation by reflow (for the pixel pulse effect)
+    countdownElement.classList.remove("countdown-update");
+    void countdownElement.offsetWidth;
+    countdownElement.classList.add("countdown-update");
+  }
+
+  // Initial update then update every second
+  updateCountdown();
+  const timer = setInterval(updateCountdown, 1000);
+}
         
         // Fetch the form status from form_details table
 async function fetchFormStatus() {
@@ -438,7 +474,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 
-// Results Table Formatting
+// Scored Results Table Script
 document.addEventListener("DOMContentLoaded", async () => {
     // Fetch initial data
     const { data: formDetails, error: formDetailsError } = await supabase
@@ -700,6 +736,8 @@ highlightClosestScore('td.form_id_28_score', 'lightyellow'); // Closest score (l
         lowestScoresDiv.textContent = `Lowest Score: ${lowestScoresText}`;
     }
 });
+
+
     </script>
 
 </body>
