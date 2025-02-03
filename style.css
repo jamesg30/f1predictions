@@ -179,7 +179,6 @@ footer {
     /*text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);  Optional shadow for readability */
     text-align: center;         /* Ensure text is centered in smaller containers */
     z-index: 2;                 /* Above the overlay */
-    white-space: nowrap;        /* Prevent wrapping */
 }
 
 .pixel-button {

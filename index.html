@@ -123,7 +123,7 @@
               <p class="pixel-art-body-small">Loading next race...</p>
             </div>
             <!-- Generic countdown container -->
-            <div id="countdown-timer" style="display: none;">
+            <div id="countdown-timer" style="display: none; align-content: center; width: 100%;">
                 <span id="countdown"></span>
               </div>
         </div>
@@ -139,19 +139,19 @@
             <tbody>
                 <td style="vertical-align: center;">
                     <p>
-                        <img src="/media/awards/medal_first.png" style="float:left; width: 15px; height: 30px; image-rendering: pixelated;">
+                        <img src="/media/awards/medal_first.png" style="float:left; width: 15px; height: 30px; image-rendering: pixelated; margin-right: 5px;">
                         <span id="firstPlace" class="pixel-art-body"></span>
                     </p>
                 </td>
                 <td style="vertical-align: center;">
                     <p>
-                        <img src="/media/awards/medal_second.png" style="float:left; width: 15px; height: 30px; image-rendering: pixelated;">
+                        <img src="/media/awards/medal_second.png" style="float:left; width: 15px; height: 30px; image-rendering: pixelated; margin-right: 5px; margin-left: 10px;">
                         <span id="secondPlace" class="mb-3 pixel-art-body"></span>
                     </p>
                 </td>
                 <td style="vertical-align: center;">
                     <p>
-                        <img src="/media/awards/medal_third.png" style="float:left; width: 15px; height: 30px; image-rendering: pixelated;">
+                        <img src="/media/awards/medal_third.png" style="float:left; width: 15px; height: 30px; image-rendering: pixelated; margin-right: 5px; margin-left: 10px;">
                         <span id="thirdPlace" class=" mb-3 pixel-art-body"></span>
                     </p>
                 </td>
@@ -344,7 +344,7 @@
   document.getElementById("next-race-info").innerHTML = `
     <img src="${flagUrl}" alt="${raceDetails.country} Flag" style="width: 64px; height: 36px; image-rendering: pixelated;">
     <h6 class="mt-2 pixel-art-body-small">${raceDetails.name} GP</h6>
-    <div id="countdown-timer" class="mt-2" style="font-size: 0.8rem;">
+    <div id="countdown-timer" class="mt-2" style="font-size: 0.8rem; align-content: center; width: 100%;">
       <strong>Time left:</strong> <span id="countdown"></span>
     </div>
   `;
@@ -736,9 +736,6 @@ highlightClosestScore('td.form_id_28_score', 'lightyellow'); // Closest score (l
         lowestScoresDiv.textContent = `Lowest Score: ${lowestScoresText}`;
     }
 });
-
-
     </script>
-
 </body>
 </html>
