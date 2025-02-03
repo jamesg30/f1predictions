@@ -41,38 +41,41 @@
 </head>
 <body>
     <header class="bg-dark text-white py-2.5 d-flex align-items-center justify-content-between sticky-top">
+        <!-- Left Section: Logo and Heading -->
         <div class="d-flex align-items-center">
             <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
                 <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
             </a>
-            <a href="/" class="text-decoration-none text-white">
-                <h5 class="mb-0 fw-bold">F1 Predictions Admin</h5>
+            <a href="/" class="text-decoration-none">
+                <h5 class="mb-0 pixel-art-heading-2w">F1 Predictions</h5>
             </a>
         </div>
-        <div class="dropdown me-3">
-            <button class="btn btn-dark dropdown-toggle" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
+        
+        <!-- Right Section: Hamburger Menu -->
+        <div class="pixel-dropdown dark me-3">
+            <button class="pixel-button dark" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
                 Menu
             </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
-                <li><a class="dropdown-item" href="/">Home</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/">Home</a></li>
                 <li><hr class="dropdown-divider"></li> <!-- Spacer -->
-                <li><a class="dropdown-item" href="/form">Form</a></li>
-                <li><a class="dropdown-item" href="/teams">Teams</a></li>
-                <li><a class="dropdown-item" href="/results">Results</a></li>
-                <li><a class="dropdown-item" href="/register">Register</a></li>
-                <li><a class="dropdown-item" href="/feedback">Feedback</a></li>
-                <li><a class="dropdown-item" href="/info">Info</a></li>
-                <li><a class="dropdown-item" href="/archive">Archive</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
                 <li><hr class="dropdown-divider"></li> <!-- Spacer -->
-                <li><a class="dropdown-item" href="/admin">Admin</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/admin">Admin</a></li>
             </ul>
         </div>
-    </header>
+    </header> 
 
     <main id="password-input-section">
-        <h4>Admin Page</h4>
+        <h4 class="pixel-art-heading-2">Admin Page</h4>
         <input type="password" id="password-input" class="form-control w-25 text-center" placeholder="Enter Password">
-        <button class="btn btn-dark mt-3" onclick="validatePassword()">Submit</button>
+        <button class="pixel-button dark mt-3" onclick="validatePassword()">Submit</button>
         <p id="password-error" style="display: none;">Incorrect Password. Please try again.</p>
     </main>
 
@@ -378,7 +381,7 @@
 </div>
     </main>
 
-    <footer class="bg-light text-black text-center py-1">
+    <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
         <p>&copy; 2024 F1 Predictions Form</p>
     </footer>
 

@@ -20,37 +20,37 @@
     <script type="module" src="/script.js"></script>
 </head>
 <body>
-    <header class="bg-light text-dark py-2.5 d-flex align-items-center justify-content-between sticky-top">
+    <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
         <!-- Left Section: Logo and Heading -->
         <div class="d-flex align-items-center">
             <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
                 <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
             </a>
-            <a href="/" class="text-decoration-none text-dark">
-                <h5 class="mb-0 fw-bold">F1 Predictions</h5>
+            <a href="/" class="text-decoration-none text-black">
+                <h5 class="mb-0 pixel-art-heading-2">F1 Predictions</h5>
             </a>
         </div>
         
         <!-- Right Section: Hamburger Menu -->
-        <div class="dropdown me-3">
-            <button class="btn btn-light dropdown-toggle" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="pixel-dropdown me-3">
+            <button class="pixel-button" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
                 Menu
             </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
-                <li><a class="dropdown-item" href="/">Home</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/">Home</a></li>
                 <li><hr class="dropdown-divider"></li> <!-- Spacer -->
-                <li><a class="dropdown-item" href="/form">Form</a></li>
-                <li><a class="dropdown-item" href="/teams">Teams</a></li>
-                <li><a class="dropdown-item" href="/results">Results</a></li>
-                <li><a class="dropdown-item" href="/register">Register</a></li>
-                <li><a class="dropdown-item" href="/feedback">Feedback</a></li>
-                <li><a class="dropdown-item" href="/info">Info</a></li>
-                <li><a class="dropdown-item" href="/archive">Archive</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
                 <li><hr class="dropdown-divider"></li> <!-- Spacer -->
-                <li><a class="dropdown-item" href="/admin">Admin</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/admin">Admin</a></li>
             </ul>
         </div>
-    </header>    
+    </header>     
     
     <main class="container my-5">
         <!-- Tabs Navigation -->
@@ -62,7 +62,7 @@
                 <a class="nav-link" id="card-rules-tab" data-bs-toggle="tab" href="#card-rules" role="tab" aria-controls="register-team" aria-selected="false">Card Rules</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="other-faq-tab" data-bs-toggle="tab" href="#other-faq" role="tab" aria-controls="register-team" aria-selected="false">Other FAQ</a>
+                <a class="nav-link" id="general-faq-tab" data-bs-toggle="tab" href="#general-faq" role="tab" aria-controls="register-team" aria-selected="false">General FAQ</a>
             </li>
         </ul>
 
@@ -71,7 +71,7 @@
             <!-- Form Rules -->
             <div id="form-rules" class="tab-pane fade show active" role="tabpanel" aria-labelledby="form-rules-tab">
                 <div class="d-flex justify-content-left">
-                    <h2 class="mb-3">Form Rules</h2>
+                    <h2 class="mb-3 pixel-art-heading-3">Form Rules</h2>
                 </div>
                 <div>
                     <h5><strong>Top 6 Predictions</strong></h5>
@@ -120,7 +120,7 @@
             <!-- Card Rules -->
             <div id="card-rules" class="tab-pane fade" role="tabpanel" aria-labelledby="card-rules-tab">
                 <div class="d-flex justify-content-left">
-                    <h2 class="mb-3">Card Rules</h2>
+                    <h2 class="mb-3 pixel-art-heading-3">Card Rules</h2>
                 </div>
                 <div class="mb-3">
                     At the beginning of the season, each new team will be given a set of cards which they can use to impact the scoring for that round. Playing these cards will be done before the race (same as the form) through the teams page. You can play one card each round. You will be given one of each card except the halo card which you will get 3 of.<br>
@@ -157,10 +157,10 @@
                     Aero, Double, Halo, Report, Swap.<br>
                 </div>
             </div>
-            <!-- Other FAQ -->
-            <div id="other-faq" class="tab-pane fade" role="tabpanel" aria-labelledby="other-faq-tab">
+            <!-- General FAQ -->
+            <div id="general-faq" class="tab-pane fade" role="tabpanel" aria-labelledby="general-faq-tab">
                 <div class="d-flex justify-content-left">
-                    <h2 class="mb-3">Other FAQ</h2>
+                    <h2 class="mb-3 pixel-art-heading-3">General FAQ</h2>
                 </div>
                 <div class="mb-3">
                     <b>What is the individual competition?</b><br>
@@ -209,7 +209,7 @@
         </div>
     </main>
  
-    <footer class="bg-light text-black text-center py-1">
+    <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
         <p>&copy; 2024 F1 Predictions Form</p>
     </footer>
 

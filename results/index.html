@@ -20,39 +20,40 @@
     <script type="module" src="/script.js"></script>
 </head>
 <body>
-    <header class="bg-light text-dark py-2.5 d-flex align-items-center justify-content-between sticky-top">
+    <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
         <!-- Left Section: Logo and Heading -->
         <div class="d-flex align-items-center">
             <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
                 <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
             </a>
-            <a href="/" class="text-decoration-none text-dark">
-                <h5 class="mb-0 fw-bold">F1 Predictions</h5>
+            <a href="/" class="text-decoration-none text-black">
+                <h5 class="mb-0 pixel-art-heading-2">F1 Predictions</h5>
             </a>
         </div>
         
         <!-- Right Section: Hamburger Menu -->
-        <div class="dropdown me-3">
-            <button class="btn btn-light dropdown-toggle" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="pixel-dropdown me-3">
+            <button class="pixel-button" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
                 Menu
             </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
-                <li><a class="dropdown-item" href="/">Home</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/">Home</a></li>
                 <li><hr class="dropdown-divider"></li> <!-- Spacer -->
-                <li><a class="dropdown-item" href="/form">Form</a></li>
-                <li><a class="dropdown-item" href="/teams">Teams</a></li>
-                <li><a class="dropdown-item" href="/results">Results</a></li>
-                <li><a class="dropdown-item" href="/register">Register</a></li>
-                <li><a class="dropdown-item" href="/feedback">Feedback</a></li>
-                <li><a class="dropdown-item" href="/info">Info</a></li>
-                <li><a class="dropdown-item" href="/archive">Archive</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
                 <li><hr class="dropdown-divider"></li> <!-- Spacer -->
-                <li><a class="dropdown-item" href="/admin">Admin</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/admin">Admin</a></li>
             </ul>
         </div>
     </header>    
     
     <main class="container my-5">
+        <!-- Tabs Navigation -->
         <!-- Tabs Navigation -->
         <ul class="nav nav-underline mb-4" id="tabs" role="tablist">
             <li class="nav-item" role="presentation">
@@ -70,7 +71,7 @@
         <div class="tab-content" id="tab-content">
             <!-- Player Results -->
             <div id="race-results" class="tab-pane fade show active" role="tabpanel" aria-labelledby="race-results-tab">
-                <h2>Race Results</h2>
+                <h2 class="mb-3 pixel-art-heading-3">Race Results</h2>
                 <div class="mb-3">
                     <label for="team-select" class="form-label">Viewing results for:</label>
                     <select id="team-select" class="form-select"></select>
@@ -233,7 +234,7 @@
 
             <!-- Season - Player Results -->
             <div id="season-player" class="tab-pane fade" role="tabpanel" aria-labelledby="season-player-tab">
-                <h2>Season Player Results</h2>
+                <h2 class="mb-3 pixel-art-heading-3">Season Player Results</h2>
                 <!-- Scrollable container -->
                 <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
                     <table class="table table-sm table-bordered">
@@ -288,7 +289,7 @@
 
             <!-- Season Team Results -->
             <div id="season-team" class="tab-pane fade" role="tabpanel" aria-labelledby="season-team-tab">
-                <h2>Season Team Results</h2>
+                <h2 class="mb-3 pixel-art-heading-3">Season Team Results</h2>
                 <!-- Scrollable container -->
                 <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
                     <table class="table table-sm table-bordered">
@@ -343,7 +344,7 @@
         </div>
     </main>
  
-    <footer class="bg-light text-black text-center py-1">
+    <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
         <p>&copy; 2024 F1 Predictions Form</p>
     </footer>
     <!-- Bootstrap JS Bundle (Local) -->

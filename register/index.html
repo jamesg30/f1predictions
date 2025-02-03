@@ -21,36 +21,37 @@
 </head>
 <body>
     <!-- Header Section -->
-    <header class="bg-light text-dark py-2.5 d-flex align-items-center justify-content-between sticky-top">
+    <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
         <!-- Left Section: Logo and Heading -->
         <div class="d-flex align-items-center">
             <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
                 <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
             </a>
-            <a href="/" class="text-decoration-none text-dark">
-                <h5 class="mb-0 fw-bold">F1 Predictions</h5>
+            <a href="/" class="text-decoration-none text-black">
+                <h5 class="mb-0 pixel-art-heading-2">F1 Predictions</h5>
             </a>
         </div>
+        
         <!-- Right Section: Hamburger Menu -->
-        <div class="dropdown me-3">
-            <button class="btn btn-light dropdown-toggle" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="pixel-dropdown me-3">
+            <button class="pixel-button" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
                 Menu
             </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
-                <li><a class="dropdown-item" href="/">Home</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/">Home</a></li>
                 <li><hr class="dropdown-divider"></li> <!-- Spacer -->
-                <li><a class="dropdown-item" href="/form">Form</a></li>
-                <li><a class="dropdown-item" href="/teams">Teams</a></li>
-                <li><a class="dropdown-item" href="/results">Results</a></li>
-                <li><a class="dropdown-item" href="/register">Register</a></li>
-                <li><a class="dropdown-item" href="/feedback">Feedback</a></li>
-                <li><a class="dropdown-item" href="/info">Info</a></li>
-                <li><a class="dropdown-item" href="/archive">Archive</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
                 <li><hr class="dropdown-divider"></li> <!-- Spacer -->
-                <li><a class="dropdown-item" href="/admin">Admin</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallx" href="/admin">Admin</a></li>
             </ul>
         </div>
-    </header>
+    </header> 
 
     <!-- Main Content -->
     <main class="container my-5">
@@ -72,14 +73,14 @@
             <!-- Register Player -->
             <div id="register-player" class="tab-pane fade show active" role="tabpanel" aria-labelledby="register-player-tab">
                 <div class="d-flex justify-content-left">
-                    <h2>Register Player</h2>
+                    <h2 class="mb-3 pixel-art-heading-3">Register Player</h2>
                 </div>
                 <div class="mb-3">
                     <label for="player-name" class="form-label">Enter Name:</label>
                     <input type="text" id="player-name" class="form-control">
                 </div>
                 <div class="mb-3">
-                    <button id="register-player-btn" class="btn btn-primary mb-4">Register</button>
+                    <button id="register-player-btn" class="pixel-button primary">Register</button>
                 </div>
                 <div class="mb-3">
                     <h4>Registered Players List</h4>
@@ -92,14 +93,14 @@
             <!-- Register Team -->
             <div id="register-team" class="tab-pane fade" role="tabpanel" aria-labelledby="register-team-tab">
                 <div class="d-flex justify-content-left">
-                    <h2>Register Team</h2>
+                    <h2 class="mb-3 pixel-art-heading-3">Register Team</h2>
                 </div>
                 <div class="mb-3">
                     <label for="team-name" class="form-label">Enter Team Name:</label>
                     <input type="text" id="team-name" class="form-control">
                 </div>
                 <div class="mb-3">
-                    <button id="register-team-btn" class="btn btn-primary mb-4">Register</button>
+                    <button id="register-team-btn" class="pixel-button primary">Register</button>
                 </div>
                 <div class="mb-3">
                     <h4>Registered Teams List</h4>
@@ -113,7 +114,7 @@
             <div id="join-team" class="tab-pane fade" role="tabpanel" aria-labelledby="join-team-tab">
                 <div id="join-team">
                     <div class="d-flex justify-content-left">
-                        <h2>Join Team</h2>
+                        <h2 class="mb-3 pixel-art-heading-3">Join Team</h2>
                     </div>
                     <div class="mb-3">
                         <p>
@@ -129,7 +130,7 @@
                         <select id="team-select" class="form-select"></select>
                     </div>
                     <div class="mb-3">
-                        <button id="join-team-btn" class="btn btn-primary">Join Team</button>
+                        <button id="join-team-btn" class="pixel-button primary">Join Team</button>
                     </div>
                     <div class="mb-3">
                         <h4>Current Teams</h4>
@@ -144,7 +145,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-light text-black text-center py-1">
+    <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
         <p>&copy; 2024 F1 Predictions Form</p>
     </footer>
 

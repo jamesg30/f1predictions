@@ -107,10 +107,18 @@ footer {
 
 .pixel-art-heading-2 {
     font-family: 'Pixeloid Sans Bold', Helvetica, sans-serif; /* Fallback fonts */
-    font-size: 1.3rem; /* Adjust as needed */
+    font-size: 1.2rem; /* Adjust as needed */
     color: #000000; /* Main text color */
     letter-spacing: 2 px; /* For pixel art readability */
     line-height: 1.2; /* Adjust for spacing */
+}
+
+.pixel-art-heading-2w {
+  font-family: 'Pixeloid Sans Bold', Helvetica, sans-serif; /* Fallback fonts */
+  font-size: 1.2rem; /* Adjust as needed */
+  color: #ffffff; /* Main text color */
+  letter-spacing: 2 px; /* For pixel art readability */
+  line-height: 1.2; /* Adjust for spacing */
 }
 
 .pixel-art-heading-3 {
@@ -272,62 +280,97 @@ footer {
   border-color: #777;
 }
 
-/* ===== Dropdown Menu ===== */
+/* ===== Base Dropdown Menu ===== */
 .pixel-dropdown {
-    position: relative;
-    display: inline-block;
-  }
-  .pixel-dropdown .pixel-button {
-    /* Inherits .pixel-button styles */
-  }
-  .pixel-dropdown .pixel-button::after {
-    content: " ▼";
-    font-size: 0.8rem;
-    margin-left: 0.2rem;
-  }
-  .pixel-dropdown .pixel-button:before,
-  .pixel-dropdown .pixel-button:after {
-    content: '';
-    position: absolute;
-    z-index: 0;
-    background: #a0a0a0;
-  }
-  .pixel-dropdown .pixel-button:before {
-    width: 2px;
-    height: calc(100% + 2px);
-    top: -2px;
-    left: -2px;
-  }
-  .pixel-dropdown .pixel-button:after {
-    width: calc(100% + 2px);
-    height: 2px;
-    bottom: -2px;
-    right: -2px;
-  }
-  .pixel-dropdown .pixel-button:active {
-    transform: translate(2px, 2px);
-    box-shadow: 0 0 0 #a0a0a0;
-  }
-  .pixel-dropdown .pixel-button:hover {
-    background-color: #f0f0f0;
-  }
-  .dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #f9f9f9;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-    z-index: 1;
-  }
-  .dropdown-content a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-  }
-  .pixel-dropdown:hover .dropdown-content {
-    display: block;
-  }
+  position: relative;
+  display: inline-block;
+}
+
+.pixel-dropdown .pixel-button {
+  /* Inherits .pixel-button styles */
+}
+
+.pixel-dropdown .pixel-button::after {
+  content: " ▼";
+  font-size: 0.8rem;
+  margin-left: 0.2rem;
+}
+
+/* Pixelated edges */
+.pixel-dropdown .pixel-button:before,
+.pixel-dropdown .pixel-button:after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  background: #a0a0a0;
+}
+
+.pixel-dropdown .pixel-button:before {
+  width: 2px;
+  height: calc(100% + 2px);
+  top: -2px;
+  left: -2px;
+}
+
+.pixel-dropdown .pixel-button:after {
+  width: calc(100% + 2px);
+  height: 2px;
+  bottom: -2px;
+  right: -2px;
+}
+
+/* Button pressed effect */
+.pixel-dropdown .pixel-button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 #a0a0a0;
+}
+
+/* Default dropdown styles */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.pixel-dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* ===== Dark Theme Variant ===== */
+.pixel-dropdown.dark .pixel-button {
+  color: #fff;
+  background-color: #000;
+  border-color: #444;
+  box-shadow: 3px 3px 0 #222;
+}
+
+.pixel-dropdown.dark .pixel-button:hover {
+  background-color: #222;
+}
+
+/* Dark Theme Dropdown Content */
+.pixel-dropdown.dark .dropdown-content {
+  background-color: #222;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.5);
+}
+
+.pixel-dropdown.dark .dropdown-content a {
+  color: #fff;
+}
+
+.pixel-dropdown.dark .dropdown-content a:hover {
+  background-color: #444;
+}
   
   /* ===== Toggle Switch (Bootstrap-Like, Pixelated) ===== */
   .pixel-toggle {
@@ -417,4 +460,21 @@ footer {
     font-family: 'Press Start 2P', monospace;
     font-size: 0.8rem;           /* Slightly larger than "Time left:" */
     letter-spacing: 0.05em;
+}
+
+/* ===== Bootstrap Underline Tabs with Pixel Font ===== */
+.nav-underline .nav-item .nav-link {
+  font-family: 'Pixeloid Sans', Helvetica, Arial, sans-serif; /* Apply Pixel Font */
+  font-size: 1rem;  /* Smaller font size */
+  text-transform: uppercase;  /* Uppercase text */
+}
+
+/* Active Tab */
+.nav-underline .nav-item .nav-link.active {
+  border-bottom: 4px solid #000; /* Pixelated underline */
+}
+
+/* Hover Effect */
+.nav-underline .nav-item .nav-link:hover {
+  border-bottom: 4px solid #606060; /* Lighter underline on hover */
 }
