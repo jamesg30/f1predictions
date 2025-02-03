@@ -180,72 +180,97 @@ footer {
     text-align: center;         /* Ensure text is centered in smaller containers */
     z-index: 2;                 /* Above the overlay */
 }
-
 .pixel-button {
-    font-family: 'Press Start 2P', Helvetica, Arial, sans-serif; /* Use your pixel font */
-    font-size: 0.8rem; /* Smaller text */
-    text-transform: uppercase;
-    color: #000; /* Black text for a white button */
-    background-color: #fff; /* White background */
-    border: 2px solid #c0c0c0; /* Light gray border for subtle contrast */
-    padding: 0.3rem 0.6rem; /* Smaller padding for a compact size */
-    cursor: pointer;
-    position: relative;
-    box-shadow: 3px 3px 0 #a0a0a0; /* Light gray shadow for a subtle 3D effect */
-    text-align: center;
-    letter-spacing: 1px;
-    transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+  font-family: 'Press Start 2P', Helvetica, Arial, sans-serif;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  text-align: center;
+  letter-spacing: 1px;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  position: relative;
+  border: 2px solid;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
 }
 
-/* Pixelated edges */
-.pixel-button:before,
-.pixel-button:after {
-    content: '';
-    position: absolute;
-    z-index: 0;
-    background: #a0a0a0; /* Same color as the shadow */
+/* Default theme */
+.pixel-button {
+  color: #000;
+  background-color: #fff;
+  border-color: #c0c0c0;
+  box-shadow: 3px 3px 0 #a0a0a0;
 }
 
-/* Top-left and bottom-right pixelated edges */
-.pixel-button:before {
-    width: 2px;
-    height: calc(100% + 2px);
-    top: -2px;
-    left: -2px;
-}
-
-.pixel-button:after {
-    width: calc(100% + 2px);
-    height: 2px;
-    bottom: -2px;
-    right: -2px;
-}
-
-/* Button pressed effect */
-.pixel-button:active {
-    transform: translate(2px, 2px);
-    box-shadow: 0 0 0 #a0a0a0;
-}
-
-/* Optional: hover effect */
 .pixel-button:hover {
-    background-color: #f0f0f0; /* Slightly darker white for hover */
+  background-color: #f0f0f0;
 }
 
-/* Disabled state for pixel buttons */
+/* Primary theme (Blue) */
+.pixel-button.primary {
+  color: #fff;
+  background-color: #007bff;
+  border-color: #0056b3;
+  box-shadow: 3px 3px 0 #004494;
+}
+
+.pixel-button.primary:hover {
+  background-color: #0056b3;
+}
+
+/* Dark theme (Black) */
+.pixel-button.dark {
+  color: #fff;
+  background-color: #000;
+  border-color: #444;
+  box-shadow: 3px 3px 0 #222;
+}
+
+.pixel-button.dark:hover {
+  background-color: #222;
+}
+
+/* Button Press Effect (Works on touch & click) */
+.pixel-button:active,
+.pixel-button.pressed {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Ensure touch devices apply active effect */
+@media (hover: none) {
+  .pixel-button:active {
+      transform: translate(2px, 2px);
+      box-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Disabled State */
+.pixel-button:disabled,
+.pixel-button:disabled:hover {
+  cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: none;
+}
+
+/* Disabled styles per theme */
 .pixel-button:disabled {
-    cursor: not-allowed;
-    color: #777;              /* Greyed out text */
-    background-color: #e0e0e0;  /* Lighter background */
-    border-color: #ccc;       /* Muted border color */
-    box-shadow: none;         /* Remove shadow */
-    opacity: 0.7;             /* Slightly faded */
-  }
-  
-  /* Ensure no active transform when disabled */
-  .pixel-button:disabled:active {
-    transform: none;
-  }
+  background-color: #e0e0e0;
+  color: #777;
+  border-color: #ccc;
+}
+
+.pixel-button.primary:disabled {
+  background-color: #99c2ff;
+  color: #666;
+  border-color: #88aaff;
+}
+
+.pixel-button.dark:disabled {
+  background-color: #555;
+  color: #aaa;
+  border-color: #777;
+}
 
 /* ===== Dropdown Menu ===== */
 .pixel-dropdown {
