@@ -675,24 +675,28 @@ const highlightHighest = (selector, colors) => {
     });
 };
 
-// Highlight closest score (lowest points) for form_id_28
 const highlightClosestScore = (selector, color) => {
     const cells = Array.from(document.querySelectorAll(selector));
-    const values = cells.map(cell => {
-        const value = parseFloat(cell.textContent);
-        console.log(`Cell value: ${value}`); // Debugging output
-        return value;
-    }).filter(value => !isNaN(value));
-    const minValue = Math.min(...values);
-    console.log(`Min value: ${minValue}`); // Debugging output
-
     cells.forEach(cell => {
-        if (parseFloat(cell.textContent) === minValue) {
+        const playerId = cell.dataset.playerId;
+        const player = players.find(player => player.player_id == playerId);
+        const playerScore = player ? player.form_id_28_score : null;
+        console.log(`Cell value: ${cell.textContent}`); // Debugging output
+        console.log(`Player ID: ${playerId}, Player Score: ${playerScore}`); // Debugging output
+
+        if (playerScore === 1) {
             cell.style.backgroundColor = color;
             cell.style.color = 'black';
+            console.log(`Highlighting cell for Player ID: ${playerId}`); // Debugging output
+        } else {
+            cell.style.backgroundColor = ''; // Reset background color for other cells
+            cell.style.color = ''; // Reset text color for other cells
+            console.log(`Not highlighting cell for Player ID: ${playerId}`); // Debugging output
         }
     });
 };
+
+
 
 // Highlight highest subtotals and grand total
 highlightHighest('td.subtotal_2_score', ['lightyellow']); // Subtotal 2
@@ -700,7 +704,7 @@ highlightHighest('td.subtotal_3_score', ['lightyellow']); // Subtotal 3
 highlightHighest('td.grand_total_score', ['gold', 'silver', '#cd7f32']); // Grand Total
 
 // Highlight closest score for form_id_28
-highlightClosestScore('td.form_id_28_score', 'lightyellow'); // Closest score (lowest points)
+highlightClosestScore('td.form_id_28_score', 'lightyellow'); // Highlight cells with score 1
 
     // Display top scorers
     const grandTotals = players.map(player => ({
