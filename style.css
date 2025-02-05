@@ -32,37 +32,98 @@ footer {
     color: #333;
     width: 100%;
 }
+/* ---------- Main Results Table (Scored Results) ---------- */
+#mainResultsTable {
+  width: 100%;
+  table-layout: auto; /* Allow columns to adjust automatically */
+}
 
 #mainResultsTable th {
-    background-color: #ddd; /* Light grey background for header */
+  background-color: #ddd; /* Light grey header */
+  max-width: 10ch;
+  word-wrap: break-word;
+  white-space: normal;
+  padding: 1px;
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid #ddd;
 }
 
 #mainResultsTable td {
-    border: 1px solid #ddd; /* Add border to cells */
+  border: 1px solid #ddd;
+  max-width: 10ch;
+  word-wrap: break-word;
+  white-space: normal;
+  padding: 1px;
+  text-align: center;
+  vertical-align: middle;
 }
 
-#mainResultsTable {
-    width: 100%;
-    table-layout: auto; /* Allow columns to adjust width automatically */
-}
-
-#mainResultsTable th, #mainResultsTable td {
-    max-width: 10ch; /* Set maximum width to approximately 10 characters */
-    word-wrap: break-word; /* Wrap text in cells */
-    white-space: normal; /* Allow text to wrap */
-    padding: 1px; /* Add padding for better readability */
-    text-align: center; /* Center-align text */
-    vertical-align: middle; /* Center-align text vertically */
-}
-
-/* Apply lighter grey background to the first column, excluding spacer rows */
+/* First column styling for main results table */
 #mainResultsTable td:first-child {
-    background-color: #eeeeee; /* Lighter grey background for the first column */
+  background-color: #eeeeee;
 }
 
-/* Exclude spacer rows from the lighter grey background */
+/* Reset for spacer rows (if applicable) */
 #mainResultsTable tr.spacer-row td:first-child {
-    background-color: white; /* Reset background color for spacer rows */
+  background-color: white;
+}
+
+/* ---------- Unscored Results Table (Unscored Predictions) ---------- */
+#unscoredResultsTable {
+  width: 100%;
+  table-layout: auto;
+}
+
+#unscoredResultsTable th {
+  background-color: #ddd;
+  max-width: 10ch;
+  word-wrap: break-word;
+  white-space: normal;
+  padding: 1px;
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid #ddd;
+}
+
+#unscoredResultsTable td {
+  border: 1px solid #ddd;
+  max-width: 10ch;
+  word-wrap: break-word;
+  white-space: normal;
+  padding: 1px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* ---------- Loading Indicator Styles ---------- */
+.loading-indicator {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.loading-bar {
+  height: 20px;
+  width: 200px;
+  background: #ccc;
+  position: relative;
+  overflow: hidden;
+  margin: 10px auto;
+}
+
+.loading-bar::before {
+  content: "";
+  position: absolute;
+  left: -200px;
+  width: 200px;
+  height: 20px;
+  background: #333;
+  animation: loading 1s linear infinite;
+}
+
+@keyframes loading {
+  from { left: -200px; }
+  to { left: 100%; }
 }
 
 @font-face {
@@ -440,26 +501,24 @@ footer {
     pointer-events: none;
   }
   
-/* The countdown container */
+/* ---------- Countdown Timer Styling ---------- */
 #countdown-timer {
-    background-color: #333;      /* Dark grey background */
-    color: #fff;                 /* White text */
-    font-family: 'Press Start 2P', monospace;
-    font-size: 0.8rem;           /* Smaller text for "Time left:" */
-    padding: 4px 8px;            /* Padding around the text */
-    border: 3px solid #555;      /* Darker grey pixel border */
-    display: inline-block;       /* Ensures the container wraps content */
-    text-align: center;
-    position: relative;
-    max-width: fit-content;      /* Ensures the container doesn't stretch beyond the content */
-    width: auto;                 /* Ensures the width is only as wide as content */
+  background-color: #333;      /* Dark grey background */
+  color: #fff;                 /* White text */
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border: 3px solid #555;
+  text-align: center;
+  margin: 20px auto;           /* Center horizontally with auto margins */
+  display: inline-block;       /* Shrink-wrap the content */
+  width: auto;                 /* Force auto width */
 }
 
-/* The countdown numbers */
 #countdown {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 0.8rem;           /* Slightly larger than "Time left:" */
-    letter-spacing: 0.05em;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
 }
 
 /* ===== Bootstrap Underline Tabs with Pixel Font ===== */
