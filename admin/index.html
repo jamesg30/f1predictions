@@ -246,7 +246,42 @@
             </div>
             <div id="season-totals" class="tab-pane fade" role="tabpanel">
                 <h4>Season Totals</h4>
-                <ul id="totals-list" class="list-group"></ul>
+                <div class="container">
+                  <!-- Top row: Current Year, Race Selection, and Race Info -->
+                  <div class="row mb-3">
+                    <div class="col-md-4">
+                      <label for="current-year-season-totals" class="form-label">Year</label>
+                      <input type="text" id="current-year-season-totals" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-4">
+                      <label for="race-select" class="form-label">Select Race</label>
+                      <select id="race-select" class="form-select"></select>
+                    </div>
+                    <div class="col-md-4">
+                      <label for="race-info" class="form-label">Race Info</label>
+                      <div id="race-info" class="border p-2" style="min-height: 60px;">
+                        <!-- Info such as number of responses, lowest scores, etc. will appear here -->
+                      </div>
+                    </div>
+                  </div>
+              
+                  <!-- Button row -->
+                  <div class="row mb-3">
+                    <div class="col">
+                      <button id="update-season-totals" class="btn btn-primary">Update Season Totals</button>
+                    </div>
+                  </div>
+              
+                  <!-- Progress Message / Loading Bar -->
+                  <div class="row">
+                    <div class="col">
+                      <div id="update-progress" class="alert alert-info" role="alert" style="display: none;"></div>
+                    </div>
+                  </div>
+              
+                  <!-- A list view that could display the season totals table (if needed) -->
+                  <ul id="totals-list" class="list-group"></ul>
+                </div>
             </div>
             <!-- Edit Players -->
             <div class="tab-pane fade" id="edit-players" role="tabpanel" aria-labelledby="edit-players-tab">
