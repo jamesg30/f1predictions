@@ -388,7 +388,7 @@ async function loadFullSeasonResults() {
         const col = `race_${i}`;
         let raw = row[col];
         if (raw !== null && raw !== "") {
-          // Remove any "(LS)" indicator from the numeric value.
+          // Remove any "(LS)" indicator for numeric conversion.
           const numStr = raw.replace(/\(LS\)/, "").trim();
           const num = parseFloat(numStr);
           raceScores.push(raw);
@@ -414,26 +414,39 @@ async function loadFullSeasonResults() {
     // 8. Sort standings descending by current total.
     standings.sort((a, b) => b.total - a.total);
 
-    // 9. Build ranking maps.
+    // 9. Build ranking maps with tie-handling.
+    let currentRank = 1;
+    let prevScore = null;
     const currentRankMap = {};
     standings.forEach((player, index) => {
-      currentRankMap[player.player_id] = index + 1;
+      if (prevScore === null || player.total !== prevScore) {
+        currentRank = index + 1;
+      }
+      currentRankMap[player.player_id] = currentRank;
+      prevScore = player.total;
     });
+    
+    let prevRank = 1;
+    let prevPrevScore = null;
     const prevRankMap = {};
     if (lastRace > 1) {
       const prevStandings = [...standings].sort((a, b) => b.prevTotal - a.prevTotal);
       prevStandings.forEach((player, index) => {
-        prevRankMap[player.player_id] = index + 1;
+        if (prevPrevScore === null || player.prevTotal !== prevPrevScore) {
+          prevRank = index + 1;
+        }
+        prevRankMap[player.player_id] = prevRank;
+        prevPrevScore = player.prevTotal;
       });
     }
 
     // 10. Build table body rows.
     let bodyHTML = "<tbody>";
     standings.forEach(player => {
-      const currentRank = currentRankMap[player.player_id];
+      const currRank = currentRankMap[player.player_id];
       let movement = "";
       if (lastRace > 1 && prevRankMap[player.player_id] !== undefined) {
-        const diff = prevRankMap[player.player_id] - currentRank;
+        const diff = prevRankMap[player.player_id] - currRank;
         if (diff > 0) {
           movement = `(+${diff})`;
         } else if (diff < 0) {
@@ -443,7 +456,7 @@ async function loadFullSeasonResults() {
         }
       }
       bodyHTML += `<tr>
-                     <td>${currentRank} ${movement}</td>
+                     <td>${currRank} ${movement}</td>
                      <td>${player.player_name}</td>
                      <td>${player.total}</td>`;
       // Append each race score.
@@ -478,8 +491,8 @@ async function loadFullSeasonResults() {
       }
     });
 
-    // c) For each race column cell, strip the "(LS)" from the display and set the text color to grey.
-    //    Race columns start from column index 4 (1-indexed in the table header, so 0-indexed is 3).
+    // c) For each race column cell, if it contains "(LS)", strip that text and set text colour to grey.
+    //    Race columns start at column index 4 (0-indexed column 3).
     bodyRows.forEach(row => {
       const cells = row.querySelectorAll("td");
       for (let j = 3; j < cells.length; j++) {
@@ -492,7 +505,7 @@ async function loadFullSeasonResults() {
     });
 
     // d) Highlight the top three finishers for each race column individually.
-    //    We loop over each race column (columns 4 to last).
+    //    Loop over each race column (columns 4 to last).
     const numColumns = tableEl.querySelector("thead tr").children.length;
     for (let col = 3; col < numColumns; col++) {
       // For each column, get the cell values from the body.
@@ -508,7 +521,7 @@ async function loadFullSeasonResults() {
           const rank = sortedUnique.indexOf(val);
           if (rank >= 0 && rank < 3) {
             cell.style.backgroundColor = colors[rank];
-            // If the cell was originally a lowest score, leave its text color grey; otherwise, force black.
+            // If the cell was originally marked as lowest (grey), leave it; otherwise, force black.
             if (cell.style.color !== "grey") {
               cell.style.color = "black";
             }
@@ -516,7 +529,7 @@ async function loadFullSeasonResults() {
         }
       });
     }
-
+    
   } catch (err) {
     console.error("Error loading full season results:", err);
     document.getElementById("full-season-table").innerHTML =
@@ -524,10 +537,10 @@ async function loadFullSeasonResults() {
   }
 }
 
-// Call the function on page load.
 document.addEventListener("DOMContentLoaded", () => {
   loadFullSeasonResults();
 });
+
     </script>
     <!-- Bootstrap JS Bundle (Local) -->
     <script src="/js/bootstrap.bundle.min.js"></script>

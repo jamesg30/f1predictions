@@ -114,83 +114,88 @@
             </div>
 
             <!-- Submit Cards -->
-            <div id="submit-cards" class="tab-pane fade" role="tabpanel" aria-labelledby="submit-cards-tab">
-                <h2 class="mb-3 pixel-art-heading-3">Submit Cards</h2>
-                <div class="mb-3">
-                    <p>You are submitting cards for:</p>
-                    <ul class="list-group">
-                        <li class="list-group-item">Australian GP</li>
-                    </ul>
-                </div>
-                <div class="alert alert-info" role="alert">
-                    <p class="mb-0">
-                        Only submit this form if you want to submit a card for the current round. Otherwise, you do not need to submit anything. <br>
-                        These tips will be hidden after Monaco GP
-                    </p>
-                </div>
-                <div class="mb-3">
-                    <label for="team-select" class="form-label">Select Team:</label>
-                    <select id="team-select" class="form-select"></select>
-                </div>
-                <p>Select Card:</p>
-                <ul class="list-group">
-                    <li class="list-group-item">
-                        <input class="form-check-input me-1" type="radio" name="card" value="aero" id="firstCheckboxStretched">
-                        <label class="form-check-label stretched-link" for="firstCheckboxStretched">
-                            <img src="/media/cards/card_aero.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-                        </label>
-                    </li>
-                    <li class="list-group-item">
-                        <input class="form-check-input me-1" type="radio" name="card" value="double" id="secondCheckboxStretched">
-                        <label class="form-check-label stretched-link" for="secondCheckboxStretched">
-                            <img src="/media/cards/card_double.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-                        </label>
-                    </li>
-                    <li class="list-group-item">
-                        <input class="form-check-input me-1" type="radio" name="card" value="halo" id="thirdCheckboxStretched">
-                        <label class="form-check-label stretched-link" for="thirdCheckboxStretched">
-                            <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-                        </label>
-                    </li>
-                    <li class="list-group-item">
-                        <input class="form-check-input me-1" type="radio" name="card" value="report" id="fourthCheckboxStretched">
-                        <label class="form-check-label stretched-link" for="fourthCheckboxStretched">
-                            <img src="/media/cards/card_report.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-                        </label>
-                    </li>
-                    <li class="list-group-item">
-                        <input class="form-check-input me-1" type="radio" name="card" value="swap" id="fifthCheckboxStretched">
-                        <label class="form-check-label stretched-link" for="fifthCheckboxStretched">
-                            <img src="/media/cards/card_swap.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-                        </label>
-                    </li>
-                    <li class="list-group-item">
-                        <input class="form-check-input me-1" type="radio" name="card" value="swap" id="sixthCheckboxStretched">
-                        <label class="form-check-label stretched-link" for="sixthCheckboxStretched">
-                            Play no cards
-                        </label>
-                    </li>
-                </ul>
-                <div class="mb-3">
-                    <label for="card-select" class="form-label">(for Report/Swap only) Select team to report/swap:</label>
-                    <select id="card-select" class="form-select"></select>
-                </div>
-                <div class="mb-3">
-                    <button id="submit-card-btn" class="pixel-button primary">Submit Card</button>
-                </div>
-                <div class="alert alert-info" role="alert">
-                    <h4 class="alert-heading">Tips:</h4>
-                    <p class="mb-0">
-                        To remove a card you have played, select the 'Play no cards' option
-                    </p>
-                    <hr>
-                    <p>
-                        There is no way to view cards once they have been played. This ensures other players cannot see what card you have played, and avoids requiring log-ins on the site.<br>
-                        If you are unsure what card you played, remove it using 'Play no cards' and then resubmit. <br>
-                        These tips will be hidden after Monaco GP
-                    </p>
-                </div>
-            </div>
+<div id="submit-cards" class="tab-pane fade" role="tabpanel" aria-labelledby="submit-cards-tab">
+    <h2 class="mb-3 pixel-art-heading-3">Submit Cards</h2>
+    <div class="mb-3">
+        <p>You are submitting cards for:</p>
+        <ul class="list-group">
+            <li id="current-race-name" class="list-group-item">Loading...</li> <!-- Dynamically loaded race name -->
+        </ul>
+    </div>
+    <div class="alert alert-info" role="alert">
+        <p class="mb-0">
+            Only submit this form if you want to submit a card for the current round. Otherwise, you do not need to submit anything.
+        </p>
+    </div>
+    <div class="mb-3">
+        <label for="team-select" class="form-label">Select Team:</label>
+        <select id="team-select" class="form-select" disabled>
+            <option value="" disabled selected>Select a team</option>
+        </select>
+    </div>
+    <div id="team-card-stock"></div>
+
+    <p>Select Card:</p>
+    <ul class="list-group">
+        <li class="list-group-item">
+            <input class="form-check-input me-1 card-option" type="radio" name="card" value="aero" id="card-aero" disabled>
+            <label class="form-check-label stretched-link" for="card-aero">
+                <img src="/media/cards/card_aero.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+            </label>
+        </li>
+        <li class="list-group-item">
+            <input class="form-check-input me-1 card-option" type="radio" name="card" value="double" id="card-double" disabled>
+            <label class="form-check-label stretched-link" for="card-double">
+                <img src="/media/cards/card_double.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+            </label>
+        </li>
+        <li class="list-group-item">
+            <input class="form-check-input me-1 card-option" type="radio" name="card" value="halo" id="card-halo" disabled>
+            <label class="form-check-label stretched-link" for="card-halo">
+                <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+            </label>
+        </li>
+        <li class="list-group-item">
+            <input class="form-check-input me-1 card-option" type="radio" name="card" value="report" id="card-report" disabled>
+            <label class="form-check-label stretched-link" for="card-report">
+                <img src="/media/cards/card_report.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+            </label>
+        </li>
+        <li class="list-group-item">
+            <input class="form-check-input me-1 card-option" type="radio" name="card" value="swap" id="card-swap" disabled>
+            <label class="form-check-label stretched-link" for="card-swap">
+                <img src="/media/cards/card_swap.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+            </label>
+        </li>
+        <li class="list-group-item">
+            <input class="form-check-input me-1 card-option" type="radio" name="card" value="play-no-cards" id="card-none" disabled>
+            <label class="form-check-label stretched-link" for="card-none">
+                Play no cards
+            </label>
+        </li>
+    </ul>
+
+    <div class="mb-3" id="select-team-container" style="display: none;">
+        <label for="card-select" class="form-label">(for Report/Swap only) Select team to report/swap:</label>
+        <select id="card-select" class="form-select"></select> <!-- SELECT TEAM TO REPORT OR SWAP -->
+    </div>
+
+    <div class="mb-3">
+        <button id="submit-card-btn" class="pixel-button primary" disabled>Submit Card</button>
+    </div>
+
+    <div class="alert alert-info" role="alert">
+        <h4 class="alert-heading">Tips:</h4>
+        <p class="mb-0">
+            To remove a card you have played, select the 'Play no cards' option.
+        </p>
+        <p>
+            There is no way to view cards once they have been played. This ensures other players cannot see what card you have played.<br>
+            If you are unsure what card you played, remove it using 'Play no cards' and then resubmit.<br>
+        </p>
+    </div>
+</div>
+
 
             <!-- Casino -->
             <div id="casino" class="tab-pane fade" role="tabpanel" aria-labelledby="casino-tab">
@@ -213,6 +218,282 @@
     <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
         <p>&copy; 2024 F1 Predictions Form</p>
     </footer>
+    <script>
+// Global variable to store teams data once loaded.
+let teamsData = [];
+
+/**
+ * loadRaceName - Fetches the current race name based on the race number in form_details.
+ */
+async function loadRaceName() {
+  try {
+    const { data: formDetails, error: formError } = await supabase
+      .from('form_details')
+      .select('race_number')
+      .single();
+    if (formError || !formDetails) {
+      console.error("Error fetching race number:", formError);
+      return;
+    }
+    const raceNumber = formDetails.race_number;
+
+    const { data: raceData, error: raceError } = await supabase
+      .from('calendar')
+      .select('name')
+      .eq('race_number', raceNumber)
+      .single();
+    if (raceError || !raceData) {
+      console.error("Error fetching race name:", raceError);
+      return;
+    }
+    document.getElementById("current-race-name").textContent = `${raceData.name} GP`;
+  } catch (err) {
+    console.error("loadRaceName error:", err);
+  }
+}
+
+/**
+ * loadTeamsForCards - Loads the entire teams table and populates the team-select dropdown.
+ */
+async function loadTeamsForCards() {
+  try {
+    const { data, error } = await supabase.from('teams').select('*');
+    if (error) {
+      console.error("Error loading teams:", error);
+      return;
+    }
+    teamsData = data; // cache teams data
+    const teamSelect = document.getElementById("team-select");
+    teamSelect.innerHTML = '<option value="" disabled selected>Select a team</option>'; // Placeholder
+
+    data.forEach(team => {
+      const option = document.createElement("option");
+      option.value = team.id;
+      option.textContent = team.name;
+      teamSelect.appendChild(option);
+    });
+
+    teamSelect.disabled = false; // Enable dropdown after loading
+
+    // Update card stock display when a team is selected.
+    updateTeamCardStock();
+  } catch (err) {
+    console.error("loadTeamsForCards error:", err);
+  }
+}
+
+/**
+ * updateTeamCardStock - Displays card stock for the selected team.
+ * It shows the sum of played and unplayed for each card and disables options with zero stock.
+ */
+function updateTeamCardStock() {
+  const teamSelect = document.getElementById("team-select");
+  const selectedTeamId = teamSelect.value;
+  const team = teamsData.find(t => t.id == selectedTeamId);
+  if (!team) return;
+  
+  // Calculate stock for each card type.
+  const cardStock = {
+    aero: (Number(team.card_aero_unplayed) || 0) + (Number(team.card_aero_played) || 0),
+    double: (Number(team.card_double_unplayed) || 0) + (Number(team.card_double_played) || 0),
+    halo: (Number(team.card_halo_unplayed) || 0) + (Number(team.card_halo_played) || 0),
+    report: (Number(team.card_report_unplayed) || 0) + (Number(team.card_report_played) || 0),
+    swap: (Number(team.card_swap_unplayed) || 0) + (Number(team.card_swap_played) || 0)
+  };
+  
+  // Update stock display.
+  const stockEl = document.getElementById("team-card-stock");
+  stockEl.innerHTML = `
+    <p><strong>Team Card Stock:</strong></p>
+    <ul>
+      <li>Aero: ${cardStock.aero}</li>
+      <li>Double: ${cardStock.double}</li>
+      <li>Halo: ${cardStock.halo}</li>
+      <li>Report: ${cardStock.report}</li>
+      <li>Swap: ${cardStock.swap}</li>
+    </ul>
+  `;
+  
+  // Disable radio buttons if no stock.
+  const cardOptions = {
+    aero: cardStock.aero,
+    double: cardStock.double,
+    halo: cardStock.halo,
+    report: cardStock.report,
+    swap: cardStock.swap
+  };
+  
+  document.querySelectorAll("input[name='card']").forEach(radio => {
+    const val = radio.value;
+    if (val in cardOptions) {
+      radio.disabled = (cardOptions[val] === 0);
+      radio.parentElement.title = radio.disabled ? `You have no ${val} cards remaining.` : "";
+    } else if (val === "play-no-cards") {
+      radio.disabled = false;
+    }
+  });
+  
+  // (Removed blanket enabling of card options to preserve disabled state.)
+  
+  // Enable the submit button if a team is selected.
+  document.getElementById("submit-card-btn").disabled = false;
+  
+  // Also update the report/swap team dropdown if needed.
+  updateTeamDropdownForSpecialCards();
+}
+
+/**
+ * updateTeamDropdownForSpecialCards - When a Report or Swap card is selected,
+ * populate the dropdown with teams (excluding the selected team).
+ */
+function updateTeamDropdownForSpecialCards() {
+  const selectedTeamId = document.getElementById("team-select").value;
+  const selectedCard = document.querySelector("input[name='card']:checked")?.value;
+  const selectTeamContainer = document.getElementById("select-team-container");
+  const cardSelect = document.getElementById("card-select");
+
+  if (selectedCard === "report" || selectedCard === "swap") {
+    selectTeamContainer.style.display = "block";
+    cardSelect.innerHTML = '<option value="" disabled selected>Select a team</option>';
+    teamsData
+      .filter(t => t.id != selectedTeamId)
+      .forEach(team => {
+        const option = document.createElement("option");
+        option.value = team.id;
+        option.textContent = team.name;
+        cardSelect.appendChild(option);
+      });
+  } else {
+    selectTeamContainer.style.display = "none";
+  }
+}
+
+/**
+ * submitCards - Called when the user clicks the "Submit Card" button.
+ * It resets played cards to unplayed, then applies the chosen card play.
+ * For Report/Swap, the selected team from the dropdown is recorded.
+ * "Play no cards" resets all played cards to unplayed and clears extra columns.
+ * After submission, the form resets.
+ */
+async function submitCards() {
+  const teamSelect = document.getElementById("team-select");
+  const selectedTeamId = teamSelect.value;
+  const team = teamsData.find(t => t.id == selectedTeamId);
+  if (!team) {
+    alert("Team not found.");
+    return;
+  }
+  
+  // Get the selected card value.
+  const selectedCardRadio = document.querySelector("input[name='card']:checked");
+  if (!selectedCardRadio) {
+    alert("Please select a card option.");
+    return;
+  }
+  const selectedCard = selectedCardRadio.value; // e.g., 'aero', 'double', 'halo', 'report', 'swap', or 'play-no-cards'
+  
+  // For report or swap, get the target team from the dropdown.
+  let targetTeamId = null;
+  if (selectedCard === "report" || selectedCard === "swap") {
+    targetTeamId = document.getElementById("card-select").value;
+    if (!targetTeamId) {
+      alert("Please select a team to report or swap.");
+      return;
+    }
+  }
+  
+  // Prepare new card values:
+  // Reset: for each card type, new_unplayed = current_unplayed + played; played = 0.
+  const cardTypes = ["aero", "double", "halo", "report", "swap"];
+  const updatedValues = {};
+  cardTypes.forEach(card => {
+    const unplayedCol = `card_${card}_unplayed`;
+    const playedCol = `card_${card}_played`;
+    const unplayed = Number(team[unplayedCol]) || 0;
+    const played = Number(team[playedCol]) || 0;
+    updatedValues[unplayedCol] = unplayed + played;
+    updatedValues[playedCol] = 0;
+  });
+  
+  if (selectedCard !== "play-no-cards") {
+    // For the selected card, subtract 1 from unplayed and add 1 to played.
+    const unplayedCol = `card_${selectedCard}_unplayed`;
+    const playedCol = `card_${selectedCard}_played`;
+    if (updatedValues[unplayedCol] <= 0) {
+      alert(`You do not have any ${selectedCard} cards available.`);
+      return;
+    }
+    updatedValues[unplayedCol] -= 1;
+    updatedValues[playedCol] = 1;
+  } else {
+    // If "Play no cards" is selected, clear extra columns.
+    updatedValues.card_swap_time = null;
+    updatedValues.card_swap_team_selected = null;
+    updatedValues.card_report_team_selected = null;
+  }
+  
+  // Record target team ID for report or swap.
+  if (selectedCard === "report") {
+    updatedValues.card_report_team_selected = targetTeamId;
+  } else if (selectedCard === "swap") {
+    updatedValues.card_swap_team_selected = targetTeamId;
+    updatedValues.card_swap_time = new Date().toISOString(); // Record timestamp
+  }
+  
+  // Update the team's row in the teams table.
+  const { error: updateError } = await supabase
+    .from('teams')
+    .update(updatedValues)
+    .eq('id', selectedTeamId);
+  if (updateError) {
+    console.error("Error updating team card submission:", updateError);
+    alert("Failed to submit cards.");
+    return;
+  }
+  
+  alert("Cards submitted successfully!");
+  
+  // Reset the form:
+  // Clear team selection.
+  const teamSelectElem = document.getElementById("team-select");
+  teamSelectElem.value = "";
+  teamSelectElem.disabled = true;
+  // Clear team card stock.
+  document.getElementById("team-card-stock").innerHTML = "";
+  // Uncheck all card radio buttons and disable them.
+  document.querySelectorAll("input[name='card']").forEach(radio => {
+    radio.checked = false;
+    radio.disabled = true;
+  });
+  // Hide the report/swap dropdown.
+  document.getElementById("select-team-container").style.display = "none";
+  // Disable submit button.
+  document.getElementById("submit-card-btn").disabled = true;
+  
+  // Reload teams data to refresh the form.
+  await loadTeamsForCards();
+}
+
+/**
+ * loadSubmitCardsPage - Initializes the submit cards page.
+ */
+async function loadSubmitCardsPage() {
+  await loadRaceName();
+  await loadTeamsForCards();
+
+  // Bind change event on team-select to update card stock display.
+  document.getElementById("team-select").addEventListener("change", updateTeamCardStock);
+  // Bind change event on card radio buttons to update the report/swap team dropdown.
+  document.querySelectorAll("input[name='card']").forEach(input => {
+    input.addEventListener("change", updateTeamDropdownForSpecialCards);
+  });
+  document.getElementById("submit-card-btn").addEventListener("click", submitCards);
+}
+
+// Initialize the page when DOM is ready.
+document.addEventListener("DOMContentLoaded", loadSubmitCardsPage);
+
+    </script>
     <!-- Bootstrap JS Bundle (Local) -->
     <script src="/js/bootstrap.bundle.min.js"></script>
 </body>

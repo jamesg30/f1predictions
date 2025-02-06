@@ -300,7 +300,6 @@ async function registerPlayer() {
     }
 }
 
-
 async function registerTeam() {
     const teamName = document.getElementById('team-name').value.trim();
     if (!teamName) {
@@ -325,8 +324,29 @@ async function registerTeam() {
             return;
         }
 
-        // Add the new team
-        const { error: insertError } = await supabase.from('teams').insert([{ name: teamName }]);
+        // Define card allocations (update these numbers if needed):
+        // card_aero_unplayed: Aero card count, default 1.
+        // card_double_unplayed: Double card count, default 1.
+        // card_halo_unplayed: Halo card count, default 3.
+        // card_report_unplayed: Report card count, default 1.
+        // card_swap_unplayed: Swap card count, default 1.
+        // For played cards, we start at 0.
+        const newTeam = {
+            name: teamName,
+            card_aero_unplayed: 1,    // Aero cards available initially.
+            card_double_unplayed: 1,  // Double cards available initially.
+            card_halo_unplayed: 3,    // Halo cards available initially.
+            card_report_unplayed: 1,  // Report cards available initially.
+            card_swap_unplayed: 1,    // Swap cards available initially.
+            card_aero_played: 0,
+            card_double_played: 0,
+            card_halo_played: 0,
+            card_report_played: 0,
+            card_swap_played: 0
+        };
+
+        // Add the new team along with the card allocations.
+        const { error: insertError } = await supabase.from('teams').insert([newTeam]);
         if (insertError) throw insertError;
 
         alert('Team registered successfully!');

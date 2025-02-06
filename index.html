@@ -961,29 +961,40 @@ async function loadHomeStandings() {
     // 6. Sort standings descending by current total score.
     standings.sort((a, b) => b.total - a.total);
 
-    // Create maps for current and previous rankings.
+    // 7. Assign current ranks with ties receiving the same rank.
+    let currentRank = 1;
+    let prevScore = null;
     const currentRankMap = {};
     standings.forEach((player, index) => {
-      currentRankMap[player.player_id] = index + 1;
+      if (prevScore === null || player.total !== prevScore) {
+        currentRank = index + 1;
+      }
+      currentRankMap[player.player_id] = currentRank;
+      prevScore = player.total;
     });
 
-    // 7. Compute previous standings if lastRace > 1.
+    // 8. Compute previous standings if lastRace > 1.
     const prevRankMap = {};
     if (lastRace > 1) {
-      // Compute standings based on prevTotal (sum for races 1 to lastRace-1).
       const prevStandings = [...standings].sort((a, b) => b.prevTotal - a.prevTotal);
+      let prevRank = 1;
+      let prevPrevScore = null;
       prevStandings.forEach((player, index) => {
-        prevRankMap[player.player_id] = index + 1;
+        if (prevPrevScore === null || player.prevTotal !== prevPrevScore) {
+          prevRank = index + 1;
+        }
+        prevRankMap[player.player_id] = prevRank;
+        prevPrevScore = player.prevTotal;
       });
     }
 
-    // 8. Build HTML rows.
+    // 9. Build HTML rows.
     let html = "";
     standings.forEach(player => {
-      const currentRank = currentRankMap[player.player_id];
+      const currRank = currentRankMap[player.player_id];
       let movement = "";
       if (lastRace > 1 && prevRankMap[player.player_id] !== undefined) {
-        const diff = prevRankMap[player.player_id] - currentRank;
+        const diff = prevRankMap[player.player_id] - currRank;
         if (diff > 0) {
           movement = `(+${diff})`;
         } else if (diff < 0) {
@@ -993,7 +1004,7 @@ async function loadHomeStandings() {
         }
       }
       html += `<tr>
-                <td>${currentRank} ${movement}</td>
+                <td>${currRank} ${movement}</td>
                 <td>${player.player_name}</td>
                 <td>${player.total}</td>
               </tr>`;
@@ -1009,7 +1020,6 @@ async function loadHomeStandings() {
 document.addEventListener("DOMContentLoaded", () => {
   loadHomeStandings();
 });
-
     </script>
 </body>
 </html>
