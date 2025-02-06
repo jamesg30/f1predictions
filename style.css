@@ -292,11 +292,11 @@ footer {
   color: #fff;
   background-color: #000;
   border-color: #444;
-  box-shadow: 3px 3px 0 #222;
+  box-shadow: 3px 3px 0 #111;
 }
 
 .pixel-button.dark:hover {
-  background-color: #222;
+  background-color: #111;
 }
 
 /* Button Press Effect (Works on touch & click) */

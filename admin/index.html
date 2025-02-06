@@ -249,15 +249,13 @@
                 <div class="container">
                   <!-- Top row: Current Year, Race Selection, and Race Info -->
                   <div class="row mb-3">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                       <label for="current-year-season-totals" class="form-label">Year</label>
                       <input type="text" id="current-year-season-totals" class="form-control" readonly>
+                      <label for="race-select-season-totals" class="form-label">Select Race</label>
+                      <select id="race-select-season-totals" class="form-select"></select>
                     </div>
-                    <div class="col-md-4">
-                      <label for="race-select" class="form-label">Select Race</label>
-                      <select id="race-select" class="form-select"></select>
-                    </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                       <label for="race-info" class="form-label">Race Info</label>
                       <div id="race-info" class="border p-2" style="min-height: 60px;">
                         <!-- Info such as number of responses, lowest scores, etc. will appear here -->
@@ -2155,6 +2153,297 @@ if (results) {
         console.log(`Scores displayed`);
     });
 });
+// --- SEASON TOTALS PAGE ---
+async function getTable(tableName) {
+  const { data, error } = await supabase.from(tableName).select('*');
+  if (error) {
+    console.error(`Error fetching ${tableName}:`, error);
+    throw error;
+  }
+  return data;
+}
+// --- SEASON TOTALS PAGE ---
+
+// Helper: Append message to progress area and log to console.
+function updateProgress(message) {
+  console.log(message);
+  const progressEl = document.getElementById("update-progress");
+  progressEl.style.display = "block";
+  progressEl.textContent += message + "\n";
+}
+
+// Helper: Clear progress area.
+function clearProgress() {
+  const progressEl = document.getElementById("update-progress");
+  progressEl.textContent = "";
+  progressEl.style.display = "none";
+}
+
+// Function to load race options (and set the current year) into the UI.
+async function loadRaceOptions() {
+  try {
+    // 1. Retrieve current year from form_details table using getTable.
+    const formDetails = await getTable('form_details');
+    if (!formDetails || formDetails.length === 0) {
+      updateProgress("No form details found.");
+      return;
+    }
+    const currentYear = formDetails[0].current_year;
+    document.getElementById("current-year-season-totals").value = currentYear;
+    updateProgress(`Current Year: ${currentYear}`);
+
+    // 2. Load unique race names from the form_responses_{year} table.
+    const responsesTable = `form_responses_${currentYear}`;
+    const { data: raceData, error: raceDataError } = await supabase
+      .from(responsesTable)
+      .select('race_name, race_number, id')
+      .order('id', { ascending: true });  // assuming higher id means later race
+    if (raceDataError) {
+      console.error("Race data error:", raceDataError);
+      updateProgress("Error retrieving race data from " + responsesTable);
+      return;
+    }
+    updateProgress(`Retrieved ${raceData.length} rows from ${responsesTable}.`);
+    console.log("Raw raceData:", raceData);
+
+    if (!raceData || raceData.length === 0) {
+      updateProgress("No race data found in " + responsesTable);
+      alert("No races found in the responses table for the current year.");
+      return;
+    }
+
+    // Filter for unique races.
+    const uniqueRacesMap = {};
+    raceData.forEach(r => {
+      if (r.race_name && !uniqueRacesMap[r.race_name]) {
+        uniqueRacesMap[r.race_name] = r.race_number;
+      }
+    });
+    console.log("Unique races map:", uniqueRacesMap);
+    updateProgress(`Unique races found: ${JSON.stringify(uniqueRacesMap)}`);
+
+    const raceSelect = document.getElementById("race-select-season-totals");
+    raceSelect.innerHTML = ""; // Clear existing options
+
+    let latestRaceNumber = 0;
+    let optionCount = 0;
+    for (const [raceName, raceNumber] of Object.entries(uniqueRacesMap)) {
+      const option = document.createElement("option");
+      option.value = raceName;
+      option.textContent = raceName;
+      option.dataset.raceNumber = raceNumber;
+      raceSelect.appendChild(option);
+      optionCount++;
+      updateProgress(`Added race: ${raceName} with race number ${raceNumber}`);
+      if (raceNumber > latestRaceNumber) {
+        latestRaceNumber = raceNumber;
+      }
+    }
+    updateProgress(`Total options added to dropdown: ${optionCount}`);
+
+    if (raceSelect.options.length === 0) {
+      updateProgress("No valid races found to populate the dropdown.");
+      alert("No valid races found in the responses table for the current year.");
+      return;
+    }
+    
+    // On initial load, force prefill with the latest race.
+    if (window.initialLoad === undefined || window.initialLoad === true) {
+      for (let i = 0; i < raceSelect.options.length; i++) {
+        if (raceSelect.options[i].dataset.raceNumber == latestRaceNumber) {
+          raceSelect.selectedIndex = i;
+          updateProgress(`Prefilled dropdown with latest race: ${raceSelect.options[i].value}`);
+          break;
+        }
+      }
+      window.initialLoad = false;
+    }
+    
+    // After options are loaded, update race info panel.
+    await updateRaceInfo();
+  } catch (err) {
+    console.error("loadRaceOptions error:", err);
+    updateProgress("Error in loadRaceOptions: " + err.message);
+  }
+}
+
+// Function to update the race info panel based on the selected race.
+async function updateRaceInfo() {
+  try {
+    const currentYear = document.getElementById("current-year-season-totals").value;
+    const responsesTable = `form_responses_${currentYear}`;
+    const raceSelect = document.getElementById("race-select-season-totals");
+    const selectedRaceName = raceSelect.value;
+    updateProgress(`Updating race info for: ${selectedRaceName}`);
+    const { data: raceResponses, error: raceResponsesError } = await supabase
+      .from(responsesTable)
+      .select('entry_type')
+      .eq('race_name', selectedRaceName);
+    if (raceResponsesError) {
+      console.error("Race responses error:", raceResponsesError);
+      updateProgress("Error retrieving race responses for " + selectedRaceName);
+    } else {
+      const playerCount = raceResponses.filter(r => r.entry_type === 'player').length;
+      const lowestCount = raceResponses.filter(r => r.entry_type === 'player_lowest_score').length;
+      const hasResults = raceResponses.some(r => r.entry_type === 'results');
+      const hasQuestions = raceResponses.some(r => r.entry_type === 'questions');
+      document.getElementById("race-info").innerHTML = `
+        <p><strong>Race:</strong> ${selectedRaceName}</p>
+        <p><strong>Responses:</strong> ${playerCount}</p>
+        <p><strong>Lowest Scores:</strong> ${lowestCount}</p>
+        <p><strong>Results Entered:</strong> ${hasResults ? "Yes" : "No"}</p>
+        <p><strong>Questions Entered:</strong> ${hasQuestions ? "Yes" : "No"}</p>
+      `;
+      updateProgress(`Race info updated for ${selectedRaceName}`);
+    }
+  } catch (err) {
+    console.error("updateRaceInfo error:", err);
+    updateProgress("Error in updateRaceInfo: " + err.message);
+  }
+}
+
+async function updateSeasonTotals() {
+  clearProgress();
+  updateProgress("Starting update of Season Totals...");
+
+  // Retrieve current year
+  const currentYear = document.getElementById("current-year-season-totals").value;
+  if (!currentYear) {
+    updateProgress("Error: Current year is not set.");
+    return;
+  }
+  updateProgress(`Current Year: ${currentYear}`);
+
+  // Retrieve selected race from dropdown.
+  const raceSelect = document.getElementById("race-select-season-totals");
+  const selectedRaceName = raceSelect.value;
+  const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
+  updateProgress(`Selected Race: ${selectedRaceName} (Race number: ${raceNumber})`);
+
+  // Define table names.
+  const responsesTable = `form_responses_${currentYear}`;
+  const seasonPlayerTable = `season_player_${currentYear}`;
+
+  // 1. Retrieve season responses for the selected race.
+  updateProgress("Retrieving season responses for the selected race...");
+  const { data: responses, error: responsesError } = await supabase
+    .from(responsesTable)
+    .select('player_id, player_name, grand_total, entry_type, race_name')
+    .eq('race_number', raceNumber);
+  if (responsesError) {
+    updateProgress(`Error fetching responses: ${responsesError.message}`);
+    return;
+  }
+  updateProgress(`Retrieved ${responses.length} responses.`);
+
+  // Filter out entries with player_id -1 (i.e. questions entries)
+  const playerResponses = responses.filter(r => r.player_id !== 0 && r.player_id !== -1);
+  updateProgress(`Processing ${playerResponses.length} player responses (excluding questions)...`);
+
+  // 2. Retrieve current season players table.
+  updateProgress("Fetching current season players...");
+  let seasonPlayers = await getTable(seasonPlayerTable);
+  updateProgress(`Found ${seasonPlayers.length} rows in ${seasonPlayerTable}.`);
+
+  // Find the "Race Names" row (player_id === 0)
+  let raceNamesRow = seasonPlayers.find(row => row.player_id === 0);
+  if (!raceNamesRow) {
+    updateProgress("No Race Names row found. Creating a new one...");
+    const { data: insertedRaceNames, error: insertError } = await supabase
+      .from(seasonPlayerTable)
+      .insert([{ player_id: 0, player_name: "Race Names" }])
+      .select()
+      .single();
+    if (insertError) {
+      updateProgress(`Error inserting Race Names row: ${insertError.message}`);
+      return;
+    }
+    raceNamesRow = insertedRaceNames;
+    updateProgress("Race Names row inserted.");
+  }
+
+  // Ensure the race column exists
+  const raceColumn = `race_${raceNumber}`;
+  if (raceNamesRow[raceColumn] === null) {
+    raceNamesRow[raceColumn] = "";
+  }
+
+  // Check if the race column already has data.
+  if (raceNamesRow[raceColumn] !== "") {
+    const override = confirm(`Results for Race ${raceNumber} (${selectedRaceName}) already exist. Do you want to override them?`);
+    if (!override) {
+      updateProgress("Update cancelled by user.");
+      return;
+    }
+    updateProgress("User confirmed override. Proceeding...");
+  }
+
+  // Update Race Names row.
+  updateProgress(`Updating Race Names row: setting ${raceColumn} = ${selectedRaceName}`);
+  let { error: updateRaceNameError } = await supabase
+    .from(seasonPlayerTable)
+    .update({ [raceColumn]: selectedRaceName })
+    .eq('player_id', 0);
+  if (updateRaceNameError) {
+    updateProgress(`Error updating Race Names row: ${updateRaceNameError.message}`);
+    return;
+  }
+  updateProgress("Race Names row updated.");
+
+  // Process each player response.
+  for (const resp of playerResponses) {
+    let score = resp.grand_total;
+    if (resp.entry_type === 'player_lowest_score') {
+      score = `${score}(LS)`;
+    }
+    updateProgress(`Processing player ${resp.player_name} (ID: ${resp.player_id}) with score: ${score}`);
+
+    let playerRow = seasonPlayers.find(row => row.player_id === resp.player_id);
+    if (!playerRow) {
+      updateProgress(`Creating new entry for player ${resp.player_name} (ID: ${resp.player_id}).`);
+      let newRow = { player_id: resp.player_id, player_name: resp.player_name, [raceColumn]: score };
+
+      const { error: insertPlayerError } = await supabase
+        .from(seasonPlayerTable)
+        .insert([newRow]);
+      if (insertPlayerError) {
+        updateProgress(`Error inserting player ${resp.player_name}: ${insertPlayerError.message}`);
+      } else {
+        updateProgress(`Player ${resp.player_name} inserted successfully.`);
+      }
+    } else {
+      updateProgress(`Updating player ${resp.player_name} in column ${raceColumn}.`);
+      let { error: updatePlayerError } = await supabase
+        .from(seasonPlayerTable)
+        .update({ [raceColumn]: score })
+        .eq('player_id', resp.player_id);
+      if (updatePlayerError) {
+        updateProgress(`Error updating player ${resp.player_name}: ${updatePlayerError.message}`);
+      } else {
+        updateProgress(`Player ${resp.player_name} updated successfully.`);
+      }
+    }
+  }
+
+  updateProgress("Season totals update complete.");
+  alert("Season Totals update complete.");
+}
+
+
+// On DOMContentLoaded, load initial options.
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    await loadRaceOptions();
+    // Bind update of race info to the change event on the dropdown.
+    document.getElementById("race-select-season-totals").addEventListener("change", updateRaceInfo);
+    // Bind the update button.
+    document.getElementById("update-season-totals").addEventListener("click", updateSeasonTotals);
+  } catch (err) {
+    console.error("Error during DOMContentLoaded:", err);
+    updateProgress("Error during initialization: " + err.message);
+  }
+});
+
 </script>
 </body>
 </html>

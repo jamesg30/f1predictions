@@ -237,55 +237,12 @@
                 <h2 class="mb-3 pixel-art-heading-3">Season Player Results</h2>
                 <!-- Scrollable container -->
                 <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
-                    <table class="table table-sm table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Rank</th>
-                                <th>Player</th>
-                                <th>Total</th>
-                                <th>Australia</th>
-                                <th>Bahrain</th>
-                                <th>Baku</th>
-                                <th>Canada</th>
-                                <th>Abu Dhabi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>1 (=)</td>
-                                <td>Benji</td>
-                                <td>239</td>
-                                <td>18</td>
-                                <td>48</td>
-                                <td>28</td>
-                                <td>15</td>
-                                <td>36</td>
-                            </tr>
-                            <tr>
-                                <td>2 (-1)</td>
-                                <td>Kimberly</td>
-                                <td>234</td>
-                                <td>18</td>
-                                <td>48</td>
-                                <td>28</td>
-                                <td>15</td>
-                                <td>36</td>
-                            </tr>
-                            <tr>
-                                <td>3 (+1)</td>
-                                <td>Johnson P</td>
-                                <td>229</td>
-                                <td>18</td>
-                                <td>48</td>
-                                <td>28</td>
-                                <td>15</td>
-                                <td>36</td>
-                            </tr>
-                            <!-- More rows here -->
-                        </tbody>
-                    </table>
+                  <table id="full-season-table" class="table table-sm table-bordered">
+                    <!-- The table header and body will be injected via JS -->
+                  </table>
                 </div>
-            </div>
+              </div>
+              
 
             <!-- Season Team Results -->
             <div id="season-team" class="tab-pane fade" role="tabpanel" aria-labelledby="season-team-tab">
@@ -347,6 +304,231 @@
     <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
         <p>&copy; 2024 F1 Predictions Form</p>
     </footer>
+    <script>
+        // Helper: Retrieve an entire table from Supabase.
+async function getTable(tableName) {
+  const { data, error } = await supabase.from(tableName).select('*');
+  if (error) {
+    console.error(`Error fetching ${tableName}:`, error);
+    throw error;
+  }
+  return data;
+}
+
+async function loadFullSeasonResults() {
+  try {
+    // 1. Retrieve the current year from form_details.
+    const formDetails = await getTable('form_details');
+    if (!formDetails || formDetails.length === 0) {
+      console.error("No form_details found.");
+      document.getElementById("full-season-table").innerHTML =
+        "<tr><td colspan='3'>No season data available.</td></tr>";
+      return;
+    }
+    const currentYear = formDetails[0].current_year;
+    console.log("Current Year:", currentYear);
+
+    // 2. Retrieve the full season_player_{currentYear} table.
+    const seasonTableName = `season_player_${currentYear}`;
+    const seasonData = await getTable(seasonTableName);
+    console.log("Season Data:", seasonData);
+    if (!seasonData || seasonData.length === 0) {
+      document.getElementById("full-season-table").innerHTML =
+        "<tr><td colspan='3'>No season data available.</td></tr>";
+      return;
+    }
+
+    // 3. Extract the special "Race Names" row (player_id === 0).
+    const raceNamesRow = seasonData.find(row => row.player_id === 0);
+    if (!raceNamesRow) {
+      document.getElementById("full-season-table").innerHTML =
+        "<tr><td colspan='3'>No race names row found.</td></tr>";
+      return;
+    }
+
+    // 4. Determine the last race that has been scored.
+    let lastRace = 0;
+    for (let i = 1; i <= 32; i++) {
+      const col = `race_${i}`;
+      if (raceNamesRow[col] !== null && raceNamesRow[col] !== "") {
+        lastRace = i;
+      } else {
+        break;
+      }
+    }
+    console.log("Last race with data:", lastRace);
+    if (lastRace === 0) {
+      document.getElementById("full-season-table").innerHTML =
+        "<tr><td colspan='3'>No race scores available yet.</td></tr>";
+      return;
+    }
+
+    // 5. Build table header.
+    let headerHTML = "<thead><tr>" +
+      "<th>Rank</th><th>Player</th><th>Total</th>";
+    for (let i = 1; i <= lastRace; i++) {
+      headerHTML += `<th>${raceNamesRow[`race_${i}`]}</th>`;
+    }
+    headerHTML += "</tr></thead>";
+
+    // 6. Process player rows (exclude player_id === 0).
+    const playerRows = seasonData.filter(row => row.player_id !== 0);
+    if (playerRows.length === 0) {
+      document.getElementById("full-season-table").innerHTML =
+        "<tr><td colspan='3'>No player data available.</td></tr>";
+      return;
+    }
+
+    // 7. Compute totals for each player.
+    const standings = playerRows.map(row => {
+      let total = 0;
+      let prevTotal = 0;
+      const raceScores = [];
+      for (let i = 1; i <= lastRace; i++) {
+        const col = `race_${i}`;
+        let raw = row[col];
+        if (raw !== null && raw !== "") {
+          // Remove any "(LS)" indicator from the numeric value.
+          const numStr = raw.replace(/\(LS\)/, "").trim();
+          const num = parseFloat(numStr);
+          raceScores.push(raw);
+          if (!isNaN(num)) {
+            total += num;
+            if (i < lastRace) {
+              prevTotal += num;
+            }
+          }
+        } else {
+          raceScores.push("");
+        }
+      }
+      return {
+        player_id: row.player_id,
+        player_name: row.player_name,
+        total: total,
+        prevTotal: prevTotal,
+        raceScores: raceScores
+      };
+    });
+
+    // 8. Sort standings descending by current total.
+    standings.sort((a, b) => b.total - a.total);
+
+    // 9. Build ranking maps.
+    const currentRankMap = {};
+    standings.forEach((player, index) => {
+      currentRankMap[player.player_id] = index + 1;
+    });
+    const prevRankMap = {};
+    if (lastRace > 1) {
+      const prevStandings = [...standings].sort((a, b) => b.prevTotal - a.prevTotal);
+      prevStandings.forEach((player, index) => {
+        prevRankMap[player.player_id] = index + 1;
+      });
+    }
+
+    // 10. Build table body rows.
+    let bodyHTML = "<tbody>";
+    standings.forEach(player => {
+      const currentRank = currentRankMap[player.player_id];
+      let movement = "";
+      if (lastRace > 1 && prevRankMap[player.player_id] !== undefined) {
+        const diff = prevRankMap[player.player_id] - currentRank;
+        if (diff > 0) {
+          movement = `(+${diff})`;
+        } else if (diff < 0) {
+          movement = `(${diff})`;
+        } else {
+          movement = "(=)";
+        }
+      }
+      bodyHTML += `<tr>
+                     <td>${currentRank} ${movement}</td>
+                     <td>${player.player_name}</td>
+                     <td>${player.total}</td>`;
+      // Append each race score.
+      player.raceScores.forEach(score => {
+        bodyHTML += `<td>${score}</td>`;
+      });
+      bodyHTML += "</tr>";
+    });
+    bodyHTML += "</tbody>";
+
+    // 11. Combine header and body and inject into the table.
+    const fullHTML = headerHTML + bodyHTML;
+    const tableEl = document.getElementById("full-season-table");
+    tableEl.innerHTML = fullHTML;
+
+    // 12. Post-process the table styling.
+
+    // a) Header styling: dark grey background, white text, center alignment.
+    const headerCells = tableEl.querySelectorAll("thead th");
+    headerCells.forEach(cell => {
+      cell.style.backgroundColor = "darkgrey";
+      cell.style.color = "white";
+      cell.style.textAlign = "center";
+    });
+
+    // b) For each row in the body, apply a light grey background to the first three columns.
+    const bodyRows = tableEl.querySelectorAll("tbody tr");
+    bodyRows.forEach(row => {
+      const cells = row.querySelectorAll("td");
+      for (let j = 0; j < 3; j++) {
+        cells[j].style.backgroundColor = "lightgrey";
+      }
+    });
+
+    // c) For each race column cell, strip the "(LS)" from the display and set the text color to grey.
+    //    Race columns start from column index 4 (1-indexed in the table header, so 0-indexed is 3).
+    bodyRows.forEach(row => {
+      const cells = row.querySelectorAll("td");
+      for (let j = 3; j < cells.length; j++) {
+        if (cells[j].textContent.includes("(LS)")) {
+          const stripped = cells[j].textContent.replace(/\(LS\)/, "").trim();
+          cells[j].textContent = stripped;
+          cells[j].style.color = "grey";
+        }
+      }
+    });
+
+    // d) Highlight the top three finishers for each race column individually.
+    //    We loop over each race column (columns 4 to last).
+    const numColumns = tableEl.querySelector("thead tr").children.length;
+    for (let col = 3; col < numColumns; col++) {
+      // For each column, get the cell values from the body.
+      const colCells = Array.from(tableEl.querySelectorAll(`tbody tr td:nth-child(${col + 1})`));
+      // Extract numeric values from each cell.
+      const values = colCells.map(cell => parseFloat(cell.textContent.trim())).filter(val => !isNaN(val));
+      const sortedUnique = [...new Set(values)].sort((a, b) => b - a); // descending order
+      // Define colors for 1st, 2nd, 3rd.
+      const colors = ['gold', 'silver', '#cd7f32'];
+      colCells.forEach(cell => {
+        const val = parseFloat(cell.textContent.trim());
+        if (!isNaN(val)) {
+          const rank = sortedUnique.indexOf(val);
+          if (rank >= 0 && rank < 3) {
+            cell.style.backgroundColor = colors[rank];
+            // If the cell was originally a lowest score, leave its text color grey; otherwise, force black.
+            if (cell.style.color !== "grey") {
+              cell.style.color = "black";
+            }
+          }
+        }
+      });
+    }
+
+  } catch (err) {
+    console.error("Error loading full season results:", err);
+    document.getElementById("full-season-table").innerHTML =
+      `<tr><td colspan="100%">Error loading season results: ${err.message}</td></tr>`;
+  }
+}
+
+// Call the function on page load.
+document.addEventListener("DOMContentLoaded", () => {
+  loadFullSeasonResults();
+});
+    </script>
     <!-- Bootstrap JS Bundle (Local) -->
     <script src="/js/bootstrap.bundle.min.js"></script>
 </body>
