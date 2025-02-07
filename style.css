@@ -38,7 +38,9 @@ footer {
   table-layout: auto; /* Allow columns to adjust automatically */
 }
 
-#mainResultsTable th {
+/* Combined styling for both mainResultsTable and player-results-table */
+#mainResultsTable th,
+#player-results-table th, #standings-table th, #standings-team-table th {
   background-color: #ddd; /* Light grey header */
   max-width: 10ch;
   word-wrap: break-word;
@@ -49,7 +51,8 @@ footer {
   border: 1px solid #ddd;
 }
 
-#mainResultsTable td {
+#mainResultsTable td,
+#player-results-table td {
   border: 1px solid #ddd;
   max-width: 10ch;
   word-wrap: break-word;
@@ -59,15 +62,18 @@ footer {
   vertical-align: middle;
 }
 
-/* First column styling for main results table */
-#mainResultsTable td:first-child {
+/* First column styling for both tables */
+#mainResultsTable td:first-child,
+#player-results-table td:first-child, #standings-table td:first-child, #standings-team-table td:first-child {
   background-color: #eeeeee;
 }
 
 /* Reset for spacer rows (if applicable) */
-#mainResultsTable tr.spacer-row td:first-child {
+#mainResultsTable tr.spacer-row td:first-child,
+#player-results-table tr.spacer-row td:first-child {
   background-color: white;
 }
+
 
 /* ---------- Unscored Results Table (Unscored Predictions) ---------- */
 #unscoredResultsTable {
@@ -193,11 +199,20 @@ footer {
 
 .pixel-art-body {
     font-family: 'Pixeloid Sans', Helvetica, sans-serif; /* Fallback fonts */
-    font-size: 1.2rem; /* Adjust as needed */
-    color: #333; /* Main text color */
+    font-size: 1rem; /* Adjust as needed */
+    color: #fff; /* Main text color */
     letter-spacing: 0.1em; /* For pixel art readability */
     line-height: 1.2; /* Adjust for spacing */
     /* No background or padding for standard <p> elements */
+}
+
+.pixel-art-body-white {
+  font-family: 'Pixeloid Sans', Helvetica, sans-serif; /* Fallback fonts */
+  font-size: 1.2rem; /* Adjust as needed */
+  color: #fff; /* Main text color */
+  letter-spacing: 0.1em; /* For pixel art readability */
+  line-height: 1.2; /* Adjust for spacing */
+  /* No background or padding for standard <p> elements */
 }
 
 .pixel-art-body-small {
@@ -536,4 +551,176 @@ footer {
 /* Hover Effect */
 .nav-underline .nav-item .nav-link:hover {
   border-bottom: 4px solid #606060; /* Lighter underline on hover */
+}
+
+/* ------ CASINO ------- */
+/* Casino Background */
+#casino-container {
+  background-color: #3e8948;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  color: white;
+  font-family: 'Press Start 2P', cursive; /* Retro font */
+}
+
+/* Casino Header */
+.casino-title {
+  width: 174px;
+  height: 66px;
+  image-rendering: pixelated;
+}
+
+.casino-info {
+  margin: 10px 0;
+}
+
+/* Team Selection */
+.casino-label {
+  font-size: 16px;
+  margin-right: 10px;
+}
+
+/* Ensure bet questions wrap on small screens */
+.bet-table {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  background: #222;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.bet-odds {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+}
+
+
+
+.bet-amount {
+  font-size: 20px;
+  font-weight: bold;
+  width: 40px;
+  text-align: center;
+  background: black;
+  color: white;
+  border: none;
+}
+
+
+/* Question wraps above on small screens */
+@media (max-width: 600px) {
+  .bet-question {
+      width: 100%;
+      text-align: center;
+      margin-bottom: 5px;
+  }
+}
+
+
+
+/* ------ CASINO BUTTON STYLES ------- */
+
+/* Bet Buttons */
+.bet-button {
+  font-family: 'Press Start 2P', Helvetica, Arial, sans-serif;
+  font-size: 20px;
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid #B8860B; /* Dark Gold Border */
+  background: #FFD700; /* Gold */
+  color: black;
+  box-shadow: 3px 3px 0 #8B6508; /* Deeper Gold Shadow */
+  transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+}
+
+.bet-button:hover {
+  background: #FFC400; /* Slightly Darker Gold */
+}
+
+.bet-button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 #8B6508;
+}
+
+/* Casino Submit Button */
+.casino-button {
+  font-family: 'Press Start 2P', Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  cursor: pointer;
+  border: 2px solid #B8860B; /* Dark Gold Border */
+  background: #FFD700;
+  color: black;
+  box-shadow: 3px 3px 0 #8B6508; /* Deeper Gold Shadow */
+  transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+}
+
+.casino-button:hover {
+  background: #FFC400;
+}
+
+.casino-button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 #8B6508;
+}
+
+/* Disabled Button (Muted Yellow) */
+.casino-button:disabled,
+.bet-button:disabled {
+  cursor: not-allowed;
+  background: #D3B76C; /* Muted Gold */
+  color: #665B40; /* Darker text */
+  border-color: #A08A50; /* Softer Border */
+  box-shadow: none;
+  opacity: 0.8;
+}
+
+/* Ensure the second row is centered */
+.bet-info {
+  display: flex;
+  justify-content: center;
+  gap: 10px; /* Space between odds and max bet */
+  width: 100%;
+  text-align: center;
+}
+
+/* Add spacing between the bet controls and the coin display */
+.bet-controls {
+  display: flex;
+  width: 100%;
+  margin-top: 5px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* Space between buttons */
+}
+
+.coin-display {
+  margin-left: 10px; /* Adds space between the bet controls and the coin display */
+  max-width: 50px; /* Ensure the coin image has a reasonable max size */
+}
+
+/* Adjust input box size and space */
+.bet-amount {
+  width: 60px; /* Increase the width to give more space */
+  text-align: center;
+}
+
+/* Optional: Add margins or padding for further spacing adjustments */
+.bet-table {
+  margin-bottom: 15px; /* Ensure there's space between each bet table */
+}
+
+.bet-question {
+  margin-bottom: 10px;
 }

@@ -71,6 +71,11 @@
             <!-- Team Standings and Cards -->
             <div id="team-standings-and-cards" class="tab-pane fade show active" role="tabpanel" aria-labelledby="team-standings-and-cards-tab">
               <h2 class="mb-3 pixel-art-heading-3">Team Standings and Cards</h2>
+              <!-- Loading Indicator for Player Results -->
+              <div id="playerLoading" class="loading-indicator mb-3 pixel-art-heading-2" style="display: none;">
+                Results loading...
+                <div class="loading-bar"></div>
+              </div>
               <div class="list-group">
                 <!-- List items will be generated here dynamically by the JS below -->
               </div>
@@ -161,19 +166,28 @@
 
 
             <!-- Casino -->
+            <!-- Casino -->
             <div id="casino" class="tab-pane fade" role="tabpanel" aria-labelledby="casino-tab">
-                <div class="alert alert-warning" role="alert">
-                    The Casino is currently under construction.
-                </div>
-                <div style="display: none">
-                <img src="/media/casino/casino.png" style="width: 174px; height: 66px; image-rendering: pixelated;">
-                <p style="color:white ">The Casino opens during the Monaco style="background-color:#3e8948; and Las Vegas GP. Bet your team's points here on different questions.</p>
-                <div class="btn-group" role="group" aria-label="Default button group">
-                    <button type="button" class="btn btn-light">+</button>
-                    <button type="button" class="btn btn-light">-</button>
-                </div>
-                <img src="/media/casino/coin_7.png" style="width: 92.5px; height: 64px; image-rendering: pixelated;">
-            </div>
+              <div id="casino-container">
+                  <div id="casino-header">
+                      <img src="/media/casino/casino.png" class="casino-title">
+                      <p class="casino-info">
+                          The Casino opens during the Monaco and Las Vegas GP. Bet your team's points here on different questions.
+                      </p>
+                  </div>
+
+                  <!-- Team Selection -->
+                  <label for="casino-team-select" class="casino-label">Select Your Team:</label>
+                  <select id="casino-team-select" class="form-select">
+                      <option value="">-- Select Team --</option>
+                  </select>
+
+                  <!-- Betting Tables -->
+                  <div id="casino-tables"></div>
+
+                  <!-- Submit Button -->
+                  <button id="submit-bets" class="casino-button" style="margin-top: 15px" disabled>Submit Bets</button>
+              </div>
             </div>
         </div>
     </main>
@@ -267,7 +281,7 @@ function updateTeamCardStock() {
   // Update stock display.
   const stockEl = document.getElementById("team-card-stock");
   stockEl.innerHTML = `
-    <p><strong>Team Card Stock:</strong></p>
+    <p><strong>Team Card Stock (as of last round):</strong></p>
     <ul>
       <li>Aero: ${cardStock.aero}</li>
       <li>Double: ${cardStock.double}</li>
@@ -468,8 +482,13 @@ async function getTable(tableName) {
 }
 
 // ---------- LOAD TEAM STANDINGS AND CARDS ----------
+// ---------- LOAD TEAM STANDINGS AND CARDS ----------
 async function loadTeamStandingsAndCards() {
   try {
+    // Show loading indicator
+    const loadingIndicator = document.getElementById('playerLoading');
+    loadingIndicator.style.display = 'block';
+    loadingIndicator.innerHTML = "Team Standings loading...<div class='loading-bar'></div>";
     // 1. Retrieve the current year from form_details (assumes a single row with id=1)
     const { data: formDetails, error: formDetailsError } = await supabase
       .from('form_details')
@@ -485,21 +504,46 @@ async function loadTeamStandingsAndCards() {
     // 2. Download the season_team_{year} table (which contains team standings)
     const seasonTeamTable = `season_team_${currentYear}`;
     const seasonTeamData = await getTable(seasonTeamTable);
-    // Filter out the special row (team_id === 0, which stores Race Names)
+
+    // 3. Determine the last race with data using the special row (team_id === 0)
+    const raceNamesRow = seasonTeamData.find(row => row.team_id === 0);
+    let lastRace = 0;
+    if (raceNamesRow) {
+      // Assume race columns are named race_1, race_2, …, race_32.
+      for (let i = 1; i <= 32; i++) {
+        const col = `race_${i}`;
+        if (raceNamesRow[col] !== null && raceNamesRow[col] !== "") {
+          lastRace = i;
+        } else {
+          break;
+        }
+      }
+    }
+
+    // 4. Filter out the special "Race Names" row (team_id === 0)
     const teamStandings = seasonTeamData.filter(row => row.team_id !== 0);
 
-    // 3. Sort teams by grand_total descending
-    teamStandings.sort((a, b) => b.grand_total - a.grand_total);
-
-    // 4. Download the teams table (to retrieve card stock and player info)
-    const teamsData = await getTable('teams');
-    // Build a map of teams by team_id for quick lookup
-    const teamsMap = {};
-    teamsData.forEach(team => {
-      teamsMap[team.id] = team;
+    // 5. For each team, compute the grand total by summing races 1 to lastRace.
+    teamStandings.forEach(team => {
+      let total = 0;
+      for (let i = 1; i <= lastRace; i++) {
+        const col = `race_${i}`;
+        if (team[col] !== null && team[col] !== "") {
+          // Remove any extra tags (e.g. "(double)", "(aero)") using a regex.
+          const numStr = team[col].replace(/\(.*?\)/g, "").trim();
+          const num = parseFloat(numStr);
+          if (!isNaN(num)) {
+            total += num;
+          }
+        }
+      }
+      team.grand_total = total;
     });
 
-    // 5. Compute ranking (simple tie-handling)
+    // 6. Sort teams by grand_total descending.
+    teamStandings.sort((a, b) => b.grand_total - a.grand_total);
+
+    // 7. Compute ranking with simple tie‑handling.
     let currentRank = 1;
     let prevScore = null;
     teamStandings.forEach((team, index) => {
@@ -510,17 +554,25 @@ async function loadTeamStandingsAndCards() {
       prevScore = team.grand_total;
     });
 
-    // 6. Define the order and image source for each card type.
-    // (The order here is chosen to match the placeholder example.)
+    // 8. Download the teams table (to retrieve card stock and player info)
+    const teamsData = await getTable('teams');
+    // Build a map of teams by team_id for quick lookup.
+    const teamsMap = {};
+    teamsData.forEach(team => {
+      teamsMap[team.id] = team;
+    });
+
+    // 9. Define the card types and image source.
+    // Note: We now use a "name" property so that we can sum the played and unplayed stock.
     const cardTypes = [
-      { key: 'card_double', src: '/media/cards/card_double.png' },
-      { key: 'card_aero', src: '/media/cards/card_aero.png' },
-      { key: 'card_halo', src: '/media/cards/card_halo.png' },
-      { key: 'card_report', src: '/media/cards/card_report.png' },
-      { key: 'card_swap', src: '/media/cards/card_swap.png' }
+      { name: 'double', src: '/media/cards/card_double.png' },
+      { name: 'aero', src: '/media/cards/card_aero.png' },
+      { name: 'halo', src: '/media/cards/card_halo.png' },
+      { name: 'report', src: '/media/cards/card_report.png' },
+      { name: 'swap', src: '/media/cards/card_swap.png' }
     ];
 
-    // 7. Build the HTML list items.
+    // 10. Build the HTML list items.
     // The container is the inner div with class "list-group" inside the section with id "team-standings-and-cards".
     const container = document.querySelector('#team-standings-and-cards .list-group');
     container.innerHTML = ''; // Clear any existing content
@@ -529,16 +581,17 @@ async function loadTeamStandingsAndCards() {
       // Look up additional team info from the teams table.
       const teamInfo = teamsMap[team.team_id] || {};
 
-      // Get the player names: use the values from season_team_{year} if present, otherwise fall back on teams table.
+      // Get the player names: use values from season_team_{year} if present; otherwise, fall back on teams table.
       const player1 = team.player_name_1 || teamInfo.player1 || '';
       const player2 = team.player_name_2 || teamInfo.player2 || '';
       const playersText = `Players: ${player1}${(player1 && player2) ? ', ' : ''}${player2}`;
 
       // Build the card images.
-      // We assume that teamInfo has numeric columns for each card type. If a column isn’t found, default to 0.
+      // For each card type, compute the total by summing the unplayed and played counts.
       let cardImagesHTML = '';
       cardTypes.forEach(card => {
-        const count = teamInfo[card.key] !== undefined ? Number(teamInfo[card.key]) : 0;
+        const count = (Number(teamInfo[`card_${card.name}_unplayed`]) || 0) +
+                      (Number(teamInfo[`card_${card.name}_played`]) || 0);
         for (let i = 0; i < count; i++) {
           cardImagesHTML += `<img src="${card.src}" style="float:left; width: 45px; height: 61px; image-rendering: pixelated; margin-right: 5px;">`;
         }
@@ -562,12 +615,264 @@ async function loadTeamStandingsAndCards() {
   } catch (err) {
     console.error("loadTeamStandingsAndCards error:", err);
   }
+  // Hide the loading indicator once the process is complete
+  document.getElementById('playerLoading').style.display = 'none';
 }
 
 // ---------- INITIALIZATION ----------
 document.addEventListener("DOMContentLoaded", () => {
   loadTeamStandingsAndCards();
 });
+
+document.addEventListener("DOMContentLoaded", async function () {
+    const teamSelectCasino = document.getElementById("casino-team-select");
+    const casinoTables = document.getElementById("casino-tables");
+    const submitButton = document.getElementById("submit-bets");
+
+    let betsEnabled = {};
+    let betOdds = {};
+    let betQuestions = {};
+    let betMaxLimits = {}; // Store max bet limits
+    let currentBets = [0, 0, 0, 0, 0];
+
+    // Fetch data from Supabase
+    async function fetchData(table, fields = '*') {
+        try {
+            const { data, error } = await supabase.from(table).select(fields);
+            if (error) {
+                console.error(`Error fetching ${table}:`, error);
+                return [];
+            }
+            console.log(`Fetched ${table} data:`, data);
+            return data || [];
+        } catch (err) {
+            console.error(`Unexpected error fetching ${table}:`, err);
+            return [];
+        }
+    }
+
+    // Load Casino Data
+    async function loadCasinoData() {
+        let data = await fetchData("casino", "*");
+        if (!data.length) {
+            console.warn("Casino data is empty.");
+            return;
+        }
+
+        betsEnabled = data.find(row => row.team_id === -1) || {};
+        betOdds = data.find(row => row.team_id === 0) || {};
+        betQuestions = data.find(row => row.team_id === -2) || {};
+        let maxBetRow = data.find(row => row.team_id === -3) || {}; // Get max bet values
+
+        console.log("betsEnabled (raw):", betsEnabled);
+
+        // Convert string "true"/"false" to actual booleans
+        Object.keys(betsEnabled).forEach(key => {
+            if (betsEnabled[key] === "true") betsEnabled[key] = true;
+            if (betsEnabled[key] === "false") betsEnabled[key] = false;
+        });
+
+        // Convert max bet values from string to number
+        Object.keys(maxBetRow).forEach(key => {
+            if (key.startsWith("bet_")) {
+                betMaxLimits[key] = parseInt(maxBetRow[key]) || 10; // Default max bet = 10
+            }
+        });
+
+        console.log("Max Bet Limits:", betMaxLimits);
+
+        createBetTables();
+    }
+
+    // Load Team Dropdown
+    async function populateTeamDropdown() {
+        const teams = await fetchData('teams', 'id, name');
+
+        if (!teams.length) {
+            console.warn("No teams found.");
+            return;
+        }
+
+        console.log("Populating team dropdown...");
+
+        if (!teamSelectCasino) {
+            console.error("teamSelectCasino element not found!");
+            return;
+        }
+
+        teamSelectCasino.innerHTML = "";
+
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "Select a team";
+        placeholder.disabled = true;
+        placeholder.selected = true;
+        teamSelectCasino.appendChild(placeholder);
+
+        teams.forEach(team => {
+            console.log(`Adding team: ${team.name} (ID: ${team.id})`);
+            const option = document.createElement("option");
+            option.value = team.id;
+            option.textContent = team.name;
+            teamSelectCasino.appendChild(option);
+        });
+
+        teamSelectCasino.selectedIndex = 0;
+        teamSelectCasino.dispatchEvent(new Event("change"));
+
+        console.log("Team dropdown populated successfully.");
+    }
+
+    // Create Bet Tables
+    function createBetTables() {
+        casinoTables.innerHTML = "";
+
+        for (let i = 1; i <= 5; i++) {
+            const isEnabled = betsEnabled[`bet_${i}`];
+            console.log(`Checking bet_${i}:`, isEnabled, `(Type: ${typeof isEnabled})`);
+
+            if (!isEnabled) {
+                console.log(`Skipping bet_${i} (not enabled)`);
+                continue;
+            }
+
+            const maxBet = betMaxLimits[`bet_${i}`] || 10; // Use max bet limit
+
+            const table = document.createElement("div");
+            table.classList.add("bet-table");
+
+            table.innerHTML = `
+                <!-- Row 1: Bet Question -->
+                <div class="bet-question">${betQuestions[`bet_${i}`]}</div>
+
+                <!-- Row 2: Odds and Max Bet -->
+                <div class="bet-info">
+                    <span class="bet-odds pixel-art-body-white">Odds: ${betOdds[`bet_${i}`]}:1</span>
+                    <span class="max-bet pixel-art-body-white">Max Bet: ${maxBet}</span>
+                </div>
+
+                <!-- Row 3: Controls and Coin Display -->
+                <div class="bet-controls">
+                    <button class="bet-button" data-index="${i}" data-action="decrease" disabled>-</button>
+                    <input type="text" class="bet-amount" id="bet-${i}" value="0" readonly>
+                    <button class="bet-button" data-index="${i}" data-action="increase" disabled>+</button>
+                    <img src="/media/casino/coin_1.png" class="coin-display" id="coin-${i}" style="visibility: hidden;">
+                </div>
+            `;
+
+            casinoTables.appendChild(table);
+            console.log(`Rendered bet_${i} table.`);
+        }
+    }
+
+    // Handle Team Selection
+    teamSelectCasino.addEventListener("change", async function () {
+        const teamId = teamSelectCasino.value;
+        if (!teamId) {
+            submitButton.disabled = true;
+            document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = true);
+            console.log("No team selected. Betting disabled.");
+            return;
+        }
+
+        // Enable betting
+        submitButton.disabled = false;
+        document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = false);
+        console.log(`Team selected: ${teamId}. Betting enabled.`);
+
+        // Load existing bets
+        let data = await fetchData("casino", "*");
+        let teamBets = data.find(row => row.team_id == teamId) || {};
+
+        for (let i = 1; i <= 5; i++) {
+            const betInput = document.getElementById(`bet-${i}`);
+            if (betInput) {
+                const betValue = teamBets[`bet_${i}`] || 0;
+                betInput.value = betValue;
+                currentBets[i - 1] = parseInt(betValue);
+                updateCoinDisplay(i);
+                console.log(`Set bet_${i} to ${betValue} for team ${teamId}.`);
+            }
+        }
+    });
+
+    // Adjust Bets
+    document.addEventListener("click", function (event) {
+        if (!event.target.classList.contains("bet-button")) return;
+
+        const index = event.target.dataset.index;
+        const action = event.target.dataset.action;
+        const betInput = document.getElementById(`bet-${index}`);
+        let betValue = parseInt(betInput.value);
+        const maxBet = betMaxLimits[`bet_${index}`] || 10; // Get max bet
+
+        if (action === "increase" && betValue < maxBet) betValue++;
+        if (action === "decrease" && betValue > 0) betValue--;
+
+        betInput.value = betValue;
+        currentBets[index - 1] = betValue;
+        updateCoinDisplay(index);
+        console.log(`Bet ${index} updated: ${betValue}`);
+    });
+
+    function updateCoinDisplay(index) {
+        const coinImg = document.getElementById(`coin-${index}`);
+        if (currentBets[index - 1] > 0) {
+            coinImg.src = `/media/casino/coin_${currentBets[index - 1]}.png`;
+            coinImg.style.visibility = "visible";
+        } else {
+            coinImg.style.visibility = "hidden";
+        }
+    }
+
+    // Submit Bets
+    submitButton.addEventListener("click", async function () {
+    const selectedTeamIdCasino = teamSelectCasino.value;
+    if (!selectedTeamIdCasino) {
+        alert("Please select a team.");
+        return;
+    }
+
+    const betsToSubmit = {};
+    for (let i = 1; i <= 5; i++) {
+        const betAmount = currentBets[i - 1];
+        if (betAmount > 0) {
+            betsToSubmit[`bet_${i}`] = betAmount.toString(); // Store as text
+        }
+    }
+
+    if (Object.keys(betsToSubmit).length === 0) {
+        alert("Please place some bets before submitting.");
+        return;
+    }
+
+    // Construct the data to submit
+    const betData = {
+        team_id: selectedTeamIdCasino,
+        team_name: teamSelectCasino.options[teamSelectCasino.selectedIndex].text,
+        ...betsToSubmit,
+    };
+
+    // Send data to Supabase (assumes a 'bets' table exists in Supabase)
+    const { data, error } = await supabase.from("bets").insert([betData]);
+
+    if (error) {
+        console.error("Error submitting bets:", error);
+        alert("Failed to submit bets.");
+    } else {
+        console.log("Bets submitted successfully:", data);
+        alert("Bets submitted successfully!");
+    }
+});
+
+    await loadCasinoData();
+    await populateTeamDropdown();
+});
+
+
+
+
+
 
     </script>
     <!-- Bootstrap JS Bundle (Local) -->
