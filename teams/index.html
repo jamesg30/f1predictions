@@ -181,7 +181,11 @@
                   <select id="casino-team-select" class="form-select">
                       <option value="">-- Select Team --</option>
                   </select>
-
+                  <div id="casino-loading" class="casino-loading-indicator" style="display: none;">
+                    Loading existing bets...
+                    <div class="casino-loading-bar"></div>
+                  </div>
+                  
                   <!-- Betting Tables -->
                   <div id="casino-tables"></div>
 
@@ -767,34 +771,47 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Handle Team Selection
     teamSelectCasino.addEventListener("change", async function () {
-        const teamId = teamSelectCasino.value;
-        if (!teamId) {
-            submitButton.disabled = true;
-            document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = true);
-            console.log("No team selected. Betting disabled.");
-            return;
+    const teamId = teamSelectCasino.value;
+    if (!teamId) {
+        submitButton.disabled = true;
+        document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = true);
+        console.log("No team selected. Betting disabled.");
+        return;
+    }
+
+    // Show loading indicator only if the team has existing bets
+    let data = await fetchData("casino", "*");
+    let teamBets = data.find(row => row.team_id == teamId);
+
+    if (teamBets) {
+        document.getElementById("casino-loading").style.display = "block";
+        submitButton.disabled = true;
+        document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = true);
+
+        // Wait for 2 seconds to simulate loading
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        document.getElementById("casino-loading").style.display = "none";
+    }
+
+    // Always enable betting after loading, even if no previous bets exist
+    submitButton.disabled = false;
+    document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = false);
+
+    // Load existing bets (or set to 0 if no previous bets exist)
+    for (let i = 1; i <= 5; i++) {
+        const betInput = document.getElementById(`bet-${i}`);
+        if (betInput) {
+            const betValue = teamBets ? teamBets[`bet_${i}`] || 0 : 0;
+            betInput.value = betValue;
+            currentBets[i - 1] = parseInt(betValue);
+            updateCoinDisplay(i);
+            console.log(`Set bet_${i} to ${betValue} for team ${teamId}.`);
         }
+    }
+});
 
-        // Enable betting
-        submitButton.disabled = false;
-        document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = false);
-        console.log(`Team selected: ${teamId}. Betting enabled.`);
 
-        // Load existing bets
-        let data = await fetchData("casino", "*");
-        let teamBets = data.find(row => row.team_id == teamId) || {};
-
-        for (let i = 1; i <= 5; i++) {
-            const betInput = document.getElementById(`bet-${i}`);
-            if (betInput) {
-                const betValue = teamBets[`bet_${i}`] || 0;
-                betInput.value = betValue;
-                currentBets[i - 1] = parseInt(betValue);
-                updateCoinDisplay(i);
-                console.log(`Set bet_${i} to ${betValue} for team ${teamId}.`);
-            }
-        }
-    });
 
     // Adjust Bets
     document.addEventListener("click", function (event) {
@@ -827,7 +844,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Submit Bets
     submitButton.addEventListener("click", async function () {
-    const selectedTeamIdCasino = teamSelectCasino.value;
+    const selectedTeamIdCasino = parseInt(teamSelectCasino.value); // Ensure it's an integer
     if (!selectedTeamIdCasino) {
         alert("Please select a team.");
         return;
@@ -835,9 +852,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const betsToSubmit = {};
     for (let i = 1; i <= 5; i++) {
-        const betAmount = currentBets[i - 1];
-        if (betAmount > 0) {
-            betsToSubmit[`bet_${i}`] = betAmount.toString(); // Store as text
+        const betAmount = currentBets[i - 1].toString(); // Ensure bet_1 → bet_5 are stored as text
+        if (parseInt(betAmount) > 0) {
+            betsToSubmit[`bet_${i}`] = betAmount;
         }
     }
 
@@ -853,17 +870,46 @@ document.addEventListener("DOMContentLoaded", async function () {
         ...betsToSubmit,
     };
 
-    // Send data to Supabase (assumes a 'bets' table exists in Supabase)
-    const { data, error } = await supabase.from("bets").insert([betData]);
+    console.log("🔍 Checking if team_id exists:", selectedTeamIdCasino);
+
+    // Step 1: Check if a row for this team_id already exists
+    const { data: existingRows, error: fetchError } = await supabase
+        .from("casino")
+        .select("team_id")
+        .eq("team_id", selectedTeamIdCasino);
+
+    if (fetchError) {
+        console.error("❌ Error checking existing bets:", fetchError);
+        alert("Failed to check existing bets.");
+        return;
+    }
+
+    console.log("📝 Existing team check result:", existingRows);
+
+    let query;
+    if (existingRows.length > 0) {
+        // Step 2: If it exists, update the row
+        console.log("🔄 Updating existing bet for team_id:", selectedTeamIdCasino);
+        query = supabase.from("casino").update(betData).eq("team_id", selectedTeamIdCasino);
+    } else {
+        // Step 3: If it does not exist, insert a new row
+        console.log("➕ Inserting new bet for team_id:", selectedTeamIdCasino);
+        query = supabase.from("casino").insert([betData]);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
-        console.error("Error submitting bets:", error);
+        console.error("❌ Error submitting bets:", error);
         alert("Failed to submit bets.");
     } else {
-        console.log("Bets submitted successfully:", data);
+        console.log("✅ Bets submitted successfully:", data);
         alert("Bets submitted successfully!");
     }
 });
+
+
+
 
     await loadCasinoData();
     await populateTeamDropdown();

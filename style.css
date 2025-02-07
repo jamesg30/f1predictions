@@ -724,3 +724,37 @@ footer {
 .bet-question {
   margin-bottom: 10px;
 }
+
+/* ---------- Casino Loading Indicator Styles ---------- */
+.casino-loading-indicator {
+  text-align: center;
+  margin: 20px 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: white;
+}
+
+.casino-loading-bar {
+  height: 15px;
+  width: 180px;
+  background: #444;
+  position: relative;
+  overflow: hidden;
+  margin: 10px auto;
+  border-radius: 5px;
+}
+
+.casino-loading-bar::before {
+  content: "";
+  position: absolute;
+  left: -180px;
+  width: 180px;
+  height: 15px;
+  background: #ffcc00;
+  animation: casino-loading 1s linear infinite;
+}
+
+@keyframes casino-loading {
+  from { left: -180px; }
+  to { left: 100%; }
+}
