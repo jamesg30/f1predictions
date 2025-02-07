@@ -200,7 +200,7 @@ footer {
 .pixel-art-body {
     font-family: 'Pixeloid Sans', Helvetica, sans-serif; /* Fallback fonts */
     font-size: 1rem; /* Adjust as needed */
-    color: #fff; /* Main text color */
+    color: #000; /* Main text color */
     letter-spacing: 0.1em; /* For pixel art readability */
     line-height: 1.2; /* Adjust for spacing */
     /* No background or padding for standard <p> elements */
