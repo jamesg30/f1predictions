@@ -70,131 +70,94 @@
         <div class="tab-content" id="tab-content">
             <!-- Team Standings and Cards -->
             <div id="team-standings-and-cards" class="tab-pane fade show active" role="tabpanel" aria-labelledby="team-standings-and-cards-tab">
-                <h2 class="mb-3 pixel-art-heading-3">Team Standings and Cards</h2>
-                <div class="list-group">
-                    <a href="#" class="list-group-item">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h5 class="mb-3 pixel-art-heading-2">1. Comeng</h5>
-                            <small class="pixel-art-body-small">248 pts</small>
-                        </div>
-                            <p class="mb-1">Players: Rodney, Gertrude</p>
-                            <p class="mb-1">Cards Left:</p>
-                        <div>
-                            <img src="/media/cards/card_double.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-                            <img src="/media/cards/card_aero.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-                        </div>
-                    </a>
-                    <a href="#" class="list-group-item">
-                      <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-3 pixel-art-heading-2">2. Scuderia Latifi</h5>
-                        <small class="pixel-art-body-small">237 pts</small>
-                      </div>
-                      <p class="mb-1">Players: Gwen, Leni</p>
-                      <p class="mb-1">Cards Left:</p>
-                      <div>
-                        <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-                        <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-                    </div>
-                    </a>
-                    <a href="#" class="list-group-item">
-                      <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-3 pixel-art-heading-2">3. Narrow Gauge Racing Inc</h5>
-                        <small class="pixel-art-body-small">203 pts</small>
-                      </div>
-                      <p class="mb-1">Players: Josh 2004, Patrick</p>
-                      <p class="mb-1">Cards Left:</p>
-                      <div>
-                        <img src="/media/cards/card_report.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-                        <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-                        <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-                        <img src="/media/cards/card_double.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-                    </div>
-                    </a>
-                  </div>
+              <h2 class="mb-3 pixel-art-heading-3">Team Standings and Cards</h2>
+              <div class="list-group">
+                <!-- List items will be generated here dynamically by the JS below -->
+              </div>
             </div>
 
             <!-- Submit Cards -->
-<div id="submit-cards" class="tab-pane fade" role="tabpanel" aria-labelledby="submit-cards-tab">
-    <h2 class="mb-3 pixel-art-heading-3">Submit Cards</h2>
-    <div class="mb-3">
-        <p>You are submitting cards for:</p>
-        <ul class="list-group">
-            <li id="current-race-name" class="list-group-item">Loading...</li> <!-- Dynamically loaded race name -->
-        </ul>
-    </div>
-    <div class="alert alert-info" role="alert">
-        <p class="mb-0">
-            Only submit this form if you want to submit a card for the current round. Otherwise, you do not need to submit anything.
-        </p>
-    </div>
-    <div class="mb-3">
-        <label for="team-select" class="form-label">Select Team:</label>
-        <select id="team-select" class="form-select" disabled>
-            <option value="" disabled selected>Select a team</option>
-        </select>
-    </div>
-    <div id="team-card-stock"></div>
+            <div id="submit-cards" class="tab-pane fade" role="tabpanel" aria-labelledby="submit-cards-tab">
+                <h2 class="mb-3 pixel-art-heading-3">Submit Cards</h2>
+                <div class="mb-3">
+                    <p>You are submitting cards for:</p>
+                    <ul class="list-group">
+                        <li id="current-race-name" class="list-group-item">Loading...</li> <!-- Dynamically loaded race name -->
+                    </ul>
+                </div>
+                <div class="alert alert-info" role="alert">
+                    <p class="mb-0">
+                        Only submit this form if you want to submit a card for the current round. Otherwise, you do not need to submit anything.
+                    </p>
+                </div>
+                <div class="mb-3">
+                    <label for="team-select" class="form-label">Select Team:</label>
+                    <select id="team-select" class="form-select" disabled>
+                        <option value="" disabled selected>Select a team</option>
+                    </select>
+                </div>
+                <div id="team-card-stock"></div>
 
-    <p>Select Card:</p>
-    <ul class="list-group">
-        <li class="list-group-item">
-            <input class="form-check-input me-1 card-option" type="radio" name="card" value="aero" id="card-aero" disabled>
-            <label class="form-check-label stretched-link" for="card-aero">
-                <img src="/media/cards/card_aero.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-            </label>
-        </li>
-        <li class="list-group-item">
-            <input class="form-check-input me-1 card-option" type="radio" name="card" value="double" id="card-double" disabled>
-            <label class="form-check-label stretched-link" for="card-double">
-                <img src="/media/cards/card_double.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-            </label>
-        </li>
-        <li class="list-group-item">
-            <input class="form-check-input me-1 card-option" type="radio" name="card" value="halo" id="card-halo" disabled>
-            <label class="form-check-label stretched-link" for="card-halo">
-                <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-            </label>
-        </li>
-        <li class="list-group-item">
-            <input class="form-check-input me-1 card-option" type="radio" name="card" value="report" id="card-report" disabled>
-            <label class="form-check-label stretched-link" for="card-report">
-                <img src="/media/cards/card_report.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-            </label>
-        </li>
-        <li class="list-group-item">
-            <input class="form-check-input me-1 card-option" type="radio" name="card" value="swap" id="card-swap" disabled>
-            <label class="form-check-label stretched-link" for="card-swap">
-                <img src="/media/cards/card_swap.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
-            </label>
-        </li>
-        <li class="list-group-item">
-            <input class="form-check-input me-1 card-option" type="radio" name="card" value="play-no-cards" id="card-none" disabled>
-            <label class="form-check-label stretched-link" for="card-none">
-                Reset Played Cards
-            </label>
-        </li>
-    </ul>
+                <p>Select Card:</p>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <input class="form-check-input me-1 card-option" type="radio" name="card" value="aero" id="card-aero" disabled>
+                        <label class="form-check-label stretched-link" for="card-aero">
+                            <img src="/media/cards/card_aero.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                        </label>
+                    </li>
+                    <li class="list-group-item">
+                        <input class="form-check-input me-1 card-option" type="radio" name="card" value="double" id="card-double" disabled>
+                        <label class="form-check-label stretched-link" for="card-double">
+                            <img src="/media/cards/card_double.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                        </label>
+                    </li>
+                    <li class="list-group-item">
+                        <input class="form-check-input me-1 card-option" type="radio" name="card" value="halo" id="card-halo" disabled>
+                        <label class="form-check-label stretched-link" for="card-halo">
+                            <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                        </label>
+                    </li>
+                    <li class="list-group-item">
+                        <input class="form-check-input me-1 card-option" type="radio" name="card" value="report" id="card-report" disabled>
+                        <label class="form-check-label stretched-link" for="card-report">
+                            <img src="/media/cards/card_report.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                        </label>
+                    </li>
+                    <li class="list-group-item">
+                        <input class="form-check-input me-1 card-option" type="radio" name="card" value="swap" id="card-swap" disabled>
+                        <label class="form-check-label stretched-link" for="card-swap">
+                            <img src="/media/cards/card_swap.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                        </label>
+                    </li>
+                    <li class="list-group-item">
+                        <input class="form-check-input me-1 card-option" type="radio" name="card" value="play-no-cards" id="card-none" disabled>
+                        <label class="form-check-label stretched-link" for="card-none">
+                            Reset Played Cards
+                        </label>
+                    </li>
+                </ul>
 
-    <div class="mb-3" id="select-team-container" style="display: none;">
-        <label for="card-select" class="form-label">(for Report/Swap only) Select team to report/swap:</label>
-        <select id="card-select" class="form-select"></select> <!-- SELECT TEAM TO REPORT OR SWAP -->
-    </div>
+                <div class="mb-3" id="select-team-container" style="display: none;">
+                    <label for="card-select" class="form-label">(for Report/Swap only) Select team to report/swap:</label>
+                    <select id="card-select" class="form-select"></select> <!-- SELECT TEAM TO REPORT OR SWAP -->
+                </div>
 
-    <div class="mb-3" style="margin-top: 10px">
-        <button id="submit-card-btn" class="pixel-button primary" disabled>Submit Card</button>
-    </div>
+                <div class="mb-3" style="margin-top: 10px">
+                    <button id="submit-card-btn" class="pixel-button primary" disabled>Submit Card</button>
+                </div>
 
-    <div class="alert alert-info" role="alert">
-        <h4 class="alert-heading">Tips:</h4>
-        <p class="mb-0">
-            To remove a card you have played, select the 'Reset Played Cards' option.
-        </p>
-        <p>
-            There is no way to view cards once they have been played. This ensures other players cannot see what card you have played.<br>
-            If you are unsure what card you played, remove it using 'Reset Played Cards' and then resubmit.<br>
-        </p>
-    </div>
-</div>
+                <div class="alert alert-info" role="alert">
+                    <h4 class="alert-heading">Tips:</h4>
+                    <p class="mb-0">
+                        To remove a card you have played, select the 'Reset Played Cards' option.
+                    </p>
+                    <p>
+                        There is no way to view cards once they have been played. This ensures other players cannot see what card you have played.<br>
+                        If you are unsure what card you played, remove it using 'Reset Played Cards' and then resubmit.<br>
+                    </p>
+                </div>
+            </div>
 
 
             <!-- Casino -->
@@ -492,6 +455,119 @@ async function loadSubmitCardsPage() {
 
 // Initialize the page when DOM is ready.
 document.addEventListener("DOMContentLoaded", loadSubmitCardsPage);
+
+// --- TEAM STANDING AND CARDS ---
+// ---------- HELPER FUNCTION ----------
+async function getTable(tableName) {
+  const { data, error } = await supabase.from(tableName).select('*');
+  if (error) {
+    console.error(`Error fetching ${tableName}:`, error);
+    throw error;
+  }
+  return data;
+}
+
+// ---------- LOAD TEAM STANDINGS AND CARDS ----------
+async function loadTeamStandingsAndCards() {
+  try {
+    // 1. Retrieve the current year from form_details (assumes a single row with id=1)
+    const { data: formDetails, error: formDetailsError } = await supabase
+      .from('form_details')
+      .select('*')
+      .eq('id', 1)
+      .single();
+    if (formDetailsError) {
+      console.error('Error fetching form details:', formDetailsError.message);
+      return;
+    }
+    const currentYear = formDetails.current_year;
+
+    // 2. Download the season_team_{year} table (which contains team standings)
+    const seasonTeamTable = `season_team_${currentYear}`;
+    const seasonTeamData = await getTable(seasonTeamTable);
+    // Filter out the special row (team_id === 0, which stores Race Names)
+    const teamStandings = seasonTeamData.filter(row => row.team_id !== 0);
+
+    // 3. Sort teams by grand_total descending
+    teamStandings.sort((a, b) => b.grand_total - a.grand_total);
+
+    // 4. Download the teams table (to retrieve card stock and player info)
+    const teamsData = await getTable('teams');
+    // Build a map of teams by team_id for quick lookup
+    const teamsMap = {};
+    teamsData.forEach(team => {
+      teamsMap[team.id] = team;
+    });
+
+    // 5. Compute ranking (simple tie-handling)
+    let currentRank = 1;
+    let prevScore = null;
+    teamStandings.forEach((team, index) => {
+      if (prevScore === null || team.grand_total !== prevScore) {
+        currentRank = index + 1;
+      }
+      team.rank = currentRank;
+      prevScore = team.grand_total;
+    });
+
+    // 6. Define the order and image source for each card type.
+    // (The order here is chosen to match the placeholder example.)
+    const cardTypes = [
+      { key: 'card_double', src: '/media/cards/card_double.png' },
+      { key: 'card_aero', src: '/media/cards/card_aero.png' },
+      { key: 'card_halo', src: '/media/cards/card_halo.png' },
+      { key: 'card_report', src: '/media/cards/card_report.png' },
+      { key: 'card_swap', src: '/media/cards/card_swap.png' }
+    ];
+
+    // 7. Build the HTML list items.
+    // The container is the inner div with class "list-group" inside the section with id "team-standings-and-cards".
+    const container = document.querySelector('#team-standings-and-cards .list-group');
+    container.innerHTML = ''; // Clear any existing content
+
+    teamStandings.forEach(team => {
+      // Look up additional team info from the teams table.
+      const teamInfo = teamsMap[team.team_id] || {};
+
+      // Get the player names: use the values from season_team_{year} if present, otherwise fall back on teams table.
+      const player1 = team.player_name_1 || teamInfo.player1 || '';
+      const player2 = team.player_name_2 || teamInfo.player2 || '';
+      const playersText = `Players: ${player1}${(player1 && player2) ? ', ' : ''}${player2}`;
+
+      // Build the card images.
+      // We assume that teamInfo has numeric columns for each card type. If a column isn’t found, default to 0.
+      let cardImagesHTML = '';
+      cardTypes.forEach(card => {
+        const count = teamInfo[card.key] !== undefined ? Number(teamInfo[card.key]) : 0;
+        for (let i = 0; i < count; i++) {
+          cardImagesHTML += `<img src="${card.src}" style="float:left; width: 45px; height: 61px; image-rendering: pixelated; margin-right: 5px;">`;
+        }
+      });
+
+      // Create the list-group item.
+      const aElem = document.createElement('a');
+      aElem.href = "#";
+      aElem.className = "list-group-item";
+      aElem.innerHTML = `
+        <div class="d-flex w-100 justify-content-between">
+          <h5 class="mb-3 pixel-art-heading-2">${team.rank}. ${team.team_name}</h5>
+          <small class="pixel-art-body-small">${team.grand_total} pts</small>
+        </div>
+        <p class="mb-1">${playersText}</p>
+        <p class="mb-1">Cards Left:</p>
+        <div>${cardImagesHTML}</div>
+      `;
+      container.appendChild(aElem);
+    });
+  } catch (err) {
+    console.error("loadTeamStandingsAndCards error:", err);
+  }
+}
+
+// ---------- INITIALIZATION ----------
+document.addEventListener("DOMContentLoaded", () => {
+  loadTeamStandingsAndCards();
+});
 
     </script>
     <!-- Bootstrap JS Bundle (Local) -->

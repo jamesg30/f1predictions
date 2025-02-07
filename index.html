@@ -237,35 +237,22 @@
                 </div>
 
             <!-- Right Column: Quick Links -->
-        <div class="col-md-6">
-            <h5 class="mb-3 pixel-art-heading-2">Team Standings</h5>
-                <table class="table table-sm table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Team</th>
-                            <th>Score</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1 (+1)</td>
-                            <td>Comeng</td>
-                            <td>123</td>
-                        </tr>
-                        <tr>
-                            <td>2 (-1)</td>
-                            <td>Scuderia Latifi</td>
-                            <td>117</td>
-                        </tr>
-                        <tr>
-                            <td>3 (=)</td>
-                            <td>Freedom Racing Inc</td>
-                            <td>112</td>
-                        </tr>
-                    </tbody>
+            <div class="col-md-6">
+                <h5 class="mb-3 pixel-art-heading-2">Team Standings</h5>
+                <table id="standings-team-table" class="table table-sm table-bordered">
+                  <thead>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Team</th>
+                      <th>Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Team standings will be inserted here dynamically -->
+                  </tbody>
                 </table>
-        </div>
+              </div>
+              
         <hr>
         <div class="container my-5">
             <pre class="mb-3 pixel-art-heading-3"><img src="/media/awards/trophy.png" style="float:left; width: 32px; height: 38px; image-rendering: pixelated;"> Past Champions</pre>
@@ -870,17 +857,162 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// --- Standings Tables ---
-async function getTable(tableName) {
-  const { data, error } = await supabase.from(tableName).select('*');
-  if (error) {
-    console.error(`Error fetching ${tableName}:`, error);
-    throw error;
-  }
-  return data;
-}
+// --- Player Standings Tables ---
+        async function getTable(tableName) {
+        const { data, error } = await supabase.from(tableName).select('*');
+        if (error) {
+            console.error(`Error fetching ${tableName}:`, error);
+            throw error;
+        }
+        return data;
+        }
 
-async function loadHomeStandings() {
+        async function loadHomeStandings() {
+        try {
+            // 1. Retrieve the current year from form_details.
+            const formDetails = await getTable('form_details');
+            if (!formDetails || formDetails.length === 0) {
+            console.error("No form_details found.");
+            return;
+            }
+            const currentYear = formDetails[0].current_year;
+            console.log("Current Year:", currentYear);
+
+            // 2. Retrieve the full season_player_{year} table.
+            const seasonTableName = `season_player_${currentYear}`;
+            const seasonData = await getTable(seasonTableName);
+            console.log("Season Data:", seasonData);
+
+            if (!seasonData || seasonData.length === 0) {
+            document.querySelector("#standings-table tbody").innerHTML =
+                "<tr><td colspan='3'>No season data available.</td></tr>";
+            return;
+            }
+
+            // 3. Exclude the special "Race Names" row (player_id === 0).
+            const playerRows = seasonData.filter(row => row.player_id !== 0);
+            if (playerRows.length === 0) {
+            document.querySelector("#standings-table tbody").innerHTML =
+                "<tr><td colspan='3'>No player data available.</td></tr>";
+            return;
+            }
+
+            // 4. Determine the last race that has been scored.
+            let lastRace = 0;
+            const raceNamesRow = seasonData.find(row => row.player_id === 0);
+            if (raceNamesRow) {
+            // Assume columns are named race_1, race_2, ..., race_32.
+            for (let i = 1; i <= 32; i++) {
+                const col = `race_${i}`;
+                if (raceNamesRow[col] !== null && raceNamesRow[col] !== "") {
+                lastRace = i;
+                } else {
+                break;
+                }
+            }
+            }
+            console.log("Last race with data:", lastRace);
+            if (lastRace === 0) {
+            document.querySelector("#standings-table tbody").innerHTML =
+                "<tr><td colspan='3'>No race scores available yet.</td></tr>";
+            return;
+            }
+
+            // 5. Compute current total scores (summing races 1 to lastRace) for each player.
+            const standings = playerRows.map(row => {
+            let total = 0;
+            let prevTotal = 0;
+            for (let i = 1; i <= lastRace; i++) {
+                const col = `race_${i}`;
+                const rawVal = row[col];
+                if (rawVal !== null && rawVal !== "") {
+                // Remove any "(LS)" suffix and trim.
+                const numStr = rawVal.replace(/\(LS\)/, "").trim();
+                const num = parseFloat(numStr);
+                if (!isNaN(num)) {
+                    total += num;
+                    if (i < lastRace) {
+                    prevTotal += num;
+                    }
+                }
+                }
+            }
+            return {
+                player_id: row.player_id,
+                player_name: row.player_name,
+                total: total,
+                prevTotal: prevTotal
+            };
+            });
+
+            // 6. Sort standings descending by current total score.
+            standings.sort((a, b) => b.total - a.total);
+
+            // 7. Assign current ranks with ties receiving the same rank.
+            let currentRank = 1;
+            let prevScore = null;
+            const currentRankMap = {};
+            standings.forEach((player, index) => {
+            if (prevScore === null || player.total !== prevScore) {
+                currentRank = index + 1;
+            }
+            currentRankMap[player.player_id] = currentRank;
+            prevScore = player.total;
+            });
+
+            // 8. Compute previous standings if lastRace > 1.
+            const prevRankMap = {};
+            if (lastRace > 1) {
+            const prevStandings = [...standings].sort((a, b) => b.prevTotal - a.prevTotal);
+            let prevRank = 1;
+            let prevPrevScore = null;
+            prevStandings.forEach((player, index) => {
+                if (prevPrevScore === null || player.prevTotal !== prevPrevScore) {
+                prevRank = index + 1;
+                }
+                prevRankMap[player.player_id] = prevRank;
+                prevPrevScore = player.prevTotal;
+            });
+            }
+
+            // 9. Build HTML rows.
+            let html = "";
+            standings.forEach(player => {
+            const currRank = currentRankMap[player.player_id];
+            let movement = "";
+            if (lastRace > 1 && prevRankMap[player.player_id] !== undefined) {
+                const diff = prevRankMap[player.player_id] - currRank;
+                if (diff > 0) {
+                movement = `(+${diff})`;
+                } else if (diff < 0) {
+                movement = `(${diff})`;
+                } else {
+                movement = "(=)";
+                }
+            }
+            html += `<tr>
+                        <td>${currRank} ${movement}</td>
+                        <td>${player.player_name}</td>
+                        <td>${player.total}</td>
+                    </tr>`;
+            });
+            document.querySelector("#standings-table tbody").innerHTML = html;
+        } catch (err) {
+            console.error("loadHomeStandings error:", err);
+            document.querySelector("#standings-table tbody").innerHTML =
+            `<tr><td colspan="3">Error loading standings: ${err.message}</td></tr>`;
+        }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+        loadHomeStandings();
+        });
+
+// --- Season Team Standings ---
+        // --- Helper: Retrieve an entire table from Supabase (assumed to be defined already) ---
+
+// --- Team Standings for Home Page ---
+async function loadHomeTeamStandings() {
   try {
     // 1. Retrieve the current year from form_details.
     const formDetails = await getTable('form_details');
@@ -891,30 +1023,30 @@ async function loadHomeStandings() {
     const currentYear = formDetails[0].current_year;
     console.log("Current Year:", currentYear);
 
-    // 2. Retrieve the full season_player_{year} table.
-    const seasonTableName = `season_player_${currentYear}`;
-    const seasonData = await getTable(seasonTableName);
-    console.log("Season Data:", seasonData);
+    // 2. Retrieve the full season_team_{year} table.
+    const seasonTeamTable = `season_team_${currentYear}`;
+    const seasonTeamData = await getTable(seasonTeamTable);
+    console.log("Season Team Data:", seasonTeamData);
 
-    if (!seasonData || seasonData.length === 0) {
-      document.querySelector("#standings-table tbody").innerHTML =
-        "<tr><td colspan='3'>No season data available.</td></tr>";
+    if (!seasonTeamData || seasonTeamData.length === 0) {
+      document.querySelector("#standings-team-table tbody").innerHTML =
+        "<tr><td colspan='3'>No season team data available.</td></tr>";
       return;
     }
 
-    // 3. Exclude the special "Race Names" row (player_id === 0).
-    const playerRows = seasonData.filter(row => row.player_id !== 0);
-    if (playerRows.length === 0) {
-      document.querySelector("#standings-table tbody").innerHTML =
-        "<tr><td colspan='3'>No player data available.</td></tr>";
+    // 3. Exclude the special "Race Names" row (team_id === 0).
+    const teamRows = seasonTeamData.filter(row => row.team_id !== 0);
+    if (teamRows.length === 0) {
+      document.querySelector("#standings-team-table tbody").innerHTML =
+        "<tr><td colspan='3'>No team data available.</td></tr>";
       return;
     }
 
-    // 4. Determine the last race that has been scored.
+    // 4. Determine the last race that has been scored using the Race Names row.
     let lastRace = 0;
-    const raceNamesRow = seasonData.find(row => row.player_id === 0);
+    const raceNamesRow = seasonTeamData.find(row => row.team_id === 0);
     if (raceNamesRow) {
-      // Assume columns are named race_1, race_2, ..., race_32.
+      // Assume race columns are named race_1, race_2, ..., race_32.
       for (let i = 1; i <= 32; i++) {
         const col = `race_${i}`;
         if (raceNamesRow[col] !== null && raceNamesRow[col] !== "") {
@@ -926,21 +1058,22 @@ async function loadHomeStandings() {
     }
     console.log("Last race with data:", lastRace);
     if (lastRace === 0) {
-      document.querySelector("#standings-table tbody").innerHTML =
+      document.querySelector("#standings-team-table tbody").innerHTML =
         "<tr><td colspan='3'>No race scores available yet.</td></tr>";
       return;
     }
 
-    // 5. Compute current total scores (summing races 1 to lastRace) for each player.
-    const standings = playerRows.map(row => {
+    // 5. Compute current total scores (summing races 1 to lastRace) for each team.
+    //    We strip any extra tags (e.g. "(double)") using a regex that removes text within parentheses.
+    const standings = teamRows.map(row => {
       let total = 0;
       let prevTotal = 0;
       for (let i = 1; i <= lastRace; i++) {
         const col = `race_${i}`;
         const rawVal = row[col];
         if (rawVal !== null && rawVal !== "") {
-          // Remove any "(LS)" suffix and trim.
-          const numStr = rawVal.replace(/\(LS\)/, "").trim();
+          // Remove any tags such as "(double)" or "(aero)".
+          const numStr = rawVal.replace(/\(.*?\)/g, "").trim();
           const num = parseFloat(numStr);
           if (!isNaN(num)) {
             total += num;
@@ -951,8 +1084,8 @@ async function loadHomeStandings() {
         }
       }
       return {
-        player_id: row.player_id,
-        player_name: row.player_name,
+        team_id: row.team_id,
+        team_name: row.team_name,
         total: total,
         prevTotal: prevTotal
       };
@@ -965,36 +1098,37 @@ async function loadHomeStandings() {
     let currentRank = 1;
     let prevScore = null;
     const currentRankMap = {};
-    standings.forEach((player, index) => {
-      if (prevScore === null || player.total !== prevScore) {
+    standings.forEach((team, index) => {
+      if (prevScore === null || team.total !== prevScore) {
         currentRank = index + 1;
       }
-      currentRankMap[player.player_id] = currentRank;
-      prevScore = player.total;
+      currentRankMap[team.team_id] = currentRank;
+      prevScore = team.total;
     });
 
     // 8. Compute previous standings if lastRace > 1.
     const prevRankMap = {};
     if (lastRace > 1) {
+      // Create a copy and sort by the total up to race lastRace-1.
       const prevStandings = [...standings].sort((a, b) => b.prevTotal - a.prevTotal);
       let prevRank = 1;
       let prevPrevScore = null;
-      prevStandings.forEach((player, index) => {
-        if (prevPrevScore === null || player.prevTotal !== prevPrevScore) {
+      prevStandings.forEach((team, index) => {
+        if (prevPrevScore === null || team.prevTotal !== prevPrevScore) {
           prevRank = index + 1;
         }
-        prevRankMap[player.player_id] = prevRank;
-        prevPrevScore = player.prevTotal;
+        prevRankMap[team.team_id] = prevRank;
+        prevPrevScore = team.prevTotal;
       });
     }
 
-    // 9. Build HTML rows.
+    // 9. Build HTML rows for each team.
     let html = "";
-    standings.forEach(player => {
-      const currRank = currentRankMap[player.player_id];
+    standings.forEach(team => {
+      const currRank = currentRankMap[team.team_id];
       let movement = "";
-      if (lastRace > 1 && prevRankMap[player.player_id] !== undefined) {
-        const diff = prevRankMap[player.player_id] - currRank;
+      if (lastRace > 1 && prevRankMap[team.team_id] !== undefined) {
+        const diff = prevRankMap[team.team_id] - currRank;
         if (diff > 0) {
           movement = `(+${diff})`;
         } else if (diff < 0) {
@@ -1004,22 +1138,24 @@ async function loadHomeStandings() {
         }
       }
       html += `<tr>
-                <td>${currRank} ${movement}</td>
-                <td>${player.player_name}</td>
-                <td>${player.total}</td>
-              </tr>`;
+                 <td>${currRank} ${movement}</td>
+                 <td>${team.team_name}</td>
+                 <td>${team.total}</td>
+               </tr>`;
     });
-    document.querySelector("#standings-table tbody").innerHTML = html;
+    document.querySelector("#standings-team-table tbody").innerHTML = html;
   } catch (err) {
-    console.error("loadHomeStandings error:", err);
-    document.querySelector("#standings-table tbody").innerHTML =
-      `<tr><td colspan="3">Error loading standings: ${err.message}</td></tr>`;
+    console.error("loadHomeTeamStandings error:", err);
+    document.querySelector("#standings-team-table tbody").innerHTML =
+      `<tr><td colspan="3">Error loading team standings: ${err.message}</td></tr>`;
   }
 }
 
+// --- Initialize Team Standings on DOMContentLoaded ---
 document.addEventListener("DOMContentLoaded", () => {
-  loadHomeStandings();
+  loadHomeTeamStandings();
 });
+
     </script>
 </body>
 </html>
