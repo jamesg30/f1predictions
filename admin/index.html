@@ -304,13 +304,18 @@
                 <!-- Top row: Current Year, Race Selection, and Race Info -->
                 <div class="row mb-3">
                     <div class="col-md-6">
-                    <label for="current-year-season-team" class="form-label">Year</label>
-                    <input type="text" id="current-year-season-team" class="form-control" readonly>
-                    <label for="race-select-season-team" class="form-label">Select Race</label>
-                    <select id="race-select-season-team" class="form-select"></select>
+                        <label for="current-year-season-team" class="form-label">Year</label>
+                        <input type="text" id="current-year-season-team" class="form-control" readonly>
+                        <label for="race-select-season-team" class="form-label">Select Race</label>
+                        <select id="race-select-season-team" class="form-select"></select>
+                        <label for="raceType" class="form-label">Race Type:</label>
+                        <select id="raceType" class="form-select">
+                            <option value="card">Card Race</option>
+                            <option value="casino">Casino Race</option>
+                        </select>
                     </div>
                     <div class="col-md-6">
-                    <label for="race-info-season-team" class="form-label">Race Info</label>
+                        <label for="race-info-season-team" class="form-label">Race Info</label>
                     <div id="race-info-season-team" class="border p-2" style="min-height: 60px;">
                         <!-- Race info (responses, etc.) will appear here -->
                     </div>
@@ -349,7 +354,7 @@
             </div>
   
             <!-- Casino Tab -->
-<div id="casino" class="tab-pane fade show active" role="tabpanel">
+<div id="casino" class="tab-pane fade show" role="tabpanel">
     <div class="card">
         <div class="card-header">
             Casino/Card Switch
@@ -2677,372 +2682,617 @@ async function addRace() {
         }
         });
 
-// --- TEAM SCORING FUNCTION ---
-        // // -------------------------
-        // // Helper: Retrieve an entire table from Supabase.
-        // async function getTable(tableName) {
-        //   const { data, error } = await supabase.from(tableName).select('*');
-        //   if (error) {
-        //     console.error(`Error fetching ${tableName}:`, error);
-        //     throw error;
-        //   }
-        //   return data;
-        // }
 
-        // -------------------------
-        // Progress Helpers for Season Team Section
-        function updateProgressSeasonTeam(message) {
-        console.log("[Season Team] " + message);
-        const progressDiv = document.getElementById("update-progress-season-team");
-        if (progressDiv) {
-            progressDiv.style.display = "block";
-            progressDiv.innerHTML += message + "<br>";
-        }
-        }
+// =============================
+// === TEAM SCORING FUNCTION ===
+// =============================
 
-        function clearProgressSeasonTeam() {
-        const progressDiv = document.getElementById("update-progress-season-team");
-        if (progressDiv) {
-            progressDiv.innerHTML = "";
-            progressDiv.style.display = "none";
-        }
-        }
+/**
+ * Logs progress messages to the console and a progress div.
+ * @param {string} message - The message to log.
+ */
+ function updateProgressSeasonTeam(message) {
+  console.log("[Season Team] " + message);
+  const progressDiv = document.getElementById("update-progress-season-team");
+  if (progressDiv) {
+    progressDiv.style.display = "block";
+    progressDiv.innerHTML += message + "<br>";
+  }
+}
 
-        // -------------------------
-        // Load Race Options for Season Team from season_player_{year}
-        async function loadRaceOptionsSeasonTeam() {
-        updateProgressSeasonTeam("Loading race options for Season Team...");
-        // Retrieve current year and race number from form_details.
-        const { data: formDetails, error } = await supabase.from("form_details").select("*").single();
-        if (error) {
-            updateProgressSeasonTeam(`Error loading form_details: ${error.message}`);
-            return;
-        }
-        const currentYear = formDetails.current_year;
-        const formRaceNumber = formDetails.race_number;
-        document.getElementById("current-year-season-team").value = currentYear;
-        updateProgressSeasonTeam(`Current Year: ${currentYear}`);
+/**
+ * Clears the progress display.
+ */
+function clearProgressSeasonTeam() {
+  const progressDiv = document.getElementById("update-progress-season-team");
+  if (progressDiv) {
+    progressDiv.innerHTML = "";
+    progressDiv.style.display = "none";
+  }
+}
 
-        // Query the season_player_{year} table for race options using the Race Names row (player_id === 0).
-        const seasonPlayerTable = `season_player_${currentYear}`;
-        let seasonPlayerData;
-        try {
-            seasonPlayerData = await getTable(seasonPlayerTable);
-        } catch (err) {
-            updateProgressSeasonTeam("Error fetching season player data: " + err.message);
-            return;
-        }
-        
-        let raceNamesRow = seasonPlayerData.find(row => row.player_id === 0);
-        if (!raceNamesRow) {
-            updateProgressSeasonTeam("No Race Names row found in " + seasonPlayerTable);
-            return;
-        }
-        // Build unique race options from columns "race_1", "race_2", ...
-        let uniqueRaces = {};
-        let i = 1;
-        while (true) {
-            let colName = `race_${i}`;
-            let value = raceNamesRow[colName];
-            if (value === null || value === "") break;
-            uniqueRaces[value] = i; // Map race name to race number
-            i++;
-        }
-        updateProgressSeasonTeam(`Unique races extracted: ${JSON.stringify(uniqueRaces)}`);
+/**
+ * Loads race options from the season_player table for the current year,
+ * populates the race dropdown, and preselects the latest race.
+ */
+async function loadRaceOptionsSeasonTeam() {
+    updateProgressSeasonTeam("Loading race options for Season Team...");
+  
+  const { data: formDetails, error } = await supabase.from("form_details").select("*").single();
+  if (error) {
+    updateProgressSeasonTeam(`Error loading form_details: ${error.message}`);
+    return;
+  }
+  const currentYear = formDetails.current_year;
+  document.getElementById("current-year-season-team").value = currentYear;
+  updateProgressSeasonTeam(`Current Year: ${currentYear}`);
 
-        // Populate the dropdown with id "race-select-season-team".
-        const raceSelect = document.getElementById("race-select-season-team");
-        if (!raceSelect) {
-            updateProgressSeasonTeam("Race select element 'race-select-season-team' not found.");
-            return;
-        }
-        raceSelect.innerHTML = ""; // Clear existing options.
-        let latestRaceNumber = 0;
-        let optionCount = 0;
-        for (const [raceName, raceNum] of Object.entries(uniqueRaces)) {
-            const option = document.createElement("option");
-            option.value = raceName;
-            option.textContent = raceName;
-            option.dataset.raceNumber = raceNum;
-            raceSelect.appendChild(option);
-            optionCount++;
-            updateProgressSeasonTeam(`Added race: ${raceName} with race number ${raceNum}`);
-            if (raceNum > latestRaceNumber) {
-            latestRaceNumber = raceNum;
-            }
-        }
-        updateProgressSeasonTeam(`Total options added: ${optionCount}`);
-        if (raceSelect.options.length === 0) {
-            updateProgressSeasonTeam("No valid races found to populate the dropdown.");
-            alert("No valid races found in the season player table for the current year.");
-            return;
-        }
-        
-        // On initial load, prefill with the latest race.
-        if (window.initialLoad === undefined || window.initialLoad === true) {
-            for (let j = 0; j < raceSelect.options.length; j++) {
-            if (raceSelect.options[j].dataset.raceNumber == latestRaceNumber) {
-                raceSelect.selectedIndex = j;
-                updateProgressSeasonTeam(`Prefilled dropdown with latest race: ${raceSelect.options[j].value}`);
-                break;
-            }
-            }
-            window.initialLoad = false;
-        }
-        updateProgressSeasonTeam("Race options loaded for Season Team.");
-        await updateRaceInfoSeasonTeam();
-        }
+  const seasonPlayerTable = `season_player_${currentYear}`;
+  let seasonPlayerData;
+  try {
+    seasonPlayerData = await getTable(seasonPlayerTable);
+  } catch (err) {
+    updateProgressSeasonTeam("Error fetching season player data: " + err.message);
+    return;
+  }
+  
+  let raceNamesRow = seasonPlayerData.find(row => row.player_id === 0);
+  if (!raceNamesRow) {
+    updateProgressSeasonTeam("No Race Names row found in " + seasonPlayerTable);
+    return;
+  }
+  
+  let uniqueRaces = {};
+  let i = 1;
+  while (true) {
+    let colName = `race_${i}`;
+    let value = raceNamesRow[colName];
+    if (value === null || value === "") break;
+    uniqueRaces[value] = i;
+    i++;
+  }
+  updateProgressSeasonTeam(`Unique races extracted: ${JSON.stringify(uniqueRaces)}`);
 
-        // -------------------------
-        // Update Race Info Panel for Season Team Section
-        async function updateRaceInfoSeasonTeam() {
-        try {
-            const raceSelect = document.getElementById("race-select-season-team");
-            const selectedRaceName = raceSelect.value;
-            const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
-            document.getElementById("race-info-season-team").textContent = `Race ${raceNumber}: ${selectedRaceName}`;
-            updateProgressSeasonTeam(`Race info updated: Race ${raceNumber}: ${selectedRaceName}`);
-        } catch (err) {
-            console.error("updateRaceInfoSeasonTeam error:", err);
-            updateProgressSeasonTeam("Error in updateRaceInfoSeasonTeam: " + err.message);
-        }
-        }
+  const raceSelect = document.getElementById("race-select-season-team");
+  if (!raceSelect) {
+    updateProgressSeasonTeam("Race select element 'race-select-season-team' not found.");
+    return;
+  }
+  raceSelect.innerHTML = "";
+  let latestRaceNumber = 0;
+  let optionCount = 0;
+  for (const [raceName, raceNum] of Object.entries(uniqueRaces)) {
+    const option = document.createElement("option");
+    option.value = raceName;
+    option.textContent = raceName;
+    option.dataset.raceNumber = raceNum;
+    raceSelect.appendChild(option);
+    optionCount++;
+    updateProgressSeasonTeam(`Added race: ${raceName} with race number ${raceNum}`);
+    if (raceNum > latestRaceNumber) {
+      latestRaceNumber = raceNum;
+    }
+  }
+  updateProgressSeasonTeam(`Total options added: ${optionCount}`);
+  if (raceSelect.options.length === 0) {
+    updateProgressSeasonTeam("No valid races found to populate the dropdown.");
+    alert("No valid races found in the season player table for the current year.");
+    return;
+  }
+  
+  if (window.initialLoad === undefined || window.initialLoad === true) {
+    for (let j = 0; j < raceSelect.options.length; j++) {
+      if (raceSelect.options[j].dataset.raceNumber == latestRaceNumber) {
+        raceSelect.selectedIndex = j;
+        updateProgressSeasonTeam(`Prefilled dropdown with latest race: ${raceSelect.options[j].value}`);
+        break;
+      }
+    }
+    window.initialLoad = false;
+  }
+  
+  updateProgressSeasonTeam("Race options loaded for Season Team.");
+  await updateRaceInfoSeasonTeam();
+}
 
-        // -------------------------
-        // Main function to update Team Season Totals.
-        async function updateSeasonTeamTotals() {
-        clearProgressSeasonTeam();
-        updateProgressSeasonTeam("Starting update of Season Team Totals...");
+/**
+ * Updates the race info display panel with the selected race.
+ */
+async function updateRaceInfoSeasonTeam() {
+  try {
+    const raceSelect = document.getElementById("race-select-season-team");
+    const selectedRaceName = raceSelect.value;
+    const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
+    document.getElementById("race-info-season-team").textContent = `Race ${raceNumber}: ${selectedRaceName}`;
+    updateProgressSeasonTeam(`Race info updated: Race ${raceNumber}: ${selectedRaceName}`);
+  } catch (err) {
+    console.error("updateRaceInfoSeasonTeam error:", err);
+    updateProgressSeasonTeam("Error in updateRaceInfoSeasonTeam: " + err.message);
+  }
+}
 
-        // Retrieve current year and selected race info.
-        const currentYear = document.getElementById("current-year-season-team").value;
-        if (!currentYear) {
-            updateProgressSeasonTeam("Error: Current year is not set.");
-            return;
-        }
-        const raceSelect = document.getElementById("race-select-season-team");
-        const selectedRaceName = raceSelect.value;
-        const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
-        updateProgressSeasonTeam(`Selected Race: ${selectedRaceName} (Race Number: ${raceNumber})`);
+/**
+ * Updates team scoring for Card Races (includes card adjustments and swap logic).
+ */
+ async function updateCardTeamScoring() {
+  clearProgressSeasonTeam();
+  updateProgressSeasonTeam("Starting update of Season Team Totals...");
 
-        // Define table names.
-        const teamsTable = "teams";
-        const playersTable = "players";
-        const seasonPlayerTable = `season_player_${currentYear}`;
-        const teamScoringTable = `team_scoring_${currentYear}`;
-        // (The season_team_{year} update would be similar.)
+  const currentYear = document.getElementById("current-year-season-team").value;
+  if (!currentYear) {
+    updateProgressSeasonTeam("Error: Current year is not set.");
+    return;
+  }
 
-        // Fetch teams and players.
-        updateProgressSeasonTeam("Fetching teams data...");
-        let teams;
-        try {
-            teams = await getTable(teamsTable);
-        } catch (err) {
-            updateProgressSeasonTeam("Error fetching teams: " + err.message);
-            return;
-        }
-        updateProgressSeasonTeam(`Fetched ${teams.length} teams.`);
+  const raceSelect = document.getElementById("race-select-season-team");
+  const selectedRaceName = raceSelect.value;
+  const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
+  updateProgressSeasonTeam(`Selected Race: ${selectedRaceName} (Race Number: ${raceNumber})`);
 
-        updateProgressSeasonTeam("Fetching players data...");
-        let players;
-        try {
-            players = await getTable(playersTable);
-        } catch (err) {
-            updateProgressSeasonTeam("Error fetching players: " + err.message);
-            return;
-        }
-        updateProgressSeasonTeam(`Fetched ${players.length} players.`);
+  const teamsTable = "teams";
+  const playersTable = "players";
+  const seasonPlayerTable = `season_player_${currentYear}`;
+  const teamScoringTable = `team_scoring_${currentYear}`;
 
-        // Fetch the entire season_player table.
-        updateProgressSeasonTeam(`Fetching season player results from ${seasonPlayerTable}...`);
-        let seasonPlayerResults;
-        try {
-            seasonPlayerResults = await getTable(seasonPlayerTable);
-        } catch (err) {
-            updateProgressSeasonTeam("Error fetching season player results: " + err.message);
-            return;
-        }
-        updateProgressSeasonTeam(`Fetched ${seasonPlayerResults.length} rows from ${seasonPlayerTable}.`);
+  updateProgressSeasonTeam("Fetching teams data...");
+  let teams;
+  try {
+    teams = await getTable(teamsTable); // Retrieve the entire teams table
+  } catch (err) {
+    updateProgressSeasonTeam("Error fetching teams: " + err.message);
+    return;
+  }
+  updateProgressSeasonTeam(`Fetched ${teams.length} teams.`);
 
-        // Process each team.
-        let teamScoringData = [];
-        for (let team of teams) {
-            // Use the players' participant_team_id field.
-            let teamId = team.id;
-            let teamName = team.name;
-            updateProgressSeasonTeam(`Processing team: ${teamName} (ID: ${teamId})`);
+  updateProgressSeasonTeam("Fetching players data...");
+  let players;
+  try {
+    players = await getTable(playersTable);
+  } catch (err) {
+    updateProgressSeasonTeam("Error fetching players: " + err.message);
+    return;
+  }
+  updateProgressSeasonTeam(`Fetched ${players.length} players.`);
 
-            // Identify players on the team.
-            let teamPlayers = players.filter(p => p.participant_team_id === teamId);
-            updateProgressSeasonTeam(`Found ${teamPlayers.length} players for team ${teamName}.`);
-            teamPlayers.forEach(p => {
-            updateProgressSeasonTeam(`--> Player ID: ${p.id}, Name: ${p.name}, participant_team_id: ${p.participant_team_id}`);
-            });
-            if (teamPlayers.length !== 2) {
-            updateProgressSeasonTeam(`Skipping team ${teamName}: Expected 2 players, found ${teamPlayers.length}.`);
-            continue;
-            }
-            let [player1, player2] = teamPlayers;
+  updateProgressSeasonTeam(`Fetching season player results from ${seasonPlayerTable}...`);
+  let seasonPlayerResults;
+  try {
+    seasonPlayerResults = await getTable(seasonPlayerTable);
+  } catch (err) {
+    updateProgressSeasonTeam("Error fetching season player results: " + err.message);
+    return;
+  }
+  updateProgressSeasonTeam(`Fetched ${seasonPlayerResults.length} rows from ${seasonPlayerTable}.`);
 
-            // Get season results for each player by reading the "race_N" column.
-            let colName = `race_${raceNumber}`;
-            let result1 = seasonPlayerResults.find(r => r.player_id === player1.id);
-            let result2 = seasonPlayerResults.find(r => r.player_id === player2.id);
-            if (!result1 || !result2) {
-            updateProgressSeasonTeam(`Skipping team ${teamName}: Missing season results for one or both players.`);
-            continue;
-            }
-            let scoreStr1 = result1[colName];
-            let scoreStr2 = result2[colName];
-            let score1 = scoreStr1 ? parseInt(scoreStr1.replace(/\(LS\)/, "").trim()) || 0 : 0;
-            let score2 = scoreStr2 ? parseInt(scoreStr2.replace(/\(LS\)/, "").trim()) || 0 : 0;
-            updateProgressSeasonTeam(`Team ${teamName}: ${player1.name} scored ${score1}, ${player2.name} scored ${score2}.`);
-            let subtotal = score1 + score2;
+  // Sort teams by card_swap_time to ensure swaps happen in the correct order
+  let sortedTeams = teams.sort((a, b) => {
+    return new Date(a.card_swap_time) - new Date(b.card_swap_time);
+  });
 
-            let cardPointsDelta = 0;
-            let appliedCards = {};
+  let teamScoringData = [];
+  for (let team of sortedTeams) {
+    let teamId = team.id;
+    let teamName = team.name;
+    updateProgressSeasonTeam(`Processing team: ${teamName} (ID: ${teamId})`);
 
-            // --- Apply Cards ---
-            // Aero card: absolute difference.
-            if (team.card_aero_played) {
-            let aeroDelta = Math.abs(score1 - score2);
-            cardPointsDelta += aeroDelta;
-            appliedCards.card_aero_applied = 1;
-            updateProgressSeasonTeam(`Aero applied on ${teamName}: +${aeroDelta}`);
-            }
-            // Double card: highest score.
-            if (team.card_double_played) {
-            let doubleDelta = Math.max(score1, score2);
-            cardPointsDelta += doubleDelta;
-            appliedCards.card_double_applied = 1;
-            updateProgressSeasonTeam(`Double applied on ${teamName}: +${doubleDelta}`);
-            }
-            // Halo card: if played, skip Report and Swap.
-            let haloPlayed = team.card_halo_played ? true : false;
-            if (haloPlayed) {
-            appliedCards.card_halo_applied = 1;
-            updateProgressSeasonTeam(`Halo applied on ${teamName}: Report and Swap cards skipped.`);
-            }
-            // Report card: if Halo not played.
-            if (!haloPlayed && team.card_report_played) {
-            appliedCards.card_report_applied = team.card_report_played;
-            updateProgressSeasonTeam(`Report card played by ${teamName}: count=${team.card_report_played}, target team: ${team.card_report_team_selected}`);
-            let targetTeamId = team.card_report_team_selected;
-            if (targetTeamId) {
-                let targetPlayers = players.filter(p => p.participant_team_id === targetTeamId);
-                let targetResults = seasonPlayerResults.filter(r => targetPlayers.some(tp => tp.id === r.player_id));
-                let targetHigh = Math.max(...targetResults.map(r => parseInt(r[colName].replace(/\(LS\)/, "").trim()) || 0));
-                let reportDelta = team.card_report_played === 1 ? -targetHigh : (team.card_report_played >= 2 ? targetHigh : 0);
-                cardPointsDelta += reportDelta;
-                appliedCards.card_report_details = `Report applied on team ${targetTeamId} with delta ${reportDelta}`;
-                updateProgressSeasonTeam(`Report effect on ${teamName}: ${reportDelta}`);
-            }
-            }
-            // Swap card: if Halo not played.
-            if (!haloPlayed && team.card_swap_played) {
-            appliedCards.card_swap_applied = 1;
-            appliedCards.card_swap_details = `Swap with team ${team.card_swap_team_selected} at ${team.card_swap_time}`;
-            updateProgressSeasonTeam(`Swap card played by ${teamName}: target ${team.card_swap_team_selected}, time ${team.card_swap_time}`);
-            }
+    let teamPlayers = players.filter(p => p.participant_team_id === teamId);
+    updateProgressSeasonTeam(`Found ${teamPlayers.length} players for team ${teamName}.`);
+    if (teamPlayers.length !== 2) {
+      updateProgressSeasonTeam(`Skipping team ${teamName}: Expected 2 players, found ${teamPlayers.length}.`);
+      continue;
+    }
+    let [player1, player2] = teamPlayers;
 
-            // Calculate preliminary grand total (before swap adjustments).
-            let grandTotal = subtotal + cardPointsDelta;
-            updateProgressSeasonTeam(`Team ${teamName} subtotal: ${subtotal}, card delta: ${cardPointsDelta}, preliminary grand total: ${grandTotal}`);
+    let colName = `race_${raceNumber}`;
+    let result1 = seasonPlayerResults.find(r => r.player_id === player1.id);
+    let result2 = seasonPlayerResults.find(r => r.player_id === player2.id);
+    if (!result1 || !result2) {
+      updateProgressSeasonTeam(`Skipping team ${teamName}: Missing season results for one or both players.`);
+      continue;
+    }
+    let scoreStr1 = result1[colName];
+    let scoreStr2 = result2[colName];
 
-            teamScoringData.push({
-            race_number: raceNumber,
-            race_name: selectedRaceName,
-            team_id: teamId,
-            team_name: teamName,
-            player_id_1: player1.id,
-            player_name_1: player1.name,
-            player_points_1: score1,
-            player_id_2: player2.id,
-            player_name_2: player2.name,
-            player_points_2: score2,
-            subtotal: subtotal,
-            card_points_delta: cardPointsDelta,
-            grand_total: grandTotal,
-            ...appliedCards
-            });
-            updateProgressSeasonTeam(`Team ${teamName} final grand total (pre-swap): ${grandTotal}`);
-        } // End processing each team
+    // Strip the (LS) and parse as float
+    let score1 = parseFloat(scoreStr1.replace(/\(LS\)/, "").trim()) || 0;
+    let score2 = parseFloat(scoreStr2.replace(/\(LS\)/, "").trim()) || 0;
+    updateProgressSeasonTeam(`Team ${teamName}: ${player1.name} scored ${score1}, ${player2.name} scored ${score2}.`);
 
-        // --- Process Swap Cards ---
-        // Apply swap cards unilaterally in chronological order.
-        let swapInitiators = teams.filter(t => t.card_swap_played && t.card_swap_time && t.card_swap_team_selected);
-        if (swapInitiators.length > 0) {
-            swapInitiators.sort((a, b) => new Date(a.card_swap_time) - new Date(b.card_swap_time));
-            updateProgressSeasonTeam(`Processing ${swapInitiators.length} swap cards in chronological order...`);
-            for (let initiator of swapInitiators) {
-            let initiatorRecord = teamScoringData.find(r => r.team_id === initiator.id);
-            if (!initiatorRecord) {
-                updateProgressSeasonTeam(`No scoring record for initiating team ${initiator.name}`);
-                continue;
-            }
-            let targetTeamId = initiator.card_swap_team_selected;
-            let targetRecord = teamScoringData.find(r => r.team_id === targetTeamId);
-            if (!targetRecord) {
-                updateProgressSeasonTeam(`No scoring record for target team ID ${targetTeamId}`);
-                continue;
-            }
-            updateProgressSeasonTeam(`Before swap: ${initiatorRecord.team_name}: ${initiatorRecord.grand_total}, ${targetRecord.team_name}: ${targetRecord.grand_total}`);
-            let temp = initiatorRecord.grand_total;
-            initiatorRecord.grand_total = targetRecord.grand_total;
-            targetRecord.grand_total = temp;
-            updateProgressSeasonTeam(`After swap: ${initiatorRecord.team_name}: ${initiatorRecord.grand_total}, ${targetRecord.team_name}: ${targetRecord.grand_total}`);
-            }
+    // Calculate the subtotal (sum of both player scores)
+    let subtotal = score1 + score2;
+
+    // Initialize card-related fields to 0
+    let cardPointsDelta = 0;
+    let card_aero_applied = 0;
+    let card_double_applied = 0;
+    let card_halo_applied = 0;
+    let card_report_applied = 0;
+    let card_swap_applied = 0;
+    let card_report_details = '';
+    let card_swap_details = '';
+
+    // Step 1: Apply Aero and Double cards (before report and swap)
+    if (team.card_aero_played) {
+      let aeroDelta = Math.abs(score1 - score2);
+      cardPointsDelta += aeroDelta;
+      card_aero_applied = 1;
+      updateProgressSeasonTeam(`Aero applied on ${teamName}: +${aeroDelta}`);
+    }
+
+    // Apply Double Card - Multiply the higher score by 2
+    if (team.card_double_played) {
+      let higherScore = Math.max(score1, score2);
+      cardPointsDelta += higherScore;  // Add the double to cardPointsDelta
+      card_double_applied = 1;
+      updateProgressSeasonTeam(`Double applied on ${teamName}: +${higherScore}`);
+    }
+
+    // Step 2: Initial grand total calculation (before report and swap)
+    let grandTotal = subtotal + cardPointsDelta;
+    updateProgressSeasonTeam(`Initial Grand Total for ${teamName}: ${grandTotal}`);
+
+    // Step 3: Apply Report and Swap cards (handled after initial grand total)
+    let haloPlayed = team.card_halo_played ? true : false;
+    if (haloPlayed) {
+      card_halo_applied = 1;
+      updateProgressSeasonTeam(`Halo applied on ${teamName}: Report and Swap cards skipped.`);
+    } else {
+      // Apply the Report card
+      if (team.card_report_played) {
+        card_report_applied = 1;
+        let targetTeam = teams.find(t => t.id === team.card_report_target);
+        card_report_details = `(${teamName} was reported by Team ${targetTeam.name})`;
+        updateProgressSeasonTeam(`Report applied: ${teamName} reports on ${targetTeam.name}.`);
+      }
+
+      // Apply the Swap card
+      if (team.card_swap_played) {
+        card_swap_applied = 1;
+
+        // Fetch the correct target team ID from the 'card_swap_team_selected' column
+        let swapTargetTeamId = team.card_swap_team_selected;
+
+        // Find the team to swap with using the correct ID
+        let swapTargetTeam = teams.find(t => t.id === swapTargetTeamId);
+
+        // Check if swapTargetTeam is valid
+        if (!swapTargetTeam) {
+          updateProgressSeasonTeam(`Error: Swap target team (ID: ${swapTargetTeamId}) not found.`);
+          continue; // Skip the swap if the target team is not found
         }
 
-        // --- Insert team scoring records into team_scoring_{year} table.
-        updateProgressSeasonTeam(`Inserting ${teamScoringData.length} rows into ${teamScoringTable}...`);
-        const { error: insertError } = await supabase.from(teamScoringTable).insert(teamScoringData);
-        if (insertError) {
-            updateProgressSeasonTeam(`Error inserting team scores: ${insertError.message}`);
-            return;
-        }
-        updateProgressSeasonTeam("Team scoring records inserted successfully!");
+        // If swapTargetTeam is found, proceed with swapping
+        let swapTime = team.card_swap_time;
+        card_swap_details = `(${teamName} swapped with Team ${swapTargetTeam.name})`;
+        updateProgressSeasonTeam(`Swap applied: ${teamName} swaps with ${swapTargetTeam.name}.`);
 
-        // --- Reset Team Cards in Teams Table ---
-        updateProgressSeasonTeam("Resetting team cards (consuming played cards)...");
-        const resetData = {
-            card_aero_played: 0,
-            card_double_played: 0,
-            card_halo_played: 0,
-            card_report_played: 0,
-            card_swap_played: 0,
-            card_swap_team_selected: null,
-            card_swap_time: null,
-            card_report_team_selected: null
-        };
-        const { error: resetError } = await supabase
-        .from("teams")
-        .update(resetData)
-        .gt("id", 0);
-        if (resetError) {
-        updateProgressSeasonTeam(`Error resetting team cards: ${resetError.message}`);
-        } else {
-        updateProgressSeasonTeam("Team cards reset successfully.");
-        }
+        // Swap the scores for the teams
+        let tempScore1 = score1;
+        let tempScore2 = score2;
+        score1 = parseFloat(result2[colName].replace(/\(LS\)/, "").trim()) || 0;  // Swap player 1's score with player 2's score
+        score2 = parseFloat(result1[colName].replace(/\(LS\)/, "").trim()) || 0;  // Swap player 2's score with player 1's score
 
-        updateProgressSeasonTeam("✅ Season Team update complete.");
-        alert("Season Team update complete.");
-        }
+        // Update cardPointsDelta for the swap
+        cardPointsDelta = Math.abs(score1 - score2);
+      }
+    }
 
-        // -------------------------
-        // Initialize Season Team Section
-        document.addEventListener("DOMContentLoaded", async () => {
-        try {
-            await loadRaceOptionsSeasonTeam();
-            document.getElementById("race-select-season-team").addEventListener("change", updateRaceInfoSeasonTeam);
-            document.getElementById("update-season-season-team").addEventListener("click", updateSeasonTeamTotals);
-        } catch (err) {
-            console.error("Error during Season Team initialization:", err);
-            updateProgressSeasonTeam("Error during initialization: " + err.message);
-        }
-        });
-// --- SEASON TEAM SUMMARY --- 
-        // -------------------------
+    // Step 4: Recalculate grand total after the report and swap cards
+    grandTotal = subtotal + cardPointsDelta;
+    updateProgressSeasonTeam(`Recalculated Grand Total for ${teamName}: ${grandTotal}`);
+
+    // Ensure grand total is not NaN
+    if (isNaN(grandTotal)) {
+      updateProgressSeasonTeam(`Error: Grand total for ${teamName} is NaN.`);
+      continue;
+    }
+
+    // Step 5: Create the teamScoreRecord including players' info and race name
+    let teamScoreRecord = {
+      team_id: teamId,
+      team_name: teamName,
+      race_number: raceNumber,
+      race_name: selectedRaceName, // Ensure race_name is included
+      subtotal: subtotal,
+      card_points_delta: cardPointsDelta,
+      grand_total: grandTotal,
+      card_aero_applied: card_aero_applied,
+      card_double_applied: card_double_applied,
+      card_halo_applied: card_halo_applied,
+      card_report_applied: card_report_applied,
+      card_swap_applied: card_swap_applied,
+      card_report_details: card_report_details,
+      card_swap_details: card_swap_details,
+      player_id_1: player1.id, // Add player 1 ID
+      player_name_1: player1.name, // Add player 1 name
+      player_points_1: score1, // Add player 1 points
+      player_id_2: player2.id, // Add player 2 ID
+      player_name_2: player2.name, // Add player 2 name
+      player_points_2: score2 // Add player 2 points
+    };
+
+    // Update or insert the team score data
+    await upsertTeamScoringData([teamScoreRecord], teamScoringTable);
+
+    updateProgressSeasonTeam(`Updated/inserted record for team ${teamName}.`);
+  }
+
+  updateProgressSeasonTeam("Finished updating team scores.");
+}
+
+async function upsertTeamScoringData(teamScoringData, tableName) {
+  try {
+    // Fetch existing records to check for conflicts
+    const { data: existingRecords, error: fetchError } = await supabase
+      .from(tableName)
+      .select('team_id, race_number');  // Only fetch team_id and race_number to check for conflicts
+
+    if (fetchError) {
+      console.error('Error fetching existing records:', fetchError.message);
+      return;
+    }
+
+    // Prepare two arrays: one for new inserts and one for updates
+    let recordsToInsert = [];
+    let recordsToUpdate = [];
+
+    // Check each teamScoringData entry
+    for (let record of teamScoringData) {
+      const existingRecord = existingRecords.find(
+        (r) => r.team_id === record.team_id && r.race_number === record.race_number
+      );
+
+      if (existingRecord) {
+        // If the record exists, push to recordsToUpdate
+        recordsToUpdate.push(record);
+      } else {
+        // If the record doesn't exist, push to recordsToInsert
+        recordsToInsert.push(record);
+      }
+    }
+
+    // Insert new records
+    if (recordsToInsert.length > 0) {
+      const { data: insertData, error: insertError } = await supabase
+        .from(tableName)
+        .insert(recordsToInsert);
+
+      if (insertError) {
+        console.error('Error inserting new team scoring data:', insertError.message);
+      } else {
+        console.log('Inserted new team scoring data:', insertData);
+      }
+    }
+
+    // Update existing records
+    for (let record of recordsToUpdate) {
+      // Check if record already exists in the database, if not insert it
+      const { data: updateData, error: updateError } = await supabase
+        .from(tableName)
+        .update(record)
+        .eq('team_id', record.team_id)
+        .eq('race_number', record.race_number); // Ensures that we are updating the correct record
+
+      if (updateError) {
+        console.error('Error updating team scoring data:', updateError.message);
+      } else {
+        console.log('Updated team scoring data:', updateData);
+      }
+    }
+
+  } catch (error) {
+    console.error('Error upserting team scoring data:', error.message);
+  }
+}
+
+
+
+// Reset the played cards in the teams table using Supabase
+async function resetTeamCardsSupabase(teamId) {
+  const { data, error } = await supabase
+    .from('teams') // Specify the Supabase table name
+    .update({
+      card_aero_played: 0,
+      card_double_played: 0,
+      card_halo_played: 0,
+      card_report_played: 0,
+      card_swap_played: 0,
+      card_report_team_selected: null,
+      card_swap_team_selected: null,
+      card_swap_time: null
+    })
+    .eq('id', teamId); // Target the specific team by ID
+
+  if (error) {
+    console.error('Error resetting team cards:', error.message);
+  } else {
+    console.log('Team cards reset successfully:', data);
+  }
+}
+
+
+/**
+ * Updates team scoring for Casino Races.
+ * This function processes the casino table for each team and calculates their contribution.
+ */
+ async function updateCasinoTeamScoring() {
+  clearProgressSeasonTeam();
+  updateProgressSeasonTeam("Starting update of Season Team Totals (Casino)...");
+
+  const currentYear = document.getElementById("current-year-season-team").value;
+  if (!currentYear) {
+    updateProgressSeasonTeam("Error: Current year is not set.");
+    return;
+  }
+  
+  const raceSelect = document.getElementById("race-select-season-team");
+  const selectedRaceName = raceSelect.value;
+  const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
+  updateProgressSeasonTeam(`Selected Race: ${selectedRaceName} (Race Number: ${raceNumber})`);
+
+  const teamsTable = "teams";
+  const casinoTable = "casino"; // Assume this is the table containing the bets
+  const seasonPlayerTable = `season_player_${currentYear}`;
+  const teamScoringTable = `team_scoring_${currentYear}`;
+
+  updateProgressSeasonTeam("Fetching teams data...");
+  let teams;
+  try {
+    teams = await getTable(teamsTable);
+  } catch (err) {
+    updateProgressSeasonTeam("Error fetching teams: " + err.message);
+    return;
+  }
+  updateProgressSeasonTeam(`Fetched ${teams.length} teams.`);
+
+  updateProgressSeasonTeam("Fetching casino bets data...");
+  let casinoBets;
+  try {
+    casinoBets = await getTable(casinoTable);
+  } catch (err) {
+    updateProgressSeasonTeam("Error fetching casino bets: " + err.message);
+    return;
+  }
+  updateProgressSeasonTeam(`Fetched ${casinoBets.length} casino bet rows.`);
+
+  updateProgressSeasonTeam(`Fetching season player results from ${seasonPlayerTable}...`);
+  let seasonPlayerResults;
+  try {
+    seasonPlayerResults = await getTable(seasonPlayerTable);
+  } catch (err) {
+    updateProgressSeasonTeam("Error fetching season player results: " + err.message);
+    return;
+  }
+  updateProgressSeasonTeam(`Fetched ${seasonPlayerResults.length} rows from ${seasonPlayerTable}.`);
+
+  let teamScoringData = [];
+  for (let team of teams) {
+    let teamId = team.id;
+    let teamName = team.name;
+    updateProgressSeasonTeam(`Processing team: ${teamName} (ID: ${teamId})`);
+
+    let teamPlayers = await getPlayersForTeam(teamId); // Assuming a function to get players for a team
+    if (teamPlayers.length !== 2) {
+      updateProgressSeasonTeam(`Skipping team ${teamName}: Expected 2 players, found ${teamPlayers.length}.`);
+      continue;
+    }
+
+    let [player1, player2] = teamPlayers;
+
+    // Fetch the team's corresponding bet row
+    let betRow = casinoBets.find(b => b.team_id === teamId);
+    if (!betRow) {
+      updateProgressSeasonTeam(`Skipping team ${teamName}: No casino bet data found.`);
+      continue;
+    }
+
+    // Initialize card_points_delta for the team
+    let cardPointsDelta = 0;
+    
+    // Loop through the bet columns (bet_1 to bet_5)
+    for (let i = 1; i <= 5; i++) {
+      let bet = parseFloat(betRow[`bet_${i}`]);
+      if (isNaN(bet) || bet <= 0) {
+        updateProgressSeasonTeam(`Skipping bet ${i} for team ${teamName}: Invalid or no bet placed.`);
+        continue;
+      }
+
+      // Fetch the casino odds row (odds for the current race)
+      let oddsRow = casinoBets.find(b => b.team_id === 0); // Odds row should have team_id = 0
+      if (!oddsRow) {
+        updateProgressSeasonTeam("Error: No odds row found in the casino table.");
+        return;
+      }
+
+      let odds = parseFloat(oddsRow[`bet_${i}`]);
+      if (isNaN(odds)) {
+        updateProgressSeasonTeam(`Error: Invalid odds for bet ${i} in casino table.`);
+        return;
+      }
+
+      // Check if enabled
+      let isEnabled = (betRow[`bet_${i}`] !== null && betRow[`bet_${i}`] !== "");
+      if (!isEnabled) {
+        updateProgressSeasonTeam(`Bet ${i} is disabled for team ${teamName}, no contribution.`);
+        continue;
+      }
+
+      // Check if "will pay out" is true
+      let willPayOut = (betRow[`bet_${i}`] !== null && betRow[`bet_${i}`] !== "" && betRow[`bet_${i}`].toLowerCase() === "true");
+      
+      let contribution = 0;
+      if (willPayOut) {
+        contribution = (bet * odds) - bet; // payout = (bet * odds) - bet
+        updateProgressSeasonTeam(`Bet ${i} for ${teamName}: Payout is ${contribution}`);
+      } else {
+        contribution = -bet; // payout = -bet
+        updateProgressSeasonTeam(`Bet ${i} for ${teamName}: No payout, contribution = ${contribution}`);
+      }
+
+      // Add the contribution to card_points_delta
+      cardPointsDelta += contribution;
+    }
+
+    // Calculate subtotal (using contribution)
+    let subtotal = cardPointsDelta;
+
+    // Calculate grand_total (sum of subtotal and card_points_delta)
+    let grandTotal = subtotal + cardPointsDelta;
+
+    // Record the final contribution for the team
+    let teamScoreRecord = {
+      team_id: teamId,
+      team_name: teamName,
+      player1_name: player1.name,
+      player2_name: player2.name,
+      race_number: raceNumber,
+      subtotal: subtotal,
+      card_points_delta: cardPointsDelta,
+      grand_total: grandTotal,
+      applied_cards: JSON.stringify({}) // No cards applied in the casino scenario
+    };
+
+    teamScoringData.push(teamScoreRecord);
+  }
+
+  updateProgressSeasonTeam("Finished processing all casino bets.");
+  
+  // Insert team scoring data into the team_scoring table for the current year
+  await insertTeamScoringData(teamScoringData, teamScoringTable);
+  updateProgressSeasonTeam("Casino team scoring finalized and inserted.");
+}
+
+
+/**
+ * Helper function to insert team scoring data into the database.
+ * @param {Array} data - Array of team scoring data to insert.
+ * @param {string} table - Name of the table to insert into.
+ */
+async function insertTeamScoringData(data, table) {
+  const { data: inserted, error } = await supabase.from(table).upsert(data);
+  if (error) {
+    updateProgressSeasonTeam("Error inserting team scoring data: " + error.message);
+    return;
+  }
+  updateProgressSeasonTeam(`Inserted ${inserted.length} team scoring records.`);
+}
+
+async function updateTeamScoring() {
+  const raceType = document.getElementById("raceType").value; // Get selected value
+  if (raceType === 'card') {
+    await updateCardTeamScoring();
+  } else if (raceType === 'casino') {
+    await updateCasinoTeamScoring();
+  }
+}
+
+document.getElementById('update-season-season-team').addEventListener('click', async function() {
+  await updateTeamScoring();
+});
+
+// =============================
+// === SEASON TEAM FUNCTION ===
+// ============================= 
         // Progress Helpers for Season Team Summary Section
         function updateProgressTeamSummary(message) {
         console.log("[Season Team Summary] " + message);
@@ -3061,7 +3311,6 @@ async function addRace() {
         }
         }
 
-        // -------------------------
         // Main function to update Season Team Summary
         async function updateSeasonTeamSummary() {
         clearProgressTeamSummary();
@@ -3227,138 +3476,139 @@ try {
             updateProgressTeamSummary("Error during initialization: " + err.message);
         }
         });
-// --- CASINO PAGE ---
-document.addEventListener("DOMContentLoaded", async function () {
-    const casinoStatus = document.getElementById("casino-status");
-    const casinoStatusLabel = document.getElementById("casino-status-label");
-    const saveCasinoDashboard = document.getElementById("save-changes-casino-dashboard");
-    const casinoRows = document.getElementById("casino-rows");
-    const saveCasinoChanges = document.getElementById("saveChangesButtonCasino");
 
-    let casinoEnabled = false;
-    let originalCasinoData = {};
+// =============================
+// === CASINO PAGE ===
+// =============================
+        document.addEventListener("DOMContentLoaded", async function () {
+            const casinoStatus = document.getElementById("casino-status");
+            const casinoStatusLabel = document.getElementById("casino-status-label");
+            const saveCasinoDashboard = document.getElementById("save-changes-casino-dashboard");
+            const casinoRows = document.getElementById("casino-rows");
+            const saveCasinoChanges = document.getElementById("saveChangesButtonCasino");
 
-    // Fetch the casino status from form_details
-    async function fetchCasinoStatus() {
-    let { data, error } = await supabase
-        .from("form_details")
-        .select("casino_enabled")
-        .eq("id", 1)
-        .single();
+            let casinoEnabled = false;
+            let originalCasinoData = {};
 
-    if (error) {
-        console.error("Error fetching casino status:", error);
-        return;
-    }
+            // Fetch the casino status from form_details
+            async function fetchCasinoStatus() {
+            let { data, error } = await supabase
+                .from("form_details")
+                .select("casino_enabled")
+                .eq("id", 1)
+                .single();
 
-    // Ensure proper handling of boolean values
-    casinoEnabled = Boolean(data.casino_enabled);
-    casinoStatus.checked = casinoEnabled;
-    casinoStatusLabel.textContent = casinoEnabled ? "Enabled" : "Disabled";
-}
+            if (error) {
+                console.error("Error fetching casino status:", error);
+                return;
+            }
 
-    // Fetch casino bet settings
-    async function fetchCasinoData() {
-        let { data, error } = await supabase.from("casino").select("*");
-        if (error) {
-            console.error("Error fetching casino data:", error);
-            return;
+            // Ensure proper handling of boolean values
+            casinoEnabled = Boolean(data.casino_enabled);
+            casinoStatus.checked = casinoEnabled;
+            casinoStatusLabel.textContent = casinoEnabled ? "Enabled" : "Disabled";
         }
 
-        originalCasinoData = {
-            enabled: data.find(row => row.team_id === -1) || {},
-            questions: data.find(row => row.team_id === -2) || {},
-            odds: data.find(row => row.team_id === 0) || {},
-            maxBet: data.find(row => row.team_id === -3) || {},
-            willPayOut: data.find(row => row.team_id === -4) || {},
-        };
+            // Fetch casino bet settings
+            async function fetchCasinoData() {
+                let { data, error } = await supabase.from("casino").select("*");
+                if (error) {
+                    console.error("Error fetching casino data:", error);
+                    return;
+                }
 
-        populateCasinoTable();
-    }
+                originalCasinoData = {
+                    enabled: data.find(row => row.team_id === -1) || {},
+                    questions: data.find(row => row.team_id === -2) || {},
+                    odds: data.find(row => row.team_id === 0) || {},
+                    maxBet: data.find(row => row.team_id === -3) || {},
+                    willPayOut: data.find(row => row.team_id === -4) || {},
+                };
 
-    function populateCasinoTable() {
-        casinoRows.innerHTML = "";
+                populateCasinoTable();
+            }
 
-        for (let i = 1; i <= 5; i++) {
-            const row = document.createElement("tr");
+            function populateCasinoTable() {
+                casinoRows.innerHTML = "";
 
-            row.innerHTML = `
-                <td>${i}</td>
-                <td>
-                    <div class="form-check form-switch">
-                        <input type="checkbox" class="form-check-input" data-bet="${i}" data-type="enabled">
-                    </div>
-                </td>
-                <td><input type="text" class="form-control" data-bet="${i}" data-type="question"></td>
-                <td><input type="number" class="form-control" data-bet="${i}" data-type="odds"></td>
-                <td><input type="number" class="form-control" data-bet="${i}" data-type="maxBet"></td>
-                <td>
-                    <div class="form-check form-switch">
-                        <input type="checkbox" class="form-check-input" data-bet="${i}" data-type="willPayOut">
-                    </div>
-                </td>
-            `;
+                for (let i = 1; i <= 5; i++) {
+                    const row = document.createElement("tr");
 
-            casinoRows.appendChild(row);
+                    row.innerHTML = `
+                        <td>${i}</td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" data-bet="${i}" data-type="enabled">
+                            </div>
+                        </td>
+                        <td><input type="text" class="form-control" data-bet="${i}" data-type="question"></td>
+                        <td><input type="number" class="form-control" data-bet="${i}" data-type="odds"></td>
+                        <td><input type="number" class="form-control" data-bet="${i}" data-type="maxBet"></td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" data-bet="${i}" data-type="willPayOut">
+                            </div>
+                        </td>
+                    `;
 
-            row.querySelector(`[data-bet="${i}"][data-type="enabled"]`).checked = originalCasinoData.enabled[`bet_${i}`] === "true";
-            row.querySelector(`[data-bet="${i}"][data-type="question"]`).value = originalCasinoData.questions[`bet_${i}`] || "";
-            row.querySelector(`[data-bet="${i}"][data-type="odds"]`).value = originalCasinoData.odds[`bet_${i}`] || 1;
-            row.querySelector(`[data-bet="${i}"][data-type="maxBet"]`).value = originalCasinoData.maxBet[`bet_${i}`] || 10;
-            row.querySelector(`[data-bet="${i}"][data-type="willPayOut"]`).checked = originalCasinoData.willPayOut[`bet_${i}`] === "true";
-        }
-    }
+                    casinoRows.appendChild(row);
 
-    // Detect changes and enable Save button
-    document.getElementById("casino-form").addEventListener("input", () => {
-        saveCasinoChanges.disabled = false;
-    });
+                    row.querySelector(`[data-bet="${i}"][data-type="enabled"]`).checked = originalCasinoData.enabled[`bet_${i}`] === "true";
+                    row.querySelector(`[data-bet="${i}"][data-type="question"]`).value = originalCasinoData.questions[`bet_${i}`] || "";
+                    row.querySelector(`[data-bet="${i}"][data-type="odds"]`).value = originalCasinoData.odds[`bet_${i}`] || 1;
+                    row.querySelector(`[data-bet="${i}"][data-type="maxBet"]`).value = originalCasinoData.maxBet[`bet_${i}`] || 10;
+                    row.querySelector(`[data-bet="${i}"][data-type="willPayOut"]`).checked = originalCasinoData.willPayOut[`bet_${i}`] === "true";
+                }
+            }
 
-    // Handle Save for Casino Settings
-    saveCasinoChanges.addEventListener("click", async function (event) {
-        event.preventDefault();
+            // Detect changes and enable Save button
+            document.getElementById("casino-form").addEventListener("input", () => {
+                saveCasinoChanges.disabled = false;
+            });
 
-        let updatedData = {
-            enabled: {},
-            questions: {},
-            odds: {},
-            maxBet: {},
-            willPayOut: {},
-        };
+            // Handle Save for Casino Settings
+            saveCasinoChanges.addEventListener("click", async function (event) {
+                event.preventDefault();
 
-        for (let i = 1; i <= 5; i++) {
-            updatedData.enabled[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="enabled"]`).checked.toString();
-            updatedData.questions[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="question"]`).value;
-            updatedData.odds[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="odds"]`).value;
-            updatedData.maxBet[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="maxBet"]`).value;
-            updatedData.willPayOut[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="willPayOut"]`).checked.toString();
-        }
+                let updatedData = {
+                    enabled: {},
+                    questions: {},
+                    odds: {},
+                    maxBet: {},
+                    willPayOut: {},
+                };
 
-        // Update Supabase
-        await updateCasinoData(updatedData);
+                for (let i = 1; i <= 5; i++) {
+                    updatedData.enabled[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="enabled"]`).checked.toString();
+                    updatedData.questions[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="question"]`).value;
+                    updatedData.odds[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="odds"]`).value;
+                    updatedData.maxBet[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="maxBet"]`).value;
+                    updatedData.willPayOut[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="willPayOut"]`).checked.toString();
+                }
 
-        saveCasinoChanges.disabled = true;
-        alert("Casino settings updated!");
-    });
+                // Update Supabase
+                await updateCasinoData(updatedData);
 
-    // Save Casino Enabled Status
-    casinoStatus.addEventListener("change", function () {
-        casinoStatusLabel.textContent = casinoStatus.checked ? "Enabled" : "Disabled";
-        saveCasinoDashboard.disabled = false;
-    });
+                saveCasinoChanges.disabled = true;
+                alert("Casino settings updated!");
+            });
 
-    saveCasinoDashboard.addEventListener("click", async function (event) {
-        event.preventDefault();
-        await supabase.from("form_details").update({ casino_enabled: casinoStatus.checked.toString() }).eq("id", 1);
-        saveCasinoDashboard.disabled = true;
-        alert("Casino status updated!");
-    });
+            // Save Casino Enabled Status
+            casinoStatus.addEventListener("change", function () {
+                casinoStatusLabel.textContent = casinoStatus.checked ? "Enabled" : "Disabled";
+                saveCasinoDashboard.disabled = false;
+            });
 
-    await fetchCasinoStatus();
-    await fetchCasinoData();
-});
+            saveCasinoDashboard.addEventListener("click", async function (event) {
+                event.preventDefault();
+                await supabase.from("form_details").update({ casino_enabled: casinoStatus.checked.toString() }).eq("id", 1);
+                saveCasinoDashboard.disabled = true;
+                alert("Casino status updated!");
+            });
 
-
+            await fetchCasinoStatus();
+            await fetchCasinoData();
+        });
     </script>
 </body>
 </html>
