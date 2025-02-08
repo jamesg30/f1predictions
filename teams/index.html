@@ -84,6 +84,9 @@
             <!-- Submit Cards -->
             <div id="submit-cards" class="tab-pane fade" role="tabpanel" aria-labelledby="submit-cards-tab">
                 <h2 class="mb-3 pixel-art-heading-3">Submit Cards</h2>
+                <div id="card-betting-notice" class="alert alert-warning" style="display: none;">
+                  Card submission is currently disabled. Please visit the Casino this round!
+                </div>
                 <div class="mb-3">
                     <p>You are submitting cards for:</p>
                     <ul class="list-group">
@@ -175,6 +178,10 @@
                           The Casino opens during the Monaco and Las Vegas GP. Bet your team's points here on different questions.
                       </p>
                   </div>
+                  <div id="casino-closed-notice" class="casino-closed" style="display: none;">
+                    <p>The casino is currently closed.</p>
+                </div>
+                
 
                   <!-- Team Selection -->
                   <label for="casino-team-select" class="casino-label">Select Your Team:</label>
@@ -458,18 +465,38 @@ async function submitCards() {
 /**
  * loadSubmitCardsPage - Initializes the submit cards page.
  */
-async function loadSubmitCardsPage() {
-  await loadRaceName();
-  await loadTeamsForCards();
+ async function loadSubmitCardsPage() {
+    await loadRaceName();
 
-  // Bind change event on team-select to update card stock display.
-  document.getElementById("team-select").addEventListener("change", updateTeamCardStock);
-  // Bind change event on card radio buttons to update the report/swap team dropdown.
-  document.querySelectorAll("input[name='card']").forEach(input => {
-    input.addEventListener("change", updateTeamDropdownForSpecialCards);
-  });
-  document.getElementById("submit-card-btn").addEventListener("click", submitCards);
+    // Check casino status before loading teams
+    const { data: formDetails, error: formError } = await supabase
+        .from('form_details')
+        .select('casino_enabled')
+        .single();
+
+    if (formError || !formDetails) {
+        console.error("Error fetching casino status:", formError);
+        return;
+    }
+
+    const casinoEnabled = formDetails.casino_enabled === true;
+
+    if (casinoEnabled) {
+        document.getElementById("card-betting-notice").style.display = "block"; // Show notice
+        document.getElementById("team-select").disabled = true;
+    } else {
+        await loadTeamsForCards(); // Load teams if casino is disabled
+    }
+
+    // Bind change event on team-select to update card stock display.
+    document.getElementById("team-select").addEventListener("change", updateTeamCardStock);
+    // Bind change event on card radio buttons to update the report/swap team dropdown.
+    document.querySelectorAll("input[name='card']").forEach(input => {
+        input.addEventListener("change", updateTeamDropdownForSpecialCards);
+    });
+    document.getElementById("submit-card-btn").addEventListener("click", submitCards);
 }
+
 
 // Initialize the page when DOM is ready.
 document.addEventListener("DOMContentLoaded", loadSubmitCardsPage);
@@ -628,6 +655,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadTeamStandingsAndCards();
 });
 
+// CASINO CODE
 document.addEventListener("DOMContentLoaded", async function () {
     const teamSelectCasino = document.getElementById("casino-team-select");
     const casinoTables = document.getElementById("casino-tables");
@@ -640,20 +668,45 @@ document.addEventListener("DOMContentLoaded", async function () {
     let currentBets = [0, 0, 0, 0, 0];
 
     // Fetch data from Supabase
-    async function fetchData(table, fields = '*') {
+    async function fetchData(table, fields = "*") {
         try {
             const { data, error } = await supabase.from(table).select(fields);
             if (error) {
                 console.error(`Error fetching ${table}:`, error);
                 return [];
             }
-            console.log(`Fetched ${table} data:`, data);
             return data || [];
         } catch (err) {
             console.error(`Unexpected error fetching ${table}:`, err);
             return [];
         }
     }
+
+    async function checkCasinoStatus() {
+    let data = await fetchData("form_details", "casino_enabled");
+    
+    if (!data.length) {
+        console.warn("Casino status data is empty.");
+        return;
+    }
+
+    const casinoEnabled = data[0].casino_enabled; // Extract the boolean value
+    const casinoNotice = document.getElementById("casino-closed-notice");
+
+    if (!casinoEnabled) {
+        // Casino is closed - disable betting and show notice
+        teamSelectCasino.disabled = true;
+        submitButton.disabled = true;
+        document.querySelectorAll(".bet-button").forEach(btn => (btn.disabled = true));
+        casinoNotice.style.display = "block";
+    } else {
+        // Casino is open - enable betting and hide notice
+        teamSelectCasino.disabled = false;
+        submitButton.disabled = false;
+        document.querySelectorAll(".bet-button").forEach(btn => (btn.disabled = false));
+        casinoNotice.style.display = "none";
+    }
+}
 
     // Load Casino Data
     async function loadCasinoData() {
@@ -666,41 +719,29 @@ document.addEventListener("DOMContentLoaded", async function () {
         betsEnabled = data.find(row => row.team_id === -1) || {};
         betOdds = data.find(row => row.team_id === 0) || {};
         betQuestions = data.find(row => row.team_id === -2) || {};
-        let maxBetRow = data.find(row => row.team_id === -3) || {}; // Get max bet values
+        let maxBetRow = data.find(row => row.team_id === -3) || {};
 
-        console.log("betsEnabled (raw):", betsEnabled);
-
-        // Convert string "true"/"false" to actual booleans
+        // Convert "true"/"false" strings to actual booleans
         Object.keys(betsEnabled).forEach(key => {
-            if (betsEnabled[key] === "true") betsEnabled[key] = true;
-            if (betsEnabled[key] === "false") betsEnabled[key] = false;
+            betsEnabled[key] = betsEnabled[key] === "true";
         });
 
-        // Convert max bet values from string to number
+        // Convert max bet values from string to numbers
         Object.keys(maxBetRow).forEach(key => {
             if (key.startsWith("bet_")) {
                 betMaxLimits[key] = parseInt(maxBetRow[key]) || 10; // Default max bet = 10
             }
         });
 
-        console.log("Max Bet Limits:", betMaxLimits);
-
         createBetTables();
     }
 
     // Load Team Dropdown
     async function populateTeamDropdown() {
-        const teams = await fetchData('teams', 'id, name');
+        const teams = await fetchData("teams", "id, name");
 
         if (!teams.length) {
             console.warn("No teams found.");
-            return;
-        }
-
-        console.log("Populating team dropdown...");
-
-        if (!teamSelectCasino) {
-            console.error("teamSelectCasino element not found!");
             return;
         }
 
@@ -714,7 +755,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         teamSelectCasino.appendChild(placeholder);
 
         teams.forEach(team => {
-            console.log(`Adding team: ${team.name} (ID: ${team.id})`);
             const option = document.createElement("option");
             option.value = team.id;
             option.textContent = team.name;
@@ -723,8 +763,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         teamSelectCasino.selectedIndex = 0;
         teamSelectCasino.dispatchEvent(new Event("change"));
-
-        console.log("Team dropdown populated successfully.");
     }
 
     // Create Bet Tables
@@ -732,30 +770,19 @@ document.addEventListener("DOMContentLoaded", async function () {
         casinoTables.innerHTML = "";
 
         for (let i = 1; i <= 5; i++) {
-            const isEnabled = betsEnabled[`bet_${i}`];
-            console.log(`Checking bet_${i}:`, isEnabled, `(Type: ${typeof isEnabled})`);
+            if (!betsEnabled[`bet_${i}`]) continue;
 
-            if (!isEnabled) {
-                console.log(`Skipping bet_${i} (not enabled)`);
-                continue;
-            }
-
-            const maxBet = betMaxLimits[`bet_${i}`] || 10; // Use max bet limit
+            const maxBet = betMaxLimits[`bet_${i}`] || 10;
 
             const table = document.createElement("div");
             table.classList.add("bet-table");
 
             table.innerHTML = `
-                <!-- Row 1: Bet Question -->
                 <div class="bet-question">${betQuestions[`bet_${i}`]}</div>
-
-                <!-- Row 2: Odds and Max Bet -->
                 <div class="bet-info">
                     <span class="bet-odds pixel-art-body-white">Odds: ${betOdds[`bet_${i}`]}:1</span>
                     <span class="max-bet pixel-art-body-white">Max Bet: ${maxBet}</span>
                 </div>
-
-                <!-- Row 3: Controls and Coin Display -->
                 <div class="bet-controls">
                     <button class="bet-button" data-index="${i}" data-action="decrease" disabled>-</button>
                     <input type="text" class="bet-amount" id="bet-${i}" value="0" readonly>
@@ -765,7 +792,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             `;
 
             casinoTables.appendChild(table);
-            console.log(`Rendered bet_${i} table.`);
         }
     }
 
@@ -774,31 +800,27 @@ document.addEventListener("DOMContentLoaded", async function () {
     const teamId = teamSelectCasino.value;
     if (!teamId) {
         submitButton.disabled = true;
-        document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = true);
-        console.log("No team selected. Betting disabled.");
+        document.querySelectorAll(".bet-button").forEach(btn => (btn.disabled = true));
         return;
     }
 
-    // Show loading indicator only if the team has existing bets
     let data = await fetchData("casino", "*");
     let teamBets = data.find(row => row.team_id == teamId);
 
-    if (teamBets) {
+    // Only show loading if bets already exist for this team
+    if (teamBets && Object.keys(teamBets).some(key => key.startsWith("bet_") && teamBets[key] > 0)) {
         document.getElementById("casino-loading").style.display = "block";
         submitButton.disabled = true;
-        document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = true);
+        document.querySelectorAll(".bet-button").forEach(btn => (btn.disabled = true));
 
-        // Wait for 2 seconds to simulate loading
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         document.getElementById("casino-loading").style.display = "none";
     }
 
-    // Always enable betting after loading, even if no previous bets exist
     submitButton.disabled = false;
-    document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = false);
+    document.querySelectorAll(".bet-button").forEach(btn => (btn.disabled = false));
 
-    // Load existing bets (or set to 0 if no previous bets exist)
     for (let i = 1; i <= 5; i++) {
         const betInput = document.getElementById(`bet-${i}`);
         if (betInput) {
@@ -806,11 +828,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             betInput.value = betValue;
             currentBets[i - 1] = parseInt(betValue);
             updateCoinDisplay(i);
-            console.log(`Set bet_${i} to ${betValue} for team ${teamId}.`);
         }
     }
 });
-
 
 
     // Adjust Bets
@@ -821,7 +841,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const action = event.target.dataset.action;
         const betInput = document.getElementById(`bet-${index}`);
         let betValue = parseInt(betInput.value);
-        const maxBet = betMaxLimits[`bet_${index}`] || 10; // Get max bet
+        const maxBet = betMaxLimits[`bet_${index}`] || 10;
 
         if (action === "increase" && betValue < maxBet) betValue++;
         if (action === "decrease" && betValue > 0) betValue--;
@@ -829,7 +849,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         betInput.value = betValue;
         currentBets[index - 1] = betValue;
         updateCoinDisplay(index);
-        console.log(`Bet ${index} updated: ${betValue}`);
     });
 
     function updateCoinDisplay(index) {
@@ -844,81 +863,54 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Submit Bets
     submitButton.addEventListener("click", async function () {
-    const selectedTeamIdCasino = parseInt(teamSelectCasino.value); // Ensure it's an integer
-    if (!selectedTeamIdCasino) {
-        alert("Please select a team.");
-        return;
-    }
-
-    const betsToSubmit = {};
-    for (let i = 1; i <= 5; i++) {
-        const betAmount = currentBets[i - 1].toString(); // Ensure bet_1 → bet_5 are stored as text
-        if (parseInt(betAmount) > 0) {
-            betsToSubmit[`bet_${i}`] = betAmount;
+        const selectedTeamIdCasino = parseInt(teamSelectCasino.value);
+        if (!selectedTeamIdCasino) {
+            alert("Please select a team.");
+            return;
         }
-    }
 
-    if (Object.keys(betsToSubmit).length === 0) {
-        alert("Please place some bets before submitting.");
-        return;
-    }
+        const betsToSubmit = {};
+        for (let i = 1; i <= 5; i++) {
+            const betAmount = currentBets[i - 1].toString();
+            if (parseInt(betAmount) > 0) {
+                betsToSubmit[`bet_${i}`] = betAmount;
+            }
+        }
 
-    // Construct the data to submit
-    const betData = {
-        team_id: selectedTeamIdCasino,
-        team_name: teamSelectCasino.options[teamSelectCasino.selectedIndex].text,
-        ...betsToSubmit,
-    };
+        if (Object.keys(betsToSubmit).length === 0) {
+            alert("Please place some bets before submitting.");
+            return;
+        }
 
-    console.log("🔍 Checking if team_id exists:", selectedTeamIdCasino);
+        const betData = {
+            team_id: selectedTeamIdCasino,
+            team_name: teamSelectCasino.options[teamSelectCasino.selectedIndex].text,
+            ...betsToSubmit,
+        };
 
-    // Step 1: Check if a row for this team_id already exists
-    const { data: existingRows, error: fetchError } = await supabase
-        .from("casino")
-        .select("team_id")
-        .eq("team_id", selectedTeamIdCasino);
+        const { data: existingRows, error: fetchError } = await supabase
+            .from("casino")
+            .select("team_id")
+            .eq("team_id", selectedTeamIdCasino);
 
-    if (fetchError) {
-        console.error("❌ Error checking existing bets:", fetchError);
-        alert("Failed to check existing bets.");
-        return;
-    }
+        if (fetchError) {
+            alert("Failed to check existing bets.");
+            return;
+        }
 
-    console.log("📝 Existing team check result:", existingRows);
+        const query = existingRows.length > 0
+            ? supabase.from("casino").update(betData).eq("team_id", selectedTeamIdCasino)
+            : supabase.from("casino").insert([betData]);
 
-    let query;
-    if (existingRows.length > 0) {
-        // Step 2: If it exists, update the row
-        console.log("🔄 Updating existing bet for team_id:", selectedTeamIdCasino);
-        query = supabase.from("casino").update(betData).eq("team_id", selectedTeamIdCasino);
-    } else {
-        // Step 3: If it does not exist, insert a new row
-        console.log("➕ Inserting new bet for team_id:", selectedTeamIdCasino);
-        query = supabase.from("casino").insert([betData]);
-    }
+        const { error } = await query;
+        if (error) alert("Failed to submit bets.");
+        else alert("Bets submitted successfully!");
+    });
 
-    const { data, error } = await query;
-
-    if (error) {
-        console.error("❌ Error submitting bets:", error);
-        alert("Failed to submit bets.");
-    } else {
-        console.log("✅ Bets submitted successfully:", data);
-        alert("Bets submitted successfully!");
-    }
-});
-
-
-
-
+    await checkCasinoStatus();  // Add this line
     await loadCasinoData();
     await populateTeamDropdown();
 });
-
-
-
-
-
 
     </script>
     <!-- Bootstrap JS Bundle (Local) -->

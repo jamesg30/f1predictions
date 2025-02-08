@@ -159,6 +159,9 @@
             <li class="nav-item" role="presentation">
                 <a class="nav-link" id="season-team-tab" data-bs-toggle="tab" href="#season-team" role="tab">Season Team</a>
             </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="casino-tab" data-bs-toggle="tab" href="#casino" role="tab">Casino</a>
+            </li>
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" id="edit-lists-dropdown" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">
                     Edit Lists
@@ -295,58 +298,98 @@
             </div>
 
             <!-- Season Team Tab -->
-<!-- Season Team Tab -->
-<div id="season-team" class="tab-pane fade" role="tabpanel">
-    <h4>Season Team</h4>
-    <div class="container">
-      <!-- Top row: Current Year, Race Selection, and Race Info -->
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <label for="current-year-season-team" class="form-label">Year</label>
-          <input type="text" id="current-year-season-team" class="form-control" readonly>
-          <label for="race-select-season-team" class="form-label">Select Race</label>
-          <select id="race-select-season-team" class="form-select"></select>
+            <div id="season-team" class="tab-pane fade" role="tabpanel">
+                <h4>Season Team</h4>
+                <div class="container">
+                <!-- Top row: Current Year, Race Selection, and Race Info -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                    <label for="current-year-season-team" class="form-label">Year</label>
+                    <input type="text" id="current-year-season-team" class="form-control" readonly>
+                    <label for="race-select-season-team" class="form-label">Select Race</label>
+                    <select id="race-select-season-team" class="form-select"></select>
+                    </div>
+                    <div class="col-md-6">
+                    <label for="race-info-season-team" class="form-label">Race Info</label>
+                    <div id="race-info-season-team" class="border p-2" style="min-height: 60px;">
+                        <!-- Race info (responses, etc.) will appear here -->
+                    </div>
+                    </div>
+                </div>
+                <!-- Button row -->
+                <div class="row mb-3">
+                    <div class="col">
+                    <button id="update-season-season-team" class="btn btn-primary">
+                        Add Race to Team Scoring
+                    </button>
+                    </div>
+                </div>
+                <!-- Progress Message / Debug Log -->
+                <div class="row">
+                    <div class="col">
+                    <div id="update-progress-season-team" class="alert alert-info" role="alert" style="display: none;"></div>
+                    </div>
+                </div>
+                <!-- (Optional) List view for debugging -->
+                <ul id="totals-list-season-team" class="list-group"></ul>
+                <div class="row mb-3">
+                    <div class="col">
+                    <button id="update-season-team-summary" class="btn btn-primary">
+                        Update Season Team Summary
+                    </button>
+                    </div>
+                </div>
+                <!-- Progress Message -->
+                <div class="row">
+                    <div class="col">
+                    <div id="update-progress-season-team-summary" class="alert alert-info" role="alert" style="display: none;"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+  
+            <!-- Casino Tab -->
+<div id="casino" class="tab-pane fade show active" role="tabpanel">
+    <div class="card">
+        <div class="card-header">
+            Casino/Card Switch
         </div>
-        <div class="col-md-6">
-          <label for="race-info-season-team" class="form-label">Race Info</label>
-          <div id="race-info-season-team" class="border p-2" style="min-height: 60px;">
-            <!-- Race info (responses, etc.) will appear here -->
-          </div>
+        <div class="card-body">
+            <form id="casino-dashboard-form">
+                <label class="form-label">Casino Enabled</label>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="casino-status">
+                    <label class="form-check-label" id="casino-status-label">Loading...</label>
+                </div>
+                <button type="submit" class="btn btn-primary" id="save-changes-casino-dashboard" disabled>Save Changes</button>
+            </form>
         </div>
-      </div>
-      <!-- Button row -->
-      <div class="row mb-3">
-        <div class="col">
-          <button id="update-season-season-team" class="btn btn-primary">
-            Add Race to Team Scoring
-          </button>
-        </div>
-      </div>
-      <!-- Progress Message / Debug Log -->
-      <div class="row">
-        <div class="col">
-          <div id="update-progress-season-team" class="alert alert-info" role="alert" style="display: none;"></div>
-        </div>
-      </div>
-      <!-- (Optional) List view for debugging -->
-      <ul id="totals-list-season-team" class="list-group"></ul>
-      <div class="row mb-3">
-        <div class="col">
-          <button id="update-season-team-summary" class="btn btn-primary">
-            Update Season Team Summary
-          </button>
-        </div>
-      </div>
-      <!-- Progress Message -->
-      <div class="row">
-        <div class="col">
-          <div id="update-progress-season-team-summary" class="alert alert-info" role="alert" style="display: none;"></div>
-        </div>
-      </div>
     </div>
-  </div>
-  
-  
+
+    <div style="margin-top: 10px">
+        <form id="casino-form">
+            <h4>Casino</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Bet #</th>
+                        <th>Enabled</th>
+                        <th>Question</th>
+                        <th>Odds 1:N</th>
+                        <th>Max Bet</th>
+                        <th>Will Pay Out</th>
+                    </tr>
+                </thead>
+                <tbody id="casino-rows">
+                    <!-- Dynamically generated rows -->
+                </tbody>
+            </table>
+            <button id="saveChangesButtonCasino" class="btn btn-primary" disabled>Save Changes</button>
+        </form>
+    </div>
+</div>
+
+
 
             <!-- Edit Players -->
             <div class="tab-pane fade" id="edit-players" role="tabpanel" aria-labelledby="edit-players-tab">
@@ -2634,7 +2677,7 @@ async function addRace() {
         }
         });
 
-// --- SEASON TEAM PAGE ---
+// --- TEAM SCORING FUNCTION ---
         // // -------------------------
         // // Helper: Retrieve an entire table from Supabase.
         // async function getTable(tableName) {
@@ -3184,6 +3227,137 @@ try {
             updateProgressTeamSummary("Error during initialization: " + err.message);
         }
         });
+// --- CASINO PAGE ---
+document.addEventListener("DOMContentLoaded", async function () {
+    const casinoStatus = document.getElementById("casino-status");
+    const casinoStatusLabel = document.getElementById("casino-status-label");
+    const saveCasinoDashboard = document.getElementById("save-changes-casino-dashboard");
+    const casinoRows = document.getElementById("casino-rows");
+    const saveCasinoChanges = document.getElementById("saveChangesButtonCasino");
+
+    let casinoEnabled = false;
+    let originalCasinoData = {};
+
+    // Fetch the casino status from form_details
+    async function fetchCasinoStatus() {
+    let { data, error } = await supabase
+        .from("form_details")
+        .select("casino_enabled")
+        .eq("id", 1)
+        .single();
+
+    if (error) {
+        console.error("Error fetching casino status:", error);
+        return;
+    }
+
+    // Ensure proper handling of boolean values
+    casinoEnabled = Boolean(data.casino_enabled);
+    casinoStatus.checked = casinoEnabled;
+    casinoStatusLabel.textContent = casinoEnabled ? "Enabled" : "Disabled";
+}
+
+    // Fetch casino bet settings
+    async function fetchCasinoData() {
+        let { data, error } = await supabase.from("casino").select("*");
+        if (error) {
+            console.error("Error fetching casino data:", error);
+            return;
+        }
+
+        originalCasinoData = {
+            enabled: data.find(row => row.team_id === -1) || {},
+            questions: data.find(row => row.team_id === -2) || {},
+            odds: data.find(row => row.team_id === 0) || {},
+            maxBet: data.find(row => row.team_id === -3) || {},
+            willPayOut: data.find(row => row.team_id === -4) || {},
+        };
+
+        populateCasinoTable();
+    }
+
+    function populateCasinoTable() {
+        casinoRows.innerHTML = "";
+
+        for (let i = 1; i <= 5; i++) {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${i}</td>
+                <td>
+                    <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" data-bet="${i}" data-type="enabled">
+                    </div>
+                </td>
+                <td><input type="text" class="form-control" data-bet="${i}" data-type="question"></td>
+                <td><input type="number" class="form-control" data-bet="${i}" data-type="odds"></td>
+                <td><input type="number" class="form-control" data-bet="${i}" data-type="maxBet"></td>
+                <td>
+                    <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" data-bet="${i}" data-type="willPayOut">
+                    </div>
+                </td>
+            `;
+
+            casinoRows.appendChild(row);
+
+            row.querySelector(`[data-bet="${i}"][data-type="enabled"]`).checked = originalCasinoData.enabled[`bet_${i}`] === "true";
+            row.querySelector(`[data-bet="${i}"][data-type="question"]`).value = originalCasinoData.questions[`bet_${i}`] || "";
+            row.querySelector(`[data-bet="${i}"][data-type="odds"]`).value = originalCasinoData.odds[`bet_${i}`] || 1;
+            row.querySelector(`[data-bet="${i}"][data-type="maxBet"]`).value = originalCasinoData.maxBet[`bet_${i}`] || 10;
+            row.querySelector(`[data-bet="${i}"][data-type="willPayOut"]`).checked = originalCasinoData.willPayOut[`bet_${i}`] === "true";
+        }
+    }
+
+    // Detect changes and enable Save button
+    document.getElementById("casino-form").addEventListener("input", () => {
+        saveCasinoChanges.disabled = false;
+    });
+
+    // Handle Save for Casino Settings
+    saveCasinoChanges.addEventListener("click", async function (event) {
+        event.preventDefault();
+
+        let updatedData = {
+            enabled: {},
+            questions: {},
+            odds: {},
+            maxBet: {},
+            willPayOut: {},
+        };
+
+        for (let i = 1; i <= 5; i++) {
+            updatedData.enabled[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="enabled"]`).checked.toString();
+            updatedData.questions[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="question"]`).value;
+            updatedData.odds[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="odds"]`).value;
+            updatedData.maxBet[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="maxBet"]`).value;
+            updatedData.willPayOut[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="willPayOut"]`).checked.toString();
+        }
+
+        // Update Supabase
+        await updateCasinoData(updatedData);
+
+        saveCasinoChanges.disabled = true;
+        alert("Casino settings updated!");
+    });
+
+    // Save Casino Enabled Status
+    casinoStatus.addEventListener("change", function () {
+        casinoStatusLabel.textContent = casinoStatus.checked ? "Enabled" : "Disabled";
+        saveCasinoDashboard.disabled = false;
+    });
+
+    saveCasinoDashboard.addEventListener("click", async function (event) {
+        event.preventDefault();
+        await supabase.from("form_details").update({ casino_enabled: casinoStatus.checked.toString() }).eq("id", 1);
+        saveCasinoDashboard.disabled = true;
+        alert("Casino status updated!");
+    });
+
+    await fetchCasinoStatus();
+    await fetchCasinoData();
+});
+
 
     </script>
 </body>

@@ -758,3 +758,12 @@ footer {
   from { left: -180px; }
   to { left: 100%; }
 }
+.casino-closed {
+  background: #ffcccb;
+  color: #700;
+  text-align: center;
+  padding: 15px;
+  font-weight: bold;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
