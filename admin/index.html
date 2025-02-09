@@ -2814,6 +2814,7 @@ async function updateRaceInfoSeasonTeam() {
 /**
  * Updates team scoring for Card Races (includes card adjustments and swap logic).
  */
+
  async function updateCardTeamScoring() {
   clearProgressSeasonTeam();
   updateProgressSeasonTeam("Starting update of Season Team Totals...");
@@ -2864,13 +2865,28 @@ async function updateRaceInfoSeasonTeam() {
   }
   updateProgressSeasonTeam(`Fetched ${seasonPlayerResults.length} rows from ${seasonPlayerTable}.`);
 
-  // Sort teams by card_swap_time to ensure swaps happen in the correct order
-  let sortedTeams = teams.sort((a, b) => {
-    return new Date(a.card_swap_time) - new Date(b.card_swap_time);
-  });
-
+  // Part 1: Get player/team scores and handle the cards (aero, double, halo)
   let teamScoringData = [];
-  for (let team of sortedTeams) {
+  let swapRequests = [];
+  let reportRequests = [];
+
+  // Step 1: Build report requests for teams
+  for (let team of teams) {
+    let teamId = team.id;
+    if (team.card_report_team_selected) {
+      let reportedTeamId = team.card_report_team_selected;
+      let reportedTeam = teams.find(t => t.id === reportedTeamId);
+      if (reportedTeam) {
+        reportRequests.push({
+          reportingTeamId: teamId,
+          reportedTeamId: reportedTeamId
+        });
+      }
+    }
+  }
+
+  // Step 2: Process teams and apply reports
+  for (let team of teams) {
     let teamId = team.id;
     let teamName = team.name;
     updateProgressSeasonTeam(`Processing team: ${teamName} (ID: ${teamId})`);
@@ -2893,132 +2909,195 @@ async function updateRaceInfoSeasonTeam() {
     let scoreStr1 = result1[colName];
     let scoreStr2 = result2[colName];
 
-    // Strip the (LS) and parse as float
     let score1 = parseFloat(scoreStr1.replace(/\(LS\)/, "").trim()) || 0;
     let score2 = parseFloat(scoreStr2.replace(/\(LS\)/, "").trim()) || 0;
     updateProgressSeasonTeam(`Team ${teamName}: ${player1.name} scored ${score1}, ${player2.name} scored ${score2}.`);
 
-    // Calculate the subtotal (sum of both player scores)
     let subtotal = score1 + score2;
-
-    // Initialize card-related fields to 0
     let cardPointsDelta = 0;
     let card_aero_applied = 0;
     let card_double_applied = 0;
     let card_halo_applied = 0;
     let card_report_applied = 0;
-    let card_swap_applied = 0;
     let card_report_details = '';
+    let card_swap_applied = 0;
     let card_swap_details = '';
 
-    // Step 1: Apply Aero and Double cards (before report and swap)
-    if (team.card_aero_played) {
-      let aeroDelta = Math.abs(score1 - score2);
-      cardPointsDelta += aeroDelta;
-      card_aero_applied = 1;
-      updateProgressSeasonTeam(`Aero applied on ${teamName}: +${aeroDelta}`);
+    let haloPlayed = team.card_halo_played ? true : false;
+    if (haloPlayed) {
+      card_halo_applied = 1;
+      updateProgressSeasonTeam(`Halo card is recorded for ${teamName}.`);
     }
 
-    // Apply Double Card - Multiply the higher score by 2
-    if (team.card_double_played) {
+    // Part 2: Apply the double card and update the total
+    if (team.card_double_played && !haloPlayed) {
       let higherScore = Math.max(score1, score2);
-      cardPointsDelta += higherScore;  // Add the double to cardPointsDelta
+      cardPointsDelta += higherScore;
       card_double_applied = 1;
       updateProgressSeasonTeam(`Double applied on ${teamName}: +${higherScore}`);
     }
 
-    // Step 2: Initial grand total calculation (before report and swap)
     let grandTotal = subtotal + cardPointsDelta;
     updateProgressSeasonTeam(`Initial Grand Total for ${teamName}: ${grandTotal}`);
 
-    // Step 3: Apply Report and Swap cards (handled after initial grand total)
-    let haloPlayed = team.card_halo_played ? true : false;
-    if (haloPlayed) {
-      card_halo_applied = 1;
-      updateProgressSeasonTeam(`Halo applied on ${teamName}: Report and Swap cards skipped.`);
-    } else {
-      // Apply the Report card
-      if (team.card_report_played) {
-        card_report_applied = 1;
-        let targetTeam = teams.find(t => t.id === team.card_report_target);
-        card_report_details = `(${teamName} was reported by Team ${targetTeam.name})`;
-        updateProgressSeasonTeam(`Report applied: ${teamName} reports on ${targetTeam.name}.`);
-      }
+    // Step 3: Apply reports
+    if (!haloPlayed) {
+      let reportsForTeam = reportRequests.filter(r => r.reportedTeamId === teamId);
+      if (reportsForTeam.length > 0) {
+        card_report_applied = reportsForTeam.length;
+        reportsForTeam.forEach((report, index) => {
+          let reportingTeam = teams.find(t => t.id === report.reportingTeamId);
+          let reportedTeam = teams.find(t => t.id === report.reportedTeamId);
 
-      // Apply the Swap card
-      if (team.card_swap_played) {
-        card_swap_applied = 1;
+          if (reportedTeam.card_halo_applied === 1) {
+            card_report_applied = 0; // Stop the report
+            card_report_details += (card_report_details ? " " : "") + `${reportingTeam.name}'s report on ${reportedTeam.name} was stopped by Halo. `;
+            updateProgressSeasonTeam(`${reportingTeam.name}'s report on ${reportedTeam.name} stopped by Halo.`);
+          } else {
+            card_report_details += (card_report_details ? " " : "") + `${reportingTeam.name} reported ${reportedTeam.name}. `;
+          }
+        });
 
-        // Fetch the correct target team ID from the 'card_swap_team_selected' column
-        let swapTargetTeamId = team.card_swap_team_selected;
-
-        // Find the team to swap with using the correct ID
-        let swapTargetTeam = teams.find(t => t.id === swapTargetTeamId);
-
-        // Check if swapTargetTeam is valid
-        if (!swapTargetTeam) {
-          updateProgressSeasonTeam(`Error: Swap target team (ID: ${swapTargetTeamId}) not found.`);
-          continue; // Skip the swap if the target team is not found
+        if (card_report_applied > 1) {
+          card_report_details += " (Double Point Report Activated)";
         }
+        updateProgressSeasonTeam(`Report applied: ${card_report_details}`);
 
-        // If swapTargetTeam is found, proceed with swapping
-        let swapTime = team.card_swap_time;
-        card_swap_details = `(${teamName} swapped with Team ${swapTargetTeam.name})`;
-        updateProgressSeasonTeam(`Swap applied: ${teamName} swaps with ${swapTargetTeam.name}.`);
-
-        // Swap the scores for the teams
-        let tempScore1 = score1;
-        let tempScore2 = score2;
-        score1 = parseFloat(result2[colName].replace(/\(LS\)/, "").trim()) || 0;  // Swap player 1's score with player 2's score
-        score2 = parseFloat(result1[colName].replace(/\(LS\)/, "").trim()) || 0;  // Swap player 2's score with player 1's score
-
-        // Update cardPointsDelta for the swap
-        cardPointsDelta = Math.abs(score1 - score2);
+        if (card_report_applied === 1) {
+          let highestScore = Math.max(score1, score2);
+          grandTotal -= highestScore;
+        } else if (card_report_applied > 1) {
+          let highestScore = Math.max(score1, score2);
+          grandTotal += highestScore; // Double the highest score
+        }
       }
     }
 
-    // Step 4: Recalculate grand total after the report and swap cards
-    grandTotal = subtotal + cardPointsDelta;
-    updateProgressSeasonTeam(`Recalculated Grand Total for ${teamName}: ${grandTotal}`);
+    // Step 4: Apply swaps
+    if (!haloPlayed) {
+      let swapForTeam = swapRequests.filter(swap => swap.teamId === teamId);
+      if (swapForTeam.length > 0) {
+        swapForTeam.forEach((swap, index) => {
+          let targetTeam = teamScoringData.find(t => t.teamId === swap.swapTargetTeamId);
 
-    // Ensure grand total is not NaN
-    if (isNaN(grandTotal)) {
-      updateProgressSeasonTeam(`Error: Grand total for ${teamName} is NaN.`);
-      continue;
+          if (team.card_halo_applied === 1 || targetTeam.card_halo_applied === 1) {
+            card_swap_applied = 0;
+            card_swap_details += (card_swap_details ? " " : "") + ` (#${index + 1}) ${teamName} swap with ${targetTeam.teamName} was stopped by Halo. `;
+            updateProgressSeasonTeam(`${teamName}'s swap with ${targetTeam.teamName} was aborted due to Halo.`);
+          } else {
+            card_swap_applied = 1;
+            card_swap_details += (card_swap_details ? " " : "") + ` (#${index + 1}) ${teamName} swaps with ${targetTeam.teamName}. `;
+            let tempGrandTotal = grandTotal;
+            grandTotal = targetTeam.grandTotal;
+            targetTeam.grandTotal = tempGrandTotal;
+            updateProgressSeasonTeam(`${teamName} swaps with ${targetTeam.teamName}`);
+          }
+        });
+      }
     }
 
-    // Step 5: Create the teamScoreRecord including players' info and race name
+    teamScoringData.push({
+      teamId,
+      teamName,
+      player1,
+      player2,
+      score1,
+      score2,
+      subtotal,
+      cardPointsDelta,
+      grandTotal,
+      card_aero_applied,
+      card_double_applied,
+      card_halo_applied,
+      card_report_applied,
+      card_report_details,
+      card_swap_applied,
+      card_swap_details
+    });
+
+    if (team.card_swap_team_selected) {
+      swapRequests.push({
+        teamId,
+        swapTargetTeamId: team.card_swap_team_selected,
+        swapTime: team.card_swap_time
+      });
+    }
+  }
+
+  swapRequests.sort((a, b) => a.swapTime - b.swapTime);
+
+  let swapCount = 1;
+  for (let swap of swapRequests) {
+    let { teamId, swapTargetTeamId } = swap;
+
+    let team = teamScoringData.find(t => t.teamId === teamId);
+    let targetTeam = teamScoringData.find(t => t.teamId === swapTargetTeamId);
+
+    if (team && targetTeam) {
+      let tempGrandTotal = team.grandTotal;
+      team.grandTotal = targetTeam.grandTotal;
+      targetTeam.grandTotal = tempGrandTotal;
+
+      team.card_swap_applied += 1;
+      targetTeam.card_swap_applied += 1;
+      team.card_swap_details = `(#${swapCount}) ${team.teamName} swaps with ${targetTeam.teamName}`;
+      targetTeam.card_swap_details = `(#${swapCount}) ${team.teamName} swaps with ${targetTeam.teamName}`;
+
+      updateProgressSeasonTeam(`${team.teamName} swaps with ${targetTeam.teamName}`);
+
+      swapCount++;
+    }
+  }
+
+  // Part 4: Upload the results to the database
+  for (let team of teamScoringData) {
+    let {
+      teamId, teamName, player1, player2, score1, score2, subtotal,
+      cardPointsDelta, grandTotal, card_aero_applied, card_double_applied, card_halo_applied,
+      card_report_applied, card_report_details, card_swap_applied, card_swap_details
+    } = team;
+
+    cardPointsDelta = grandTotal - subtotal;
+
     let teamScoreRecord = {
       team_id: teamId,
       team_name: teamName,
       race_number: raceNumber,
-      race_name: selectedRaceName, // Ensure race_name is included
-      subtotal: subtotal,
+      race_name: selectedRaceName,
+      subtotal,
       card_points_delta: cardPointsDelta,
       grand_total: grandTotal,
-      card_aero_applied: card_aero_applied,
-      card_double_applied: card_double_applied,
-      card_halo_applied: card_halo_applied,
-      card_report_applied: card_report_applied,
-      card_swap_applied: card_swap_applied,
-      card_report_details: card_report_details,
-      card_swap_details: card_swap_details,
-      player_id_1: player1.id, // Add player 1 ID
-      player_name_1: player1.name, // Add player 1 name
-      player_points_1: score1, // Add player 1 points
-      player_id_2: player2.id, // Add player 2 ID
-      player_name_2: player2.name, // Add player 2 name
-      player_points_2: score2 // Add player 2 points
+      card_aero_applied,
+      card_double_applied,
+      card_halo_applied,
+      card_report_applied,
+      card_report_details,
+      card_swap_applied,
+      card_swap_details,
+      player_id_1: player1.id,
+      player_name_1: player1.name,
+      player_points_1: score1,
+      player_id_2: player2.id,
+      player_name_2: player2.name,
+      player_points_2: score2
     };
 
-    // Update or insert the team score data
     await upsertTeamScoringData([teamScoreRecord], teamScoringTable);
-
     updateProgressSeasonTeam(`Updated/inserted record for team ${teamName}.`);
+
+    await resetTeamCardsSupabase(teamId);
   }
 
   updateProgressSeasonTeam("Finished updating team scores.");
 }
+
+
+
+
+
+
+
+
 
 async function upsertTeamScoringData(teamScoringData, tableName) {
   try {
@@ -3117,43 +3196,43 @@ async function resetTeamCardsSupabase(teamId) {
  */
  async function updateCasinoTeamScoring() {
   clearProgressSeasonTeam();
-  updateProgressSeasonTeam("Starting update of Season Team Totals (Casino)...");
+  updateProgressSeasonTeam("Starting update of Season Team Totals...");
 
   const currentYear = document.getElementById("current-year-season-team").value;
   if (!currentYear) {
     updateProgressSeasonTeam("Error: Current year is not set.");
     return;
   }
-  
+
   const raceSelect = document.getElementById("race-select-season-team");
   const selectedRaceName = raceSelect.value;
   const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
   updateProgressSeasonTeam(`Selected Race: ${selectedRaceName} (Race Number: ${raceNumber})`);
 
   const teamsTable = "teams";
-  const casinoTable = "casino"; // Assume this is the table containing the bets
+  const playersTable = "players";
   const seasonPlayerTable = `season_player_${currentYear}`;
   const teamScoringTable = `team_scoring_${currentYear}`;
+  const casinoTable = "casino"; // The casino table
 
+  // Fetch necessary data
   updateProgressSeasonTeam("Fetching teams data...");
   let teams;
   try {
-    teams = await getTable(teamsTable);
+    teams = await getTable(teamsTable); // Retrieve the entire teams table
   } catch (err) {
     updateProgressSeasonTeam("Error fetching teams: " + err.message);
     return;
   }
-  updateProgressSeasonTeam(`Fetched ${teams.length} teams.`);
 
-  updateProgressSeasonTeam("Fetching casino bets data...");
-  let casinoBets;
+  updateProgressSeasonTeam("Fetching players data...");
+  let players;
   try {
-    casinoBets = await getTable(casinoTable);
+    players = await getTable(playersTable);
   } catch (err) {
-    updateProgressSeasonTeam("Error fetching casino bets: " + err.message);
+    updateProgressSeasonTeam("Error fetching players: " + err.message);
     return;
   }
-  updateProgressSeasonTeam(`Fetched ${casinoBets.length} casino bet rows.`);
 
   updateProgressSeasonTeam(`Fetching season player results from ${seasonPlayerTable}...`);
   let seasonPlayerResults;
@@ -3163,104 +3242,187 @@ async function resetTeamCardsSupabase(teamId) {
     updateProgressSeasonTeam("Error fetching season player results: " + err.message);
     return;
   }
-  updateProgressSeasonTeam(`Fetched ${seasonPlayerResults.length} rows from ${seasonPlayerTable}.`);
 
+  // Fetch casino bets data
+  updateProgressSeasonTeam("Fetching casino bets data...");
+  let casinoBets;
+  try {
+    casinoBets = await getTable(casinoTable);
+    console.log("Casino Bets Data: ", casinoBets);  // Log the fetched casino data for debugging
+  } catch (err) {
+    updateProgressSeasonTeam("Error fetching casino bets: " + err.message);
+    return;
+  }
+
+  // Initialize an array to store team scoring data
   let teamScoringData = [];
+
+  // Process each team
   for (let team of teams) {
     let teamId = team.id;
     let teamName = team.name;
     updateProgressSeasonTeam(`Processing team: ${teamName} (ID: ${teamId})`);
 
-    let teamPlayers = await getPlayersForTeam(teamId); // Assuming a function to get players for a team
+    // Skip non-betting rows (team_id <= 0)
+    if (teamId <= 0) {
+      continue;
+    }
+
+    let teamPlayers = players.filter(p => p.participant_team_id === teamId);
     if (teamPlayers.length !== 2) {
       updateProgressSeasonTeam(`Skipping team ${teamName}: Expected 2 players, found ${teamPlayers.length}.`);
       continue;
     }
 
     let [player1, player2] = teamPlayers;
+    let colName = `race_${raceNumber}`;
+    let result1 = seasonPlayerResults.find(r => r.player_id === player1.id);
+    let result2 = seasonPlayerResults.find(r => r.player_id === player2.id);
 
-    // Fetch the team's corresponding bet row
-    let betRow = casinoBets.find(b => b.team_id === teamId);
-    if (!betRow) {
-      updateProgressSeasonTeam(`Skipping team ${teamName}: No casino bet data found.`);
+    if (!result1 || !result2) {
+      updateProgressSeasonTeam(`Skipping team ${teamName}: Missing season results for one or both players.`);
       continue;
     }
 
-    // Initialize card_points_delta for the team
-    let cardPointsDelta = 0;
-    
-    // Loop through the bet columns (bet_1 to bet_5)
-    for (let i = 1; i <= 5; i++) {
-      let bet = parseFloat(betRow[`bet_${i}`]);
-      if (isNaN(bet) || bet <= 0) {
-        updateProgressSeasonTeam(`Skipping bet ${i} for team ${teamName}: Invalid or no bet placed.`);
-        continue;
+    let scoreStr1 = result1[colName];
+    let scoreStr2 = result2[colName];
+    let score1 = parseFloat(scoreStr1.replace(/\(LS\)/, "").trim()) || 0;
+    let score2 = parseFloat(scoreStr2.replace(/\(LS\)/, "").trim()) || 0;
+    updateProgressSeasonTeam(`Team ${teamName}: ${player1.name} scored ${score1}, ${player2.name} scored ${score2}.`);
+
+    // Set originalSubtotal before applying any bets
+    let originalSubtotal = score1 + score2; // The original subtotal before any casino bet adjustments
+    let subtotal = originalSubtotal; // This will be updated with the casino bet delta
+
+    // Find all relevant casino bets for the team in this race
+    let teamCasinoBets = casinoBets.filter(bet => bet.team_id === teamId);
+    teamCasinoBets.forEach(bet => {
+      // Extracting relevant rows from the casino bet
+      let odds_1n = parseFloat(bet.bet_2); // Odds from bet_2 (Odds 1:N)
+      let willPayOutFlags = [
+        bet.bet_7 === 'true', // willPayOut for bet_1
+        bet.bet_7 === 'true', // willPayOut for bet_2
+        bet.bet_7 === 'true', // willPayOut for bet_3
+        bet.bet_7 === 'true', // willPayOut for bet_4
+        bet.bet_7 === 'true', // willPayOut for bet_5
+      ];
+
+      // Process each bet for the team (bet_1, bet_2, bet_3, bet_4, bet_5)
+      for (let i = 1; i <= 5; i++) {
+        let betAmount = parseFloat(bet[`bet_${i}`]);
+
+        // Check if bet amount is valid (not NULL)
+        if (!isNaN(betAmount)) {
+          // Get the relevant 'will pay out' flag for this bet
+          let willPayOut = willPayOutFlags[i - 1]; // 1-based indexing
+
+          let delta = 0;
+
+          // Calculate delta based on 'will pay out' flag
+          if (willPayOut) {
+            // Calculate payout: (bet * odds) - bet
+            delta += (betAmount * odds_1n) - betAmount;
+          } else {
+            // Subtract the bet if no payout
+            delta -= betAmount;
+          }
+
+          // Add the delta to the subtotal
+          subtotal += delta;
+
+          updateProgressSeasonTeam(`Team ${teamName} has a delta of ${delta} for Bet ${i}.`);
+        }
       }
+    });
 
-      // Fetch the casino odds row (odds for the current race)
-      let oddsRow = casinoBets.find(b => b.team_id === 0); // Odds row should have team_id = 0
-      if (!oddsRow) {
-        updateProgressSeasonTeam("Error: No odds row found in the casino table.");
-        return;
-      }
+    // Calculate card_points_delta (difference between original and new subtotal)
+    let cardPointsDelta = subtotal - originalSubtotal;
 
-      let odds = parseFloat(oddsRow[`bet_${i}`]);
-      if (isNaN(odds)) {
-        updateProgressSeasonTeam(`Error: Invalid odds for bet ${i} in casino table.`);
-        return;
-      }
+    // Set all card-related fields to 0 as per casino round rules
+    let card_aero_applied = 0;
+    let card_double_applied = 0;
+    let card_halo_applied = 0;
+    let card_report_applied = 0;
+    let card_report_details = null;
+    let card_swap_applied = 0;
+    let card_swap_details = null;
 
-      // Check if enabled
-      let isEnabled = (betRow[`bet_${i}`] !== null && betRow[`bet_${i}`] !== "");
-      if (!isEnabled) {
-        updateProgressSeasonTeam(`Bet ${i} is disabled for team ${teamName}, no contribution.`);
-        continue;
-      }
-
-      // Check if "will pay out" is true
-      let willPayOut = (betRow[`bet_${i}`] !== null && betRow[`bet_${i}`] !== "" && betRow[`bet_${i}`].toLowerCase() === "true");
-      
-      let contribution = 0;
-      if (willPayOut) {
-        contribution = (bet * odds) - bet; // payout = (bet * odds) - bet
-        updateProgressSeasonTeam(`Bet ${i} for ${teamName}: Payout is ${contribution}`);
-      } else {
-        contribution = -bet; // payout = -bet
-        updateProgressSeasonTeam(`Bet ${i} for ${teamName}: No payout, contribution = ${contribution}`);
-      }
-
-      // Add the contribution to card_points_delta
-      cardPointsDelta += contribution;
-    }
-
-    // Calculate subtotal (using contribution)
-    let subtotal = cardPointsDelta;
-
-    // Calculate grand_total (sum of subtotal and card_points_delta)
-    let grandTotal = subtotal + cardPointsDelta;
-
-    // Record the final contribution for the team
+    // Prepare the team scoring record with casino bet delta
     let teamScoreRecord = {
       team_id: teamId,
       team_name: teamName,
-      player1_name: player1.name,
-      player2_name: player2.name,
+      player_id_1: player1.id,
+      player_name_1: player1.name,
+      player_points_1: score1,  // No points from card system
+      player_id_2: player2.id,
+      player_name_2: player2.name,
+      player_points_2: score2,  // No points from card system
       race_number: raceNumber,
-      subtotal: subtotal,
-      card_points_delta: cardPointsDelta,
-      grand_total: grandTotal,
-      applied_cards: JSON.stringify({}) // No cards applied in the casino scenario
+      race_name: selectedRaceName,
+      subtotal: subtotal,  // Subtotal after applying casino bet delta
+      card_aero_applied,
+      card_double_applied,
+      card_halo_applied,
+      card_report_applied,
+      card_report_details,
+      card_swap_applied,
+      card_swap_details
     };
 
     teamScoringData.push(teamScoreRecord);
   }
 
-  updateProgressSeasonTeam("Finished processing all casino bets.");
-  
-  // Insert team scoring data into the team_scoring table for the current year
-  await insertTeamScoringData(teamScoringData, teamScoringTable);
-  updateProgressSeasonTeam("Casino team scoring finalized and inserted.");
+  // Upload the results to the database
+  for (let team of teamScoringData) {
+    let {
+      team_id, team_name, player_name_1, player_points_1, player_name_2, player_points_2,
+      race_number, race_name, subtotal, card_aero_applied, card_double_applied,
+      card_halo_applied, card_report_applied, card_report_details, card_swap_applied, card_swap_details
+    } = team;
+
+    let cardPointsDelta = subtotal - originalSubtotal;
+
+    let teamScoreRecord = {
+      team_id,
+      team_name,
+      race_number,
+      race_name,
+      subtotal,
+      card_points_delta: cardPointsDelta,
+      grand_total: subtotal, // Grand total is the same as subtotal
+      card_aero_applied,
+      card_double_applied,
+      card_halo_applied,
+      card_report_applied,
+      card_report_details,
+      card_swap_applied,
+      card_swap_details,
+      player_name_1,
+      player_id_1: player1.id,
+      player_points_1,
+      player_name_2,
+      player_id_2: player2.id,
+      player_points_2
+    };
+
+    await upsertTeamScoringData([teamScoreRecord], teamScoringTable);
+    updateProgressSeasonTeam(`Updated/inserted record for team ${team_name}.`);
+  }
+
+  updateProgressSeasonTeam("Finished updating casino team scores.");
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /**
