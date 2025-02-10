@@ -2814,8 +2814,8 @@ async function updateRaceInfoSeasonTeam() {
 /**
  * Updates team scoring for Card Races (includes card adjustments and swap logic).
  */
-
  async function updateCardTeamScoring() {
+  // INITIAL SETUP & FETCHING DATA
   clearProgressSeasonTeam();
   updateProgressSeasonTeam("Starting update of Season Team Totals...");
 
@@ -2835,16 +2835,18 @@ async function updateRaceInfoSeasonTeam() {
   const seasonPlayerTable = `season_player_${currentYear}`;
   const teamScoringTable = `team_scoring_${currentYear}`;
 
+  // Fetch teams
   updateProgressSeasonTeam("Fetching teams data...");
   let teams;
   try {
-    teams = await getTable(teamsTable); // Retrieve the entire teams table
+    teams = await getTable(teamsTable);
   } catch (err) {
     updateProgressSeasonTeam("Error fetching teams: " + err.message);
     return;
   }
   updateProgressSeasonTeam(`Fetched ${teams.length} teams.`);
 
+  // Fetch players
   updateProgressSeasonTeam("Fetching players data...");
   let players;
   try {
@@ -2855,6 +2857,7 @@ async function updateRaceInfoSeasonTeam() {
   }
   updateProgressSeasonTeam(`Fetched ${players.length} players.`);
 
+  // Fetch season player results
   updateProgressSeasonTeam(`Fetching season player results from ${seasonPlayerTable}...`);
   let seasonPlayerResults;
   try {
@@ -2865,57 +2868,60 @@ async function updateRaceInfoSeasonTeam() {
   }
   updateProgressSeasonTeam(`Fetched ${seasonPlayerResults.length} rows from ${seasonPlayerTable}.`);
 
-  // Part 1: Get player/team scores and handle the cards (aero, double, halo)
-  let teamScoringData = [];
-  let swapRequests = [];
-  let reportRequests = [];
+  // Prepare arrays for later use
+  let teamScoringData = []; // Will store computed records for each team.
+  let swapRequests = [];    // Holds swap card requests.
+  let reportRequests = [];  // Holds report card requests.
 
-  // Step 1: Build report requests for teams
+  // Build report requests for teams (if a team selected another team to report)
   for (let team of teams) {
-    let teamId = team.id;
     if (team.card_report_team_selected) {
-      let reportedTeamId = team.card_report_team_selected;
-      let reportedTeam = teams.find(t => t.id === reportedTeamId);
+      const reportedTeamId = team.card_report_team_selected;
+      const reportedTeam = teams.find(t => t.id === reportedTeamId);
       if (reportedTeam) {
         reportRequests.push({
-          reportingTeamId: teamId,
+          reportingTeamId: team.id,
           reportedTeamId: reportedTeamId
         });
       }
     }
   }
 
-  // Step 2: Process teams and apply reports
+  // =====================================================
+  // Part 1: Get player/team scores and handle the cards 
+  //         (aero, double, and halo) and calculate a 
+  //         temporary total.
+  // =====================================================
   for (let team of teams) {
-    let teamId = team.id;
-    let teamName = team.name;
+    const teamId = team.id;
+    const teamName = team.name;
     updateProgressSeasonTeam(`Processing team: ${teamName} (ID: ${teamId})`);
 
-    let teamPlayers = players.filter(p => p.participant_team_id === teamId);
+    const teamPlayers = players.filter(p => p.participant_team_id === teamId);
     updateProgressSeasonTeam(`Found ${teamPlayers.length} players for team ${teamName}.`);
     if (teamPlayers.length !== 2) {
       updateProgressSeasonTeam(`Skipping team ${teamName}: Expected 2 players, found ${teamPlayers.length}.`);
       continue;
     }
-    let [player1, player2] = teamPlayers;
+    const [player1, player2] = teamPlayers;
 
-    let colName = `race_${raceNumber}`;
-    let result1 = seasonPlayerResults.find(r => r.player_id === player1.id);
-    let result2 = seasonPlayerResults.find(r => r.player_id === player2.id);
+    const colName = `race_${raceNumber}`;
+    const result1 = seasonPlayerResults.find(r => r.player_id === player1.id);
+    const result2 = seasonPlayerResults.find(r => r.player_id === player2.id);
     if (!result1 || !result2) {
       updateProgressSeasonTeam(`Skipping team ${teamName}: Missing season results for one or both players.`);
       continue;
     }
-    let scoreStr1 = result1[colName];
-    let scoreStr2 = result2[colName];
 
-    let score1 = parseFloat(scoreStr1.replace(/\(LS\)/, "").trim()) || 0;
-    let score2 = parseFloat(scoreStr2.replace(/\(LS\)/, "").trim()) || 0;
+    const scoreStr1 = result1[colName];
+    const scoreStr2 = result2[colName];
+    const score1 = parseFloat(scoreStr1.replace(/\(LS\)/, "").trim()) || 0;
+    const score2 = parseFloat(scoreStr2.replace(/\(LS\)/, "").trim()) || 0;
     updateProgressSeasonTeam(`Team ${teamName}: ${player1.name} scored ${score1}, ${player2.name} scored ${score2}.`);
 
-    let subtotal = score1 + score2;
+    const subtotal = score1 + score2;
     let cardPointsDelta = 0;
-    let card_aero_applied = 0;
+    let card_aero_applied = 0; // Aero logic remains unchanged.
     let card_double_applied = 0;
     let card_halo_applied = 0;
     let card_report_applied = 0;
@@ -2923,79 +2929,26 @@ async function updateRaceInfoSeasonTeam() {
     let card_swap_applied = 0;
     let card_swap_details = '';
 
-    let haloPlayed = team.card_halo_played ? true : false;
+    // Process the halo card. Only one halo is applied per team.
+    const haloPlayed = team.card_halo_played ? true : false;
     if (haloPlayed) {
       card_halo_applied = 1;
       updateProgressSeasonTeam(`Halo card is recorded for ${teamName}.`);
     }
 
-    // Part 2: Apply the double card and update the total
+    // Process the double card (only if halo was not played)
     if (team.card_double_played && !haloPlayed) {
-      let higherScore = Math.max(score1, score2);
+      const higherScore = Math.max(score1, score2);
       cardPointsDelta += higherScore;
       card_double_applied = 1;
       updateProgressSeasonTeam(`Double applied on ${teamName}: +${higherScore}`);
     }
 
-    let grandTotal = subtotal + cardPointsDelta;
-    updateProgressSeasonTeam(`Initial Grand Total for ${teamName}: ${grandTotal}`);
+    // Calculate temporary total (subtotal plus any double bonus)
+    let tempTotal = subtotal + cardPointsDelta;
+    updateProgressSeasonTeam(`Temporary Total for ${teamName}: ${tempTotal}`);
 
-    // Step 3: Apply reports
-    if (!haloPlayed) {
-      let reportsForTeam = reportRequests.filter(r => r.reportedTeamId === teamId);
-      if (reportsForTeam.length > 0) {
-        card_report_applied = reportsForTeam.length;
-        reportsForTeam.forEach((report, index) => {
-          let reportingTeam = teams.find(t => t.id === report.reportingTeamId);
-          let reportedTeam = teams.find(t => t.id === report.reportedTeamId);
-
-          if (reportedTeam.card_halo_applied === 1) {
-            card_report_applied = 0; // Stop the report
-            card_report_details += (card_report_details ? " " : "") + `${reportingTeam.name}'s report on ${reportedTeam.name} was stopped by Halo. `;
-            updateProgressSeasonTeam(`${reportingTeam.name}'s report on ${reportedTeam.name} stopped by Halo.`);
-          } else {
-            card_report_details += (card_report_details ? " " : "") + `${reportingTeam.name} reported ${reportedTeam.name}. `;
-          }
-        });
-
-        if (card_report_applied > 1) {
-          card_report_details += " (Double Point Report Activated)";
-        }
-        updateProgressSeasonTeam(`Report applied: ${card_report_details}`);
-
-        if (card_report_applied === 1) {
-          let highestScore = Math.max(score1, score2);
-          grandTotal -= highestScore;
-        } else if (card_report_applied > 1) {
-          let highestScore = Math.max(score1, score2);
-          grandTotal += highestScore; // Double the highest score
-        }
-      }
-    }
-
-    // Step 4: Apply swaps
-    if (!haloPlayed) {
-      let swapForTeam = swapRequests.filter(swap => swap.teamId === teamId);
-      if (swapForTeam.length > 0) {
-        swapForTeam.forEach((swap, index) => {
-          let targetTeam = teamScoringData.find(t => t.teamId === swap.swapTargetTeamId);
-
-          if (team.card_halo_applied === 1 || targetTeam.card_halo_applied === 1) {
-            card_swap_applied = 0;
-            card_swap_details += (card_swap_details ? " " : "") + ` (#${index + 1}) ${teamName} swap with ${targetTeam.teamName} was stopped by Halo. `;
-            updateProgressSeasonTeam(`${teamName}'s swap with ${targetTeam.teamName} was aborted due to Halo.`);
-          } else {
-            card_swap_applied = 1;
-            card_swap_details += (card_swap_details ? " " : "") + ` (#${index + 1}) ${teamName} swaps with ${targetTeam.teamName}. `;
-            let tempGrandTotal = grandTotal;
-            grandTotal = targetTeam.grandTotal;
-            targetTeam.grandTotal = tempGrandTotal;
-            updateProgressSeasonTeam(`${teamName} swaps with ${targetTeam.teamName}`);
-          }
-        });
-      }
-    }
-
+    // Save computed data
     teamScoringData.push({
       teamId,
       teamName,
@@ -3005,7 +2958,7 @@ async function updateRaceInfoSeasonTeam() {
       score2,
       subtotal,
       cardPointsDelta,
-      grandTotal,
+      grandTotal: tempTotal, // To be updated later.
       card_aero_applied,
       card_double_applied,
       card_halo_applied,
@@ -3015,6 +2968,7 @@ async function updateRaceInfoSeasonTeam() {
       card_swap_details
     });
 
+    // Collect swap requests (if any)
     if (team.card_swap_team_selected) {
       swapRequests.push({
         teamId,
@@ -3024,72 +2978,130 @@ async function updateRaceInfoSeasonTeam() {
     }
   }
 
-  swapRequests.sort((a, b) => a.swapTime - b.swapTime);
+  // =====================================================
+  // Part 2: Apply the report card and update the total.
+  // =====================================================
+  for (let teamData of teamScoringData) {
+    // Find any report requests where this team is the target (reported team)
+    const reportsForTeam = reportRequests.filter(r => r.reportedTeamId === teamData.teamId);
+    if (reportsForTeam.length > 0) {
+      let reportCount = reportsForTeam.length;
+      // Start with any existing report details (should be empty at this point)
+      let details = teamData.card_report_details;
+      
+      reportsForTeam.forEach((report) => {
+        const reportingTeam = teams.find(t => t.id === report.reportingTeamId);
+        const reportedTeam = teams.find(t => t.id === report.reportedTeamId);
+        // Check the computed data for the reported (target) team
+        const reportedTeamData = teamScoringData.find(t => t.teamId === report.reportedTeamId);
+        if (reportedTeamData && reportedTeamData.card_halo_applied === 1) {
+          // If the target team has played halo, cancel this report.
+          reportCount = 0;
+          details += details ? ' ' : '';
+          details += `${reportingTeam.name}'s report on ${reportedTeam.name} was stopped by Halo.`;
+          updateProgressSeasonTeam(`${reportingTeam.name}'s report on ${reportedTeam.name} stopped by Halo.`);
+        } else {
+          details += details ? ' ' : '';
+          details += `${reportingTeam.name} reported ${reportedTeam.name}.`;
+        }
+      });
 
-  let swapCount = 1;
-  for (let swap of swapRequests) {
-    let { teamId, swapTargetTeamId } = swap;
+      teamData.card_report_applied = reportCount;
+      teamData.card_report_details = details;
+      updateProgressSeasonTeam(`Report applied for ${teamData.teamName}: ${details}`);
 
-    let team = teamScoringData.find(t => t.teamId === teamId);
-    let targetTeam = teamScoringData.find(t => t.teamId === swapTargetTeamId);
-
-    if (team && targetTeam) {
-      let tempGrandTotal = team.grandTotal;
-      team.grandTotal = targetTeam.grandTotal;
-      targetTeam.grandTotal = tempGrandTotal;
-
-      team.card_swap_applied += 1;
-      targetTeam.card_swap_applied += 1;
-      team.card_swap_details = `(#${swapCount}) ${team.teamName} swaps with ${targetTeam.teamName}`;
-      targetTeam.card_swap_details = `(#${swapCount}) ${team.teamName} swaps with ${targetTeam.teamName}`;
-
-      updateProgressSeasonTeam(`${team.teamName} swaps with ${targetTeam.teamName}`);
-
-      swapCount++;
+      // Adjust the team’s total based on the report card:
+      // For a single report, subtract the highest score.
+      // For multiple reports, add (double) the highest score.
+      const highestScore = Math.max(teamData.score1, teamData.score2);
+      if (reportCount === 1) {
+        teamData.grandTotal -= highestScore;
+      } else if (reportCount > 1) {
+        teamData.grandTotal += highestScore;
+      }
     }
   }
 
-  // Part 4: Upload the results to the database
-  for (let team of teamScoringData) {
-    let {
-      teamId, teamName, player1, player2, score1, score2, subtotal,
-      cardPointsDelta, grandTotal, card_aero_applied, card_double_applied, card_halo_applied,
-      card_report_applied, card_report_details, card_swap_applied, card_swap_details
-    } = team;
+  // =====================================================
+  // Part 3: Apply the swap card and update the total.
+  // =====================================================
+  // Sort swap requests by swap time.
+  swapRequests.sort((a, b) => a.swapTime - b.swapTime);
+  let swapCount = 1;
+  for (let swap of swapRequests) {
+    const { teamId, swapTargetTeamId } = swap;
+    const teamData = teamScoringData.find(t => t.teamId === teamId);
+    const targetTeamData = teamScoringData.find(t => t.teamId === swapTargetTeamId);
+    if (teamData && targetTeamData) {
+      // Check only the target team for a halo card.
+      if (targetTeamData.card_halo_applied === 1) {
+        // Append details to both initiating and target teams without overriding existing details.
+        teamData.card_swap_details += teamData.card_swap_details ? " " : "";
+        teamData.card_swap_details += `(#${swapCount}) ${teamData.teamName} swap with ${targetTeamData.teamName} was stopped by Halo.`;
+        targetTeamData.card_swap_details += targetTeamData.card_swap_details ? " " : "";
+        targetTeamData.card_swap_details += `(#${swapCount}) Swap attempt by ${teamData.teamName} was stopped by Halo.`;
+        updateProgressSeasonTeam(`${teamData.teamName}'s swap with ${targetTeamData.teamName} aborted due to Halo.`);
+      } else {
+        // Swap the grand totals between the two teams.
+        const tempGrandTotal = teamData.grandTotal;
+        teamData.grandTotal = targetTeamData.grandTotal;
+        targetTeamData.grandTotal = tempGrandTotal;
+        // Append swap details, adding to any existing details.
+        teamData.card_swap_details += teamData.card_swap_details ? " " : "";
+        teamData.card_swap_details += `(#${swapCount}) ${teamData.teamName} swaps with ${targetTeamData.teamName}`;
+        targetTeamData.card_swap_details += targetTeamData.card_swap_details ? " " : "";
+        targetTeamData.card_swap_details += `(#${swapCount}) ${teamData.teamName} swaps with ${targetTeamData.teamName}`;
+        teamData.card_swap_applied += 1;
+        targetTeamData.card_swap_applied += 1;
+        updateProgressSeasonTeam(`${teamData.teamName} swaps with ${targetTeamData.teamName}`);
+        swapCount++;
+      }
+    }
+  }
 
-    cardPointsDelta = grandTotal - subtotal;
+  // =====================================================
+  // Part 4: Upload the results to the database.
+  // =====================================================
+  for (let teamData of teamScoringData) {
+    // Recalculate the card bonus as the difference between the final total and the subtotal.
+    teamData.cardPointsDelta = teamData.grandTotal - teamData.subtotal;
 
-    let teamScoreRecord = {
-      team_id: teamId,
-      team_name: teamName,
+    const teamScoreRecord = {
+      team_id: teamData.teamId,
+      team_name: teamData.teamName,
       race_number: raceNumber,
       race_name: selectedRaceName,
-      subtotal,
-      card_points_delta: cardPointsDelta,
-      grand_total: grandTotal,
-      card_aero_applied,
-      card_double_applied,
-      card_halo_applied,
-      card_report_applied,
-      card_report_details,
-      card_swap_applied,
-      card_swap_details,
-      player_id_1: player1.id,
-      player_name_1: player1.name,
-      player_points_1: score1,
-      player_id_2: player2.id,
-      player_name_2: player2.name,
-      player_points_2: score2
+      subtotal: teamData.subtotal,
+      card_points_delta: teamData.cardPointsDelta,
+      grand_total: teamData.grandTotal,
+      card_aero_applied: teamData.card_aero_applied,
+      card_double_applied: teamData.card_double_applied,
+      card_halo_applied: teamData.card_halo_applied,
+      card_report_applied: teamData.card_report_applied,
+      card_report_details: teamData.card_report_details,
+      card_swap_applied: teamData.card_swap_applied,
+      card_swap_details: teamData.card_swap_details,
+      player_id_1: teamData.player1.id,
+      player_name_1: teamData.player1.name,
+      player_points_1: teamData.score1,
+      player_id_2: teamData.player2.id,
+      player_name_2: teamData.player2.name,
+      player_points_2: teamData.score2
     };
 
-    await upsertTeamScoringData([teamScoreRecord], teamScoringTable);
-    updateProgressSeasonTeam(`Updated/inserted record for team ${teamName}.`);
+    try {
+      await upsertTeamScoringData([teamScoreRecord], teamScoringTable);
+      updateProgressSeasonTeam(`Updated/inserted record for team ${teamData.teamName}.`);
+    } catch (err) {
+      updateProgressSeasonTeam(`Error updating record for team ${teamData.teamName}: ${err.message}`);
+    }
 
-    await resetTeamCardsSupabase(teamId);
+    await resetTeamCardsSupabase(teamData.teamId);
   }
 
   updateProgressSeasonTeam("Finished updating team scores.");
 }
+
 
 
 
@@ -3189,15 +3201,24 @@ async function resetTeamCardsSupabase(teamId) {
   }
 }
 
-
 /**
- * Updates team scoring for Casino Races.
- * This function processes the casino table for each team and calculates their contribution.
+ * Deletes all rows from the casino table where team_id > 0 (i.e. actual betting rows).
  */
- async function updateCasinoTeamScoring() {
+ async function deleteCasinoBets() {
+  const { error } = await supabase.from("casino").delete().gt("team_id", 0);
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+// ================================
+// MAIN FUNCTION: updateCasinoTeamScoring
+// ================================
+async function updateCasinoTeamScoring() {
   clearProgressSeasonTeam();
   updateProgressSeasonTeam("Starting update of Season Team Totals...");
 
+  // Get the current year and race details from the DOM.
   const currentYear = document.getElementById("current-year-season-team").value;
   if (!currentYear) {
     updateProgressSeasonTeam("Error: Current year is not set.");
@@ -3209,17 +3230,20 @@ async function resetTeamCardsSupabase(teamId) {
   const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
   updateProgressSeasonTeam(`Selected Race: ${selectedRaceName} (Race Number: ${raceNumber})`);
 
+  // Define table names.
   const teamsTable = "teams";
   const playersTable = "players";
   const seasonPlayerTable = `season_player_${currentYear}`;
   const teamScoringTable = `team_scoring_${currentYear}`;
-  const casinoTable = "casino"; // The casino table
+  const casinoTable = "casino";
 
-  // Fetch necessary data
+  // ---------------------------
+  // Fetch necessary data.
+  // ---------------------------
   updateProgressSeasonTeam("Fetching teams data...");
   let teams;
   try {
-    teams = await getTable(teamsTable); // Retrieve the entire teams table
+    teams = await getTable(teamsTable);
   } catch (err) {
     updateProgressSeasonTeam("Error fetching teams: " + err.message);
     return;
@@ -3243,153 +3267,131 @@ async function resetTeamCardsSupabase(teamId) {
     return;
   }
 
-  // Fetch casino bets data
   updateProgressSeasonTeam("Fetching casino bets data...");
   let casinoBets;
   try {
     casinoBets = await getTable(casinoTable);
-    console.log("Casino Bets Data: ", casinoBets);  // Log the fetched casino data for debugging
+    console.log("Casino Bets Data: ", casinoBets);
   } catch (err) {
     updateProgressSeasonTeam("Error fetching casino bets: " + err.message);
     return;
   }
 
-  // Initialize an array to store team scoring data
-  let teamScoringData = [];
+  // ---------------------------
+  // Extract meta rows from the casino table.
+  // ---------------------------
+  const oddsRow = casinoBets.find(row => row.team_id === 0);
+  const questionRow = casinoBets.find(row => row.team_id === -2);
+  const willPayOutRow = casinoBets.find(row => row.team_id === -4);
 
-  // Process each team
+  if (!oddsRow || !questionRow || !willPayOutRow) {
+    updateProgressSeasonTeam("Error: Missing meta information (odds, question, or will pay out) in casino table.");
+    return;
+  }
+
+  // ---------------------------
+  // Process each team for casino scoring.
+  // Only process teams with team_id > 0.
+  // ---------------------------
+  let teamScoringData = [];
   for (let team of teams) {
-    let teamId = team.id;
-    let teamName = team.name;
+    const teamId = team.id;
+    const teamName = team.name;
     updateProgressSeasonTeam(`Processing team: ${teamName} (ID: ${teamId})`);
 
-    // Skip non-betting rows (team_id <= 0)
+    // Skip rows that are not betting rows.
     if (teamId <= 0) {
       continue;
     }
 
-    let teamPlayers = players.filter(p => p.participant_team_id === teamId);
+    // Get the team's players; ensure exactly 2.
+    const teamPlayers = players.filter(p => p.participant_team_id === teamId);
     if (teamPlayers.length !== 2) {
       updateProgressSeasonTeam(`Skipping team ${teamName}: Expected 2 players, found ${teamPlayers.length}.`);
       continue;
     }
+    const [player1, player2] = teamPlayers;
 
-    let [player1, player2] = teamPlayers;
-    let colName = `race_${raceNumber}`;
-    let result1 = seasonPlayerResults.find(r => r.player_id === player1.id);
-    let result2 = seasonPlayerResults.find(r => r.player_id === player2.id);
-
+    // Get season results for both players.
+    const colName = `race_${raceNumber}`;
+    const result1 = seasonPlayerResults.find(r => r.player_id === player1.id);
+    const result2 = seasonPlayerResults.find(r => r.player_id === player2.id);
     if (!result1 || !result2) {
       updateProgressSeasonTeam(`Skipping team ${teamName}: Missing season results for one or both players.`);
       continue;
     }
 
-    let scoreStr1 = result1[colName];
-    let scoreStr2 = result2[colName];
-    let score1 = parseFloat(scoreStr1.replace(/\(LS\)/, "").trim()) || 0;
-    let score2 = parseFloat(scoreStr2.replace(/\(LS\)/, "").trim()) || 0;
+    const scoreStr1 = result1[colName];
+    const scoreStr2 = result2[colName];
+    const score1 = parseFloat(scoreStr1.replace(/\(LS\)/, "").trim()) || 0;
+    const score2 = parseFloat(scoreStr2.replace(/\(LS\)/, "").trim()) || 0;
     updateProgressSeasonTeam(`Team ${teamName}: ${player1.name} scored ${score1}, ${player2.name} scored ${score2}.`);
 
-    // Set originalSubtotal before applying any bets
-    let originalSubtotal = score1 + score2; // The original subtotal before any casino bet adjustments
-    let subtotal = originalSubtotal; // This will be updated with the casino bet delta
+    // The original subtotal from season results.
+    const originalSubtotal = score1 + score2;
+    let subtotal = originalSubtotal;
 
-    // Find all relevant casino bets for the team in this race
-    let teamCasinoBets = casinoBets.filter(bet => bet.team_id === teamId);
+    // Initialize a string to accumulate detailed bet information.
+    let casinoDetails = "";
+
+    // Get this team’s casino bet row(s) (normally one row per team).
+    const teamCasinoBets = casinoBets.filter(bet => bet.team_id === teamId);
+
     teamCasinoBets.forEach(bet => {
-      // Extracting relevant rows from the casino bet
-      let odds_1n = parseFloat(bet.bet_2); // Odds from bet_2 (Odds 1:N)
-      let willPayOutFlags = [
-        bet.bet_7 === 'true', // willPayOut for bet_1
-        bet.bet_7 === 'true', // willPayOut for bet_2
-        bet.bet_7 === 'true', // willPayOut for bet_3
-        bet.bet_7 === 'true', // willPayOut for bet_4
-        bet.bet_7 === 'true', // willPayOut for bet_5
-      ];
-
-      // Process each bet for the team (bet_1, bet_2, bet_3, bet_4, bet_5)
+      // Process bets 1 through 5.
       for (let i = 1; i <= 5; i++) {
-        let betAmount = parseFloat(bet[`bet_${i}`]);
-
-        // Check if bet amount is valid (not NULL)
+        const betRaw = bet[`bet_${i}`];
+        const betAmount = parseFloat(betRaw);
         if (!isNaN(betAmount)) {
-          // Get the relevant 'will pay out' flag for this bet
-          let willPayOut = willPayOutFlags[i - 1]; // 1-based indexing
-
+          // Get odds for this bet.
+          const odds = parseFloat(oddsRow[`bet_${i}`]);
+          // Get will pay out flag.
+          const willPayOut = (willPayOutRow[`bet_${i}`] === 'true' || willPayOutRow[`bet_${i}`] === true);
+          // Get the question text for this bet.
+          const questionText = questionRow[`bet_${i}`] || `Bet ${i}`;
           let delta = 0;
-
-          // Calculate delta based on 'will pay out' flag
+          let outcome = "";
           if (willPayOut) {
-            // Calculate payout: (bet * odds) - bet
-            delta += (betAmount * odds_1n) - betAmount;
+            // Calculate the payout delta.
+            delta = (betAmount * odds) - betAmount;
+            outcome = "Paid out";
           } else {
-            // Subtract the bet if no payout
-            delta -= betAmount;
+            // Lost bet: subtract the stake.
+            delta = -betAmount;
+            outcome = "Lost";
           }
-
-          // Add the delta to the subtotal
           subtotal += delta;
-
-          updateProgressSeasonTeam(`Team ${teamName} has a delta of ${delta} for Bet ${i}.`);
+          casinoDetails += `(#${i} - ${questionText}: Stake = ${betAmount}, Odds = ${odds}, Outcome: ${outcome}, ${delta >= 0 ? '+' : ''}${delta}) `;
+          updateProgressSeasonTeam(`Team ${teamName} Bet ${i}: Stake = ${betAmount}, Odds = ${odds}, Outcome: ${outcome}, Delta = ${delta}.`);
         }
       }
     });
 
-    // Calculate card_points_delta (difference between original and new subtotal)
-    let cardPointsDelta = subtotal - originalSubtotal;
+    const cardPointsDelta = subtotal - originalSubtotal;
+    // For casino rounds, the card-related fields are zero.
+    const card_aero_applied = 0;
+    const card_double_applied = 0;
+    const card_halo_applied = 0;
+    const card_report_applied = 0;
+    const card_report_details = null;
+    const card_swap_applied = 0;
+    const card_swap_details = null;
 
-    // Set all card-related fields to 0 as per casino round rules
-    let card_aero_applied = 0;
-    let card_double_applied = 0;
-    let card_halo_applied = 0;
-    let card_report_applied = 0;
-    let card_report_details = null;
-    let card_swap_applied = 0;
-    let card_swap_details = null;
-
-    // Prepare the team scoring record with casino bet delta
-    let teamScoreRecord = {
+    // Prepare the team scoring record including the casino details.
+    const teamScoreRecord = {
       team_id: teamId,
       team_name: teamName,
       player_id_1: player1.id,
       player_name_1: player1.name,
-      player_points_1: score1,  // No points from card system
+      player_points_1: score1,
       player_id_2: player2.id,
       player_name_2: player2.name,
-      player_points_2: score2,  // No points from card system
+      player_points_2: score2,
       race_number: raceNumber,
       race_name: selectedRaceName,
-      subtotal: subtotal,  // Subtotal after applying casino bet delta
-      card_aero_applied,
-      card_double_applied,
-      card_halo_applied,
-      card_report_applied,
-      card_report_details,
-      card_swap_applied,
-      card_swap_details
-    };
-
-    teamScoringData.push(teamScoreRecord);
-  }
-
-  // Upload the results to the database
-  for (let team of teamScoringData) {
-    let {
-      team_id, team_name, player_name_1, player_points_1, player_name_2, player_points_2,
-      race_number, race_name, subtotal, card_aero_applied, card_double_applied,
-      card_halo_applied, card_report_applied, card_report_details, card_swap_applied, card_swap_details
-    } = team;
-
-    let cardPointsDelta = subtotal - originalSubtotal;
-
-    let teamScoreRecord = {
-      team_id,
-      team_name,
-      race_number,
-      race_name,
-      subtotal,
+      subtotal: subtotal,
       card_points_delta: cardPointsDelta,
-      grand_total: subtotal, // Grand total is the same as subtotal
+      grand_total: subtotal,
       card_aero_applied,
       card_double_applied,
       card_halo_applied,
@@ -3397,16 +3399,32 @@ async function resetTeamCardsSupabase(teamId) {
       card_report_details,
       card_swap_applied,
       card_swap_details,
-      player_name_1,
-      player_id_1: player1.id,
-      player_points_1,
-      player_name_2,
-      player_id_2: player2.id,
-      player_points_2
+      casino_details: casinoDetails
     };
 
-    await upsertTeamScoringData([teamScoreRecord], teamScoringTable);
-    updateProgressSeasonTeam(`Updated/inserted record for team ${team_name}.`);
+    teamScoringData.push(teamScoreRecord);
+  }
+
+  // ---------------------------
+  // Upload the team scoring data.
+  // ---------------------------
+  for (let teamRecord of teamScoringData) {
+    try {
+      await upsertTeamScoringData([teamRecord], teamScoringTable);
+      updateProgressSeasonTeam(`Updated/inserted record for team ${teamRecord.team_name}.`);
+    } catch (err) {
+      updateProgressSeasonTeam(`Error updating record for team ${teamRecord.team_name}: ${err.message}`);
+    }
+  }
+
+  // ---------------------------
+  // Reset the casino bets by deleting rows with team_id > 0.
+  // ---------------------------
+  try {
+    await deleteCasinoBets();
+    updateProgressSeasonTeam("Casino bets reset successfully.");
+  } catch (err) {
+    updateProgressSeasonTeam("Error resetting casino bets: " + err.message);
   }
 
   updateProgressSeasonTeam("Finished updating casino team scores.");
@@ -3455,189 +3473,190 @@ document.getElementById('update-season-season-team').addEventListener('click', a
 // =============================
 // === SEASON TEAM FUNCTION ===
 // ============================= 
-        // Progress Helpers for Season Team Summary Section
-        function updateProgressTeamSummary(message) {
-        console.log("[Season Team Summary] " + message);
-        const progressDiv = document.getElementById("update-progress-season-team-summary");
-        if (progressDiv) {
-            progressDiv.style.display = "block";
-            progressDiv.innerHTML += message + "<br>";
-        }
-        }
 
-        function clearProgressTeamSummary() {
-        const progressDiv = document.getElementById("update-progress-season-team-summary");
-        if (progressDiv) {
-            progressDiv.innerHTML = "";
-            progressDiv.style.display = "none";
-        }
-        }
+// Progress Helpers for Season Team Summary Section
+function updateProgressTeamSummary(message) {
+  console.log("[Season Team Summary] " + message);
+  const progressDiv = document.getElementById("update-progress-season-team-summary");
+  if (progressDiv) {
+    progressDiv.style.display = "block";
+    progressDiv.innerHTML += message + "<br>";
+  }
+}
 
-        // Main function to update Season Team Summary
-        async function updateSeasonTeamSummary() {
-        clearProgressTeamSummary();
-        updateProgressTeamSummary("Starting update of Season Team Summary...");
+function clearProgressTeamSummary() {
+  const progressDiv = document.getElementById("update-progress-season-team-summary");
+  if (progressDiv) {
+    progressDiv.innerHTML = "";
+    progressDiv.style.display = "none";
+  }
+}
 
-        // Retrieve current year and race info from Season Team UI.
-        const currentYear = document.getElementById("current-year-season-team").value;
-        if (!currentYear) {
-            updateProgressTeamSummary("Error: Current year is not set.");
-            return;
-        }
-        const raceSelect = document.getElementById("race-select-season-team");
-        const selectedRaceName = raceSelect.value;
-        const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
-        updateProgressTeamSummary(`Selected Race: ${selectedRaceName} (Race Number: ${raceNumber})`);
+// Main function to update Season Team Summary
+async function updateSeasonTeamSummary() {
+  clearProgressTeamSummary();
+  updateProgressTeamSummary("Starting update of Season Team Summary...");
 
-        // Define table names.
-        const teamScoringTable = `team_scoring_${currentYear}`;
-        const seasonTeamTable = `season_team_${currentYear}`;
+  // Retrieve current year and race info from Season Team UI.
+  const currentYear = document.getElementById("current-year-season-team").value;
+  if (!currentYear) {
+    updateProgressTeamSummary("Error: Current year is not set.");
+    return;
+  }
+  const raceSelect = document.getElementById("race-select-season-team");
+  const selectedRaceName = raceSelect.value;
+  const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
+  updateProgressTeamSummary(`Selected Race: ${selectedRaceName} (Race Number: ${raceNumber})`);
 
-        // Retrieve team scoring records for the selected race.
-        updateProgressTeamSummary(`Fetching team scoring records from ${teamScoringTable} for race ${raceNumber}...`);
-        let teamScoringData;
-try {
-    const { data, error } = await supabase // Store result in 'data' instead of shadowing variable
-        .from(teamScoringTable)
-        .select("*")
-        .eq("race_number", raceNumber);
-    teamScoringData = data; // Assign result to the outer-scoped variable
+  // Define table names.
+  const teamScoringTable = `team_scoring_${currentYear}`;
+  const seasonTeamTable = `season_team_${currentYear}`;
 
-        if (error) {
-        updateProgressTeamSummary("Error fetching team scoring records: " + error.message);
-        console.error("Supabase Error:", error);
-        return;
-        }
+  // Retrieve team scoring records for the selected race.
+  updateProgressTeamSummary(`Fetching team scoring records from ${teamScoringTable} for race ${raceNumber}...`);
+  let teamScoringData;
+  try {
+    const { data, error } = await supabase
+      .from(teamScoringTable)
+      .select("*")
+      .eq("race_number", raceNumber);
+    teamScoringData = data;
 
-        if (!teamScoringData || teamScoringData.length === 0) {
-        updateProgressTeamSummary("No team scoring records found for the selected race.");
-        console.warn("No data returned for team scoring.");
-        alert("No team scoring records found for the selected race.");
-        return;
-        }
-        } catch (err) {
-            updateProgressTeamSummary("Error fetching team scoring records: " + err.message);
-            return;
-        }
-        if (!teamScoringData || teamScoringData.length === 0) {
-            updateProgressTeamSummary("No team scoring records found for the selected race.");
-            alert("No team scoring records found for the selected race.");
-            return;
-        }
-        updateProgressTeamSummary(`Fetched ${teamScoringData.length} team scoring records.`);
+    if (error) {
+      updateProgressTeamSummary("Error fetching team scoring records: " + error.message);
+      console.error("Supabase Error:", error);
+      return;
+    }
 
-        // For each team scoring record, format the final score string by appending card tags.
-        teamScoringData.forEach(record => {
-            let tags = "";
-            if (record.card_aero_applied) { tags += "(aero)"; }
-            if (record.card_double_applied) { tags += "(double)"; }
-            if (record.card_halo_applied) { tags += "(halo)"; }
-            if (record.card_report_applied) { tags += "(report)"; }
-            if (record.card_swap_applied) { tags += "(swap)"; }
-            // Create a final score string with the grand_total and the applied tags.
-            record.final_score = record.grand_total + tags;
-            updateProgressTeamSummary(`Team ${record.team_name} final score: ${record.final_score}`);
-        });
+    if (!teamScoringData || teamScoringData.length === 0) {
+      updateProgressTeamSummary("No team scoring records found for the selected race.");
+      console.warn("No data returned for team scoring.");
+      alert("No team scoring records found for the selected race.");
+      return;
+    }
+  } catch (err) {
+    updateProgressTeamSummary("Error fetching team scoring records: " + err.message);
+    return;
+  }
+  if (!teamScoringData || teamScoringData.length === 0) {
+    updateProgressTeamSummary("No team scoring records found for the selected race.");
+    alert("No team scoring records found for the selected race.");
+    return;
+  }
+  updateProgressTeamSummary(`Fetched ${teamScoringData.length} team scoring records.`);
+  
+  // For each team scoring record, format the final score string by appending card tags.
+  teamScoringData.forEach(record => {
+    let tags = "";
+    if (record.card_aero_applied) { tags += "(aero)"; }
+    if (record.card_double_applied) { tags += "(double)"; }
+    if (record.card_halo_applied) { tags += "(halo)"; }
+    if (record.card_report_applied) { tags += "(report)"; }
+    if (record.card_swap_applied) { tags += "(swap)"; }
+    // Append the casino tag if any casino bet was placed.
+    if (record.casino_details.trim() !== "") { tags += "(casino)"; }
+    // Create a final score string with the grand_total and the applied tags.
+    record.final_score = record.grand_total + tags;
+    updateProgressTeamSummary(`Team ${record.team_name} final score: ${record.final_score}`);
+  });
 
-        // Next, update the season_team_{year} table.
-        // We assume that season_team_{year} has columns: team_id, team_name, player_name_1, player_name_2, and race_1 ... race_32.
-        // We will upsert one row per team for the selected race.
-        updateProgressTeamSummary(`Updating season_team table (${seasonTeamTable}) for race ${raceNumber}...`);
+  // Next, update the season_team_{year} table.
+  // We assume that season_team_{year} has columns: team_id, team_name, player_name_1, player_name_2, and race_1 ... race_32.
+  // We will upsert one row per team for the selected race.
+  updateProgressTeamSummary(`Updating season_team table (${seasonTeamTable}) for race ${raceNumber}...`);
 
-        // For each team scoring record, upsert into season_team_{year}.
-        for (let record of teamScoringData) {
-            // Build the update object.
-            let updateObj = {
-            team_id: record.team_id,
-            team_name: record.team_name,
-            player_name_1: record.player_name_1,
-            player_name_2: record.player_name_2,
-            // Set the column for the current race to the final score string.
-            [`race_${raceNumber}`]: record.final_score
-            };
-            // Use upsert to insert or update based on team_id.
-            // Make sure your table has a unique constraint on team_id (or use conflict targeting as needed).
-            // Check if a record already exists for the team
-            // Check if a record already exists for the team
-            const { data: existingRecord, error: fetchError } = await supabase
-            .from(seasonTeamTable)
-            .select("team_id")
-            .eq("team_id", record.team_id)
-            .maybeSingle();  // Use maybeSingle() to avoid errors if no match
+  // For each team scoring record, upsert into season_team_{year}.
+  for (let record of teamScoringData) {
+    // Build the update object.
+    let updateObj = {
+      team_id: record.team_id,
+      team_name: record.team_name,
+      player_name_1: record.player_name_1,
+      player_name_2: record.player_name_2,
+      // Set the column for the current race to the final score string.
+      [`race_${raceNumber}`]: record.final_score
+    };
+    // Check if a record already exists for the team.
+    const { data: existingRecord, error: fetchError } = await supabase
+      .from(seasonTeamTable)
+      .select("team_id")
+      .eq("team_id", record.team_id)
+      .maybeSingle();
 
-            if (fetchError) {
-            updateProgressTeamSummary(`Error checking existing record for team ${record.team_name}: ${fetchError.message}`);
-            } else if (existingRecord) {
-            // If record exists, update it
-            const { error: updateError } = await supabase
-                .from(seasonTeamTable)
-                .update(updateObj)
-                .eq("team_id", record.team_id);
+    if (fetchError) {
+      updateProgressTeamSummary(`Error checking existing record for team ${record.team_name}: ${fetchError.message}`);
+    } else if (existingRecord) {
+      // If record exists, update it.
+      const { error: updateError } = await supabase
+        .from(seasonTeamTable)
+        .update(updateObj)
+        .eq("team_id", record.team_id);
 
-            if (updateError) {
-                updateProgressTeamSummary(`Error updating record for team ${record.team_name}: ${updateError.message}`);
-            } else {
-                updateProgressTeamSummary(`Record for team ${record.team_name} updated successfully.`);
-            }
-            } else {
-            // If no record exists, insert a new one
-            const { error: insertError } = await supabase.from(seasonTeamTable).insert(updateObj);
-            if (insertError) {
-                updateProgressTeamSummary(`Error inserting record for team ${record.team_name}: ${insertError.message}`);
-            } else {
-                updateProgressTeamSummary(`Record for team ${record.team_name} inserted successfully.`);
-            }
-            }
-        }
+      if (updateError) {
+        updateProgressTeamSummary(`Error updating record for team ${record.team_name}: ${updateError.message}`);
+      } else {
+        updateProgressTeamSummary(`Record for team ${record.team_name} updated successfully.`);
+      }
+    } else {
+      // If no record exists, insert a new one.
+      const { error: insertError } = await supabase.from(seasonTeamTable).insert(updateObj);
+      if (insertError) {
+        updateProgressTeamSummary(`Error inserting record for team ${record.team_name}: ${insertError.message}`);
+      } else {
+        updateProgressTeamSummary(`Record for team ${record.team_name} inserted successfully.`);
+      }
+    }
+  }
 
-        // Also update the "Race Names" row (team_id = 0) to store the race name.
-        updateProgressTeamSummary("Updating Race Names row in season_team table...");
-        let raceNamesRow = await supabase
-            .from(seasonTeamTable)
-            .select("*")
-            .eq("team_id", 0)
-            .maybeSingle();
-        if (!raceNamesRow.data) {
-            // Insert new Race Names row.
-            const { error: insertError } = await supabase.from(seasonTeamTable).insert({
-            team_id: 0,
-            team_name: "Race Names",
-            [`race_${raceNumber}`]: selectedRaceName
-            });
-            if (insertError) {
-            updateProgressTeamSummary("Error inserting Race Names row: " + insertError.message);
-            } else {
-            updateProgressTeamSummary("Race Names row inserted successfully.");
-            }
-        } else {
-            // Update existing Race Names row.
-            const { error: updateError } = await supabase.from(seasonTeamTable)
-            .update({ [`race_${raceNumber}`]: selectedRaceName })
-            .eq("team_id", 0);
-            if (updateError) {
-            updateProgressTeamSummary("Error updating Race Names row: " + updateError.message);
-            } else {
-            updateProgressTeamSummary("Race Names row updated successfully.");
-            }
-        }
+  // Also update the "Race Names" row (team_id = 0) to store the race name.
+  updateProgressTeamSummary("Updating Race Names row in season_team table...");
+  let raceNamesRow = await supabase
+    .from(seasonTeamTable)
+    .select("*")
+    .eq("team_id", 0)
+    .maybeSingle();
+  if (!raceNamesRow.data) {
+    // Insert new Race Names row.
+    const { error: insertError } = await supabase.from(seasonTeamTable).insert({
+      team_id: 0,
+      team_name: "Race Names",
+      [`race_${raceNumber}`]: selectedRaceName
+    });
+    if (insertError) {
+      updateProgressTeamSummary("Error inserting Race Names row: " + insertError.message);
+    } else {
+      updateProgressTeamSummary("Race Names row inserted successfully.");
+    }
+  } else {
+    // Update existing Race Names row.
+    const { error: updateError } = await supabase.from(seasonTeamTable)
+      .update({ [`race_${raceNumber}`]: selectedRaceName })
+      .eq("team_id", 0);
+    if (updateError) {
+      updateProgressTeamSummary("Error updating Race Names row: " + updateError.message);
+    } else {
+      updateProgressTeamSummary("Race Names row updated successfully.");
+    }
+  }
 
-        updateProgressTeamSummary("✅ Season Team Summary update complete.");
-        alert("Season Team Summary update complete.");
-        }
+  updateProgressTeamSummary("✅ Season Team Summary update complete.");
+  alert("Season Team Summary update complete.");
+}
 
-        // -------------------------
-        // Initialize Season Team Summary Section
-        document.addEventListener("DOMContentLoaded", async () => {
-        try {
-            // Re-use the same race options and race info elements as the Season Team section.
-            await loadRaceOptionsSeasonTeam();
-            document.getElementById("race-select-season-team").addEventListener("change", updateRaceInfoSeasonTeam);
-            document.getElementById("update-season-team-summary").addEventListener("click", updateSeasonTeamSummary);
-        } catch (err) {
-            console.error("Error during Season Team Summary initialization:", err);
-            updateProgressTeamSummary("Error during initialization: " + err.message);
-        }
-        });
+// -------------------------
+// Initialize Season Team Summary Section
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    // Re-use the same race options and race info elements as the Season Team section.
+    await loadRaceOptionsSeasonTeam();
+    document.getElementById("race-select-season-team").addEventListener("change", updateRaceInfoSeasonTeam);
+    document.getElementById("update-season-team-summary").addEventListener("click", updateSeasonTeamSummary);
+  } catch (err) {
+    console.error("Error during Season Team Summary initialization:", err);
+    updateProgressTeamSummary("Error during initialization: " + err.message);
+  }
+});
+
 
 // =============================
 // === CASINO PAGE ===
