@@ -3544,19 +3544,47 @@ async function updateSeasonTeamSummary() {
     return;
   }
   updateProgressTeamSummary(`Fetched ${teamScoringData.length} team scoring records.`);
-  
+
   // For each team scoring record, format the final score string by appending card tags.
   teamScoringData.forEach(record => {
     let tags = "";
-    if (record.card_aero_applied) { tags += "(aero)"; }
-    if (record.card_double_applied) { tags += "(double)"; }
-    if (record.card_halo_applied) { tags += "(halo)"; }
-    if (record.card_report_applied) { tags += "(report)"; }
-    if (record.card_swap_applied) { tags += "(swap)"; }
+
+    // Append each card tag as many times as its numeric value.
+    if (record.card_aero_applied && record.card_aero_applied > 0) {
+      for (let i = 0; i < record.card_aero_applied; i++) {
+        tags += "(aero)";
+      }
+    }
+    if (record.card_double_applied && record.card_double_applied > 0) {
+      for (let i = 0; i < record.card_double_applied; i++) {
+        tags += "(double)";
+      }
+    }
+    if (record.card_halo_applied && record.card_halo_applied > 0) {
+      for (let i = 0; i < record.card_halo_applied; i++) {
+        tags += "(halo)";
+      }
+    }
+    if (record.card_report_applied && record.card_report_applied > 0) {
+      for (let i = 0; i < record.card_report_applied; i++) {
+        tags += "(report)";
+      }
+    }
+    if (record.card_swap_applied && record.card_swap_applied > 0) {
+      for (let i = 0; i < record.card_swap_applied; i++) {
+        tags += "(swap)";
+      }
+    }
     // Append the casino tag if any casino bet was placed.
-    if (record.casino_details.trim() !== "") { tags += "(casino)"; }
-    // Create a final score string with the grand_total and the applied tags.
+    if (record.casino_details && record.casino_details.trim() !== "") {
+      tags += "(casino)";
+      console.log(`Team ${record.team_name} casino_details: ${record.casino_details}`);
+    } else {
+      console.log(`Team ${record.team_name} has no casino_details.`);
+    }
+    // Create the final score string with the grand_total and the applied tags.
     record.final_score = record.grand_total + tags;
+    console.log(`Team ${record.team_name} final score computed as: ${record.final_score}`);
     updateProgressTeamSummary(`Team ${record.team_name} final score: ${record.final_score}`);
   });
 
@@ -3656,6 +3684,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     updateProgressTeamSummary("Error during initialization: " + err.message);
   }
 });
+
 
 
 // =============================
