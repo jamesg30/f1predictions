@@ -510,31 +510,41 @@ async function loadFullSeasonTeamResults() {
 
     // 10. Helper: Process a race score cell.
     //     This function extracts the numeric part for display and, if any card tags are found,
-    //     it outputs a small image for each card (using a predefined URL structure) before the number.
+    //     it outputs a small image for each card using a predefined URL structure.
     function processTeamRaceScore(raw) {
-      if (!raw) return "";
-      // Get the numeric score by removing any parentheses groups.
-      const numStr = raw.replace(/\(.*?\)/g, "").trim();
-      let output = "";
-      // Use regex to find any card tags inside parentheses.
-      const cardTags = [];
-      const regex = /\(([^)]+)\)/g;
-      let match;
-      while ((match = regex.exec(raw)) !== null) {
-        const tag = match[1].toLowerCase();
-        // Only include recognized card tags.
-        if (["aero", "double", "halo", "report", "swap"].includes(tag)) {
-          cardTags.push(tag);
-        }
-      }
-      // Append an image for each card.
-      cardTags.forEach(tag => {
-        output += `<img src="/media/cards/card_${tag}.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">`;
-      });
-      // Append the numeric score.
-      output += numStr;
-      return output;
+  if (!raw) return "";
+  // Remove all tag groups to extract the numeric score.
+  const numStr = raw.replace(/\(.*?\)/g, "").trim();
+  let output = "";
+  // Use regex to extract all tags within parentheses.
+  const cardTags = [];
+  const regex = /\(([^)]+)\)/g;
+  let match;
+  while ((match = regex.exec(raw)) !== null) {
+    const tag = match[1].toLowerCase();
+    // Recognize these tags, including the "casino" tag.
+    if (["aero", "double", "halo", "report", "swap", "casino"].includes(tag)) {
+      cardTags.push(tag);
     }
+  }
+  // If the "casino" tag is present, output the casino image container.
+  if (cardTags.includes("casino")) {
+    output += `<div style="max-width:100px; display:inline-block; vertical-align:middle; word-wrap: break-word;">
+                 <img src="/media/casino/casino.png" style="width:100px; height:auto; display:block; margin-bottom:5px;">
+               </div>`;
+  } else {
+    // Otherwise, append an image for each non-casino tag.
+    cardTags.forEach(tag => {
+      if (tag !== "casino") {
+        output += `<img src="/media/cards/card_${tag}.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+      }
+    });
+  }
+  // Append the numeric score in a container that forces wrapping.
+  output += `<div style="display:block; max-width:100px; word-wrap: break-word;">${numStr}</div>`;
+  return output;
+}
+
 
     // 11. Build table body rows.
     let bodyHTML = "<tbody>";
@@ -626,6 +636,7 @@ async function loadFullSeasonTeamResults() {
       `<tr><td colspan="100%">Error loading season team results: ${err.message}</td></tr>`;
   }
 }
+
 
 document.addEventListener("DOMContentLoaded", () => {
   loadFullSeasonTeamResults();

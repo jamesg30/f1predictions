@@ -101,6 +101,12 @@
             <form id="prediction-form" action="/submit" method="POST">
                 <div id="form-section-1"></div>
                 <!-- Add this to your HTML body, preferably near the player name input field -->
+                 <!-- Loading Indicator for Form Blocks -->
+<div id="formLoading" class="loading-indicator mb-3 pixel-art-heading-2" style="display: none;">
+    Form loading...
+    <div class="loading-bar"></div>
+  </div>
+  
                 <div id="repeated-predictions-alert" class="alert alert-warning d-none" role="alert">
                     Player has already submitted predictions. Submitting new predictions will override the previous ones.
                 </div>
@@ -191,6 +197,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Update the form title based on the race name
     await updateFormTitle();
+
+
+    const loadingIndicator = document.getElementById('formLoading');
+    loadingIndicator.style.display = 'block';
 
     const form = document.getElementById('prediction-form');
     const alertContainer = document.getElementById('repeated-predictions-alert');

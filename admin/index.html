@@ -3211,9 +3211,6 @@ async function resetTeamCardsSupabase(teamId) {
   }
 }
 
-// ================================
-// MAIN FUNCTION: updateCasinoTeamScoring
-// ================================
 async function updateCasinoTeamScoring() {
   clearProgressSeasonTeam();
   updateProgressSeasonTeam("Starting update of Season Team Totals...");
@@ -3329,8 +3326,8 @@ async function updateCasinoTeamScoring() {
 
     // The original subtotal from season results.
     const originalSubtotal = score1 + score2;
-    let subtotal = originalSubtotal;
-
+    // We'll leave subtotal unchanged and accumulate the casino bet delta separately.
+    let casinoDelta = 0;
     // Initialize a string to accumulate detailed bet information.
     let casinoDetails = "";
 
@@ -3360,14 +3357,16 @@ async function updateCasinoTeamScoring() {
             delta = -betAmount;
             outcome = "Lost";
           }
-          subtotal += delta;
+          casinoDelta += delta;
           casinoDetails += `(#${i} - ${questionText}: Stake = ${betAmount}, Odds = ${odds}, Outcome: ${outcome}, ${delta >= 0 ? '+' : ''}${delta}) `;
           updateProgressSeasonTeam(`Team ${teamName} Bet ${i}: Stake = ${betAmount}, Odds = ${odds}, Outcome: ${outcome}, Delta = ${delta}.`);
         }
       }
     });
 
-    const cardPointsDelta = subtotal - originalSubtotal;
+    const cardPointsDelta = casinoDelta;
+    const grand_total = originalSubtotal + casinoDelta;
+
     // For casino rounds, the card-related fields are zero.
     const card_aero_applied = 0;
     const card_double_applied = 0;
@@ -3389,9 +3388,9 @@ async function updateCasinoTeamScoring() {
       player_points_2: score2,
       race_number: raceNumber,
       race_name: selectedRaceName,
-      subtotal: subtotal,
-      card_points_delta: cardPointsDelta,
-      grand_total: subtotal,
+      subtotal: originalSubtotal,            // Keep the original season points as subtotal.
+      card_points_delta: cardPointsDelta,      // Casino bet delta.
+      grand_total: grand_total,                // Sum of original points + bet delta.
       card_aero_applied,
       card_double_applied,
       card_halo_applied,
@@ -3429,6 +3428,7 @@ async function updateCasinoTeamScoring() {
 
   updateProgressSeasonTeam("Finished updating casino team scores.");
 }
+
 
 
 

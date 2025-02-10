@@ -140,7 +140,10 @@ export function createHeadsTailsInput(container, id) {
 
 // Generate form blocks dynamically
 export async function generateFormBlocks() {
-    // Get the loading indicator and form sections
+    // Show the loading indicator for form blocks
+    
+
+    // Get the form section containers
     const formContainer1 = document.getElementById('form-section-1');
     const formContainer2 = document.getElementById('form-section-2');
     const formContainer3 = document.getElementById('form-section-3');
@@ -153,7 +156,7 @@ export async function generateFormBlocks() {
         formContainer3.innerHTML = '';
         formContainer4.innerHTML = '';
 
-        // Fetch data
+        // Fetch data concurrently
         const [formConfig, drivers, constructors, players] = await Promise.all([
             fetchFormConfiguration(),
             fetchData('drivers', 'id, name, constructor_id'),
@@ -164,7 +167,10 @@ export async function generateFormBlocks() {
         // Map constructor IDs to names for quick lookup
         const constructorMap = Object.fromEntries(constructors.map(c => [c.id, c.name]));
 
-        // Loop through form configurations
+        // Prepare a sorted list of constructors by id order for the team dropdown
+        const sortedConstructors = [...constructors].sort((a, b) => a.id - b.id);
+
+        // Loop through each form configuration
         for (const config of formConfig) {
             const block = document.createElement('div');
             block.className = 'mb-3';
@@ -191,28 +197,36 @@ export async function generateFormBlocks() {
             // Determine input type based on response_type
             switch (config.response_type) {
                 case 'Select - Driver List': {
-                    const sortedDrivers = drivers.map(d => ({
-                        id: d.id,
-                        name: `${d.name} (${constructorMap[d.constructor_id] || 'Unknown'})`,
-                    }));
+                    // Sort drivers by id order
+                    const sortedDrivers = [...drivers]
+                        .sort((a, b) => a.id - b.id)
+                        .map(d => ({
+                            id: d.id,
+                            name: `${d.name} (${constructorMap[d.constructor_id] || 'Unknown'})`,
+                        }));
                     createDropdown(block, sortedDrivers, `input-${config.id}`, 'Select a driver');
                     break;
                 }
                 case 'Select - Driver List + DNF': {
-                    const sortedDrivers = drivers.map(d => ({
-                        id: d.id,
-                        name: `${d.name} (${constructorMap[d.constructor_id] || 'Unknown'})`,
-                    }));
+                    // Sort drivers by id order and then append the no-DNF option at the end
+                    const sortedDrivers = [...drivers]
+                        .sort((a, b) => a.id - b.id)
+                        .map(d => ({
+                            id: d.id,
+                            name: `${d.name} (${constructorMap[d.constructor_id] || 'Unknown'})`,
+                        }));
                     sortedDrivers.push({ id: 'no-dnf', name: 'No DNFs' });
                     createDropdown(block, sortedDrivers, `input-${config.id}`, 'Select a driver or no DNFs');
                     break;
                 }
                 case 'Select - Team List': {
-                    createDropdown(block, constructors, `input-${config.id}`, 'Select a team');
+                    // Use the sorted team list (by id order)
+                    createDropdown(block, sortedConstructors, `input-${config.id}`, 'Select a team');
                     break;
                 }
                 case 'Select - Name List': {
-                    const sortedPlayers = players.sort((a, b) => a.name.localeCompare(b.name));
+                    // Sort players in alphabetical order by name
+                    const sortedPlayers = [...players].sort((a, b) => a.name.localeCompare(b.name));
                     createDropdown(block, sortedPlayers, `input-${config.id}`, 'Select a name');
                     break;
                 }
@@ -232,10 +246,11 @@ export async function generateFormBlocks() {
                     console.error('Unknown response type:', config.response_type);
             }
 
+            // Add the form-control class to any inputs or selects
             const inputs = block.querySelectorAll('input, select');
             inputs.forEach(input => input.classList.add('form-control'));
 
-            // Assign blocks to the correct form sections
+            // Assign blocks to the correct form sections based on config id
             if (config.id === 1) {
                 formContainer1.appendChild(block);
             } else if (config.id >= 2 && config.id <= 7) {
@@ -248,8 +263,13 @@ export async function generateFormBlocks() {
         }
     } catch (error) {
         console.error('Error generating form blocks:', error);
+    } finally {
+        // Hide the loading indicator once the function has completed processing
+        const loadingIndicator = document.getElementById('formLoading');
+        loadingIndicator.style.display = 'none';
     }
 }
+
 
 // Register Page Functions
 export async function fetchAndDisplayList(table, containerId) {
