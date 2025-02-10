@@ -206,6 +206,10 @@
             <!-- Results Entry Tab -->
             <div id="results-entry" class="tab-pane fade" role="tabpanel">
                 <h4 id="results-entry-title">Results Entry</h4>
+                <div id="formLoading" class="loading-indicator mb-3 pixel-art-heading-2" style="display: none;">
+                    Form loading...
+                    <div class="loading-bar"></div>
+                  </div>
                 <div id="repeated-results-alert" class="alert alert-warning d-none" role="alert">
                     Results have already been submitted. New results will override the previous ones.
                 </div>
@@ -340,7 +344,7 @@
                 <div class="row mb-3">
                     <div class="col">
                     <button id="update-season-team-summary" class="btn btn-primary">
-                        Update Season Team Summary
+                        Add Race to Season Team
                     </button>
                     </div>
                 </div>
@@ -1584,7 +1588,8 @@ async function addRace() {
             }
 
         await loadExistingSubmissions();
-
+        const loadingIndicator = document.getElementById('formLoading');
+        loadingIndicator.style.display = 'block';
         // Dynamically populate the form based on configuration
         await generateFormBlocks(); // Generates the form sections
 
@@ -3690,135 +3695,175 @@ document.addEventListener("DOMContentLoaded", async () => {
 // =============================
 // === CASINO PAGE ===
 // =============================
-        document.addEventListener("DOMContentLoaded", async function () {
-            const casinoStatus = document.getElementById("casino-status");
-            const casinoStatusLabel = document.getElementById("casino-status-label");
-            const saveCasinoDashboard = document.getElementById("save-changes-casino-dashboard");
-            const casinoRows = document.getElementById("casino-rows");
-            const saveCasinoChanges = document.getElementById("saveChangesButtonCasino");
+        // =============================
+// === CASINO PAGE ===
+// =============================
+document.addEventListener("DOMContentLoaded", async function () {
+    const casinoStatus = document.getElementById("casino-status");
+    const casinoStatusLabel = document.getElementById("casino-status-label");
+    const saveCasinoDashboard = document.getElementById("save-changes-casino-dashboard");
+    const casinoRows = document.getElementById("casino-rows");
+    const saveCasinoChanges = document.getElementById("saveChangesButtonCasino");
 
-            let casinoEnabled = false;
-            let originalCasinoData = {};
+    let casinoEnabled = false;
+    let originalCasinoData = {};
 
-            // Fetch the casino status from form_details
-            async function fetchCasinoStatus() {
-            let { data, error } = await supabase
-                .from("form_details")
-                .select("casino_enabled")
-                .eq("id", 1)
-                .single();
+    // Fetch the casino status from form_details
+    async function fetchCasinoStatus() {
+        let { data, error } = await supabase
+            .from("form_details")
+            .select("casino_enabled")
+            .eq("id", 1)
+            .single();
 
-            if (error) {
-                console.error("Error fetching casino status:", error);
-                return;
-            }
-
-            // Ensure proper handling of boolean values
-            casinoEnabled = Boolean(data.casino_enabled);
-            casinoStatus.checked = casinoEnabled;
-            casinoStatusLabel.textContent = casinoEnabled ? "Enabled" : "Disabled";
+        if (error) {
+            console.error("Error fetching casino status:", error);
+            return;
         }
 
-            // Fetch casino bet settings
-            async function fetchCasinoData() {
-                let { data, error } = await supabase.from("casino").select("*");
-                if (error) {
-                    console.error("Error fetching casino data:", error);
-                    return;
-                }
+        // Ensure proper handling of boolean values
+        casinoEnabled = Boolean(data.casino_enabled);
+        casinoStatus.checked = casinoEnabled;
+        casinoStatusLabel.textContent = casinoEnabled ? "Enabled" : "Disabled";
+    }
 
-                originalCasinoData = {
-                    enabled: data.find(row => row.team_id === -1) || {},
-                    questions: data.find(row => row.team_id === -2) || {},
-                    odds: data.find(row => row.team_id === 0) || {},
-                    maxBet: data.find(row => row.team_id === -3) || {},
-                    willPayOut: data.find(row => row.team_id === -4) || {},
-                };
+    // Fetch casino bet settings
+    async function fetchCasinoData() {
+        let { data, error } = await supabase.from("casino").select("*");
+        if (error) {
+            console.error("Error fetching casino data:", error);
+            return;
+        }
 
-                populateCasinoTable();
+        originalCasinoData = {
+            enabled: data.find(row => row.team_id === -1) || {},
+            questions: data.find(row => row.team_id === -2) || {},
+            odds: data.find(row => row.team_id === 0) || {},
+            maxBet: data.find(row => row.team_id === -3) || {},
+            willPayOut: data.find(row => row.team_id === -4) || {},
+        };
+
+        populateCasinoTable();
+    }
+
+    // Populate the casino settings table with fetched data
+    function populateCasinoTable() {
+        casinoRows.innerHTML = "";
+
+        for (let i = 1; i <= 5; i++) {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${i}</td>
+                <td>
+                    <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" data-bet="${i}" data-type="enabled">
+                    </div>
+                </td>
+                <td><input type="text" class="form-control" data-bet="${i}" data-type="question"></td>
+                <td><input type="number" class="form-control" data-bet="${i}" data-type="odds"></td>
+                <td><input type="number" class="form-control" data-bet="${i}" data-type="maxBet"></td>
+                <td>
+                    <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" data-bet="${i}" data-type="willPayOut">
+                    </div>
+                </td>
+            `;
+
+            casinoRows.appendChild(row);
+
+            row.querySelector(`[data-bet="${i}"][data-type="enabled"]`).checked = originalCasinoData.enabled[`bet_${i}`] === "true";
+            row.querySelector(`[data-bet="${i}"][data-type="question"]`).value = originalCasinoData.questions[`bet_${i}`] || "";
+            row.querySelector(`[data-bet="${i}"][data-type="odds"]`).value = originalCasinoData.odds[`bet_${i}`] || 1;
+            row.querySelector(`[data-bet="${i}"][data-type="maxBet"]`).value = originalCasinoData.maxBet[`bet_${i}`] || 10;
+            row.querySelector(`[data-bet="${i}"][data-type="willPayOut"]`).checked = originalCasinoData.willPayOut[`bet_${i}`] === "true";
+        }
+    }
+
+    // Define the updateCasinoData function to update the casino table
+    async function updateCasinoData(updatedData) {
+        // Prepare an array of update objects based on team_id mappings:
+        const updates = [
+            { team_id: -1, ...updatedData.enabled },
+            { team_id: -2, ...updatedData.questions },
+            { team_id: 0,  ...updatedData.odds },
+            { team_id: -3, ...updatedData.maxBet },
+            { team_id: -4, ...updatedData.willPayOut },
+        ];
+
+        // Iterate over each update and apply it to the Supabase table
+        for (let update of updates) {
+            let { error } = await supabase
+                .from("casino")
+                .update(update)
+                .eq("team_id", update.team_id);
+            if (error) {
+                console.error(`Error updating casino data for team_id ${update.team_id}:`, error);
+                throw error;
             }
+        }
+    }
 
-            function populateCasinoTable() {
-                casinoRows.innerHTML = "";
+    // Detect changes and enable Save button
+    document.getElementById("casino-form").addEventListener("input", () => {
+        saveCasinoChanges.disabled = false;
+    });
 
-                for (let i = 1; i <= 5; i++) {
-                    const row = document.createElement("tr");
+    // Handle Save for Casino Settings
+    saveCasinoChanges.addEventListener("click", async function (event) {
+        event.preventDefault();
 
-                    row.innerHTML = `
-                        <td>${i}</td>
-                        <td>
-                            <div class="form-check form-switch">
-                                <input type="checkbox" class="form-check-input" data-bet="${i}" data-type="enabled">
-                            </div>
-                        </td>
-                        <td><input type="text" class="form-control" data-bet="${i}" data-type="question"></td>
-                        <td><input type="number" class="form-control" data-bet="${i}" data-type="odds"></td>
-                        <td><input type="number" class="form-control" data-bet="${i}" data-type="maxBet"></td>
-                        <td>
-                            <div class="form-check form-switch">
-                                <input type="checkbox" class="form-check-input" data-bet="${i}" data-type="willPayOut">
-                            </div>
-                        </td>
-                    `;
+        let updatedData = {
+            enabled: {},
+            questions: {},
+            odds: {},
+            maxBet: {},
+            willPayOut: {},
+        };
 
-                    casinoRows.appendChild(row);
+        for (let i = 1; i <= 5; i++) {
+            updatedData.enabled[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="enabled"]`).checked.toString();
+            updatedData.questions[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="question"]`).value;
+            updatedData.odds[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="odds"]`).value;
+            updatedData.maxBet[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="maxBet"]`).value;
+            updatedData.willPayOut[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="willPayOut"]`).checked.toString();
+        }
 
-                    row.querySelector(`[data-bet="${i}"][data-type="enabled"]`).checked = originalCasinoData.enabled[`bet_${i}`] === "true";
-                    row.querySelector(`[data-bet="${i}"][data-type="question"]`).value = originalCasinoData.questions[`bet_${i}`] || "";
-                    row.querySelector(`[data-bet="${i}"][data-type="odds"]`).value = originalCasinoData.odds[`bet_${i}`] || 1;
-                    row.querySelector(`[data-bet="${i}"][data-type="maxBet"]`).value = originalCasinoData.maxBet[`bet_${i}`] || 10;
-                    row.querySelector(`[data-bet="${i}"][data-type="willPayOut"]`).checked = originalCasinoData.willPayOut[`bet_${i}`] === "true";
-                }
-            }
+        // Update Supabase with the new casino settings
+        try {
+            await updateCasinoData(updatedData);
+            saveCasinoChanges.disabled = true;
+            alert("Casino settings updated!");
+        } catch (error) {
+            console.error("Failed to update casino settings:", error);
+            alert("There was an error updating the casino settings. Please try again.");
+        }
+    });
 
-            // Detect changes and enable Save button
-            document.getElementById("casino-form").addEventListener("input", () => {
-                saveCasinoChanges.disabled = false;
-            });
+    // Save Casino Enabled Status
+    casinoStatus.addEventListener("change", function () {
+        casinoStatusLabel.textContent = casinoStatus.checked ? "Enabled" : "Disabled";
+        saveCasinoDashboard.disabled = false;
+    });
 
-            // Handle Save for Casino Settings
-            saveCasinoChanges.addEventListener("click", async function (event) {
-                event.preventDefault();
+    saveCasinoDashboard.addEventListener("click", async function (event) {
+        event.preventDefault();
+        let { error } = await supabase
+            .from("form_details")
+            .update({ casino_enabled: casinoStatus.checked.toString() })
+            .eq("id", 1);
+        if (error) {
+            console.error("Error updating casino status:", error);
+            alert("Failed to update casino status.");
+            return;
+        }
+        saveCasinoDashboard.disabled = true;
+        alert("Casino status updated!");
+    });
 
-                let updatedData = {
-                    enabled: {},
-                    questions: {},
-                    odds: {},
-                    maxBet: {},
-                    willPayOut: {},
-                };
-
-                for (let i = 1; i <= 5; i++) {
-                    updatedData.enabled[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="enabled"]`).checked.toString();
-                    updatedData.questions[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="question"]`).value;
-                    updatedData.odds[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="odds"]`).value;
-                    updatedData.maxBet[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="maxBet"]`).value;
-                    updatedData.willPayOut[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="willPayOut"]`).checked.toString();
-                }
-
-                // Update Supabase
-                await updateCasinoData(updatedData);
-
-                saveCasinoChanges.disabled = true;
-                alert("Casino settings updated!");
-            });
-
-            // Save Casino Enabled Status
-            casinoStatus.addEventListener("change", function () {
-                casinoStatusLabel.textContent = casinoStatus.checked ? "Enabled" : "Disabled";
-                saveCasinoDashboard.disabled = false;
-            });
-
-            saveCasinoDashboard.addEventListener("click", async function (event) {
-                event.preventDefault();
-                await supabase.from("form_details").update({ casino_enabled: casinoStatus.checked.toString() }).eq("id", 1);
-                saveCasinoDashboard.disabled = true;
-                alert("Casino status updated!");
-            });
-
-            await fetchCasinoStatus();
-            await fetchCasinoData();
-        });
+    await fetchCasinoStatus();
+    await fetchCasinoData();
+});
     </script>
 </body>
 </html>
