@@ -539,7 +539,7 @@ footer {
 /* ---------- Form Countdown Timer Styling ---------- */
 /* ---------- Form Countdown Timer Styling ---------- */
 /* ---------- Form Countdown Timer Styling ---------- */
-#form-countdown-container {
+#form-countdown-container, #card-countdown-container, #casino-countdown-container {
   background-color: #f0f0f0;      /* Light grey background */
   color: #333;                  /* Dark text */
   font-family: 'Press Start 2P', monospace;
@@ -555,7 +555,7 @@ footer {
 }
 
 
-#form-countdown {
+#form-countdown, #card-countdown, #casino-countdown {
   font-family: 'Press Start 2P', monospace;
   font-size: 0.8rem;
   letter-spacing: 0.05em;
