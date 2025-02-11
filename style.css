@@ -536,6 +536,31 @@ footer {
   letter-spacing: 0.05em;
 }
 
+/* ---------- Form Countdown Timer Styling ---------- */
+/* ---------- Form Countdown Timer Styling ---------- */
+/* ---------- Form Countdown Timer Styling ---------- */
+#form-countdown-container {
+  background-color: #f0f0f0;      /* Light grey background */
+  color: #333;                  /* Dark text */
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border: 3px solid #ccc;
+  text-align: center;
+  margin: 20px auto;            /* Center horizontally */
+  display: inline-block;        /* Shrink-wrap the content */
+  width: -moz-fit-content;      /* Firefox */
+  width: -webkit-fit-content;   /* Webkit */
+  width: fit-content;           /* Standard */
+}
+
+
+#form-countdown {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
 /* ===== Bootstrap Underline Tabs with Pixel Font ===== */
 .nav-underline .nav-item .nav-link {
   font-family: 'Pixeloid Sans', Helvetica, Arial, sans-serif; /* Apply Pixel Font */

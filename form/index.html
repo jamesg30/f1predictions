@@ -97,32 +97,37 @@
     <main class="container my-5">
     <div class="container my-5">
         <h2 id="form-title" class="mb-3 pixel-art-heading-3">Form</h2>
+        <!-- Form Countdown Timer -->
+        <div id="form-countdown-container" style="display: none;">
+            <strong>Time left: </strong>
+            <span id="form-countdown"></span>
+        </div>
         <div id="form-content">
             <form id="prediction-form" action="/submit" method="POST">
                 <div id="form-section-1"></div>
                 <!-- Add this to your HTML body, preferably near the player name input field -->
                  <!-- Loading Indicator for Form Blocks -->
-<div id="formLoading" class="loading-indicator mb-3 pixel-art-heading-2" style="display: none;">
-    Form loading...
-    <div class="loading-bar"></div>
-  </div>
-  
+                <div id="formLoading" class="loading-indicator mb-3 pixel-art-heading-2" style="display: none;">
+                    Form loading...
+                    <div class="loading-bar"></div>
+                </div>
                 <div id="repeated-predictions-alert" class="alert alert-warning d-none" role="alert">
                     Player has already submitted predictions. Submitting new predictions will override the previous ones.
                 </div>
                 <div class="alert alert-info" role="alert">
                     Not seeing your name? Register at the <a href="/register">Register Page</a>.
                 </div>
-                <div><p><i>For detailed question rules, please see info page.</i></p></div>
+                <div>
+                    <p><i>For detailed question rules, please see info page.</i></p>
+                </div>
                 
                 <hr>
                 
                 <!-- Starting Grid Block with Image -->
-                <!-- Starting Grid Block with Image -->
-<div id="starting-grid">
-    <h5 class="mb-3 pixel-art-heading-2">Starting Grid</h5>
-    <img id="startingGridPlaceholder" src="" alt="Starting Grid" style="max-width: 100%; max-height: 300px; height: auto;" />
-</div>
+                <div id="starting-grid">
+                    <h5 class="mb-3 pixel-art-heading-2">Starting Grid</h5>
+                    <img id="startingGridPlaceholder" src="" alt="Starting Grid" style="max-width: 100%; max-height: 300px; height: auto;" />
+                </div>
                 
                 <hr>
 
@@ -164,228 +169,333 @@
     <!-- Form Script -->
     <script type="module">
         import { generateFormBlocks } from '/script.js';
-    
-        // Check if the form is enabled
-async function checkFormStatus() {
-    try {
-        const { data: formDetails, error: formDetailsError } = await supabase
-            .from('form_details')
-            .select('form_enabled')
-            .eq('id', 1)
-            .single();
-
-        if (formDetailsError) {
-            console.error('Error fetching form status:', formDetailsError);
-            return false;
-        }
-
-        return formDetails.form_enabled;
-    } catch (error) {
-        console.error('Error fetching form status:', error);
-        return false;
-    }
-}
-
-document.addEventListener('DOMContentLoaded', async () => {
-    // Check if the form is enabled
-    const formEnabled = await checkFormStatus();
-
-    if (!formEnabled) {
-        document.getElementById('form-content').innerHTML = '<div class="alert alert-warning" role="alert">The form is currently disabled.</div>';
-        return;
-    }
-
-    // Update the form title based on the race name
-    await updateFormTitle();
-
-
-    const loadingIndicator = document.getElementById('formLoading');
-    loadingIndicator.style.display = 'block';
-
-    const form = document.getElementById('prediction-form');
-    const alertContainer = document.getElementById('repeated-predictions-alert');
-    const startingGridPlaceholder = document.getElementById("startingGridPlaceholder");
-const bucketName = "media";
-const fileNamePrefix = "current_starting_grid";
-const fileExtensions = ["png", "jpg", "jpeg"];
-    let existingSubmissions = [];
-
-    // Fetch form configuration to determine required fields
-    let formConfig = [];
-    async function fetchFormConfig() {
-        const { data, error } = await supabase
-            .from('form_configuration')
-            .select('id, enabled');
-        if (error) {
-            console.error('Error fetching form configuration:', error);
-            return;
-        }
-        formConfig = data;
-    }
-
-    await fetchFormConfig();
-
-    // Load existing submissions on page load
-    async function loadExistingSubmissions() {
-        const { data: formDetails, error: formDetailsError } = await supabase
-            .from('form_details')
-            .select('race_number')
-            .eq('id', 1)
-            .single();
-
-        if (formDetailsError) {
-            console.error('Error fetching form details:', formDetailsError);
-            return;
-        }
-
-        const raceNumber = formDetails.race_number;
-
-        const { data: submissions, error: submissionsError } = await supabase
-            .from('form_raw')
-            .select('player_id')
-            .eq('race_number', raceNumber);
-
-        if (submissionsError) {
-            console.error('Error fetching existing submissions:', submissionsError);
-            return;
-        }
-
-        existingSubmissions = submissions.map(submission => submission.player_id);
-        console.log('Existing Submissions:', existingSubmissions); // Debugging log
-    }
-
-    await loadExistingSubmissions();
-
-    // Load the starting grid image
-// Load the starting grid image
-// Load the starting grid image
-// Load the starting grid image
-// Load the starting grid image
-// Load the starting grid image
-// Load the starting grid image
-async function loadStartingGridImage() {
-    console.log("Loading starting grid image...");
-    for (const ext of fileExtensions) {
-        const fileName = `${fileNamePrefix}.${ext}`;
-        const { data, error } = await supabase.storage
-            .from(bucketName)
-            .download(fileName);
-
-        if (error) {
-            console.log(`Error loading ${fileName}:`, error.message);
-        } else {
-            console.log(`Loaded ${fileName}`);
-            const url = URL.createObjectURL(data);
-            startingGridPlaceholder.src = url;
-            return; // Exit the loop once the file is found
-        }
-    }
-    console.error("No matching file found");
-    startingGridPlaceholder.src = ""; // Reset if no matching file found
-}
-
-    await loadStartingGridImage();
-
-    // Dynamically populate the form based on configuration
-    await generateFormBlocks(); // Generates the form sections
-
-    // Add event listener to player name input after form is generated
-    const playerNameInput = document.querySelector('#input-1'); // Select the input with id-1
-    if (playerNameInput) {
-        playerNameInput.addEventListener('change', () => {
-            const playerId = Number(playerNameInput.value); // Convert to number
-            if (existingSubmissions.includes(playerId)) {
-                alertContainer.classList.remove('d-none');
-            } else {
-                alertContainer.classList.add('d-none');
+      
+        // -------------------------------
+        // FETCH RACE DETAILS
+        // -------------------------------
+        async function fetchRaceDetails() {
+          try {
+            // First, fetch the race number from form_details
+            const { data: formDetails, error: formDetailsError } = await supabase
+              .from('form_details')
+              .select('race_number')
+              .eq('id', 1)
+              .single();
+            if (formDetailsError) {
+              console.error('Error fetching form details:', formDetailsError);
+              return null;
             }
-        });
-    }
-
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault(); // Prevent default form submission
-
-        // Fetch form details
-        const { data: formDetails, error: formDetailsError } = await supabase
-            .from('form_details')
-            .select('race_number, form_enabled')
-            .eq('id', 1)
-            .single();
-
-        if (formDetailsError) {
-            alert('Error fetching form details');
-            console.error('Error fetching form details:', formDetailsError);
-            return;
+            const raceNumber = formDetails.race_number;
+        
+            // Then, fetch the race details from the calendar table
+            const { data: raceDetails, error: raceDetailsError } = await supabase
+              .from('calendar')
+              .select('*')
+              .eq('race_number', raceNumber)
+              .single();
+            if (raceDetailsError) {
+              console.error('Error fetching race details:', raceDetailsError);
+              return null;
+            }
+        
+            return raceDetails;
+          } catch (error) {
+            console.error('Error fetching race details:', error);
+            return null;
+          }
         }
-
-        if (!formDetails.form_enabled) {
-            alert('Form submissions are currently closed.');
+        
+        // -------------------------------
+        // START FORM COUNTDOWN TIMER
+        // -------------------------------
+        /**
+         * Starts a countdown for the form until the race begins.
+         * @param {Date} targetDate - The race start date.
+         * @param {function} onEnd - Callback executed when countdown reaches zero.
+         */
+        function startFormCountdown(targetDate, onEnd) {
+          const countdownElement = document.getElementById("form-countdown");
+          if (!countdownElement) {
+            console.error("Countdown element not found.");
             return;
+          }
+        
+          function updateCountdown() {
+            const now = new Date();
+            const timeLeft = targetDate - now;
+        
+            if (timeLeft <= 0) {
+              clearInterval(timer);
+              countdownElement.textContent = "Race has started!";
+              if (typeof onEnd === "function") {
+                onEnd();
+              }
+              return;
+            }
+        
+            // Calculate days, hours, minutes, seconds
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        
+            let countdownStr = "";
+            if (days > 0) {
+              countdownStr += `${days}d `;
+            }
+            countdownStr += `${hours}h ${minutes}m ${seconds}s`;
+        
+            countdownElement.textContent = countdownStr;
+          }
+        
+          updateCountdown();
+          const timer = setInterval(updateCountdown, 1000);
         }
-
-        // Collect form data
-        const formData = new FormData(form);
-        const playerId = Number(formData.get('input-1')); // Convert to number
-        const raceNumber = formDetails.race_number;
-
-        // Validate required fields
-        for (const config of formConfig) {
-            if (config.enabled) {
+        
+        // -------------------------------
+        // CHECK FORM ENABLED STATUS
+        // -------------------------------
+        async function checkFormStatus() {
+          try {
+            const { data: formDetails, error: formDetailsError } = await supabase
+              .from('form_details')
+              .select('form_enabled')
+              .eq('id', 1)
+              .single();
+        
+            if (formDetailsError) {
+              console.error('Error fetching form status:', formDetailsError);
+              return false;
+            }
+        
+            return formDetails.form_enabled;
+          } catch (error) {
+            console.error('Error fetching form status:', error);
+            return false;
+          }
+        }
+        
+        // -------------------------------
+        // MAIN FORM PAGE LOGIC
+        // -------------------------------
+        document.addEventListener('DOMContentLoaded', async () => {
+          // First, fetch both the form enabled status and the race details
+          const formEnabled = await checkFormStatus();
+          const raceDetails = await fetchRaceDetails();
+          let raceHasStarted = false;
+        
+          if (raceDetails) {
+            const raceStart = new Date(raceDetails.date);
+            raceHasStarted = new Date() >= raceStart;
+        
+            // Optionally update the form title (if updateFormTitle is defined elsewhere)
+            await updateFormTitle();
+        
+            // Show the form countdown container and start the countdown if the race hasn't started yet
+            const formCountdownContainer = document.getElementById("form-countdown-container");
+            if (formCountdownContainer) {
+              formCountdownContainer.style.display = "block";
+            }
+            if (!raceHasStarted) {
+              startFormCountdown(raceStart, () => {
+                // When the countdown ends, disable the form automatically
+                document.getElementById('form-content').innerHTML = '<div class="alert alert-warning" role="alert">The form is now closed as the race has started.</div>';
+              });
+            }
+          }
+        
+          // If the form is not enabled OR the race has already started, show a closed message and exit.
+          if (!formEnabled || raceHasStarted) {
+            document.getElementById('form-content').innerHTML = '<div class="alert alert-warning" role="alert">The form is currently closed.</div>';
+            return;
+          }
+        
+          // -------------------------------
+          // CONTINUE WITH EXISTING FORM LOGIC
+          // -------------------------------
+          const loadingIndicator = document.getElementById('formLoading');
+          loadingIndicator.style.display = 'block';
+        
+          const form = document.getElementById('prediction-form');
+          const alertContainer = document.getElementById('repeated-predictions-alert');
+          const startingGridPlaceholder = document.getElementById("startingGridPlaceholder");
+          const bucketName = "media";
+          const fileNamePrefix = "current_starting_grid";
+          const fileExtensions = ["png", "jpg", "jpeg"];
+          let existingSubmissions = [];
+        
+          // Fetch form configuration to determine required fields
+          let formConfig = [];
+          async function fetchFormConfig() {
+            const { data, error } = await supabase
+              .from('form_configuration')
+              .select('id, enabled');
+            if (error) {
+              console.error('Error fetching form configuration:', error);
+              return;
+            }
+            formConfig = data;
+          }
+        
+          await fetchFormConfig();
+        
+          // Load existing submissions on page load
+          async function loadExistingSubmissions() {
+            const { data: formDetails, error: formDetailsError } = await supabase
+              .from('form_details')
+              .select('race_number')
+              .eq('id', 1)
+              .single();
+        
+            if (formDetailsError) {
+              console.error('Error fetching form details:', formDetailsError);
+              return;
+            }
+        
+            const raceNumber = formDetails.race_number;
+        
+            const { data: submissions, error: submissionsError } = await supabase
+              .from('form_raw')
+              .select('player_id')
+              .eq('race_number', raceNumber);
+        
+            if (submissionsError) {
+              console.error('Error fetching existing submissions:', submissionsError);
+              return;
+            }
+        
+            existingSubmissions = submissions.map(submission => submission.player_id);
+            console.log('Existing Submissions:', existingSubmissions); // Debug log
+          }
+        
+          await loadExistingSubmissions();
+        
+          // Load the starting grid image
+          async function loadStartingGridImage() {
+            console.log("Loading starting grid image...");
+            for (const ext of fileExtensions) {
+              const fileName = `${fileNamePrefix}.${ext}`;
+              const { data, error } = await supabase.storage
+                .from(bucketName)
+                .download(fileName);
+        
+              if (error) {
+                console.log(`Error loading ${fileName}:`, error.message);
+              } else {
+                console.log(`Loaded ${fileName}`);
+                const url = URL.createObjectURL(data);
+                startingGridPlaceholder.src = url;
+                return; // Exit once a file is found
+              }
+            }
+            console.error("No matching file found");
+            startingGridPlaceholder.src = ""; // Reset if no file found
+          }
+        
+          await loadStartingGridImage();
+        
+          // Dynamically populate the form based on configuration
+          await generateFormBlocks(); // Generates the form sections
+        
+          // Add event listener to player name input after form is generated
+          const playerNameInput = document.querySelector('#input-1'); // Select the input with id-1
+          if (playerNameInput) {
+            playerNameInput.addEventListener('change', () => {
+              const playerId = Number(playerNameInput.value);
+              if (existingSubmissions.includes(playerId)) {
+                alertContainer.classList.remove('d-none');
+              } else {
+                alertContainer.classList.add('d-none');
+              }
+            });
+          }
+        
+          // Handle form submission
+          form.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent default submission
+        
+            // Fetch form details
+            const { data: formDetails, error: formDetailsError } = await supabase
+              .from('form_details')
+              .select('race_number, form_enabled')
+              .eq('id', 1)
+              .single();
+        
+            if (formDetailsError) {
+              alert('Error fetching form details');
+              console.error('Error fetching form details:', formDetailsError);
+              return;
+            }
+        
+            if (!formDetails.form_enabled) {
+              alert('Form submissions are currently closed.');
+              return;
+            }
+        
+            // Collect form data
+            const formData = new FormData(form);
+            const playerId = Number(formData.get('input-1'));
+            const raceNumber = formDetails.race_number;
+        
+            // Validate required fields
+            for (const config of formConfig) {
+              if (config.enabled) {
                 const value = formData.get(`input-${config.id}`);
                 if (!value) {
-                    alert(`Please fill out all required fields.`);
-                    return;
+                  alert(`Please fill out all required fields.`);
+                  return;
                 }
+              }
             }
-        }
-
-        // Check if the player has already submitted predictions for this race
-        if (existingSubmissions.includes(playerId)) {
-            alertContainer.classList.remove('d-none');
-        }
-
-        // Prepare submission data
-        const submissionData = {
-            submission_time: new Date().toISOString(),
-            race_number: raceNumber,
-            player_id: playerId,
-        };
-
-        // Collect all form inputs
-        for (let i = 2; i <= 28; i++) {
-            submissionData[`form_id_${i}`] = formData.get(`input-${i}`);
-        }
-
-        // Save to Supabase (insert or update)
-        let saveError;
-        if (existingSubmissions.includes(playerId)) {
-            const { error: updateError } = await supabase
+        
+            // Check if the player has already submitted predictions for this race
+            if (existingSubmissions.includes(playerId)) {
+              alertContainer.classList.remove('d-none');
+            }
+        
+            // Prepare submission data
+            const submissionData = {
+              submission_time: new Date().toISOString(),
+              race_number: raceNumber,
+              player_id: playerId,
+            };
+        
+            // Collect all form inputs
+            for (let i = 2; i <= 28; i++) {
+              submissionData[`form_id_${i}`] = formData.get(`input-${i}`);
+            }
+        
+            // Save to Supabase (insert or update)
+            let saveError;
+            if (existingSubmissions.includes(playerId)) {
+              const { error: updateError } = await supabase
                 .from('form_raw')
                 .update(submissionData)
                 .eq('player_id', playerId)
                 .eq('race_number', raceNumber);
-            saveError = updateError;
-        } else {
-            const { error: insertError } = await supabase
+              saveError = updateError;
+            } else {
+              const { error: insertError } = await supabase
                 .from('form_raw')
                 .insert([submissionData]);
-            saveError = insertError;
-        }
-
-        if (saveError) {
-            alert('Error saving form submission');
-            console.error('Error saving form submission:', saveError);
-            return;
-        }
-
-        // Store submission data in local storage
-        localStorage.setItem('submissionData', JSON.stringify(submissionData));
-
-        // Redirect to confirmation page
-        window.location.href = '/confirmation';
-    });
-});
-    </script>
+              saveError = insertError;
+            }
+        
+            if (saveError) {
+              alert('Error saving form submission');
+              console.error('Error saving form submission:', saveError);
+              return;
+            }
+        
+            // Store submission data in local storage
+            localStorage.setItem('submissionData', JSON.stringify(submissionData));
+        
+            // Redirect to confirmation page
+            window.location.href = '/confirmation';
+          });
+        });
+      </script>
+      
     
     <!-- Bootstrap JS Bundle -->
     <script src="/js/bootstrap.bundle.min.js"></script>

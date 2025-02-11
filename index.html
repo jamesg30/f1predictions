@@ -77,13 +77,13 @@
     </header>    
 
     <!-- Full-Width Image Section with Centered Text -->
-<section class="full-width-image-container">
-    <img src="/media/ferrari_background.png" alt="Full Width Image" class="full-width-image">
-    <div class="overlay"></div> <!-- Transparent black layer -->
+        <section class="full-width-image-container">
+            <img src="/media/ferrari_background.png" alt="Full Width Image" class="full-width-image">
+            <div class="overlay"></div> <!-- Transparent black layer -->
 
-    <!-- Centered Text -->
-    <h2  class="centered-text-pixel-art-heading">F1 Predictions Form</h2>
-</section>
+            <!-- Centered Text -->
+            <h2  class="centered-text-pixel-art-heading">F1 Predictions Form</h2>
+        </section>
 
     <main class="container my-5">
         <div class="row g-4">
@@ -97,7 +97,7 @@
                 </div>
             </div>
     
-        <!-- Right Column: Quick Links -->
+    <!-- Right Column: Quick Links -->
         <div class="col-md-6">
             <div class="text-center">
                 <h5 class="mb-3 pixel-art-body">Quick Links:</h5>
@@ -115,106 +115,104 @@
 
         </div>
     
-        <!-- Next Race Section -->
-<!-- Next Race Section -->
-<div class="text-center mt-5">
-    <h5 class="pixel-art-body">Next Race:</h5>
-    <div id="next-race-info" class="mt-3">
-        <p class="pixel-art-body-small">Loading next race...</p>
-    </div>
-    <!-- Removed the separate #countdown-timer container -->
-</div>
-<hr>
-<!-- Scored Results Section -->
-<div id="scoredResults" style="display: none;"> <!-- Scored Results Placeholder -->
-    <div class="container my-3 d-flex justify-content-left">
-        <h4 class="mb-3 pixel-art-heading-3">Latest Results</h4>
-    </div>
-    <div class="container my-4">
-        <h5 id="raceTitle" class="mb-3 pixel-art-heading-2"></h5>
-        <!-- Loading Indicator for Scored Results -->
-        <div id="scoredLoading" class="loading-indicator mb-3 pixel-art-heading-2">
-            Results loading...
-            <div class="loading-bar"></div>
+    <!-- Next Race Section -->
+        <div class="text-center mt-5">
+            <h5 class="pixel-art-body">Next Race:</h5>
+            <div id="next-race-info" class="mt-3">
+                <p class="pixel-art-body-small">Loading next race...</p>
+            </div>
         </div>
-        <table id="resultsTable">
-            <tbody>
-                <tr>
-                    <td style="vertical-align: middle;">
-                        <p>
-                            <img src="/media/awards/medal_first.png" style="float:left; width: 16px; height: 26px; image-rendering: pixelated; margin-right: 10px;">
-                            <span id="firstPlace" class="pixel-art-body"></span>
-                        </p>
-                    </td>
-                    <td style="vertical-align: middle;">
-                        <p>
-                            <img src="/media/awards/medal_second.png" style="float:left; width: 16px; height: 26px; image-rendering: pixelated; margin-right: 10px; margin-left: 10px;">
-                            <span id="secondPlace" class="mb-3 pixel-art-body"></span>
-                        </p>
-                    </td>
-                    <td style="vertical-align: middle;">
-                        <p>
-                            <img src="/media/awards/medal_third.png" style="float:left; width: 16px; height: 26px; image-rendering: pixelated; margin-right: 10px; margin-left: 10px;">
-                            <span id="thirdPlace" class="mb-3 pixel-art-body"></span>
-                        </p>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    
-        <!-- Scrollable container for main results table -->
-        <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
-            <table id="mainResultsTable" class="table table-sm table-bordered">
-                <thead id="tableHeader">
-                    <!-- Header row will be inserted here -->
-                </thead>
-                <tbody id="tableBody">
-                    <!-- Data rows will be inserted here -->
-                </tbody>
-            </table>
+        <hr>
+        <!-- Scored Results Section -->
+        <div id="scoredResults" style="display: none;"> <!-- Scored Results Placeholder -->
+            <div class="container my-3 d-flex justify-content-left">
+                <h4 class="mb-3 pixel-art-heading-3">Latest Results</h4>
+            </div>
+            <div class="container my-4">
+                <h5 id="raceTitle" class="mb-3 pixel-art-heading-2"></h5>
+                <!-- Loading Indicator for Scored Results -->
+                <div id="scoredLoading" class="loading-indicator mb-3 pixel-art-heading-2">
+                    Results loading...
+                    <div class="loading-bar"></div>
+                </div>
+                <table id="resultsTable">
+                    <tbody>
+                        <tr>
+                            <td style="vertical-align: middle;">
+                                <p>
+                                    <img src="/media/awards/medal_first.png" style="float:left; width: 16px; height: 26px; image-rendering: pixelated; margin-right: 10px;">
+                                    <span id="firstPlace" class="pixel-art-body"></span>
+                                </p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p>
+                                    <img src="/media/awards/medal_second.png" style="float:left; width: 16px; height: 26px; image-rendering: pixelated; margin-right: 10px; margin-left: 10px;">
+                                    <span id="secondPlace" class="mb-3 pixel-art-body"></span>
+                                </p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p>
+                                    <img src="/media/awards/medal_third.png" style="float:left; width: 16px; height: 26px; image-rendering: pixelated; margin-right: 10px; margin-left: 10px;">
+                                    <span id="thirdPlace" class="mb-3 pixel-art-body"></span>
+                                </p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            
+                <!-- Scrollable container for main results table -->
+                <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
+                    <table id="mainResultsTable" class="table table-sm table-bordered">
+                        <thead id="tableHeader">
+                            <!-- Header row will be inserted here -->
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-check form-switch">
+                    <label class="form-check-label" for="toggleScores">Show Detailed Scoring</label>
+                    <input class="form-check-input form-switch-input" type="checkbox" id="toggleScores">
+                </div>
+                <div id="lowestScores" class="mt-3">
+                    <!-- Lowest scores will be displayed here -->
+                </div>
+            </div>
         </div>
-        <div class="form-check form-switch">
-            <label class="form-check-label" for="toggleScores">Show Detailed Scoring</label>
-            <input class="form-check-input form-switch-input" type="checkbox" id="toggleScores">
-        </div>
-        <div id="lowestScores" class="mt-3">
-            <!-- Lowest scores will be displayed here -->
-        </div>
-    </div>
-</div>
 
-<!-- Unscored Predictions Section -->
-<div id="unscoredPredictions" style="display: none;"> <!-- Unscored Predictions Placeholder -->
-    <div class="container my-3 d-flex justify-content-left">
-        <h4 class="mb-3 pixel-art-heading-3">Unscored Predictions</h4>
-    </div>
-    <div class="container my-4">
-        <h5 id="unscoredRaceTitle" class="mb-3 pixel-art-heading-2"></h5>
-        <!-- Loading Indicator for Unscored Predictions -->
-        <div id="unscoredLoading" class="loading-indicator mb-3 pixel-art-heading-2">
-            Predictions loading...
-            <div class="loading-bar"></div>
+    <!-- Unscored Predictions Section -->
+        <div id="unscoredPredictions" style="display: none;"> <!-- Unscored Predictions Placeholder -->
+            <div class="container my-3 d-flex justify-content-left">
+                <h4 class="mb-3 pixel-art-heading-3">Unscored Predictions</h4>
+            </div>
+            <div class="container my-4">
+                <h5 id="unscoredRaceTitle" class="mb-3 pixel-art-heading-2"></h5>
+                <!-- Loading Indicator for Unscored Predictions -->
+                <div id="unscoredLoading" class="loading-indicator mb-3 pixel-art-heading-2">
+                    Predictions loading...
+                    <div class="loading-bar"></div>
+                </div>
+                <!-- Scrollable container for unscored results table -->
+                <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
+                    <table id="unscoredResultsTable" class="table table-sm table-bordered">
+                        <thead id="unscoredTableHeader">
+                            <!-- Header row will be inserted here -->
+                        </thead>
+                        <tbody id="unscoredTableBody">
+                            <!-- Data rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-        <!-- Scrollable container for unscored results table -->
-        <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
-            <table id="unscoredResultsTable" class="table table-sm table-bordered">
-                <thead id="unscoredTableHeader">
-                    <!-- Header row will be inserted here -->
-                </thead>
-                <tbody id="unscoredTableBody">
-                    <!-- Data rows will be inserted here -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
 
-<!-- No Display Section -->
-<div id="noDisplay" style="display: none;"> <!-- No Display Placeholder -->
-    <div class="container my-3 d-flex justify-content-left">
-        <h4 class="mb-3 pixel-art-heading-2">No results to display</h4>
-    </div>
-</div>
+    <!-- No Display Section -->
+        <div id="noDisplay" style="display: none;"> <!-- No Display Placeholder -->
+            <div class="container my-3 d-flex justify-content-left">
+                <h4 class="mb-3 pixel-art-heading-2">No results to display</h4>
+            </div>
+        </div>
         
 
         <div class="row g-4">
@@ -371,7 +369,7 @@ function startGenericCountdown(targetDate, countdownElementId, onEnd) {
 
     if (timeLeft <= 0) {
       clearInterval(timer);
-      countdownElement.textContent = "Time's up!";
+      countdownElement.textContent = "Race has started!";
       countdownElement.classList.add("countdown-update");
       if (typeof onEnd === "function") {
         onEnd();
