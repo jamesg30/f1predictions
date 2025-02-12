@@ -224,11 +224,39 @@ export async function generateFormBlocks() {
                     break;
                 }
                 case 'Select - Name List': {
-                    // Sort players in alphabetical order by name
-                    const sortedPlayers = [...players].sort((a, b) => a.name.localeCompare(b.name));
-                    createDropdown(block, sortedPlayers, `input-${config.id}`, 'Select a name');
+                    // Retrieve the logged-in player's ID from cookies
+                    const loggedInPlayerId = getCookie("playerId");
+                    let displayText = "Please log in";
+                
+                    if (loggedInPlayerId) {
+                        // Find the player's name using the ID
+                        const matchingPlayer = players.find(p => String(p.id) === String(loggedInPlayerId));
+                        if (matchingPlayer) {
+                            displayText = matchingPlayer.name;
+                        }
+                    }
+                
+                    // Create a non-editable input field styled as a form control.
+                    const displayElem = document.createElement('input');
+                    displayElem.type = 'text';
+                    displayElem.value = displayText;
+                    displayElem.className = 'form-control autofilled-player-name';
+                    displayElem.disabled = true; // Prevents user from editing
+                
+                    // Store player ID as a hidden input for submission
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = `input-${config.id}`;
+                    hiddenInput.value = loggedInPlayerId || '';
+                
+                    // Append both elements to the form block
+                    block.appendChild(displayElem);
+                    block.appendChild(hiddenInput);
+                    
                     break;
                 }
+                
+                
                 case 'Number - Integer':
                     createNumberInput(block, `input-${config.id}`, false);
                     break;
@@ -287,4 +315,283 @@ export async function fetchAndDisplayList(table, containerId) {
     });
 }
 
+// script.js (ES Module)
 
+// --- COOKIE HELPERS ---
+export function getCookie(name) {
+    const cookieArr = document.cookie.split(";");
+    for (let cookie of cookieArr) {
+      let [key, value] = cookie.split("=");
+      if (key.trim() === name) {
+        return value;
+      }
+    }
+    return null;
+  }
+  
+  export function setCookie(name, value, maxAgeInSeconds) {
+    let cookieString = `${name}=${value}; path=/;`;
+    if (maxAgeInSeconds) {
+      cookieString += ` max-age=${maxAgeInSeconds};`;
+    }
+    document.cookie = cookieString;
+  }
+  
+  export function clearCookie(name) {
+    document.cookie = `${name}=; path=/; max-age=0;`;
+  }
+  
+  // --- LOGIN SYSTEM FUNCTIONS ---
+  export async function populateLoginPlayerDropdown() {
+    const { data: players, error } = await supabase
+      .from('players')
+      .select('id, name, password')
+      .order('name');
+  
+    if (error) {
+      console.error('Error fetching players:', error);
+      return;
+    }
+  
+    document.getElementById('login-player-name').innerHTML =
+      `<option value="" disabled selected>Select a name</option>` +
+      players.map(player => `<option value="${player.id}">${player.name}</option>`).join('');
+  }
+  
+  export function showAlert(message, type) {
+    const alertContainer = document.getElementById('alert-container');
+    const alert = document.createElement('div');
+    alert.classList.add('pixel-alert', `pixel-alert-${type}`);
+    alert.innerHTML = message;
+    alertContainer.appendChild(alert);
+  
+    setTimeout(() => {
+      if (alert.parentNode) {
+        alert.parentNode.removeChild(alert);
+      }
+    }, 3000);
+  }
+  
+  // --- Color Helpers ---
+  // Returns a color from a fixed palette based on the letter (or a default color)
+  export function getColorForLetter(letter) {
+    const colors = [
+      '#FF5733', // 0
+      '#33FF57', // 1
+      '#3357FF', // 2
+      '#F333FF', // 3
+      '#33FFF3', // 4
+      '#FF33F3', // 5
+      '#F3FF33', // 6
+      '#FF8C33', // 7
+      '#33FF8C', // 8
+      '#8C33FF'  // 9
+    ];
+  
+    let index;
+    if (letter >= 'A' && letter <= 'Z') {
+      index = (letter.charCodeAt(0) - 65) % colors.length;
+    } else {
+      index = colors.length - 1;
+    }
+    return colors[index];
+  }
+  
+  // Darkens a hex color by a given percentage (0-100)
+  export function darkenColor(hex, percent) {
+    // Remove '#' if present
+    hex = hex.replace(/^#/, '');
+    // Convert 3-digit hex to 6-digit hex if needed
+    if (hex.length === 3) {
+      hex = hex.split('').map(c => c + c).join('');
+    }
+    let r = parseInt(hex.substr(0, 2), 16);
+    let g = parseInt(hex.substr(2, 2), 16);
+    let b = parseInt(hex.substr(4, 2), 16);
+    
+    // Decrease each channel by the percentage
+    r = Math.floor(r * (1 - percent / 100));
+    g = Math.floor(g * (1 - percent / 100));
+    b = Math.floor(b * (1 - percent / 100));
+    
+    // Convert back to hex, padding with zeros if needed
+    r = r.toString(16).padStart(2, '0');
+    g = g.toString(16).padStart(2, '0');
+    b = b.toString(16).padStart(2, '0');
+    return `#${r}${g}${b}`;
+  }
+  
+  // --- Avatar & UI ---
+  // Updates the user avatar using the accent color and styles it similar to the heading
+  export function updateUserAvatar(playerName) {
+    const userAvatar = document.getElementById('user-avatar');
+    if (!userAvatar) return;
+  
+    const firstLetter = playerName.charAt(0).toUpperCase();
+    const bgColor = getColorForLetter(firstLetter);
+    // Darken the chosen background color by 20% for the text shadow effect
+    const shadowColor = darkenColor(bgColor, 50);
+  
+    userAvatar.textContent = firstLetter;
+    userAvatar.style.backgroundColor = bgColor;
+    userAvatar.style.color = "#fff";
+    // Use two-layer text shadow similar to your heading (scaled down for the small avatar)
+    userAvatar.style.textShadow = `1px 1px 0 ${shadowColor}, 2px 2px 0 ${shadowColor}`;
+    // Ensure the font styling matches your heading style:
+    userAvatar.style.fontFamily = "'Press Start 2P', Helvetica, sans-serif";
+    userAvatar.style.fontWeight = "bold";
+    userAvatar.style.textAlign = "center";
+    userAvatar.style.lineHeight = userAvatar.style.height; // vertically center text
+    userAvatar.classList.remove('d-none');
+  }
+  
+  export function hideUserAvatar() {
+    const userAvatar = document.getElementById('user-avatar');
+    if (userAvatar) {
+      userAvatar.classList.add('d-none');
+      userAvatar.textContent = '';
+      userAvatar.style.backgroundColor = '';
+      userAvatar.style.textShadow = '';
+    }
+  }
+  
+  export function updateLoginUI(playerData) {
+    const playerName = playerData.name;
+  
+    // Hide the "Log In" menu item.
+    const loginMenuItem = document.getElementById('loginMenuItem');
+    if (loginMenuItem) {
+      loginMenuItem.classList.add('d-none');
+    }
+  
+    // Show "Logged in as ..." text.
+    const loggedInUserDisplay = document.getElementById('loggedInUserDisplay');
+    if (loggedInUserDisplay) {
+      loggedInUserDisplay.innerHTML = `Logged in as <strong>${playerName}</strong>`;
+      loggedInUserDisplay.classList.remove('d-none');
+    }
+  
+    // Show the "Log Out" link and attach its event listener.
+    const logoutMenuItem = document.getElementById('logoutMenuItem');
+    if (logoutMenuItem) {
+      logoutMenuItem.classList.remove('d-none');
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        if (confirm('Are you sure you want to log out?')) {
+          clearCookie("playerId");
+          loggedInUserDisplay.classList.add('d-none');
+          logoutMenuItem.classList.add('d-none');
+          if (loginMenuItem) {
+            loginMenuItem.classList.remove('d-none');
+          }
+          hideUserAvatar();
+          showAlert('You have logged out!', 'success');
+          updateFormPlayerDisplay(null);
+        }
+      });
+    }
+  
+    // Update the header avatar.
+    updateUserAvatar(playerName);
+  
+    // Close the login modal and shift focus to the hamburger menu (to avoid ARIA issues).
+    const loginModalEl = document.getElementById('loginModal');
+    let modalInstance = bootstrap.Modal.getInstance(loginModalEl);
+    if (!modalInstance) {
+      modalInstance = new bootstrap.Modal(loginModalEl);
+    }
+    modalInstance.hide();
+    setTimeout(() => {
+      document.getElementById('hamburgerMenu').focus();
+    }, 300);
+  }
+  
+  // --- INITIALIZATION ---
+  document.addEventListener("DOMContentLoaded", async () => {
+    await populateLoginPlayerDropdown();
+  
+    // Auto-login: Check for an existing cookie.
+    const playerIdCookie = getCookie("playerId");
+    if (playerIdCookie) {
+      const { data: playerData, error } = await supabase
+        .from('players')
+        .select('id, name, password')
+        .eq('id', playerIdCookie)
+        .single();
+      if (!error && playerData) {
+        updateLoginUI(playerData);
+      }
+    }
+  
+    // Login form submission handler.
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+  
+        const playerId = document.getElementById('login-player-name').value;
+        const pin = document.getElementById('login-pin').value;
+        const rememberMe = document.getElementById('rememberMe').checked;
+  
+        if (pin.length !== 4) {
+          alert('Please enter a 4-digit PIN.');
+          return;
+        }
+  
+        const { data: playerData, error } = await supabase
+          .from('players')
+          .select('id, name, password')
+          .eq('id', playerId)
+          .single();
+  
+        if (error || !playerData) {
+          alert('Error logging in. Please try again.');
+          return;
+        }
+  
+        const hashedPin = CryptoJS.MD5(pin).toString();
+  
+        if (hashedPin === playerData.password) {
+            showAlert('Login successful!', 'success');
+        
+            // Set cookie, update login UI, etc.
+            if (rememberMe) {
+                setCookie("playerId", playerId, 90 * 24 * 60 * 60);
+            } else {
+                setCookie("playerId", playerId);
+            }
+        
+            // Update the login UI in the menu, avatar, etc.
+            updateLoginUI(playerData);
+        
+            // Update the auto-filled player display in the form.
+            updateFormPlayerDisplay(playerData.name);
+        } else {
+            showAlert('Incorrect PIN. Please try again.', 'danger');
+        }
+        
+      });
+    }
+  });
+
+  export function updateFormPlayerDisplay(newPlayerName) {
+    // Look for all elements that should display the player's name.
+    const displayElems = document.querySelectorAll('.autofilled-player-name');
+    displayElems.forEach(elem => {
+      if (newPlayerName) {
+        if (elem.tagName.toLowerCase() === 'input') {
+          elem.value = newPlayerName;
+        } else {
+          elem.textContent = newPlayerName;
+        }
+      } else {
+        if (elem.tagName.toLowerCase() === 'input') {
+          elem.value = "Please log in";
+        } else {
+          elem.textContent = "Please log in";
+        }
+      }
+    });
+  }
+  
+
+  

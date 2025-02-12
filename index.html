@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/style.css">
+    <script type="module" src="/script.js"></script>
     <style> 
         /* Container for the image and overlay */
         .full-width-image-container {
@@ -58,39 +59,63 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
         var supabase = supabase.createClient(supabaseUrl, supabaseKey);
     </script>
+    <!-- Encryption Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
-    <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
-        <!-- Left Section: Logo and Heading -->
-        <div class="d-flex align-items-center">
-            <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
-                <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
+   <!-- HEADER -->
+<header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
+    <!-- Left Section: Logo and Heading -->
+    <div class="d-flex align-items-center">
+      <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
+        <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
+      </a>
+      <a href="/" class="text-decoration-none text-black">
+        <h5 class="mb-0 pixel-art-heading-2" style="font-size: 1.1rem;">F1 Predictions</h5>
+      </a>
+    </div>
+  
+    <!-- Right Section: User Avatar and Hamburger Menu -->
+    <div class="d-flex align-items-center">
+      <!-- Pixel Avatar (initially hidden) -->
+      <div id="user-avatar" class="user-avatar d-none me-2"></div>
+      <!-- Hamburger Menu Dropdown -->
+      <div class="pixel-dropdown me-3">
+        <button class="pixel-button" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
+          Menu
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
+          <!-- Other Menu Items -->
+          <li><a class="dropdown-item pixel-art-body-smallxb" href="/">Home</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <!-- Login/Logout Items -->
+          <li id="loggedInUserDisplay" class="dropdown-item-text d-none pixel-art-body-smallx" style="color: darkgrey">
+            Logged in as <strong></strong>
+          </li>
+          <li id="logoutMenuItem" class="d-none">
+            <a class="dropdown-item logout-link pixel-art-body-smallx" href="#" id="logoutBtn">
+                Log Out
             </a>
-            <a href="/" class="text-decoration-none text-black">
-                <h5 class="mb-0 pixel-art-heading-2">F1 Predictions</h5>
+          </li>
+          <li id="loginMenuItem">
+            <a class="dropdown-item pixel-art-body-smallx" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
+              Log In
             </a>
-        </div>
-        
-        <!-- Right Section: Hamburger Menu -->
-        <div class="pixel-dropdown me-3">
-            <button class="pixel-button" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
-                Menu
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
-                <li><a class="dropdown-item pixel-art-body-smallxb" href="/">Home</a></li>
-                <li><hr class="dropdown-divider"></li> <!-- Spacer -->
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
-                <li><hr class="dropdown-divider"></li> <!-- Spacer -->
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/admin">Admin</a></li>
-            </ul>
-        </div>
-    </header>    
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/admin">Admin</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+  
 
     <!-- Full-Width Image Section with Centered Text -->
         <section class="full-width-image-container">
@@ -285,6 +310,42 @@
                 2022 - Ethan
             </p>
         </div>
+
+<!-- LOGIN MODAL -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title pixel-art-heading-2" id="loginModalLabel">Login</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="login-form">
+            <div class="mb-3">
+              <label for="login-player-name" class="form-label pixel-art-body">Select Player</label>
+              <select id="login-player-name" class="form-select pixel-art-body" required>
+                <!-- Options populated dynamically -->
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="login-pin" class="form-label pixel-art-body">Enter PIN</label>
+              <input type="password" id="login-pin" class="form-control pixel-art-body" maxlength="4" pattern="\d*" required />
+            </div>
+            <div class="mb-3">
+              <label for="rememberMe" class="form-check-label pixel-art-body">
+                <input type="checkbox" id="rememberMe" class="form-check-input pixel-art-body" />
+                Remember me
+              </label>
+            </div>
+            <!-- Alert Container -->
+            <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 1050;"></div>
+            <button type="submit" class="pixel-button">Login</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
     </main>
  
     <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
@@ -1433,7 +1494,7 @@ async function renderStandingsLineChart() {
 }
 
 document.addEventListener('DOMContentLoaded', renderStandingsLineChart);
-
     </script>
+
 </body>
 </html>

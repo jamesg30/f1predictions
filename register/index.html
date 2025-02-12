@@ -11,47 +11,69 @@
     <link rel="stylesheet" href="/style.css">
     <!-- Supabase Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script type="module" src="/script.js"></script>
     <script>
         // Initialize Supabase globally
         const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
         var supabase = supabase.createClient(supabaseUrl, supabaseKey);
     </script>
-    <script type="module" src="/script.js"></script>
+    <!-- Encryption Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
     <!-- Header Section -->
     <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
         <!-- Left Section: Logo and Heading -->
         <div class="d-flex align-items-center">
-            <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
-                <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
-            </a>
-            <a href="/" class="text-decoration-none text-black">
-                <h5 class="mb-0 pixel-art-heading-2">F1 Predictions</h5>
-            </a>
+          <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
+            <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
+          </a>
+          <a href="/" class="text-decoration-none text-black">
+            <h5 class="mb-0 pixel-art-heading-2" style="font-size: 1.1rem;">F1 Predictions</h5>
+          </a>
         </div>
-        
-        <!-- Right Section: Hamburger Menu -->
-        <div class="pixel-dropdown me-3">
+      
+        <!-- Right Section: User Avatar and Hamburger Menu -->
+        <div class="d-flex align-items-center">
+          <!-- Pixel Avatar (initially hidden) -->
+          <div id="user-avatar" class="user-avatar d-none me-2"></div>
+          <!-- Hamburger Menu Dropdown -->
+          <div class="pixel-dropdown me-3">
             <button class="pixel-button" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
-                Menu
+              Menu
             </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/">Home</a></li>
-                <li><hr class="dropdown-divider"></li> <!-- Spacer -->
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
-                <li><a class="dropdown-item pixel-art-body-smallxb" href="/register">Register</a></li>
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
-                <li><hr class="dropdown-divider"></li> <!-- Spacer -->
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/admin">Admin</a></li>
+              <!-- Other Menu Items -->
+              <li><a class="dropdown-item pixel-art-body-smallx" href="/">Home</a></li>
+              <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
+              <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
+              <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
+              <li><a class="dropdown-item pixel-art-body-smallxb" href="/register">Register</a></li>
+              <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
+              <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
+              <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <!-- Login/Logout Items -->
+              <li id="loggedInUserDisplay" class="dropdown-item-text d-none pixel-art-body-smallx" style="color: darkgrey">
+                Logged in as <strong></strong>
+              </li>
+              <li id="logoutMenuItem" class="d-none">
+                <a class="dropdown-item logout-link pixel-art-body-smallx" href="#" id="logoutBtn">
+                    Log Out
+                </a>
+              </li>
+              <li id="loginMenuItem">
+                <a class="dropdown-item pixel-art-body-smallx" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
+                  Log In
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item pixel-art-body-smallx" href="/admin">Admin</a></li>
             </ul>
+          </div>
         </div>
-    </header> 
+      </header>
 
     <!-- Main Content -->
     <main class="container my-5">
@@ -71,24 +93,35 @@
         <!-- Tabs Content -->
         <div class="tab-content" id="tab-content">
             <!-- Register Player -->
-            <div id="register-player" class="tab-pane fade show active" role="tabpanel" aria-labelledby="register-player-tab">
-                <div class="d-flex justify-content-left">
-                    <h2 class="mb-3 pixel-art-heading-3">Register Player</h2>
-                </div>
-                <div class="mb-3">
-                    <label for="player-name" class="form-label">Enter Name:</label>
-                    <input type="text" id="player-name" class="form-control">
-                </div>
-                <div class="mb-3">
-                    <button id="register-player-btn" class="pixel-button primary">Register</button>
-                </div>
-                <div class="mb-3">
-                    <h4 class="mb-3 pixel-art-heading-2">Registered Players List</h4>
-                    <ul id="player-list" class="list-group">
-                        <!-- Registered players will be displayed here -->
-                    </ul>
-                </div>
-            </div>
+            <!-- Register Player -->
+<div id="register-player" class="tab-pane fade show active" role="tabpanel" aria-labelledby="register-player-tab">
+    <div class="d-flex justify-content-left">
+        <h2 class="mb-3 pixel-art-heading-3">Register Player</h2>
+    </div>
+    
+    <div class="mb-3">
+        <label for="player-name" class="form-label">Enter Name:</label>
+        <input type="text" id="player-name" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label for="player-pin" class="form-label">Enter 4-digit PIN:</label>
+        <input type="password" id="player-pin" class="form-control" maxlength="4">
+    </div>
+    
+
+    <div class="mb-3">
+        <button id="register-player-btn" class="pixel-button primary">Register</button>
+    </div>
+
+    <div class="mb-3">
+        <h4 class="mb-3 pixel-art-heading-2">Registered Players List</h4>
+        <ul id="player-list" class="list-group">
+            <!-- Registered players will be displayed here -->
+        </ul>
+    </div>
+</div>
+
 
             <!-- Register Team -->
             <div id="register-team" class="tab-pane fade" role="tabpanel" aria-labelledby="register-team-tab">
@@ -113,35 +146,66 @@
             <!-- Join Team -->
             <div id="join-team" class="tab-pane fade" role="tabpanel" aria-labelledby="join-team-tab">
                 <div id="join-team">
-                    <div class="d-flex justify-content-left">
-                        <h2 class="mb-3 pixel-art-heading-3">Join Team</h2>
-                    </div>
                     <div class="mb-3">
-                        <p>
-                           Join or move teams. To remove yourself from a team, use the 'Unassign Team' option.<br>
-                        </p>
-                    </div>
-                    <div class="mb-3">
-                        <label for="join-player-name" class="form-label">Select Name:</label>
-                        <select id="join-player-name" class="form-select"></select>
-                    </div>
-                    <div class="mb-3">
+                        <label for="join-player-name" class="form-label">Player:</label>
+                        <!-- A disabled input that will show the logged in player's name -->
+                        <input type="text" id="join-player-name" class="form-control" disabled>
+                        <!-- A helper text area to prompt login if no player is logged in -->
+                        <small id="loginPrompt" class="form-text text-muted"></small>
+                      </div>
+                      
+                      <div class="mb-3">
                         <label for="team-select" class="form-label">Select Team:</label>
                         <select id="team-select" class="form-select"></select>
-                    </div>
-                    <div class="mb-3">
+                      </div>
+                      <div class="mb-3">
                         <button id="join-team-btn" class="pixel-button primary">Join Team</button>
-                    </div>
-                    <div class="mb-3">
+                      </div>
+                      <div class="mb-3">
                         <h4 class="mb-3 pixel-art-heading-2">Current Teams</h4>
                         <ul id="join-team-list" class="list-group">
-                            <!-- Teams and their members will be displayed here -->
+                          <!-- Teams and their members will be displayed here -->
                         </ul>
-                    </div>
+                      </div>
+                      
                     
                 </div>
             </div>
         </div>
+        <!-- LOGIN MODAL -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title pixel-art-heading-2" id="loginModalLabel">Login</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="login-form">
+            <div class="mb-3">
+              <label for="login-player-name" class="form-label pixel-art-body">Select Player</label>
+              <select id="login-player-name" class="form-select pixel-art-body" required>
+                <!-- Options populated dynamically -->
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="login-pin" class="form-label pixel-art-body">Enter PIN</label>
+              <input type="password" id="login-pin" class="form-control pixel-art-body" maxlength="4" pattern="\d*" required />
+            </div>
+            <div class="mb-3">
+              <label for="rememberMe" class="form-check-label pixel-art-body">
+                <input type="checkbox" id="rememberMe" class="form-check-input pixel-art-body" />
+                Remember me
+              </label>
+            </div>
+            <!-- Alert Container -->
+            <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 1050;"></div>
+            <button type="submit" class="pixel-button">Login</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
     </main>
 
     <!-- Footer -->
@@ -150,76 +214,107 @@
     </footer>
 
     <script type="module">
-        import { fetchData, fetchAndDisplayList } from '/script.js';
+        import { fetchData, fetchAndDisplayList, getCookie} from '/script.js';
 
         async function joinTeam() {
-            const playerId = document.getElementById('join-player-name').value;
-            const teamId = document.getElementById('team-select').value;
+    // Use the cookie for the playerId
+    const playerId = getCookie("playerId");
+    if (!playerId) {
+        alert("Please log in to join a team.");
+        return;
+    }
 
-            if (!playerId) {
-                alert('Please select a name.');
-                return;
+    const teamId = document.getElementById('team-select').value;
+    if (!teamId) {
+        alert('Please select a team.');
+        return;
+    }
+
+    try {
+        console.log('Player ID:', playerId);
+        console.log('Team ID:', teamId);
+
+        // Handle "Leave Teams"
+        if (teamId === "null") {
+            const { error: leaveError } = await supabase
+                .from('players')
+                .update({ participant_team_id: null })
+                .eq('id', playerId);
+
+            if (leaveError) {
+                console.error('Error removing player from team:', leaveError);
+                throw leaveError;
             }
 
-            try {
-                console.log('Player ID:', playerId);
-                console.log('Team ID:', teamId);
-
-                // Handle "Leave Teams"
-                if (teamId === "null") {
-                    const { error: leaveError } = await supabase
-                        .from('players')
-                        .update({ participant_team_id: null })
-                        .eq('id', playerId);
-
-                    if (leaveError) {
-                        console.error('Error removing player from team:', leaveError);
-                        throw leaveError;
-                    }
-
-                    alert('Player successfully left the team!');
-                    await refreshPage();
-                    return;
-                }
-
-                // Fetch players already in the team
-                const { data: teamMembers, error: fetchError } = await supabase
-                    .from('players')
-                    .select('id')
-                    .eq('participant_team_id', teamId);
-
-                if (fetchError) {
-                    console.error('Error fetching team members:', fetchError);
-                    throw fetchError;
-                }
-
-                console.log('Team Members:', teamMembers);
-
-                // Check if the team is already full
-                if (teamMembers.length >= 2) {
-                    alert('This team is already full. Please choose another team.');
-                    return;
-                }
-
-                // Update the player's team
-                const { error: updateError } = await supabase
-                    .from('players')
-                    .update({ participant_team_id: teamId })
-                    .eq('id', playerId);
-
-                if (updateError) {
-                    console.error('Error updating player:', updateError);
-                    throw updateError;
-                }
-
-                alert('Player successfully joined the team!');
-                await refreshPage(); // Refresh the data on the page
-            } catch (err) {
-                console.error('Error in joinTeam:', err);
-                alert('An error occurred. Please try again.');
-            }
+            alert('Player successfully left the team!');
+            await refreshPage();
+            return;
         }
 
+        // Fetch players already in the team
+        const { data: teamMembers, error: fetchError } = await supabase
+            .from('players')
+            .select('id')
+            .eq('participant_team_id', teamId);
+
+        if (fetchError) {
+            console.error('Error fetching team members:', fetchError);
+            throw fetchError;
+        }
+
+        console.log('Team Members:', teamMembers);
+
+        // Check if the team is already full
+        if (teamMembers.length >= 2) {
+            alert('This team is already full. Please choose another team.');
+            return;
+        }
+
+        // Update the player's team
+        const { error: updateError } = await supabase
+            .from('players')
+            .update({ participant_team_id: teamId })
+            .eq('id', playerId);
+
+        if (updateError) {
+            console.error('Error updating player:', updateError);
+            throw updateError;
+        }
+
+        alert('Player successfully joined the team!');
+        await refreshPage(); // Refresh the data on the page
+    } catch (err) {
+        console.error('Error in joinTeam:', err);
+        alert('An error occurred. Please try again.');
+    }
+}
+
+
+        async function autofillJoinTeamPlayer() {
+    const playerId = getCookie("playerId");
+    const playerInput = document.getElementById("join-player-name");
+    const loginPrompt = document.getElementById("loginPrompt");
+
+    if (playerId) {
+        // Fetch the player's name from Supabase
+        const { data: playerData, error } = await supabase
+            .from('players')
+            .select('id, name')
+            .eq('id', playerId)
+            .single();
+        if (!error && playerData) {
+            playerInput.value = playerData.name;
+            loginPrompt.textContent = "";
+        } else {
+            playerInput.value = "";
+            loginPrompt.textContent = "Error fetching your details. Please log in again.";
+        }
+    } else {
+        // No logged-in player; prompt the user to log in.
+        playerInput.value = "";
+        loginPrompt.textContent = "Please log in to join a team.";
+    }
+}
 
 
 
@@ -264,41 +359,61 @@
 
 
         async function registerPlayer() {
-            const playerName = document.getElementById('player-name').value.trim();
-            if (!playerName) {
-                alert('Please enter a valid name.');
-                return;
-            }
+    const playerName = document.getElementById('player-name').value.trim();
+    const playerPin = document.getElementById('player-pin').value.trim();
 
-            try {
-                // Check if the player name already exists
-                const { data: existingPlayer, error: checkError } = await supabase
-                    .from('players')
-                    .select('id')
-                    .eq('name', playerName)
-                    .single();
+    // Validation checks
+    if (!playerName) {
+        alert('Please enter a valid name.');
+        return;
+    }
 
-                if (checkError && checkError.code !== 'PGRST116') {
-                    throw checkError;
-                }
+    if (!/^\d{4}$/.test(playerPin)) {
+        alert('Please enter a valid 4-digit PIN.');
+        return;
+    }
 
-                if (existingPlayer) {
-                    alert('This player name is already taken. Please choose a different name.');
-                    return;
-                }
+    // Hash the PIN using MD5 before storing
+    const hashedPin = CryptoJS.MD5(playerPin).toString();
 
-                // Add the new player
-                const { error: insertError } = await supabase.from('players').insert([{ name: playerName }]);
-                if (insertError) throw insertError;
+    try {
+        // Check if the player name already exists
+        const { data: existingPlayers, error: checkError } = await supabase
+            .from('players')
+            .select('id')
+            .eq('name', playerName);
 
-                alert('Player registered successfully!');
-                document.getElementById('player-name').value = '';
-                await fetchAndDisplayList('players', 'player-list');
-            } catch (err) {
-                console.error('Error registering player:', err);
-                alert('Failed to register player.');
-            }
+        if (checkError) {
+            console.error('Error checking for existing player:', checkError);
+            return;
         }
+
+        // If any existing player is found, prevent registration
+        if (existingPlayers.length > 0) {
+            alert('This player name is already taken. Please choose a different name.');
+            return;
+        }
+
+        // Insert the new player with the hashed PIN
+        const { error: insertError } = await supabase.from('players').insert([
+            { name: playerName, password: hashedPin }
+        ]);
+
+        if (insertError) throw insertError;
+
+        alert('Player registered successfully!');
+        document.getElementById('player-name').value = '';
+        document.getElementById('player-pin').value = '';
+
+        await fetchAndDisplayList('players', 'player-list');
+    } catch (err) {
+        console.error('Error registering player:', err);
+        alert('Failed to register player.');
+    }
+}
+
+
+
 
         async function registerTeam() {
             const teamName = document.getElementById('team-name').value.trim();
@@ -407,11 +522,17 @@
         // Event listener for DOM content loaded
         document.addEventListener('DOMContentLoaded', async () => {
             await refreshPage();
-
+            await autofillJoinTeamPlayer();
             document.getElementById('register-player-btn').addEventListener('click', registerPlayer);
             document.getElementById('register-team-btn').addEventListener('click', registerTeam);
             document.getElementById('join-team-btn').addEventListener('click', joinTeam);
         });
+
+        // Refresh the join team display by re-running autofillJoinTeamPlayer
+async function refreshJoinTeamDisplay() {
+  await autofillJoinTeamPlayer();
+}
+
 
     </script>
     <script src="/js/bootstrap.bundle.min.js"></script>

@@ -834,3 +834,31 @@ footer {
   background-color: #d1ecf1;
   border-color: #bee5eb;
 }
+
+
+/* Hide input text and replace with dots */
+#login-system-pin-input {
+  -webkit-text-security: disc; /* For Webkit browsers (Chrome, Safari) */
+  text-security: disc;         /* For Firefox */
+}
+
+/* User Avatar Box */
+.user-avatar {
+  /* The size here determines the box dimensions */
+  width: 2.4rem;
+  height: 2.4rem;
+  /* Ensure the text is centered */
+  display: inline-block;
+  text-align: center;
+  line-height: 2.4rem;
+  margin-right: 0.5rem;
+  border: 2px solid #c0c0c0;
+  /* The dynamic background, text-shadow, font, and color are set via JS */
+}
+
+.pixel-button:focus {
+  outline: none !important;
+}
+.pixel-dropdown:focus {
+  outline: none !important;
+}
