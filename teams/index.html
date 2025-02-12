@@ -85,15 +85,15 @@
             <div id="submit-cards" class="tab-pane fade" role="tabpanel" aria-labelledby="submit-cards-tab">
                 <h2 class="mb-3 pixel-art-heading-3">Submit Cards</h2>
                <!-- Card Page Blocks -->
-<div id="card-info-notice" style="display:none; color:blue; text-align:center;">
-  <p>Card submissions are closed for the entire round.</p>
+<div id="card-info-notice" class="pixel-alert pixel-alert-info" style="display:none;">
+  <p style="margin-bottom: 1px">Card submissions are closed for the entire round.</p>
 </div>
 <div id="card-countdown-container" style="display:none; text-align:center; margin:10px auto;">
-  <strong>Time left to submit cards: </strong>
+  <strong>Time left: </strong>
   <span id="card-countdown"></span>
 </div>
-<div id="card-warning-notice" style="display:none; color:red; text-align:center;">
-  <p>Card submissions have been shut as the race has started.</p>
+<div id="card-warning-notice" class="pixel-alert pixel-alert-warning" style="display:none;">
+  <p style="margin-bottom: 1px">Card submissions have been shut as the race has started.</p>
 </div>
 
 
@@ -103,7 +103,7 @@
                         <li id="current-race-name" class="list-group-item">Loading...</li> <!-- Dynamically loaded race name -->
                     </ul>
                 </div>
-                <div class="alert alert-info" role="alert">
+                <div class="pixel-alert pixel-alert-info">
                     <p class="mb-0">
                         Only submit this form if you want to submit a card for the current round. Otherwise, you do not need to submit anything.
                     </p>
@@ -165,13 +165,12 @@
                     <button id="submit-card-btn" class="pixel-button primary" disabled>Submit Card</button>
                 </div>
 
-                <div class="alert alert-info" role="alert">
-                    <h4 class="alert-heading">Tips:</h4>
+                <div class="pixel-alert pixel-alert-info">
+                    <h4>Tips:</h4>
                     <p class="mb-0">
                         To remove a card you have played, select the 'Reset Played Cards' option.
                     </p>
                     <p>
-                        There is no way to view cards once they have been played. This ensures other players cannot see what card you have played.<br>
                         If you are unsure what card you played, remove it using 'Reset Played Cards' and then resubmit.<br>
                     </p>
                 </div>
@@ -184,17 +183,17 @@
                       <img src="/media/casino/casino.png" class="casino-title" style="margin-bottom: 10px">
 
                      <!-- Casino Page Blocks -->
-<div id="casino-info-notice" style="display:none; color:blue; text-align:center;">
-  <p>The casino is currently closed for the entire round.</p>
-</div>
-<div id="casino-countdown-container" style="display:none; text-align:center; margin:10px auto;">
-  <strong>Time left to place casino bets: </strong>
-  <span id="casino-countdown"></span>
-</div>
-<div id="casino-warning-notice" style="display:none; color:red; text-align:center;">
-  <p>Casino submissions have been shut as the race has started.</p>
-</div>
-
+                      <div id="casino-info-notice" class="pixel-alert pixel-alert-info" style="display:none;">
+                        <p style="margin-bottom: 1px">The casino is currently closed.</p>
+                      </div>
+                      <div id="casino-countdown-container" style="display:none; text-align:center; margin:10px auto;">
+                        <strong>Time left: </strong>
+                        <span id="casino-countdown"></span>
+                      </div>
+                      <div id="casino-warning-notice" class="pixel-alert pixel-alert-warning" style="display:none;">
+                        <p style="margin-bottom: 1px">Casino submissions have been shut as the race has started.</p>
+                      </div>
+                      
                       <p class="casino-info">
                           The Casino opens during the Monaco and Las Vegas GP. Bet your team's points here on different questions.
                       </p>
@@ -202,8 +201,8 @@
                 
 
                   <!-- Team Selection -->
-                  <label for="casino-team-select" class="casino-label">Select Your Team:</label>
-                  <select id="casino-team-select" class="form-select">
+                  <label for="casino-team-select" class="casino-label" style="margin-bottom: 5px">Select Your Team:</label>
+                  <select id="casino-team-select" class="form-select" style="font-family: Pixeloid Sans; letter-spacing: 1px">
                       <option value="">-- Select Team --</option>
                   </select>
                   <div id="casino-loading" class="casino-loading-indicator" style="display: none;">
@@ -277,7 +276,7 @@ function startGenericCountdown(targetDate, countdownElementId, onEnd) {
     const timeLeft = targetDate - now;
     if (timeLeft <= 0) {
       clearInterval(timer);
-      countdownElement.textContent = "Time's up! Submissions are closed. Race has started.";
+      countdownElement.textContent = "Submissions closed. Race has started.";
       if (typeof onEnd === "function") {
         onEnd();
       }
@@ -625,7 +624,7 @@ async function submitCards() {
         // CASE #4: Form Closed, casino_enabled = false.
         lockCardPage();
         document.getElementById("card-countdown-container").style.display = "block";
-        document.getElementById("card-countdown").textContent = "Time's up! Submissions are closed. Race has started.";
+        document.getElementById("card-countdown").textContent = "Submissions closed. Race has started.";
         document.getElementById("card-warning-notice").style.display = "block";
       } else {
         // CASE #3: Form Open, casino_enabled = false.
@@ -1055,7 +1054,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         // CASE: Form Closed, casino_enabled = true.
         lockCasinoPage(); // Now lock everything.
         document.getElementById("casino-countdown-container").style.display = "block";
-        document.getElementById("casino-countdown").textContent = "Time's up! Submissions are closed. Race has started.";
+        document.getElementById("casino-countdown").textContent = "Submissions closed. Race has started.";
         document.getElementById("casino-warning-notice").style.display = "block";
         document.getElementById("casino-info-notice").style.display = "none";
       } else {

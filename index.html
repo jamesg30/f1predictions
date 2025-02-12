@@ -344,7 +344,7 @@ document.getElementById("countdown-timer").style.display = "inline-block";
 // Start the generic countdown as before
 startGenericCountdown(raceDate, "countdown", function() {
   const countdownEl = document.getElementById("countdown");
-  countdownEl.style.color = "green";
+  countdownEl.style.color = "white";
 });
 }
     
@@ -355,53 +355,46 @@ startGenericCountdown(raceDate, "countdown", function() {
  * @param {string} countdownElementId - The id of the element where the countdown text will be displayed.
  * @param {function} [onEnd] - Optional callback to execute when countdown ends.
  */
-function startGenericCountdown(targetDate, countdownElementId, onEnd) {
+ function startGenericCountdown(targetDate, countdownElementId, onEnd) {
   const countdownElement = document.getElementById(countdownElementId);
-
   if (!countdownElement) {
     console.error(`Element with id "${countdownElementId}" not found.`);
     return;
   }
-
+  
+  let timer;
+  
   function updateCountdown() {
     const now = new Date();
     const timeLeft = targetDate - now;
-
+    
     if (timeLeft <= 0) {
       clearInterval(timer);
-      countdownElement.textContent = "Race has started!";
-      countdownElement.classList.add("countdown-update");
+      countdownElement.textContent = "Race started!";
       if (typeof onEnd === "function") {
         onEnd();
       }
       return;
     }
-
-    // Calculate time parts
+    
     const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
     const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-    // Build the countdown string—omit days if zero
+    
     let countdownStr = "";
     if (days > 0) {
       countdownStr += `${days}d `;
     }
     countdownStr += `${hours}h ${minutes}m ${seconds}s`;
-
+    
     countdownElement.textContent = countdownStr;
-
-    // Restart animation by reflow (for the pixel pulse effect)
-    countdownElement.classList.remove("countdown-update");
-    void countdownElement.offsetWidth;
-    countdownElement.classList.add("countdown-update");
   }
-
-  // Initial update then update every second
+  
   updateCountdown();
-  const timer = setInterval(updateCountdown, 1000);
+  timer = setInterval(updateCountdown, 1000);
 }
+
         
         // Fetch the form status from form_details table
 async function fetchFormStatus() {
@@ -424,43 +417,51 @@ async function fetchFormStatus() {
     }
 }
 
-// Update the latest form button based on form status
-async function updateFormButtonStatus() {
-    const formEnabled = await fetchFormStatus();
-    const formButton = document.getElementById('latest-form-button');
+// Update the latest form button based on form status and race start time
+async function updateFormButtonStatus(raceDetails) {
+  const formEnabled = await fetchFormStatus();
+  const formButton = document.getElementById('latest-form-button');
 
-    if (formEnabled) {
-        formButton.disabled = false;
-    } else {
-        formButton.disabled = true;
+  // If raceDetails is available, determine if the race has started.
+  if (raceDetails) {
+    const raceStart = new Date(raceDetails.date);
+    const raceHasStarted = new Date() >= raceStart;
+    // Disable the button if the form is not enabled or if the race has started.
+    if (!formEnabled || raceHasStarted) {
+      formButton.disabled = true;
+      return;
     }
+  }
+  // Otherwise, enable the button (if formEnabled is true).
+  formButton.disabled = !formEnabled;
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Fetch race details
-    const raceDetails = await fetchRaceDetails();
+  // Fetch race details
+  const raceDetails = await fetchRaceDetails();
 
-    // Update the latest form button with the current race name
-    await updateLatestFormButton(raceDetails);
+  // Update the latest form button with the current race name
+  await updateLatestFormButton(raceDetails);
 
-    // Update the next race info and initialize the countdown
-    await updateNextRaceInfo(raceDetails);
+  // Update the next race info and initialize the countdown
+  await updateNextRaceInfo(raceDetails);
 
-    // Update the form button status based on form_enabled
-    await updateFormButtonStatus();
+  // Update the form button status based on form_enabled and race start
+  await updateFormButtonStatus(raceDetails);
 
-    // Add event listener to the form button
-    const formButton = document.getElementById('latest-form-button');
-    const formLink = document.getElementById('latest-form-link');
+  // Add event listener to the form button
+  const formButton = document.getElementById('latest-form-button');
+  const formLink = document.getElementById('latest-form-link');
 
-    formButton.addEventListener('click', (event) => {
-        if (formButton.disabled) {
-            event.preventDefault();
-        } else {
-            formLink.href = '/form';
-        }
-    });
+  formButton.addEventListener('click', (event) => {
+    if (formButton.disabled) {
+      event.preventDefault();
+    } else {
+      formLink.href = '/form';
+    }
+  });
 });
+
 
 // RESULTS DISPLAY CODE
 document.addEventListener("DOMContentLoaded", async () => {
