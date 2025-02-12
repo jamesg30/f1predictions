@@ -74,7 +74,6 @@ footer {
   background-color: white;
 }
 
-
 /* ---------- Unscored Results Table (Unscored Predictions) ---------- */
 #unscoredResultsTable {
   width: 100%;
@@ -189,7 +188,6 @@ footer {
     line-height: 1.2; /* Adjust for spacing */
 }
 
-
 .pixel-art-body {
     font-family: 'Pixeloid Sans', Helvetica, sans-serif; /* Fallback fonts */
     font-size: 1rem; /* Adjust as needed */
@@ -224,6 +222,15 @@ footer {
     letter-spacing: 0.1em; /* For pixel art readability */
     line-height: 1.5; /* Adjust for spacing */
     /* No background, padding, or text-shadow for standard body text */
+}
+
+.pixel-art-body-smallxb {
+  font-family: 'Pixeloid Sans Bold', Helvetica, sans-serif; /* Custom font with fallbacks */
+  font-size: 1rem; /* Adjust as needed */
+  color: #333; /* Main text color */
+  letter-spacing: 0.1em; /* For pixel art readability */
+  line-height: 1.5; /* Adjust for spacing */
+  /* No background, padding, or text-shadow for standard body text */
 }
 
 .centered-text {
@@ -530,8 +537,6 @@ footer {
 }
 
 /* ---------- Form Countdown Timer Styling ---------- */
-/* ---------- Form Countdown Timer Styling ---------- */
-/* ---------- Form Countdown Timer Styling ---------- */
 #form-countdown-container, #card-countdown-container, #casino-countdown-container {
   background-color: #f0f0f0;      /* Light grey background */
   color: #333;                  /* Dark text */
@@ -546,7 +551,6 @@ footer {
   width: -webkit-fit-content;   /* Webkit */
   width: fit-content;           /* Standard */
 }
-
 
 #form-countdown, #card-countdown, #casino-countdown {
   font-family: 'Press Start 2P', monospace;

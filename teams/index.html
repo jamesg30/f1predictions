@@ -40,7 +40,7 @@
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/">Home</a></li>
                 <li><hr class="dropdown-divider"></li> <!-- Spacer -->
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallxb" href="/teams">Teams</a></li>
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
@@ -193,7 +193,7 @@
                       <div id="casino-warning-notice" class="pixel-alert pixel-alert-warning" style="display:none;">
                         <p style="margin-bottom: 1px">Casino submissions have been shut as the race has started.</p>
                       </div>
-                      
+
                       <p class="casino-info">
                           The Casino opens during the Monaco and Las Vegas GP. Bet your team's points here on different questions.
                       </p>
@@ -226,859 +226,855 @@
     <script>
 
       // Auto Shut Down Helper Functions
-/**
- * fetchRaceDetails:
- * Fetches the current race details (including the race start date)
- * from form_details and calendar tables.
- */
- async function fetchRaceDetails() {
-  try {
-    const { data: formDetails, error: formDetailsError } = await supabase
-      .from('form_details')
-      .select('race_number')
-      .eq('id', 1)
-      .single();
-    if (formDetailsError || !formDetails) {
-      console.error("Error fetching race number:", formDetailsError);
-      return null;
-    }
-    const raceNumber = formDetails.race_number;
-    
-    const { data: raceDetails, error: raceError } = await supabase
-      .from('calendar')
-      .select('*')
-      .eq('race_number', raceNumber)
-      .single();
-    if (raceError || !raceDetails) {
-      console.error("Error fetching race details:", raceError);
-      return null;
-    }
-    return raceDetails;
-  } catch (err) {
-    console.error("fetchRaceDetails error:", err);
-    return null;
-  }
-}
-
-/**
- * startGenericCountdown:
- * Starts a countdown timer to a target date, updating the element with the given id.
- * When time is up, it replaces the text with a persistent message and calls onEnd().
- */
-function startGenericCountdown(targetDate, countdownElementId, onEnd) {
-  const countdownElement = document.getElementById(countdownElementId);
-  if (!countdownElement) {
-    console.error(`Element with id "${countdownElementId}" not found.`);
-    return;
-  }
-  function updateCountdown() {
-    const now = new Date();
-    const timeLeft = targetDate - now;
-    if (timeLeft <= 0) {
-      clearInterval(timer);
-      countdownElement.textContent = "Submissions closed. Race has started.";
-      if (typeof onEnd === "function") {
-        onEnd();
+    /**
+     * fetchRaceDetails:
+     * Fetches the current race details (including the race start date)
+     * from form_details and calendar tables.
+     */
+    async function fetchRaceDetails() {
+      try {
+        const { data: formDetails, error: formDetailsError } = await supabase
+          .from('form_details')
+          .select('race_number')
+          .eq('id', 1)
+          .single();
+        if (formDetailsError || !formDetails) {
+          console.error("Error fetching race number:", formDetailsError);
+          return null;
+        }
+        const raceNumber = formDetails.race_number;
+        
+        const { data: raceDetails, error: raceError } = await supabase
+          .from('calendar')
+          .select('*')
+          .eq('race_number', raceNumber)
+          .single();
+        if (raceError || !raceDetails) {
+          console.error("Error fetching race details:", raceError);
+          return null;
+        }
+        return raceDetails;
+      } catch (err) {
+        console.error("fetchRaceDetails error:", err);
+        return null;
       }
-      return;
     }
-    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-    let countdownStr = "";
-    if (days > 0) {
-      countdownStr += `${days}d `;
+
+    /**
+     * startGenericCountdown:
+     * Starts a countdown timer to a target date, updating the element with the given id.
+     * When time is up, it replaces the text with a persistent message and calls onEnd().
+     */
+    function startGenericCountdown(targetDate, countdownElementId, onEnd) {
+      const countdownElement = document.getElementById(countdownElementId);
+      if (!countdownElement) {
+        console.error(`Element with id "${countdownElementId}" not found.`);
+        return;
+      }
+      function updateCountdown() {
+        const now = new Date();
+        const timeLeft = targetDate - now;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          countdownElement.textContent = "Submissions closed. Race has started.";
+          if (typeof onEnd === "function") {
+            onEnd();
+          }
+          return;
+        }
+        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        let countdownStr = "";
+        if (days > 0) {
+          countdownStr += `${days}d `;
+        }
+        countdownStr += `${hours}h ${minutes}m ${seconds}s`;
+        countdownElement.textContent = countdownStr;
+      }
+      updateCountdown();
+      const timer = setInterval(updateCountdown, 1000);
     }
-    countdownStr += `${hours}h ${minutes}m ${seconds}s`;
-    countdownElement.textContent = countdownStr;
-  }
-  updateCountdown();
-  const timer = setInterval(updateCountdown, 1000);
-}
 
-function lockCardPage() {
-  const teamSelect = document.getElementById("team-select");
-  const submitCardBtn = document.getElementById("submit-card-btn");
-  teamSelect.disabled = true;
-  submitCardBtn.disabled = true;
-  document.querySelectorAll("input[name='card']").forEach(radio => {
-    radio.disabled = true;
-    radio.onchange = null;
-  });
-  teamSelect.onchange = null;
-}
-
-function lockCasinoPage() {
-  const teamSelectCasino = document.getElementById("casino-team-select");
-  const submitButton = document.getElementById("submit-bets");
-  teamSelectCasino.disabled = true;
-  submitButton.disabled = true;
-  document.querySelectorAll(".bet-button").forEach(btn => {
-    btn.disabled = true;
-    btn.onclick = null;
-  });
-  teamSelectCasino.onchange = null;
-}
-
-
-
-
-
-// Global variable to store teams data once loaded.
-let teamsData = [];
-
-/**
- * loadRaceName - Fetches the current race name based on the race number in form_details.
- */
-async function loadRaceName() {
-  try {
-    const { data: formDetails, error: formError } = await supabase
-      .from('form_details')
-      .select('race_number')
-      .single();
-    if (formError || !formDetails) {
-      console.error("Error fetching race number:", formError);
-      return;
-    }
-    const raceNumber = formDetails.race_number;
-
-    const { data: raceData, error: raceError } = await supabase
-      .from('calendar')
-      .select('name')
-      .eq('race_number', raceNumber)
-      .single();
-    if (raceError || !raceData) {
-      console.error("Error fetching race name:", raceError);
-      return;
-    }
-    document.getElementById("current-race-name").textContent = `${raceData.name} GP`;
-  } catch (err) {
-    console.error("loadRaceName error:", err);
-  }
-}
-
-/**
- * loadTeamsForCards - Loads the entire teams table and populates the team-select dropdown.
- */
-async function loadTeamsForCards() {
-  try {
-    const { data, error } = await supabase.from('teams').select('*');
-    if (error) {
-      console.error("Error loading teams:", error);
-      return;
-    }
-    teamsData = data; // cache teams data
-    const teamSelect = document.getElementById("team-select");
-    teamSelect.innerHTML = '<option value="" disabled selected>Select a team</option>'; // Placeholder
-
-    data.forEach(team => {
-      const option = document.createElement("option");
-      option.value = team.id;
-      option.textContent = team.name;
-      teamSelect.appendChild(option);
-    });
-
-    teamSelect.disabled = false; // Enable dropdown after loading
-
-    // Update card stock display when a team is selected.
-    updateTeamCardStock();
-  } catch (err) {
-    console.error("loadTeamsForCards error:", err);
-  }
-}
-
-/**
- * updateTeamCardStock - Displays card stock for the selected team.
- * It shows the sum of played and unplayed for each card and disables options with zero stock.
- */
-function updateTeamCardStock() {
-  const teamSelect = document.getElementById("team-select");
-  const selectedTeamId = teamSelect.value;
-  const team = teamsData.find(t => t.id == selectedTeamId);
-  if (!team) return;
-  
-  // Calculate stock for each card type.
-  const cardStock = {
-    aero: (Number(team.card_aero_unplayed) || 0) + (Number(team.card_aero_played) || 0),
-    double: (Number(team.card_double_unplayed) || 0) + (Number(team.card_double_played) || 0),
-    halo: (Number(team.card_halo_unplayed) || 0) + (Number(team.card_halo_played) || 0),
-    report: (Number(team.card_report_unplayed) || 0) + (Number(team.card_report_played) || 0),
-    swap: (Number(team.card_swap_unplayed) || 0) + (Number(team.card_swap_played) || 0)
-  };
-  
-  // Update stock display.
-  const stockEl = document.getElementById("team-card-stock");
-  stockEl.innerHTML = `
-    <p><strong>Team Card Stock (as of last round):</strong></p>
-    <ul>
-      <li>Aero: ${cardStock.aero}</li>
-      <li>Double: ${cardStock.double}</li>
-      <li>Halo: ${cardStock.halo}</li>
-      <li>Report: ${cardStock.report}</li>
-      <li>Swap: ${cardStock.swap}</li>
-    </ul>
-  `;
-  
-  // Disable radio buttons if no stock.
-  const cardOptions = {
-    aero: cardStock.aero,
-    double: cardStock.double,
-    halo: cardStock.halo,
-    report: cardStock.report,
-    swap: cardStock.swap
-  };
-  
-  document.querySelectorAll("input[name='card']").forEach(radio => {
-    const val = radio.value;
-    if (val in cardOptions) {
-      radio.disabled = (cardOptions[val] === 0);
-      radio.parentElement.title = radio.disabled ? `You have no ${val} cards remaining.` : "";
-    } else if (val === "play-no-cards") {
-      radio.disabled = false;
-    }
-  });
-  
-  // (Removed blanket enabling of card options to preserve disabled state.)
-  
-  // Enable the submit button if a team is selected.
-  document.getElementById("submit-card-btn").disabled = false;
-  
-  // Also update the report/swap team dropdown if needed.
-  updateTeamDropdownForSpecialCards();
-}
-
-/**
- * updateTeamDropdownForSpecialCards - When a Report or Swap card is selected,
- * populate the dropdown with teams (excluding the selected team).
- */
-function updateTeamDropdownForSpecialCards() {
-  const selectedTeamId = document.getElementById("team-select").value;
-  const selectedCard = document.querySelector("input[name='card']:checked")?.value;
-  const selectTeamContainer = document.getElementById("select-team-container");
-  const cardSelect = document.getElementById("card-select");
-
-  if (selectedCard === "report" || selectedCard === "swap") {
-    selectTeamContainer.style.display = "block";
-    cardSelect.innerHTML = '<option value="" disabled selected>Select a team</option>';
-    teamsData
-      .filter(t => t.id != selectedTeamId)
-      .forEach(team => {
-        const option = document.createElement("option");
-        option.value = team.id;
-        option.textContent = team.name;
-        cardSelect.appendChild(option);
+    function lockCardPage() {
+      const teamSelect = document.getElementById("team-select");
+      const submitCardBtn = document.getElementById("submit-card-btn");
+      teamSelect.disabled = true;
+      submitCardBtn.disabled = true;
+      document.querySelectorAll("input[name='card']").forEach(radio => {
+        radio.disabled = true;
+        radio.onchange = null;
       });
-  } else {
-    selectTeamContainer.style.display = "none";
-  }
-}
-
-/**
- * submitCards - Called when the user clicks the "Submit Card" button.
- * It resets played cards to unplayed, then applies the chosen card play.
- * For Report/Swap, the selected team from the dropdown is recorded.
- * "Play no cards" resets all played cards to unplayed and clears extra columns.
- * After submission, the form resets.
- */
-async function submitCards() {
-  const teamSelect = document.getElementById("team-select");
-  const selectedTeamId = teamSelect.value;
-  const team = teamsData.find(t => t.id == selectedTeamId);
-  if (!team) {
-    alert("Team not found.");
-    return;
-  }
-  
-  // Get the selected card value.
-  const selectedCardRadio = document.querySelector("input[name='card']:checked");
-  if (!selectedCardRadio) {
-    alert("Please select a card option.");
-    return;
-  }
-  const selectedCard = selectedCardRadio.value; // e.g., 'aero', 'double', 'halo', 'report', 'swap', or 'play-no-cards'
-  
-  // For report or swap, get the target team from the dropdown.
-  let targetTeamId = null;
-  if (selectedCard === "report" || selectedCard === "swap") {
-    targetTeamId = document.getElementById("card-select").value;
-    if (!targetTeamId) {
-      alert("Please select a team to report or swap.");
-      return;
+      teamSelect.onchange = null;
     }
-  }
-  
-  // Prepare new card values:
-  // Reset: for each card type, new_unplayed = current_unplayed + played; played = 0.
-  const cardTypes = ["aero", "double", "halo", "report", "swap"];
-  const updatedValues = {};
-  cardTypes.forEach(card => {
-    const unplayedCol = `card_${card}_unplayed`;
-    const playedCol = `card_${card}_played`;
-    const unplayed = Number(team[unplayedCol]) || 0;
-    const played = Number(team[playedCol]) || 0;
-    updatedValues[unplayedCol] = unplayed + played;
-    updatedValues[playedCol] = 0;
-  });
-  
-  if (selectedCard !== "play-no-cards") {
-    // For the selected card, subtract 1 from unplayed and add 1 to played.
-    const unplayedCol = `card_${selectedCard}_unplayed`;
-    const playedCol = `card_${selectedCard}_played`;
-    if (updatedValues[unplayedCol] <= 0) {
-      alert(`You do not have any ${selectedCard} cards available.`);
-      return;
+
+    function lockCasinoPage() {
+      const teamSelectCasino = document.getElementById("casino-team-select");
+      const submitButton = document.getElementById("submit-bets");
+      teamSelectCasino.disabled = true;
+      submitButton.disabled = true;
+      document.querySelectorAll(".bet-button").forEach(btn => {
+        btn.disabled = true;
+        btn.onclick = null;
+      });
+      teamSelectCasino.onchange = null;
     }
-    updatedValues[unplayedCol] -= 1;
-    updatedValues[playedCol] = 1;
-  } else {
-    // If "Play no cards" is selected, clear extra columns.
-    updatedValues.card_swap_time = null;
-    updatedValues.card_swap_team_selected = null;
-    updatedValues.card_report_team_selected = null;
-  }
-  
-  // Record target team ID for report or swap.
-  if (selectedCard === "report") {
-    updatedValues.card_report_team_selected = targetTeamId;
-  } else if (selectedCard === "swap") {
-    updatedValues.card_swap_team_selected = targetTeamId;
-    updatedValues.card_swap_time = new Date().toISOString(); // Record timestamp
-  }
-  
-  // Update the team's row in the teams table.
-  const { error: updateError } = await supabase
-    .from('teams')
-    .update(updatedValues)
-    .eq('id', selectedTeamId);
-  if (updateError) {
-    console.error("Error updating team card submission:", updateError);
-    alert("Failed to submit cards.");
-    return;
-  }
-  
-  alert("Cards submitted successfully!");
-  
-  // Reset the form:
-  // Clear team selection.
-  const teamSelectElem = document.getElementById("team-select");
-  teamSelectElem.value = "";
-  teamSelectElem.disabled = true;
-  // Clear team card stock.
-  document.getElementById("team-card-stock").innerHTML = "";
-  // Uncheck all card radio buttons and disable them.
-  document.querySelectorAll("input[name='card']").forEach(radio => {
-    radio.checked = false;
-    radio.disabled = true;
-  });
-  // Hide the report/swap dropdown.
-  document.getElementById("select-team-container").style.display = "none";
-  // Disable submit button.
-  document.getElementById("submit-card-btn").disabled = true;
-  
-  // Reload teams data to refresh the form.
-  await loadTeamsForCards();
-}
 
-/**
- * loadSubmitCardsPage - Initializes the submit cards page.
- */
- async function loadSubmitCardsPage() {
-  await loadRaceName();
 
-  const teamSelect = document.getElementById("team-select");
-  const submitCardBtn = document.getElementById("submit-card-btn");
 
-  // Hide all Card Page blocks by default.
-  document.getElementById("card-info-notice").style.display = "none";
-  document.getElementById("card-countdown-container").style.display = "none";
-  document.getElementById("card-warning-notice").style.display = "none";
 
-  // Disable card controls by default.
-  lockCardPage();
 
-  // Check casino status.
-  const { data: formDetails, error: formError } = await supabase
-    .from('form_details')
-    .select('casino_enabled')
-    .single();
-  if (formError || !formDetails) {
-    console.error("Error fetching casino status:", formError);
-    return;
-  }
-  const casinoEnabled = formDetails.casino_enabled === true;
-  
-  if (casinoEnabled) {
-    // CASES #1 & #2 (Inactive Card Page when casino_enabled = true):
-    document.getElementById("card-info-notice").style.display = "block";
-    lockCardPage();
-    document.getElementById("card-countdown-container").style.display = "none";
-    document.getElementById("card-warning-notice").style.display = "none";
-  } else {
-    // Active Card Page.
-    await loadTeamsForCards();
-    const raceDetails = await fetchRaceDetails();
-    if (raceDetails) {
-      const raceStart = new Date(raceDetails.date);
-      if (new Date() >= raceStart) {
-        // CASE #4: Form Closed, casino_enabled = false.
-        lockCardPage();
-        document.getElementById("card-countdown-container").style.display = "block";
-        document.getElementById("card-countdown").textContent = "Submissions closed. Race has started.";
-        document.getElementById("card-warning-notice").style.display = "block";
-      } else {
-        // CASE #3: Form Open, casino_enabled = false.
-        teamSelect.disabled = false;
-        submitCardBtn.disabled = false;
-        document.querySelectorAll("input[name='card']").forEach(radio => radio.disabled = false);
-        // Hide notice and warning.
-        document.getElementById("card-info-notice").style.display = "none";
-        document.getElementById("card-warning-notice").style.display = "none";
-        // Show and start the countdown.
-        document.getElementById("card-countdown-container").style.display = "block";
-        startGenericCountdown(raceStart, "card-countdown", function() {
-          // When countdown expires, lock all fields and show warning.
-          lockCardPage();
-          document.getElementById("card-warning-notice").style.display = "block";
-        });
+    // Global variable to store teams data once loaded.
+    let teamsData = [];
+
+    /**
+     * loadRaceName - Fetches the current race name based on the race number in form_details.
+     */
+    async function loadRaceName() {
+      try {
+        const { data: formDetails, error: formError } = await supabase
+          .from('form_details')
+          .select('race_number')
+          .single();
+        if (formError || !formDetails) {
+          console.error("Error fetching race number:", formError);
+          return;
+        }
+        const raceNumber = formDetails.race_number;
+
+        const { data: raceData, error: raceError } = await supabase
+          .from('calendar')
+          .select('name')
+          .eq('race_number', raceNumber)
+          .single();
+        if (raceError || !raceData) {
+          console.error("Error fetching race name:", raceError);
+          return;
+        }
+        document.getElementById("current-race-name").textContent = `${raceData.name} GP`;
+      } catch (err) {
+        console.error("loadRaceName error:", err);
       }
     }
-  }
 
-  // Bind event handlers (only if fields are active).
-  teamSelect.addEventListener("change", () => {
-    if (!submitCardBtn.disabled) updateTeamCardStock();
-  });
-  document.querySelectorAll("input[name='card']").forEach(input => {
-    input.addEventListener("change", () => {
-      if (!submitCardBtn.disabled) updateTeamDropdownForSpecialCards();
-    });
-  });
-  submitCardBtn.addEventListener("click", e => {
-    if (submitCardBtn.disabled) {
-      e.preventDefault();
-      return;
+    /**
+     * loadTeamsForCards - Loads the entire teams table and populates the team-select dropdown.
+     */
+    async function loadTeamsForCards() {
+      try {
+        const { data, error } = await supabase.from('teams').select('*');
+        if (error) {
+          console.error("Error loading teams:", error);
+          return;
+        }
+        teamsData = data; // cache teams data
+        const teamSelect = document.getElementById("team-select");
+        teamSelect.innerHTML = '<option value="" disabled selected>Select a team</option>'; // Placeholder
+
+        data.forEach(team => {
+          const option = document.createElement("option");
+          option.value = team.id;
+          option.textContent = team.name;
+          teamSelect.appendChild(option);
+        });
+
+        teamSelect.disabled = false; // Enable dropdown after loading
+
+        // Update card stock display when a team is selected.
+        updateTeamCardStock();
+      } catch (err) {
+        console.error("loadTeamsForCards error:", err);
+      }
     }
-    submitCards();
-  });
-}
 
-document.addEventListener("DOMContentLoaded", loadSubmitCardsPage);
-
-
-
-
-
-// --- TEAM STANDING AND CARDS ---
-// ---------- HELPER FUNCTION ----------
-async function getTable(tableName) {
-  const { data, error } = await supabase.from(tableName).select('*');
-  if (error) {
-    console.error(`Error fetching ${tableName}:`, error);
-    throw error;
-  }
-  return data;
-}
-
-// ---------- LOAD TEAM STANDINGS AND CARDS ----------
-// ---------- LOAD TEAM STANDINGS AND CARDS ----------
-async function loadTeamStandingsAndCards() {
-  try {
-    // Show loading indicator
-    const loadingIndicator = document.getElementById('playerLoading');
-    loadingIndicator.style.display = 'block';
-    loadingIndicator.innerHTML = "Team Standings loading...<div class='loading-bar'></div>";
-    // 1. Retrieve the current year from form_details (assumes a single row with id=1)
-    const { data: formDetails, error: formDetailsError } = await supabase
-      .from('form_details')
-      .select('*')
-      .eq('id', 1)
-      .single();
-    if (formDetailsError) {
-      console.error('Error fetching form details:', formDetailsError.message);
-      return;
+    /**
+     * updateTeamCardStock - Displays card stock for the selected team.
+     * It shows the sum of played and unplayed for each card and disables options with zero stock.
+     */
+    function updateTeamCardStock() {
+      const teamSelect = document.getElementById("team-select");
+      const selectedTeamId = teamSelect.value;
+      const team = teamsData.find(t => t.id == selectedTeamId);
+      if (!team) return;
+      
+      // Calculate stock for each card type.
+      const cardStock = {
+        aero: (Number(team.card_aero_unplayed) || 0) + (Number(team.card_aero_played) || 0),
+        double: (Number(team.card_double_unplayed) || 0) + (Number(team.card_double_played) || 0),
+        halo: (Number(team.card_halo_unplayed) || 0) + (Number(team.card_halo_played) || 0),
+        report: (Number(team.card_report_unplayed) || 0) + (Number(team.card_report_played) || 0),
+        swap: (Number(team.card_swap_unplayed) || 0) + (Number(team.card_swap_played) || 0)
+      };
+      
+      // Update stock display.
+      const stockEl = document.getElementById("team-card-stock");
+      stockEl.innerHTML = `
+        <p><strong>Team Card Stock (as of last round):</strong></p>
+        <ul>
+          <li>Aero: ${cardStock.aero}</li>
+          <li>Double: ${cardStock.double}</li>
+          <li>Halo: ${cardStock.halo}</li>
+          <li>Report: ${cardStock.report}</li>
+          <li>Swap: ${cardStock.swap}</li>
+        </ul>
+      `;
+      
+      // Disable radio buttons if no stock.
+      const cardOptions = {
+        aero: cardStock.aero,
+        double: cardStock.double,
+        halo: cardStock.halo,
+        report: cardStock.report,
+        swap: cardStock.swap
+      };
+      
+      document.querySelectorAll("input[name='card']").forEach(radio => {
+        const val = radio.value;
+        if (val in cardOptions) {
+          radio.disabled = (cardOptions[val] === 0);
+          radio.parentElement.title = radio.disabled ? `You have no ${val} cards remaining.` : "";
+        } else if (val === "play-no-cards") {
+          radio.disabled = false;
+        }
+      });
+      
+      // (Removed blanket enabling of card options to preserve disabled state.)
+      
+      // Enable the submit button if a team is selected.
+      document.getElementById("submit-card-btn").disabled = false;
+      
+      // Also update the report/swap team dropdown if needed.
+      updateTeamDropdownForSpecialCards();
     }
-    const currentYear = formDetails.current_year;
 
-    // 2. Download the season_team_{year} table (which contains team standings)
-    const seasonTeamTable = `season_team_${currentYear}`;
-    const seasonTeamData = await getTable(seasonTeamTable);
+    /**
+     * updateTeamDropdownForSpecialCards - When a Report or Swap card is selected,
+     * populate the dropdown with teams (excluding the selected team).
+     */
+    function updateTeamDropdownForSpecialCards() {
+      const selectedTeamId = document.getElementById("team-select").value;
+      const selectedCard = document.querySelector("input[name='card']:checked")?.value;
+      const selectTeamContainer = document.getElementById("select-team-container");
+      const cardSelect = document.getElementById("card-select");
 
-    // 3. Determine the last race with data using the special row (team_id === 0)
-    const raceNamesRow = seasonTeamData.find(row => row.team_id === 0);
-    let lastRace = 0;
-    if (raceNamesRow) {
-      // Assume race columns are named race_1, race_2, …, race_32.
-      for (let i = 1; i <= 32; i++) {
-        const col = `race_${i}`;
-        if (raceNamesRow[col] !== null && raceNamesRow[col] !== "") {
-          lastRace = i;
-        } else {
-          break;
+      if (selectedCard === "report" || selectedCard === "swap") {
+        selectTeamContainer.style.display = "block";
+        cardSelect.innerHTML = '<option value="" disabled selected>Select a team</option>';
+        teamsData
+          .filter(t => t.id != selectedTeamId)
+          .forEach(team => {
+            const option = document.createElement("option");
+            option.value = team.id;
+            option.textContent = team.name;
+            cardSelect.appendChild(option);
+          });
+      } else {
+        selectTeamContainer.style.display = "none";
+      }
+    }
+
+    /**
+     * submitCards - Called when the user clicks the "Submit Card" button.
+     * It resets played cards to unplayed, then applies the chosen card play.
+     * For Report/Swap, the selected team from the dropdown is recorded.
+     * "Play no cards" resets all played cards to unplayed and clears extra columns.
+     * After submission, the form resets.
+     */
+    async function submitCards() {
+      const teamSelect = document.getElementById("team-select");
+      const selectedTeamId = teamSelect.value;
+      const team = teamsData.find(t => t.id == selectedTeamId);
+      if (!team) {
+        alert("Team not found.");
+        return;
+      }
+      
+      // Get the selected card value.
+      const selectedCardRadio = document.querySelector("input[name='card']:checked");
+      if (!selectedCardRadio) {
+        alert("Please select a card option.");
+        return;
+      }
+      const selectedCard = selectedCardRadio.value; // e.g., 'aero', 'double', 'halo', 'report', 'swap', or 'play-no-cards'
+      
+      // For report or swap, get the target team from the dropdown.
+      let targetTeamId = null;
+      if (selectedCard === "report" || selectedCard === "swap") {
+        targetTeamId = document.getElementById("card-select").value;
+        if (!targetTeamId) {
+          alert("Please select a team to report or swap.");
+          return;
         }
       }
+      
+      // Prepare new card values:
+      // Reset: for each card type, new_unplayed = current_unplayed + played; played = 0.
+      const cardTypes = ["aero", "double", "halo", "report", "swap"];
+      const updatedValues = {};
+      cardTypes.forEach(card => {
+        const unplayedCol = `card_${card}_unplayed`;
+        const playedCol = `card_${card}_played`;
+        const unplayed = Number(team[unplayedCol]) || 0;
+        const played = Number(team[playedCol]) || 0;
+        updatedValues[unplayedCol] = unplayed + played;
+        updatedValues[playedCol] = 0;
+      });
+      
+      if (selectedCard !== "play-no-cards") {
+        // For the selected card, subtract 1 from unplayed and add 1 to played.
+        const unplayedCol = `card_${selectedCard}_unplayed`;
+        const playedCol = `card_${selectedCard}_played`;
+        if (updatedValues[unplayedCol] <= 0) {
+          alert(`You do not have any ${selectedCard} cards available.`);
+          return;
+        }
+        updatedValues[unplayedCol] -= 1;
+        updatedValues[playedCol] = 1;
+      } else {
+        // If "Play no cards" is selected, clear extra columns.
+        updatedValues.card_swap_time = null;
+        updatedValues.card_swap_team_selected = null;
+        updatedValues.card_report_team_selected = null;
+      }
+      
+      // Record target team ID for report or swap.
+      if (selectedCard === "report") {
+        updatedValues.card_report_team_selected = targetTeamId;
+      } else if (selectedCard === "swap") {
+        updatedValues.card_swap_team_selected = targetTeamId;
+        updatedValues.card_swap_time = new Date().toISOString(); // Record timestamp
+      }
+      
+      // Update the team's row in the teams table.
+      const { error: updateError } = await supabase
+        .from('teams')
+        .update(updatedValues)
+        .eq('id', selectedTeamId);
+      if (updateError) {
+        console.error("Error updating team card submission:", updateError);
+        alert("Failed to submit cards.");
+        return;
+      }
+      
+      alert("Cards submitted successfully!");
+      
+      // Reset the form:
+      // Clear team selection.
+      const teamSelectElem = document.getElementById("team-select");
+      teamSelectElem.value = "";
+      teamSelectElem.disabled = true;
+      // Clear team card stock.
+      document.getElementById("team-card-stock").innerHTML = "";
+      // Uncheck all card radio buttons and disable them.
+      document.querySelectorAll("input[name='card']").forEach(radio => {
+        radio.checked = false;
+        radio.disabled = true;
+      });
+      // Hide the report/swap dropdown.
+      document.getElementById("select-team-container").style.display = "none";
+      // Disable submit button.
+      document.getElementById("submit-card-btn").disabled = true;
+      
+      // Reload teams data to refresh the form.
+      await loadTeamsForCards();
     }
 
-    // 4. Filter out the special "Race Names" row (team_id === 0)
-    const teamStandings = seasonTeamData.filter(row => row.team_id !== 0);
+    /**
+     * loadSubmitCardsPage - Initializes the submit cards page.
+     */
+    async function loadSubmitCardsPage() {
+      await loadRaceName();
 
-    // 5. For each team, compute the grand total by summing races 1 to lastRace.
-    teamStandings.forEach(team => {
-      let total = 0;
-      for (let i = 1; i <= lastRace; i++) {
-        const col = `race_${i}`;
-        if (team[col] !== null && team[col] !== "") {
-          // Remove any extra tags (e.g. "(double)", "(aero)") using a regex.
-          const numStr = team[col].replace(/\(.*?\)/g, "").trim();
-          const num = parseFloat(numStr);
-          if (!isNaN(num)) {
-            total += num;
+      const teamSelect = document.getElementById("team-select");
+      const submitCardBtn = document.getElementById("submit-card-btn");
+
+      // Hide all Card Page blocks by default.
+      document.getElementById("card-info-notice").style.display = "none";
+      document.getElementById("card-countdown-container").style.display = "none";
+      document.getElementById("card-warning-notice").style.display = "none";
+
+      // Disable card controls by default.
+      lockCardPage();
+
+      // Check casino status.
+      const { data: formDetails, error: formError } = await supabase
+        .from('form_details')
+        .select('casino_enabled')
+        .single();
+      if (formError || !formDetails) {
+        console.error("Error fetching casino status:", formError);
+        return;
+      }
+      const casinoEnabled = formDetails.casino_enabled === true;
+      
+      if (casinoEnabled) {
+        // CASES #1 & #2 (Inactive Card Page when casino_enabled = true):
+        document.getElementById("card-info-notice").style.display = "block";
+        lockCardPage();
+        document.getElementById("card-countdown-container").style.display = "none";
+        document.getElementById("card-warning-notice").style.display = "none";
+      } else {
+        // Active Card Page.
+        await loadTeamsForCards();
+        const raceDetails = await fetchRaceDetails();
+        if (raceDetails) {
+          const raceStart = new Date(raceDetails.date);
+          if (new Date() >= raceStart) {
+            // CASE #4: Form Closed, casino_enabled = false.
+            lockCardPage();
+            document.getElementById("card-countdown-container").style.display = "block";
+            document.getElementById("card-countdown").textContent = "Submissions closed. Race has started.";
+            document.getElementById("card-warning-notice").style.display = "block";
+          } else {
+            // CASE #3: Form Open, casino_enabled = false.
+            teamSelect.disabled = false;
+            submitCardBtn.disabled = false;
+            document.querySelectorAll("input[name='card']").forEach(radio => radio.disabled = false);
+            // Hide notice and warning.
+            document.getElementById("card-info-notice").style.display = "none";
+            document.getElementById("card-warning-notice").style.display = "none";
+            // Show and start the countdown.
+            document.getElementById("card-countdown-container").style.display = "block";
+            startGenericCountdown(raceStart, "card-countdown", function() {
+              // When countdown expires, lock all fields and show warning.
+              lockCardPage();
+              document.getElementById("card-warning-notice").style.display = "block";
+            });
           }
         }
       }
-      team.grand_total = total;
-    });
 
-    // 6. Sort teams by grand_total descending.
-    teamStandings.sort((a, b) => b.grand_total - a.grand_total);
+      // Bind event handlers (only if fields are active).
+      teamSelect.addEventListener("change", () => {
+        if (!submitCardBtn.disabled) updateTeamCardStock();
+      });
+      document.querySelectorAll("input[name='card']").forEach(input => {
+        input.addEventListener("change", () => {
+          if (!submitCardBtn.disabled) updateTeamDropdownForSpecialCards();
+        });
+      });
+      submitCardBtn.addEventListener("click", e => {
+        if (submitCardBtn.disabled) {
+          e.preventDefault();
+          return;
+        }
+        submitCards();
+      });
+    }
 
-    // 7. Compute ranking with simple tie‑handling.
-    let currentRank = 1;
-    let prevScore = null;
-    teamStandings.forEach((team, index) => {
-      if (prevScore === null || team.grand_total !== prevScore) {
-        currentRank = index + 1;
+    document.addEventListener("DOMContentLoaded", loadSubmitCardsPage);
+
+
+
+
+
+    // --- TEAM STANDING AND CARDS ---
+    // ---------- HELPER FUNCTION ----------
+    async function getTable(tableName) {
+      const { data, error } = await supabase.from(tableName).select('*');
+      if (error) {
+        console.error(`Error fetching ${tableName}:`, error);
+        throw error;
       }
-      team.rank = currentRank;
-      prevScore = team.grand_total;
+      return data;
+    }
+
+    // ---------- LOAD TEAM STANDINGS AND CARDS ----------
+    // ---------- LOAD TEAM STANDINGS AND CARDS ----------
+    async function loadTeamStandingsAndCards() {
+      try {
+        // Show loading indicator
+        const loadingIndicator = document.getElementById('playerLoading');
+        loadingIndicator.style.display = 'block';
+        loadingIndicator.innerHTML = "Team Standings loading...<div class='loading-bar'></div>";
+        // 1. Retrieve the current year from form_details (assumes a single row with id=1)
+        const { data: formDetails, error: formDetailsError } = await supabase
+          .from('form_details')
+          .select('*')
+          .eq('id', 1)
+          .single();
+        if (formDetailsError) {
+          console.error('Error fetching form details:', formDetailsError.message);
+          return;
+        }
+        const currentYear = formDetails.current_year;
+
+        // 2. Download the season_team_{year} table (which contains team standings)
+        const seasonTeamTable = `season_team_${currentYear}`;
+        const seasonTeamData = await getTable(seasonTeamTable);
+
+        // 3. Determine the last race with data using the special row (team_id === 0)
+        const raceNamesRow = seasonTeamData.find(row => row.team_id === 0);
+        let lastRace = 0;
+        if (raceNamesRow) {
+          // Assume race columns are named race_1, race_2, …, race_32.
+          for (let i = 1; i <= 32; i++) {
+            const col = `race_${i}`;
+            if (raceNamesRow[col] !== null && raceNamesRow[col] !== "") {
+              lastRace = i;
+            } else {
+              break;
+            }
+          }
+        }
+
+        // 4. Filter out the special "Race Names" row (team_id === 0)
+        const teamStandings = seasonTeamData.filter(row => row.team_id !== 0);
+
+        // 5. For each team, compute the grand total by summing races 1 to lastRace.
+        teamStandings.forEach(team => {
+          let total = 0;
+          for (let i = 1; i <= lastRace; i++) {
+            const col = `race_${i}`;
+            if (team[col] !== null && team[col] !== "") {
+              // Remove any extra tags (e.g. "(double)", "(aero)") using a regex.
+              const numStr = team[col].replace(/\(.*?\)/g, "").trim();
+              const num = parseFloat(numStr);
+              if (!isNaN(num)) {
+                total += num;
+              }
+            }
+          }
+          team.grand_total = total;
+        });
+
+        // 6. Sort teams by grand_total descending.
+        teamStandings.sort((a, b) => b.grand_total - a.grand_total);
+
+        // 7. Compute ranking with simple tie‑handling.
+        let currentRank = 1;
+        let prevScore = null;
+        teamStandings.forEach((team, index) => {
+          if (prevScore === null || team.grand_total !== prevScore) {
+            currentRank = index + 1;
+          }
+          team.rank = currentRank;
+          prevScore = team.grand_total;
+        });
+
+        // 8. Download the teams table (to retrieve card stock and player info)
+        const teamsData = await getTable('teams');
+        // Build a map of teams by team_id for quick lookup.
+        const teamsMap = {};
+        teamsData.forEach(team => {
+          teamsMap[team.id] = team;
+        });
+
+        // 9. Define the card types and image source.
+        // Note: We now use a "name" property so that we can sum the played and unplayed stock.
+        const cardTypes = [
+          { name: 'double', src: '/media/cards/card_double.png' },
+          { name: 'aero', src: '/media/cards/card_aero.png' },
+          { name: 'halo', src: '/media/cards/card_halo.png' },
+          { name: 'report', src: '/media/cards/card_report.png' },
+          { name: 'swap', src: '/media/cards/card_swap.png' }
+        ];
+
+        // 10. Build the HTML list items.
+        // The container is the inner div with class "list-group" inside the section with id "team-standings-and-cards".
+        const container = document.querySelector('#team-standings-and-cards .list-group');
+        container.innerHTML = ''; // Clear any existing content
+
+        teamStandings.forEach(team => {
+          // Look up additional team info from the teams table.
+          const teamInfo = teamsMap[team.team_id] || {};
+
+          // Get the player names: use values from season_team_{year} if present; otherwise, fall back on teams table.
+          const player1 = team.player_name_1 || teamInfo.player1 || '';
+          const player2 = team.player_name_2 || teamInfo.player2 || '';
+          const playersText = `Players: ${player1}${(player1 && player2) ? ', ' : ''}${player2}`;
+
+          // Build the card images.
+          // For each card type, compute the total by summing the unplayed and played counts.
+          let cardImagesHTML = '';
+          cardTypes.forEach(card => {
+            const count = (Number(teamInfo[`card_${card.name}_unplayed`]) || 0) +
+                          (Number(teamInfo[`card_${card.name}_played`]) || 0);
+            for (let i = 0; i < count; i++) {
+              cardImagesHTML += `<img src="${card.src}" style="float:left; width: 45px; height: 61px; image-rendering: pixelated; margin-right: 5px;">`;
+            }
+          });
+
+          // Create the list-group item.
+          const aElem = document.createElement('a');
+          aElem.href = "#";
+          aElem.className = "list-group-item";
+          aElem.innerHTML = `
+            <div class="d-flex w-100 justify-content-between">
+              <h5 class="mb-3 pixel-art-heading-2">${team.rank}. ${team.team_name}</h5>
+              <small class="pixel-art-body-small">${team.grand_total} pts</small>
+            </div>
+            <p class="mb-1">${playersText}</p>
+            <p class="mb-1">Cards Left:</p>
+            <div>${cardImagesHTML}</div>
+          `;
+          container.appendChild(aElem);
+        });
+      } catch (err) {
+        console.error("loadTeamStandingsAndCards error:", err);
+      }
+      // Hide the loading indicator once the process is complete
+      document.getElementById('playerLoading').style.display = 'none';
+    }
+
+    // ---------- INITIALIZATION ----------
+    document.addEventListener("DOMContentLoaded", () => {
+      loadTeamStandingsAndCards();
     });
 
-    // 8. Download the teams table (to retrieve card stock and player info)
-    const teamsData = await getTable('teams');
-    // Build a map of teams by team_id for quick lookup.
-    const teamsMap = {};
-    teamsData.forEach(team => {
-      teamsMap[team.id] = team;
-    });
+    // CASINO CODE
+    document.addEventListener("DOMContentLoaded", async function () {
+      const teamSelectCasino = document.getElementById("casino-team-select");
+      const casinoTables = document.getElementById("casino-tables");
+      const submitButton = document.getElementById("submit-bets");
 
-    // 9. Define the card types and image source.
-    // Note: We now use a "name" property so that we can sum the played and unplayed stock.
-    const cardTypes = [
-      { name: 'double', src: '/media/cards/card_double.png' },
-      { name: 'aero', src: '/media/cards/card_aero.png' },
-      { name: 'halo', src: '/media/cards/card_halo.png' },
-      { name: 'report', src: '/media/cards/card_report.png' },
-      { name: 'swap', src: '/media/cards/card_swap.png' }
-    ];
+      // Hide all Casino Page blocks by default.
+      document.getElementById("casino-info-notice").style.display = "none";
+      document.getElementById("casino-countdown-container").style.display = "none";
+      document.getElementById("casino-warning-notice").style.display = "none";
 
-    // 10. Build the HTML list items.
-    // The container is the inner div with class "list-group" inside the section with id "team-standings-and-cards".
-    const container = document.querySelector('#team-standings-and-cards .list-group');
-    container.innerHTML = ''; // Clear any existing content
+      // Disable casino controls by default.
+      lockCasinoPage();
 
-    teamStandings.forEach(team => {
-      // Look up additional team info from the teams table.
-      const teamInfo = teamsMap[team.team_id] || {};
+      let betsEnabled = {};
+      let betOdds = {};
+      let betQuestions = {};
+      let betMaxLimits = {};
+      let currentBets = [0, 0, 0, 0, 0];
 
-      // Get the player names: use values from season_team_{year} if present; otherwise, fall back on teams table.
-      const player1 = team.player_name_1 || teamInfo.player1 || '';
-      const player2 = team.player_name_2 || teamInfo.player2 || '';
-      const playersText = `Players: ${player1}${(player1 && player2) ? ', ' : ''}${player2}`;
+      async function fetchData(table, fields = "*") {
+        try {
+          const { data, error } = await supabase.from(table).select(fields);
+          if (error) {
+            console.error(`Error fetching ${table}:`, error);
+            return [];
+          }
+          return data || [];
+        } catch (err) {
+          console.error(`Unexpected error fetching ${table}:`, err);
+          return [];
+        }
+      }
 
-      // Build the card images.
-      // For each card type, compute the total by summing the unplayed and played counts.
-      let cardImagesHTML = '';
-      cardTypes.forEach(card => {
-        const count = (Number(teamInfo[`card_${card.name}_unplayed`]) || 0) +
-                      (Number(teamInfo[`card_${card.name}_played`]) || 0);
-        for (let i = 0; i < count; i++) {
-          cardImagesHTML += `<img src="${card.src}" style="float:left; width: 45px; height: 61px; image-rendering: pixelated; margin-right: 5px;">`;
+      async function checkCasinoStatus() {
+        let data = await fetchData("form_details", "casino_enabled");
+        if (!data.length) return;
+        const casinoEnabled = data[0].casino_enabled;
+        if (!casinoEnabled) {
+          // CASES #3 & #4: Inactive Casino Page.
+          lockCasinoPage();
+          // Show info notice (Block #1) and hide countdown and warning.
+          document.getElementById("casino-info-notice").style.display = "block";
+          document.getElementById("casino-countdown-container").style.display = "none";
+          document.getElementById("casino-warning-notice").style.display = "none";
+        } else {
+          // Active casino page: enable controls.
+          teamSelectCasino.disabled = false;
+          submitButton.disabled = false;
+          document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = false);
+          document.getElementById("casino-info-notice").style.display = "none";
+        }
+      }
+
+      async function loadCasinoData() {
+        let data = await fetchData("casino", "*");
+        if (!data.length) return;
+        betsEnabled = data.find(row => row.team_id === -1) || {};
+        betOdds = data.find(row => row.team_id === 0) || {};
+        betQuestions = data.find(row => row.team_id === -2) || {};
+        let maxBetRow = data.find(row => row.team_id === -3) || {};
+        Object.keys(betsEnabled).forEach(key => {
+          betsEnabled[key] = betsEnabled[key] === "true";
+        });
+        Object.keys(maxBetRow).forEach(key => {
+          if (key.startsWith("bet_")) {
+            betMaxLimits[key] = parseInt(maxBetRow[key]) || 10;
+          }
+        });
+        createBetTables();
+      }
+
+      async function populateTeamDropdown() {
+        const teams = await fetchData("teams", "id, name");
+        if (!teams.length) return;
+        teamSelectCasino.innerHTML = "";
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "Select a team";
+        placeholder.disabled = true;
+        placeholder.selected = true;
+        teamSelectCasino.appendChild(placeholder);
+        teams.forEach(team => {
+          const option = document.createElement("option");
+          option.value = team.id;
+          option.textContent = team.name;
+          teamSelectCasino.appendChild(option);
+        });
+        teamSelectCasino.selectedIndex = 0;
+        teamSelectCasino.dispatchEvent(new Event("change"));
+      }
+
+      function createBetTables() {
+        casinoTables.innerHTML = "";
+        for (let i = 1; i <= 5; i++) {
+          if (!betsEnabled[`bet_${i}`]) continue;
+          const maxBet = betMaxLimits[`bet_${i}`] || 10;
+          const table = document.createElement("div");
+          table.classList.add("bet-table");
+          table.innerHTML = `
+            <div class="bet-question">${betQuestions[`bet_${i}`]}</div>
+            <div class="bet-info">
+              <span class="bet-odds pixel-art-body-white">Odds: ${betOdds[`bet_${i}`]}:1</span>
+              <span class="max-bet pixel-art-body-white">Max Bet: ${maxBet}</span>
+            </div>
+            <div class="bet-controls">
+              <button class="bet-button" data-index="${i}" data-action="decrease" disabled>-</button>
+              <input type="text" class="bet-amount" id="bet-${i}" value="0" readonly>
+              <button class="bet-button" data-index="${i}" data-action="increase" disabled>+</button>
+              <img src="/media/casino/coin_1.png" class="coin-display" id="coin-${i}" style="visibility: hidden;">
+            </div>
+          `;
+          casinoTables.appendChild(table);
+        }
+      }
+
+      teamSelectCasino.addEventListener("change", async function () {
+        const teamId = teamSelectCasino.value;
+        if (!teamId) {
+          submitButton.disabled = true;
+          document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = true);
+          return;
+        }
+        let data = await fetchData("casino", "*");
+        let teamBets = data.find(row => row.team_id == teamId);
+        if (teamBets && Object.keys(teamBets).some(key => key.startsWith("bet_") && teamBets[key] > 0)) {
+          document.getElementById("casino-loading").style.display = "block";
+          submitButton.disabled = true;
+          document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = true);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          document.getElementById("casino-loading").style.display = "none";
+        }
+        submitButton.disabled = false;
+        document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = false);
+        for (let i = 1; i <= 5; i++) {
+          const betInput = document.getElementById(`bet-${i}`);
+          if (betInput) {
+            const betValue = teamBets ? teamBets[`bet_${i}`] || 0 : 0;
+            betInput.value = betValue;
+            currentBets[i - 1] = parseInt(betValue);
+            updateCoinDisplay(i);
+          }
         }
       });
 
-      // Create the list-group item.
-      const aElem = document.createElement('a');
-      aElem.href = "#";
-      aElem.className = "list-group-item";
-      aElem.innerHTML = `
-        <div class="d-flex w-100 justify-content-between">
-          <h5 class="mb-3 pixel-art-heading-2">${team.rank}. ${team.team_name}</h5>
-          <small class="pixel-art-body-small">${team.grand_total} pts</small>
-        </div>
-        <p class="mb-1">${playersText}</p>
-        <p class="mb-1">Cards Left:</p>
-        <div>${cardImagesHTML}</div>
-      `;
-      container.appendChild(aElem);
-    });
-  } catch (err) {
-    console.error("loadTeamStandingsAndCards error:", err);
-  }
-  // Hide the loading indicator once the process is complete
-  document.getElementById('playerLoading').style.display = 'none';
-}
-
-// ---------- INITIALIZATION ----------
-document.addEventListener("DOMContentLoaded", () => {
-  loadTeamStandingsAndCards();
-});
-
-// CASINO CODE
-document.addEventListener("DOMContentLoaded", async function () {
-  const teamSelectCasino = document.getElementById("casino-team-select");
-  const casinoTables = document.getElementById("casino-tables");
-  const submitButton = document.getElementById("submit-bets");
-
-  // Hide all Casino Page blocks by default.
-  document.getElementById("casino-info-notice").style.display = "none";
-  document.getElementById("casino-countdown-container").style.display = "none";
-  document.getElementById("casino-warning-notice").style.display = "none";
-
-  // Disable casino controls by default.
-  lockCasinoPage();
-
-  let betsEnabled = {};
-  let betOdds = {};
-  let betQuestions = {};
-  let betMaxLimits = {};
-  let currentBets = [0, 0, 0, 0, 0];
-
-  async function fetchData(table, fields = "*") {
-    try {
-      const { data, error } = await supabase.from(table).select(fields);
-      if (error) {
-        console.error(`Error fetching ${table}:`, error);
-        return [];
-      }
-      return data || [];
-    } catch (err) {
-      console.error(`Unexpected error fetching ${table}:`, err);
-      return [];
-    }
-  }
-
-  async function checkCasinoStatus() {
-    let data = await fetchData("form_details", "casino_enabled");
-    if (!data.length) return;
-    const casinoEnabled = data[0].casino_enabled;
-    if (!casinoEnabled) {
-      // CASES #3 & #4: Inactive Casino Page.
-      lockCasinoPage();
-      // Show info notice (Block #1) and hide countdown and warning.
-      document.getElementById("casino-info-notice").style.display = "block";
-      document.getElementById("casino-countdown-container").style.display = "none";
-      document.getElementById("casino-warning-notice").style.display = "none";
-    } else {
-      // Active casino page: enable controls.
-      teamSelectCasino.disabled = false;
-      submitButton.disabled = false;
-      document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = false);
-      document.getElementById("casino-info-notice").style.display = "none";
-    }
-  }
-
-  async function loadCasinoData() {
-    let data = await fetchData("casino", "*");
-    if (!data.length) return;
-    betsEnabled = data.find(row => row.team_id === -1) || {};
-    betOdds = data.find(row => row.team_id === 0) || {};
-    betQuestions = data.find(row => row.team_id === -2) || {};
-    let maxBetRow = data.find(row => row.team_id === -3) || {};
-    Object.keys(betsEnabled).forEach(key => {
-      betsEnabled[key] = betsEnabled[key] === "true";
-    });
-    Object.keys(maxBetRow).forEach(key => {
-      if (key.startsWith("bet_")) {
-        betMaxLimits[key] = parseInt(maxBetRow[key]) || 10;
-      }
-    });
-    createBetTables();
-  }
-
-  async function populateTeamDropdown() {
-    const teams = await fetchData("teams", "id, name");
-    if (!teams.length) return;
-    teamSelectCasino.innerHTML = "";
-    const placeholder = document.createElement("option");
-    placeholder.value = "";
-    placeholder.textContent = "Select a team";
-    placeholder.disabled = true;
-    placeholder.selected = true;
-    teamSelectCasino.appendChild(placeholder);
-    teams.forEach(team => {
-      const option = document.createElement("option");
-      option.value = team.id;
-      option.textContent = team.name;
-      teamSelectCasino.appendChild(option);
-    });
-    teamSelectCasino.selectedIndex = 0;
-    teamSelectCasino.dispatchEvent(new Event("change"));
-  }
-
-  function createBetTables() {
-    casinoTables.innerHTML = "";
-    for (let i = 1; i <= 5; i++) {
-      if (!betsEnabled[`bet_${i}`]) continue;
-      const maxBet = betMaxLimits[`bet_${i}`] || 10;
-      const table = document.createElement("div");
-      table.classList.add("bet-table");
-      table.innerHTML = `
-        <div class="bet-question">${betQuestions[`bet_${i}`]}</div>
-        <div class="bet-info">
-          <span class="bet-odds pixel-art-body-white">Odds: ${betOdds[`bet_${i}`]}:1</span>
-          <span class="max-bet pixel-art-body-white">Max Bet: ${maxBet}</span>
-        </div>
-        <div class="bet-controls">
-          <button class="bet-button" data-index="${i}" data-action="decrease" disabled>-</button>
-          <input type="text" class="bet-amount" id="bet-${i}" value="0" readonly>
-          <button class="bet-button" data-index="${i}" data-action="increase" disabled>+</button>
-          <img src="/media/casino/coin_1.png" class="coin-display" id="coin-${i}" style="visibility: hidden;">
-        </div>
-      `;
-      casinoTables.appendChild(table);
-    }
-  }
-
-  teamSelectCasino.addEventListener("change", async function () {
-    const teamId = teamSelectCasino.value;
-    if (!teamId) {
-      submitButton.disabled = true;
-      document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = true);
-      return;
-    }
-    let data = await fetchData("casino", "*");
-    let teamBets = data.find(row => row.team_id == teamId);
-    if (teamBets && Object.keys(teamBets).some(key => key.startsWith("bet_") && teamBets[key] > 0)) {
-      document.getElementById("casino-loading").style.display = "block";
-      submitButton.disabled = true;
-      document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = true);
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      document.getElementById("casino-loading").style.display = "none";
-    }
-    submitButton.disabled = false;
-    document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = false);
-    for (let i = 1; i <= 5; i++) {
-      const betInput = document.getElementById(`bet-${i}`);
-      if (betInput) {
-        const betValue = teamBets ? teamBets[`bet_${i}`] || 0 : 0;
+      document.addEventListener("click", function (event) {
+        if (!event.target.classList.contains("bet-button")) return;
+        const index = event.target.dataset.index;
+        const action = event.target.dataset.action;
+        const betInput = document.getElementById(`bet-${index}`);
+        let betValue = parseInt(betInput.value);
+        const maxBet = betMaxLimits[`bet_${index}`] || 10;
+        if (action === "increase" && betValue < maxBet) betValue++;
+        if (action === "decrease" && betValue > 0) betValue--;
         betInput.value = betValue;
-        currentBets[i - 1] = parseInt(betValue);
-        updateCoinDisplay(i);
+        currentBets[index - 1] = betValue;
+        updateCoinDisplay(index);
+      });
+
+      function updateCoinDisplay(index) {
+        const coinImg = document.getElementById(`coin-${index}`);
+        if (currentBets[index - 1] > 0) {
+          coinImg.src = `/media/casino/coin_${currentBets[index - 1]}.png`;
+          coinImg.style.visibility = "visible";
+        } else {
+          coinImg.style.visibility = "hidden";
+        }
       }
-    }
-  });
 
-  document.addEventListener("click", function (event) {
-    if (!event.target.classList.contains("bet-button")) return;
-    const index = event.target.dataset.index;
-    const action = event.target.dataset.action;
-    const betInput = document.getElementById(`bet-${index}`);
-    let betValue = parseInt(betInput.value);
-    const maxBet = betMaxLimits[`bet_${index}`] || 10;
-    if (action === "increase" && betValue < maxBet) betValue++;
-    if (action === "decrease" && betValue > 0) betValue--;
-    betInput.value = betValue;
-    currentBets[index - 1] = betValue;
-    updateCoinDisplay(index);
-  });
+      submitButton.addEventListener("click", async function () {
+        const selectedTeamIdCasino = parseInt(teamSelectCasino.value);
+        if (!selectedTeamIdCasino) {
+          alert("Please select a team.");
+          return;
+        }
+        const betsToSubmit = {};
+        for (let i = 1; i <= 5; i++) {
+          const betAmount = currentBets[i - 1].toString();
+          if (parseInt(betAmount) > 0) {
+            betsToSubmit[`bet_${i}`] = betAmount;
+          }
+        }
+        if (Object.keys(betsToSubmit).length === 0) {
+          alert("Please place some bets before submitting.");
+          return;
+        }
+        const betData = {
+          team_id: selectedTeamIdCasino,
+          team_name: teamSelectCasino.options[teamSelectCasino.selectedIndex].text,
+          ...betsToSubmit,
+        };
+        const { data: existingRows, error: fetchError } = await supabase
+          .from("casino")
+          .select("team_id")
+          .eq("team_id", selectedTeamIdCasino);
+        if (fetchError) {
+          alert("Failed to check existing bets.");
+          return;
+        }
+        const query = existingRows.length > 0
+          ? supabase.from("casino").update(betData).eq("team_id", selectedTeamIdCasino)
+          : supabase.from("casino").insert([betData]);
+        const { error } = await query;
+        if (error) alert("Failed to submit bets.");
+        else alert("Bets submitted successfully!");
+      });
 
-  function updateCoinDisplay(index) {
-    const coinImg = document.getElementById(`coin-${index}`);
-    if (currentBets[index - 1] > 0) {
-      coinImg.src = `/media/casino/coin_${currentBets[index - 1]}.png`;
-      coinImg.style.visibility = "visible";
-    } else {
-      coinImg.style.visibility = "hidden";
-    }
-  }
+      // First, check casino status.
+      await checkCasinoStatus();
 
-  submitButton.addEventListener("click", async function () {
-    const selectedTeamIdCasino = parseInt(teamSelectCasino.value);
-    if (!selectedTeamIdCasino) {
-      alert("Please select a team.");
-      return;
-    }
-    const betsToSubmit = {};
-    for (let i = 1; i <= 5; i++) {
-      const betAmount = currentBets[i - 1].toString();
-      if (parseInt(betAmount) > 0) {
-        betsToSubmit[`bet_${i}`] = betAmount;
-      }
-    }
-    if (Object.keys(betsToSubmit).length === 0) {
-      alert("Please place some bets before submitting.");
-      return;
-    }
-    const betData = {
-      team_id: selectedTeamIdCasino,
-      team_name: teamSelectCasino.options[teamSelectCasino.selectedIndex].text,
-      ...betsToSubmit,
-    };
-    const { data: existingRows, error: fetchError } = await supabase
-      .from("casino")
-      .select("team_id")
-      .eq("team_id", selectedTeamIdCasino);
-    if (fetchError) {
-      alert("Failed to check existing bets.");
-      return;
-    }
-    const query = existingRows.length > 0
-      ? supabase.from("casino").update(betData).eq("team_id", selectedTeamIdCasino)
-      : supabase.from("casino").insert([betData]);
-    const { error } = await query;
-    if (error) alert("Failed to submit bets.");
-    else alert("Bets submitted successfully!");
-  });
-
-  // First, check casino status.
-  await checkCasinoStatus();
-
-  // Then, decide what to show based on casino_enabled and race start.
-  const { data: formDetails2 } = await supabase
-      .from('form_details')
-      .select('casino_enabled')
-      .single();
-  const casinoEnabledFlag = formDetails2 && formDetails2.casino_enabled === true;
-  if (!casinoEnabledFlag) {
-    // CASE: casino_enabled = false → Inactive Casino Page.
-    lockCasinoPage();
-    document.getElementById("casino-countdown-container").style.display = "none";
-    document.getElementById("casino-warning-notice").style.display = "none";
-    document.getElementById("casino-info-notice").style.display = "block";
-  } else {
-    // Active Casino Page.
-    const raceDetails = await fetchRaceDetails();
-    if (raceDetails) {
-      const raceStart = new Date(raceDetails.date);
-      if (new Date() >= raceStart) {
-        // CASE: Form Closed, casino_enabled = true.
-        lockCasinoPage(); // Now lock everything.
-        document.getElementById("casino-countdown-container").style.display = "block";
-        document.getElementById("casino-countdown").textContent = "Submissions closed. Race has started.";
-        document.getElementById("casino-warning-notice").style.display = "block";
-        document.getElementById("casino-info-notice").style.display = "none";
+      // Then, decide what to show based on casino_enabled and race start.
+      const { data: formDetails2 } = await supabase
+          .from('form_details')
+          .select('casino_enabled')
+          .single();
+      const casinoEnabledFlag = formDetails2 && formDetails2.casino_enabled === true;
+      if (!casinoEnabledFlag) {
+        // CASE: casino_enabled = false → Inactive Casino Page.
+        lockCasinoPage();
+        document.getElementById("casino-countdown-container").style.display = "none";
+        document.getElementById("casino-warning-notice").style.display = "none";
+        document.getElementById("casino-info-notice").style.display = "block";
       } else {
-        // CASE: Form Open, casino_enabled = true.
-        teamSelectCasino.disabled = false;
-        submitButton.disabled = false;
-        document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = false);
-        document.getElementById("casino-countdown-container").style.display = "block";
-        startGenericCountdown(raceStart, "casino-countdown", function() {
-          lockCasinoPage();
-          document.getElementById("casino-warning-notice").style.display = "block";
-        });
-        document.getElementById("casino-info-notice").style.display = "none";
+        // Active Casino Page.
+        const raceDetails = await fetchRaceDetails();
+        if (raceDetails) {
+          const raceStart = new Date(raceDetails.date);
+          if (new Date() >= raceStart) {
+            // CASE: Form Closed, casino_enabled = true.
+            lockCasinoPage(); // Now lock everything.
+            document.getElementById("casino-countdown-container").style.display = "block";
+            document.getElementById("casino-countdown").textContent = "Submissions closed. Race has started.";
+            document.getElementById("casino-warning-notice").style.display = "block";
+            document.getElementById("casino-info-notice").style.display = "none";
+          } else {
+            // CASE: Form Open, casino_enabled = true.
+            teamSelectCasino.disabled = false;
+            submitButton.disabled = false;
+            document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = false);
+            document.getElementById("casino-countdown-container").style.display = "block";
+            startGenericCountdown(raceStart, "casino-countdown", function() {
+              lockCasinoPage();
+              document.getElementById("casino-warning-notice").style.display = "block";
+            });
+            document.getElementById("casino-info-notice").style.display = "none";
+          }
+        }
       }
-    }
-  }
 
-  await loadCasinoData();
-  await populateTeamDropdown();
-});
-
-
-
-
+      await loadCasinoData();
+      await populateTeamDropdown();
+    });
     </script>
     <!-- Bootstrap JS Bundle (Local) -->
     <script src="/js/bootstrap.bundle.min.js"></script>

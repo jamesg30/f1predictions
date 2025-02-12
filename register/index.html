@@ -43,7 +43,7 @@
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallxb" href="/register">Register</a></li>
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
@@ -153,265 +153,265 @@
         import { fetchData, fetchAndDisplayList } from '/script.js';
 
         async function joinTeam() {
-    const playerId = document.getElementById('join-player-name').value;
-    const teamId = document.getElementById('team-select').value;
+            const playerId = document.getElementById('join-player-name').value;
+            const teamId = document.getElementById('team-select').value;
 
-    if (!playerId) {
-        alert('Please select a name.');
-        return;
-    }
-
-    try {
-        console.log('Player ID:', playerId);
-        console.log('Team ID:', teamId);
-
-        // Handle "Leave Teams"
-        if (teamId === "null") {
-            const { error: leaveError } = await supabase
-                .from('players')
-                .update({ participant_team_id: null })
-                .eq('id', playerId);
-
-            if (leaveError) {
-                console.error('Error removing player from team:', leaveError);
-                throw leaveError;
+            if (!playerId) {
+                alert('Please select a name.');
+                return;
             }
 
-            alert('Player successfully left the team!');
-            await refreshPage();
-            return;
+            try {
+                console.log('Player ID:', playerId);
+                console.log('Team ID:', teamId);
+
+                // Handle "Leave Teams"
+                if (teamId === "null") {
+                    const { error: leaveError } = await supabase
+                        .from('players')
+                        .update({ participant_team_id: null })
+                        .eq('id', playerId);
+
+                    if (leaveError) {
+                        console.error('Error removing player from team:', leaveError);
+                        throw leaveError;
+                    }
+
+                    alert('Player successfully left the team!');
+                    await refreshPage();
+                    return;
+                }
+
+                // Fetch players already in the team
+                const { data: teamMembers, error: fetchError } = await supabase
+                    .from('players')
+                    .select('id')
+                    .eq('participant_team_id', teamId);
+
+                if (fetchError) {
+                    console.error('Error fetching team members:', fetchError);
+                    throw fetchError;
+                }
+
+                console.log('Team Members:', teamMembers);
+
+                // Check if the team is already full
+                if (teamMembers.length >= 2) {
+                    alert('This team is already full. Please choose another team.');
+                    return;
+                }
+
+                // Update the player's team
+                const { error: updateError } = await supabase
+                    .from('players')
+                    .update({ participant_team_id: teamId })
+                    .eq('id', playerId);
+
+                if (updateError) {
+                    console.error('Error updating player:', updateError);
+                    throw updateError;
+                }
+
+                alert('Player successfully joined the team!');
+                await refreshPage(); // Refresh the data on the page
+            } catch (err) {
+                console.error('Error in joinTeam:', err);
+                alert('An error occurred. Please try again.');
+            }
         }
 
-        // Fetch players already in the team
-        const { data: teamMembers, error: fetchError } = await supabase
-            .from('players')
-            .select('id')
-            .eq('participant_team_id', teamId);
 
-        if (fetchError) {
-            console.error('Error fetching team members:', fetchError);
-            throw fetchError;
+
+
+        // Update the refreshPage function to include the new functionality
+        async function refreshPage() {
+            await Promise.all([
+                fetchAndDisplayList('players', 'player-list'),
+                fetchAndDisplayList('teams', 'team-list'),
+                populatePlayerDropdown(),
+                populateTeamDropdown(),
+                populateTeamListWithMembers() // Add this function
+            ]);
         }
 
-        console.log('Team Members:', teamMembers);
-
-        // Check if the team is already full
-        if (teamMembers.length >= 2) {
-            alert('This team is already full. Please choose another team.');
-            return;
+        async function populatePlayerDropdown() {
+            const { data: players } = await supabase.from('players').select('id, name').order('name');
+            document.getElementById('join-player-name').innerHTML = 
+                `<option value="" disabled selected>Select a name</option>` + 
+                players.map(player => `<option value="${player.id}">${player.name}</option>`).join('');
         }
 
-        // Update the player's team
-        const { error: updateError } = await supabase
-            .from('players')
-            .update({ participant_team_id: teamId })
-            .eq('id', playerId);
+        async function populateTeamDropdown() {
+            const teams = await fetchData('teams', 'id, name');
+            const dropdown = document.getElementById('team-select');
 
-        if (updateError) {
-            console.error('Error updating player:', updateError);
-            throw updateError;
+            dropdown.innerHTML = `
+                <option value="" disabled selected>Select a team</option>
+            `;
+
+            // Add all team options
+            teams.forEach(team => {
+                dropdown.innerHTML += `<option value="${team.id}">${team.name}</option>`;
+            });
+
+            // Add spacer and "Leave Teams" option
+            dropdown.innerHTML += `
+                <option disabled>──────────</option>
+                <option value="null">Unassign Team</option>
+            `;
         }
 
-        alert('Player successfully joined the team!');
-        await refreshPage(); // Refresh the data on the page
-    } catch (err) {
-        console.error('Error in joinTeam:', err);
-        alert('An error occurred. Please try again.');
-    }
-}
 
 
+        async function registerPlayer() {
+            const playerName = document.getElementById('player-name').value.trim();
+            if (!playerName) {
+                alert('Please enter a valid name.');
+                return;
+            }
 
+            try {
+                // Check if the player name already exists
+                const { data: existingPlayer, error: checkError } = await supabase
+                    .from('players')
+                    .select('id')
+                    .eq('name', playerName)
+                    .single();
 
-// Update the refreshPage function to include the new functionality
-async function refreshPage() {
-    await Promise.all([
-        fetchAndDisplayList('players', 'player-list'),
-        fetchAndDisplayList('teams', 'team-list'),
-        populatePlayerDropdown(),
-        populateTeamDropdown(),
-        populateTeamListWithMembers() // Add this function
-    ]);
-}
+                if (checkError && checkError.code !== 'PGRST116') {
+                    throw checkError;
+                }
 
-async function populatePlayerDropdown() {
-    const { data: players } = await supabase.from('players').select('id, name').order('name');
-    document.getElementById('join-player-name').innerHTML = 
-        `<option value="" disabled selected>Select a name</option>` + 
-        players.map(player => `<option value="${player.id}">${player.name}</option>`).join('');
-}
+                if (existingPlayer) {
+                    alert('This player name is already taken. Please choose a different name.');
+                    return;
+                }
 
-async function populateTeamDropdown() {
-    const teams = await fetchData('teams', 'id, name');
-    const dropdown = document.getElementById('team-select');
+                // Add the new player
+                const { error: insertError } = await supabase.from('players').insert([{ name: playerName }]);
+                if (insertError) throw insertError;
 
-    dropdown.innerHTML = `
-        <option value="" disabled selected>Select a team</option>
-    `;
-
-    // Add all team options
-    teams.forEach(team => {
-        dropdown.innerHTML += `<option value="${team.id}">${team.name}</option>`;
-    });
-
-    // Add spacer and "Leave Teams" option
-    dropdown.innerHTML += `
-        <option disabled>──────────</option>
-        <option value="null">Unassign Team</option>
-    `;
-}
-
-
-
-async function registerPlayer() {
-    const playerName = document.getElementById('player-name').value.trim();
-    if (!playerName) {
-        alert('Please enter a valid name.');
-        return;
-    }
-
-    try {
-        // Check if the player name already exists
-        const { data: existingPlayer, error: checkError } = await supabase
-            .from('players')
-            .select('id')
-            .eq('name', playerName)
-            .single();
-
-        if (checkError && checkError.code !== 'PGRST116') {
-            throw checkError;
+                alert('Player registered successfully!');
+                document.getElementById('player-name').value = '';
+                await fetchAndDisplayList('players', 'player-list');
+            } catch (err) {
+                console.error('Error registering player:', err);
+                alert('Failed to register player.');
+            }
         }
 
-        if (existingPlayer) {
-            alert('This player name is already taken. Please choose a different name.');
-            return;
+        async function registerTeam() {
+            const teamName = document.getElementById('team-name').value.trim();
+            if (!teamName) {
+                alert('Please enter a valid team name.');
+                return;
+            }
+
+            try {
+                // Check if the team name already exists
+                const { data: existingTeam, error: checkError } = await supabase
+                    .from('teams')
+                    .select('id')
+                    .eq('name', teamName)
+                    .single();
+
+                if (checkError && checkError.code !== 'PGRST116') {
+                    throw checkError;
+                }
+
+                if (existingTeam) {
+                    alert('This team name is already taken. Please choose a different name.');
+                    return;
+                }
+
+                // Define card allocations (update these numbers if needed):
+                // card_aero_unplayed: Aero card count, default 1.
+                // card_double_unplayed: Double card count, default 1.
+                // card_halo_unplayed: Halo card count, default 3.
+                // card_report_unplayed: Report card count, default 1.
+                // card_swap_unplayed: Swap card count, default 1.
+                // For played cards, we start at 0.
+                const newTeam = {
+                    name: teamName,
+                    card_aero_unplayed: 1,    // Aero cards available initially.
+                    card_double_unplayed: 1,  // Double cards available initially.
+                    card_halo_unplayed: 3,    // Halo cards available initially.
+                    card_report_unplayed: 1,  // Report cards available initially.
+                    card_swap_unplayed: 1,    // Swap cards available initially.
+                    card_aero_played: 0,
+                    card_double_played: 0,
+                    card_halo_played: 0,
+                    card_report_played: 0,
+                    card_swap_played: 0
+                };
+
+                // Add the new team along with the card allocations.
+                const { error: insertError } = await supabase.from('teams').insert([newTeam]);
+                if (insertError) throw insertError;
+
+                alert('Team registered successfully!');
+                document.getElementById('team-name').value = '';
+                await fetchAndDisplayList('teams', 'team-list');
+            } catch (err) {
+                console.error('Error registering team:', err);
+                alert('Failed to register team.');
+            }
         }
 
-        // Add the new player
-        const { error: insertError } = await supabase.from('players').insert([{ name: playerName }]);
-        if (insertError) throw insertError;
 
-        alert('Player registered successfully!');
-        document.getElementById('player-name').value = '';
-        await fetchAndDisplayList('players', 'player-list');
-    } catch (err) {
-        console.error('Error registering player:', err);
-        alert('Failed to register player.');
-    }
-}
+        async function populateTeamListWithMembers() {
+            const teamListElement = document.getElementById('join-team-list');
+            teamListElement.innerHTML = ''; // Clear the current list
 
-async function registerTeam() {
-    const teamName = document.getElementById('team-name').value.trim();
-    if (!teamName) {
-        alert('Please enter a valid team name.');
-        return;
-    }
+            try {
+                // Fetch all teams and players
+                const { data: teams, error: teamError } = await supabase.from('teams').select('id, name');
+                const { data: players, error: playerError } = await supabase.from('players').select('id, name, participant_team_id');
 
-    try {
-        // Check if the team name already exists
-        const { data: existingTeam, error: checkError } = await supabase
-            .from('teams')
-            .select('id')
-            .eq('name', teamName)
-            .single();
+                if (teamError || playerError) {
+                    throw new Error(teamError?.message || playerError?.message);
+                }
 
-        if (checkError && checkError.code !== 'PGRST116') {
-            throw checkError;
-        }
+                // Map players to their teams
+                teams.forEach((team) => {
+                    const teamItem = document.createElement('li');
+                    teamItem.className = 'list-group-item';
+                    teamItem.innerHTML = `<strong>${team.name}</strong>`;
 
-        if (existingTeam) {
-            alert('This team name is already taken. Please choose a different name.');
-            return;
-        }
+                    const memberList = document.createElement('ul');
+                    memberList.className = 'list-unstyled mt-2 ms-3';
 
-        // Define card allocations (update these numbers if needed):
-        // card_aero_unplayed: Aero card count, default 1.
-        // card_double_unplayed: Double card count, default 1.
-        // card_halo_unplayed: Halo card count, default 3.
-        // card_report_unplayed: Report card count, default 1.
-        // card_swap_unplayed: Swap card count, default 1.
-        // For played cards, we start at 0.
-        const newTeam = {
-            name: teamName,
-            card_aero_unplayed: 1,    // Aero cards available initially.
-            card_double_unplayed: 1,  // Double cards available initially.
-            card_halo_unplayed: 3,    // Halo cards available initially.
-            card_report_unplayed: 1,  // Report cards available initially.
-            card_swap_unplayed: 1,    // Swap cards available initially.
-            card_aero_played: 0,
-            card_double_played: 0,
-            card_halo_played: 0,
-            card_report_played: 0,
-            card_swap_played: 0
-        };
+                    players
+                        .filter(player => player.participant_team_id === team.id) // Filter players in this team
+                        .forEach(player => {
+                            const playerItem = document.createElement('li');
+                            playerItem.textContent = player.name;
+                            memberList.appendChild(playerItem);
+                        });
 
-        // Add the new team along with the card allocations.
-        const { error: insertError } = await supabase.from('teams').insert([newTeam]);
-        if (insertError) throw insertError;
+                    // If no players, add a message
+                    if (memberList.children.length === 0) {
+                        memberList.innerHTML = '<li><em>No members yet</em></li>';
+                    }
 
-        alert('Team registered successfully!');
-        document.getElementById('team-name').value = '';
-        await fetchAndDisplayList('teams', 'team-list');
-    } catch (err) {
-        console.error('Error registering team:', err);
-        alert('Failed to register team.');
-    }
-}
-
-
-async function populateTeamListWithMembers() {
-    const teamListElement = document.getElementById('join-team-list');
-    teamListElement.innerHTML = ''; // Clear the current list
-
-    try {
-        // Fetch all teams and players
-        const { data: teams, error: teamError } = await supabase.from('teams').select('id, name');
-        const { data: players, error: playerError } = await supabase.from('players').select('id, name, participant_team_id');
-
-        if (teamError || playerError) {
-            throw new Error(teamError?.message || playerError?.message);
-        }
-
-        // Map players to their teams
-        teams.forEach((team) => {
-            const teamItem = document.createElement('li');
-            teamItem.className = 'list-group-item';
-            teamItem.innerHTML = `<strong>${team.name}</strong>`;
-
-            const memberList = document.createElement('ul');
-            memberList.className = 'list-unstyled mt-2 ms-3';
-
-            players
-                .filter(player => player.participant_team_id === team.id) // Filter players in this team
-                .forEach(player => {
-                    const playerItem = document.createElement('li');
-                    playerItem.textContent = player.name;
-                    memberList.appendChild(playerItem);
+                    teamItem.appendChild(memberList);
+                    teamListElement.appendChild(teamItem);
                 });
-
-            // If no players, add a message
-            if (memberList.children.length === 0) {
-                memberList.innerHTML = '<li><em>No members yet</em></li>';
+            } catch (err) {
+                console.error('Error populating teams with members:', err);
+                alert('Failed to load team data.');
             }
+        }
 
-            teamItem.appendChild(memberList);
-            teamListElement.appendChild(teamItem);
+
+        // Event listener for DOM content loaded
+        document.addEventListener('DOMContentLoaded', async () => {
+            await refreshPage();
+
+            document.getElementById('register-player-btn').addEventListener('click', registerPlayer);
+            document.getElementById('register-team-btn').addEventListener('click', registerTeam);
+            document.getElementById('join-team-btn').addEventListener('click', joinTeam);
         });
-    } catch (err) {
-        console.error('Error populating teams with members:', err);
-        alert('Failed to load team data.');
-    }
-}
-
-
-// Event listener for DOM content loaded
-document.addEventListener('DOMContentLoaded', async () => {
-    await refreshPage();
-
-    document.getElementById('register-player-btn').addEventListener('click', registerPlayer);
-    document.getElementById('register-team-btn').addEventListener('click', registerTeam);
-    document.getElementById('join-team-btn').addEventListener('click', joinTeam);
-});
 
     </script>
     <script src="/js/bootstrap.bundle.min.js"></script>

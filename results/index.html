@@ -41,7 +41,7 @@
                 <li><hr class="dropdown-divider"></li> <!-- Spacer -->
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallxb" href="/results">Results</a></li>
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
@@ -144,1052 +144,1050 @@
     </footer>
     <script>
         // Helper: Retrieve an entire table from Supabase.
-async function getTable(tableName) {
-  const { data, error } = await supabase.from(tableName).select('*');
-  if (error) {
-    console.error(`Error fetching ${tableName}:`, error);
-    throw error;
-  }
-  return data;
-}
-
-async function loadFullSeasonResults() {
-  try {
-    // 1. Retrieve the current year from form_details.
-    const formDetails = await getTable('form_details');
-    if (!formDetails || formDetails.length === 0) {
-      console.error("No form_details found.");
-      document.getElementById("full-season-table").innerHTML =
-        "<tr><td colspan='3'>No season data available.</td></tr>";
-      return;
-    }
-    const currentYear = formDetails[0].current_year;
-    console.log("Current Year:", currentYear);
-
-    // 2. Retrieve the full season_player_{currentYear} table.
-    const seasonTableName = `season_player_${currentYear}`;
-    const seasonData = await getTable(seasonTableName);
-    console.log("Season Data:", seasonData);
-    if (!seasonData || seasonData.length === 0) {
-      document.getElementById("full-season-table").innerHTML =
-        "<tr><td colspan='3'>No season data available.</td></tr>";
-      return;
-    }
-
-    // 3. Extract the special "Race Names" row (player_id === 0).
-    const raceNamesRow = seasonData.find(row => row.player_id === 0);
-    if (!raceNamesRow) {
-      document.getElementById("full-season-table").innerHTML =
-        "<tr><td colspan='3'>No race names row found.</td></tr>";
-      return;
-    }
-
-    // 4. Determine the last race that has been scored.
-    let lastRace = 0;
-    for (let i = 1; i <= 32; i++) {
-      const col = `race_${i}`;
-      if (raceNamesRow[col] !== null && raceNamesRow[col] !== "") {
-        lastRace = i;
-      } else {
-        break;
+    async function getTable(tableName) {
+      const { data, error } = await supabase.from(tableName).select('*');
+      if (error) {
+        console.error(`Error fetching ${tableName}:`, error);
+        throw error;
       }
-    }
-    console.log("Last race with data:", lastRace);
-    if (lastRace === 0) {
-      document.getElementById("full-season-table").innerHTML =
-        "<tr><td colspan='3'>No race scores available yet.</td></tr>";
-      return;
+      return data;
     }
 
-    // 5. Build table header.
-    let headerHTML = "<thead><tr>" +
-      "<th>Rank</th><th>Player</th><th>Total</th>";
-    for (let i = 1; i <= lastRace; i++) {
-      headerHTML += `<th>${raceNamesRow[`race_${i}`]}</th>`;
-    }
-    headerHTML += "</tr></thead>";
-
-    // 6. Process player rows (exclude player_id === 0).
-    const playerRows = seasonData.filter(row => row.player_id !== 0);
-    if (playerRows.length === 0) {
-      document.getElementById("full-season-table").innerHTML =
-        "<tr><td colspan='3'>No player data available.</td></tr>";
-      return;
-    }
-
-    // 7. Compute totals for each player.
-    const standings = playerRows.map(row => {
-      let total = 0;
-      let prevTotal = 0;
-      const raceScores = [];
-      for (let i = 1; i <= lastRace; i++) {
-        const col = `race_${i}`;
-        let raw = row[col];
-        if (raw !== null && raw !== "") {
-          // Remove any "(LS)" indicator for numeric conversion.
-          const numStr = raw.replace(/\(LS\)/, "").trim();
-          const num = parseFloat(numStr);
-          raceScores.push(raw);
-          if (!isNaN(num)) {
-            total += num;
-            if (i < lastRace) {
-              prevTotal += num;
-            }
-          }
-        } else {
-          raceScores.push("");
+    async function loadFullSeasonResults() {
+      try {
+        // 1. Retrieve the current year from form_details.
+        const formDetails = await getTable('form_details');
+        if (!formDetails || formDetails.length === 0) {
+          console.error("No form_details found.");
+          document.getElementById("full-season-table").innerHTML =
+            "<tr><td colspan='3'>No season data available.</td></tr>";
+          return;
         }
-      }
-      return {
-        player_id: row.player_id,
-        player_name: row.player_name,
-        total: total,
-        prevTotal: prevTotal,
-        raceScores: raceScores
-      };
-    });
+        const currentYear = formDetails[0].current_year;
+        console.log("Current Year:", currentYear);
 
-    // 8. Sort standings descending by current total.
-    standings.sort((a, b) => b.total - a.total);
-
-    // 9. Build ranking maps with tie-handling.
-    let currentRank = 1;
-    let prevScore = null;
-    const currentRankMap = {};
-    standings.forEach((player, index) => {
-      if (prevScore === null || player.total !== prevScore) {
-        currentRank = index + 1;
-      }
-      currentRankMap[player.player_id] = currentRank;
-      prevScore = player.total;
-    });
-    
-    let prevRank = 1;
-    let prevPrevScore = null;
-    const prevRankMap = {};
-    if (lastRace > 1) {
-      const prevStandings = [...standings].sort((a, b) => b.prevTotal - a.prevTotal);
-      prevStandings.forEach((player, index) => {
-        if (prevPrevScore === null || player.prevTotal !== prevPrevScore) {
-          prevRank = index + 1;
+        // 2. Retrieve the full season_player_{currentYear} table.
+        const seasonTableName = `season_player_${currentYear}`;
+        const seasonData = await getTable(seasonTableName);
+        console.log("Season Data:", seasonData);
+        if (!seasonData || seasonData.length === 0) {
+          document.getElementById("full-season-table").innerHTML =
+            "<tr><td colspan='3'>No season data available.</td></tr>";
+          return;
         }
-        prevRankMap[player.player_id] = prevRank;
-        prevPrevScore = player.prevTotal;
-      });
-    }
 
-    // 10. Build table body rows.
-    let bodyHTML = "<tbody>";
-    standings.forEach(player => {
-      const currRank = currentRankMap[player.player_id];
-      let movement = "";
-      if (lastRace > 1 && prevRankMap[player.player_id] !== undefined) {
-        const diff = prevRankMap[player.player_id] - currRank;
-        if (diff > 0) {
-          movement = `(+${diff})`;
-        } else if (diff < 0) {
-          movement = `(${diff})`;
-        } else {
-          movement = "(=)";
+        // 3. Extract the special "Race Names" row (player_id === 0).
+        const raceNamesRow = seasonData.find(row => row.player_id === 0);
+        if (!raceNamesRow) {
+          document.getElementById("full-season-table").innerHTML =
+            "<tr><td colspan='3'>No race names row found.</td></tr>";
+          return;
         }
-      }
-      bodyHTML += `<tr>
-                     <td>${currRank} ${movement}</td>
-                     <td>${player.player_name}</td>
-                     <td>${player.total}</td>`;
-      // Append each race score.
-      player.raceScores.forEach(score => {
-        bodyHTML += `<td>${score}</td>`;
-      });
-      bodyHTML += "</tr>";
-    });
-    bodyHTML += "</tbody>";
 
-    // 11. Combine header and body and inject into the table.
-    const fullHTML = headerHTML + bodyHTML;
-    const tableEl = document.getElementById("full-season-table");
-    tableEl.innerHTML = fullHTML;
-
-    // 12. Post-process the table styling.
-
-    // a) Header styling: dark grey background, white text, center alignment.
-    const headerCells = tableEl.querySelectorAll("thead th");
-    headerCells.forEach(cell => {
-      cell.style.backgroundColor = "#ddd";
-      cell.style.color = "black";
-      cell.style.textAlign = "center";
-    });
-
-    // b) For each row in the body, apply a light grey background to the first three columns.
-    const bodyRows = tableEl.querySelectorAll("tbody tr");
-    bodyRows.forEach(row => {
-      const cells = row.querySelectorAll("td");
-      for (let j = 0; j < 3; j++) {
-        cells[j].style.backgroundColor = "#eeeeee";
-      }
-    });
-
-    // c) For each race column cell, if it contains "(LS)", strip that text and set text colour to grey.
-    //    Race columns start at column index 4 (0-indexed column 3).
-    bodyRows.forEach(row => {
-      const cells = row.querySelectorAll("td");
-      for (let j = 3; j < cells.length; j++) {
-        if (cells[j].textContent.includes("(LS)")) {
-          const stripped = cells[j].textContent.replace(/\(LS\)/, "").trim();
-          cells[j].textContent = stripped;
-          cells[j].style.color = "grey";
-        }
-      }
-    });
-
-    // d) Highlight the top three finishers for each race column individually.
-    //    Loop over each race column (columns 4 to last).
-    const numColumns = tableEl.querySelector("thead tr").children.length;
-    for (let col = 3; col < numColumns; col++) {
-      // For each column, get the cell values from the body.
-      const colCells = Array.from(tableEl.querySelectorAll(`tbody tr td:nth-child(${col + 1})`));
-      // Extract numeric values from each cell.
-      const values = colCells.map(cell => parseFloat(cell.textContent.trim())).filter(val => !isNaN(val));
-      const sortedUnique = [...new Set(values)].sort((a, b) => b - a); // descending order
-      // Define colors for 1st, 2nd, 3rd.
-      const colors = ['gold', 'silver', '#cd7f32'];
-      colCells.forEach(cell => {
-        const val = parseFloat(cell.textContent.trim());
-        if (!isNaN(val)) {
-          const rank = sortedUnique.indexOf(val);
-          if (rank >= 0 && rank < 3) {
-            cell.style.backgroundColor = colors[rank];
-            // If the cell was originally marked as lowest (grey), leave it; otherwise, force black.
-            if (cell.style.color !== "grey") {
-              cell.style.color = "black";
-            }
+        // 4. Determine the last race that has been scored.
+        let lastRace = 0;
+        for (let i = 1; i <= 32; i++) {
+          const col = `race_${i}`;
+          if (raceNamesRow[col] !== null && raceNamesRow[col] !== "") {
+            lastRace = i;
+          } else {
+            break;
           }
         }
-      });
-    }
-    
-  } catch (err) {
-    console.error("Error loading full season results:", err);
-    document.getElementById("full-season-table").innerHTML =
-      `<tr><td colspan="100%">Error loading season results: ${err.message}</td></tr>`;
-  }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  loadFullSeasonResults();
-});
-
-
-// --- Team Season Total Display Function ---
-// Main function to load the full season team results.
-async function loadFullSeasonTeamResults() {
-  try {
-    // 1. Retrieve the current year from form_details.
-    const formDetails = await getTable('form_details');
-    if (!formDetails || formDetails.length === 0) {
-      console.error("No form_details found.");
-      document.getElementById("full-season-team-table").innerHTML =
-        "<tr><td colspan='3'>No season team data available.</td></tr>";
-      return;
-    }
-    const currentYear = formDetails[0].current_year;
-    console.log("Current Year:", currentYear);
-
-    // 2. Retrieve the full season_team_{currentYear} table.
-    const seasonTeamTableName = `season_team_${currentYear}`;
-    const seasonTeamData = await getTable(seasonTeamTableName);
-    console.log("Season Team Data:", seasonTeamData);
-    if (!seasonTeamData || seasonTeamData.length === 0) {
-      document.getElementById("full-season-team-table").innerHTML =
-        "<tr><td colspan='3'>No season team data available.</td></tr>";
-      return;
-    }
-
-    // 3. Extract the special "Race Names" row (team_id === 0).
-    const raceNamesRow = seasonTeamData.find(row => row.team_id === 0);
-    if (!raceNamesRow) {
-      document.getElementById("full-season-team-table").innerHTML =
-        "<tr><td colspan='3'>No race names row found.</td></tr>";
-      return;
-    }
-
-    // 4. Determine the last race that has been scored.
-    let lastRace = 0;
-    for (let i = 1; i <= 32; i++) {
-      const col = `race_${i}`;
-      if (raceNamesRow[col] !== null && raceNamesRow[col] !== "") {
-        lastRace = i;
-      } else {
-        break;
-      }
-    }
-    console.log("Last race with data:", lastRace);
-    if (lastRace === 0) {
-      document.getElementById("full-season-team-table").innerHTML =
-        "<tr><td colspan='3'>No race scores available yet.</td></tr>";
-      return;
-    }
-
-    // 5. Build table header.
-    let headerHTML = "<thead><tr>" +
-      "<th>Rank</th><th>Team</th><th>Total</th>";
-    for (let i = 1; i <= lastRace; i++) {
-      headerHTML += `<th>${raceNamesRow[`race_${i}`]}</th>`;
-    }
-    headerHTML += "</tr></thead>";
-
-    // 6. Process team rows (exclude team_id === 0).
-    const teamRows = seasonTeamData.filter(row => row.team_id !== 0);
-    if (teamRows.length === 0) {
-      document.getElementById("full-season-team-table").innerHTML =
-        "<tr><td colspan='3'>No team data available.</td></tr>";
-      return;
-    }
-
-    // 7. Compute totals for each team.
-    //    For each race column, we extract the numeric value by stripping any card tags.
-    const standings = teamRows.map(row => {
-      let total = 0;
-      let prevTotal = 0;
-      const raceScores = [];
-      for (let i = 1; i <= lastRace; i++) {
-        const col = `race_${i}`;
-        let raw = row[col];
-        if (raw !== null && raw !== "") {
-          // Remove any parentheses groups (e.g. "(double)") for numeric conversion.
-          const numStr = raw.replace(/\(.*?\)/g, "").trim();
-          const num = parseFloat(numStr);
-          raceScores.push(raw);
-          if (!isNaN(num)) {
-            total += num;
-            if (i < lastRace) {
-              prevTotal += num;
-            }
-          }
-        } else {
-          raceScores.push("");
+        console.log("Last race with data:", lastRace);
+        if (lastRace === 0) {
+          document.getElementById("full-season-table").innerHTML =
+            "<tr><td colspan='3'>No race scores available yet.</td></tr>";
+          return;
         }
-      }
-      return {
-        team_id: row.team_id,
-        team_name: row.team_name,
-        total: total,
-        prevTotal: prevTotal,
-        raceScores: raceScores
-      };
-    });
 
-    // 8. Sort standings descending by total score.
-    standings.sort((a, b) => b.total - a.total);
-
-    // 9. Build ranking maps with tie-handling.
-    let currentRank = 1;
-    let prevScore = null;
-    const currentRankMap = {};
-    standings.forEach((team, index) => {
-      if (prevScore === null || team.total !== prevScore) {
-        currentRank = index + 1;
-      }
-      currentRankMap[team.team_id] = currentRank;
-      prevScore = team.total;
-    });
-    
-    let prevRank = 1;
-    let prevPrevScore = null;
-    const prevRankMap = {};
-    if (lastRace > 1) {
-      const prevStandings = [...standings].sort((a, b) => b.prevTotal - a.prevTotal);
-      prevStandings.forEach((team, index) => {
-        if (prevPrevScore === null || team.prevTotal !== prevPrevScore) {
-          prevRank = index + 1;
+        // 5. Build table header.
+        let headerHTML = "<thead><tr>" +
+          "<th>Rank</th><th>Player</th><th>Total</th>";
+        for (let i = 1; i <= lastRace; i++) {
+          headerHTML += `<th>${raceNamesRow[`race_${i}`]}</th>`;
         }
-        prevRankMap[team.team_id] = prevRank;
-        prevPrevScore = team.prevTotal;
-      });
-    }
+        headerHTML += "</tr></thead>";
 
-    // 10. Helper: Process a race score cell.
-    //     This function extracts the numeric part for display and, if any card tags are found,
-    //     it outputs a small image for each card using a predefined URL structure.
-    function processTeamRaceScore(raw) {
-  if (!raw) return "";
-  // Remove all tag groups to extract the numeric score.
-  const numStr = raw.replace(/\(.*?\)/g, "").trim();
-  let output = "";
-  // Use regex to extract all tags within parentheses.
-  const cardTags = [];
-  const regex = /\(([^)]+)\)/g;
-  let match;
-  while ((match = regex.exec(raw)) !== null) {
-    const tag = match[1].toLowerCase();
-    // Recognize these tags, including the "casino" tag.
-    if (["aero", "double", "halo", "report", "swap", "casino"].includes(tag)) {
-      cardTags.push(tag);
-    }
-  }
-  // If the "casino" tag is present, output the casino image container.
-  if (cardTags.includes("casino")) {
-    output += `<div style="max-width:100px; display:inline-block; vertical-align:middle; word-wrap: break-word;">
-                 <img src="/media/casino/casino.png" style="width:100px; height:auto; display:block; margin-bottom:5px;">
-               </div>`;
-  } else {
-    // Otherwise, append an image for each non-casino tag.
-    cardTags.forEach(tag => {
-      if (tag !== "casino") {
-        output += `<img src="/media/cards/card_${tag}.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
-      }
-    });
-  }
-  // Append the numeric score in a container that forces wrapping.
-  output += `<div style="display:block; max-width:100px; word-wrap: break-word;">${numStr}</div>`;
-  return output;
-}
-
-
-    // 11. Build table body rows.
-    let bodyHTML = "<tbody>";
-    standings.forEach(team => {
-      const currRank = currentRankMap[team.team_id];
-      let movement = "";
-      if (lastRace > 1 && prevRankMap[team.team_id] !== undefined) {
-        const diff = prevRankMap[team.team_id] - currRank;
-        if (diff > 0) {
-          movement = `(+${diff})`;
-        } else if (diff < 0) {
-          movement = `(${diff})`;
-        } else {
-          movement = "(=)";
+        // 6. Process player rows (exclude player_id === 0).
+        const playerRows = seasonData.filter(row => row.player_id !== 0);
+        if (playerRows.length === 0) {
+          document.getElementById("full-season-table").innerHTML =
+            "<tr><td colspan='3'>No player data available.</td></tr>";
+          return;
         }
-      }
-      bodyHTML += `<tr>
-                     <td>${currRank} ${movement}</td>
-                     <td>${team.team_name}</td>
-                     <td>${team.total}</td>`;
-      team.raceScores.forEach(score => {
-        bodyHTML += `<td>${processTeamRaceScore(score)}</td>`;
-      });
-      bodyHTML += "</tr>";
-    });
-    bodyHTML += "</tbody>";
 
-    // 12. Combine header and body and inject into the table.
-    const fullHTML = headerHTML + bodyHTML;
-    const tableEl = document.getElementById("full-season-team-table");
-    tableEl.innerHTML = fullHTML;
-
-    // 13. Post-process the table styling.
-    // a) Style header cells.
-    const headerCells = tableEl.querySelectorAll("thead th");
-    headerCells.forEach(cell => {
-      cell.style.backgroundColor = "#ddd";
-      cell.style.color = "black";
-      cell.style.textAlign = "center";
-    });
-
-    // b) For each row in the table body, shade the first three columns.
-    const bodyRows = tableEl.querySelectorAll("tbody tr");
-    bodyRows.forEach(row => {
-      const cells = row.querySelectorAll("td");
-      for (let j = 0; j < 3; j++) {
-        cells[j].style.backgroundColor = "#eeeeee";
-      }
-    });
-
-    // c) For each race column cell, if it contains an "(LS)" indicator,
-    //    remove it and set the text colour to grey.
-    bodyRows.forEach(row => {
-      const cells = row.querySelectorAll("td");
-      for (let j = 3; j < cells.length; j++) {
-        if (cells[j].textContent.includes("(LS)")) {
-          const stripped = cells[j].textContent.replace(/\(LS\)/, "").trim();
-          cells[j].textContent = stripped;
-          cells[j].style.color = "grey";
-        }
-      }
-    });
-
-    // d) Highlight the top three finishers for each race column.
-    //    (Columns 4 onward; for each column, compare numeric values.)
-    const numColumns = tableEl.querySelector("thead tr").children.length;
-    for (let col = 3; col < numColumns; col++) {
-      const colCells = Array.from(tableEl.querySelectorAll(`tbody tr td:nth-child(${col + 1})`));
-      const values = colCells.map(cell => parseFloat(cell.textContent.trim())).filter(val => !isNaN(val));
-      const sortedUnique = [...new Set(values)].sort((a, b) => b - a); // descending order
-      const colors = ['gold', 'silver', '#cd7f32'];
-      colCells.forEach(cell => {
-        const val = parseFloat(cell.textContent.trim());
-        if (!isNaN(val)) {
-          const rank = sortedUnique.indexOf(val);
-          if (rank >= 0 && rank < 3) {
-            cell.style.backgroundColor = colors[rank];
-            if (cell.style.color !== "grey") {
-              cell.style.color = "black";
-            }
-          }
-        }
-      });
-    }
-
-  } catch (err) {
-    console.error("Error loading full season team results:", err);
-    document.getElementById("full-season-team-table").innerHTML =
-      `<tr><td colspan="100%">Error loading season team results: ${err.message}</td></tr>`;
-  }
-}
-
-
-document.addEventListener("DOMContentLoaded", () => {
-  loadFullSeasonTeamResults();
-});
-
-// -----------------
-// -----------------
-// -----------------
-
-// ---------- HELPER FUNCTION ----------
-async function getTable(tableName) {
-  const { data, error } = await supabase.from(tableName).select('*');
-  if (error) {
-    console.error(`Error fetching ${tableName}:`, error);
-    throw error;
-  }
-  return data;
-}
-
-
-
-// ---------- RACE OPTIONS LOADING ----------
-// This function builds the dropdown by fetching the current year from form_details
-// and then querying team_scoring_{year} to build a distinct list of races.
-async function loadRaceOptionsResults() {
-  try {
-    // Retrieve current year from form_details (assumes a single row with id=1)
-    const { data: formDetails, error: formDetailsError } = await supabase
-      .from('form_details')
-      .select('*')
-      .eq('id', 1)
-      .single();
-    if (formDetailsError) {
-      console.error("Error fetching form_details:", formDetailsError.message);
-      return;
-    }
-    const currentYear = formDetails.current_year;
-
-    // Query the team_scoring_{year} table to build a list of races.
-    const teamScoringTable = `team_scoring_${currentYear}`;
-    const { data: teamScoringData, error: teamScoringError } = await supabase
-      .from(teamScoringTable)
-      .select('race_number, race_name');
-    if (teamScoringError) {
-      console.error("Error fetching team scoring data:", teamScoringError.message);
-      return;
-    }
-
-    // Build a unique map of race_number => race_name
-    const raceMap = {};
-    teamScoringData.forEach(record => {
-      if (record.race_number != null && record.race_name) {
-        raceMap[record.race_number] = record.race_name;
-      }
-    });
-    // Convert the map to an array of race objects sorted by race_number
-    const races = Object.keys(raceMap)
-      .map(raceNum => ({
-        race_number: parseInt(raceNum, 10),
-        race_name: raceMap[raceNum]
-      }))
-      .sort((a, b) => a.race_number - b.race_number);
-
-    // Populate the dropdown (with id "team-select")
-    const dropdown = document.getElementById('team-select');
-    dropdown.innerHTML = "";
-    races.forEach(race => {
-      const option = document.createElement('option');
-      option.value = race.race_number;
-      // Display "Race {race_number}: {race_name} GP"
-      option.textContent = `Race ${race.race_number}: ${race.race_name} GP`;
-      dropdown.appendChild(option);
-    });
-    // Set default to the most recent race (largest race_number)
-    if (races.length > 0) {
-      dropdown.value = races[races.length - 1].race_number;
-    }
-
-    // When the dropdown selection changes, reload both player and team results.
-    dropdown.addEventListener('change', () => {
-      loadRaceResultsPlayer();
-      loadRaceResultsTeam();
-    });
-
-    // Initial load of results for the default (most recent) race.
-    loadRaceResultsPlayer();
-    loadRaceResultsTeam();
-
-  } catch (err) {
-    console.error("loadRaceOptionsResults error:", err);
-  }
-}
-
-
-// ---------- PLAYER RESULTS LOADING ----------
-// This function loads player results from form_responses_{year} for the selected race.
-async function loadRaceResultsPlayer() {
-  try {
-    // Show the loading indicator
-    document.getElementById('playerLoading').style.display = 'block';
-
-    // ---------------------------------------
-    // FETCH DRIVERS AND CONSTRUCTORS
-    // ---------------------------------------
-    const { data: drivers, error: driversError } = await supabase
-      .from('drivers')
-      .select('*');
-    if (driversError) {
-      console.error("Error fetching drivers:", driversError.message);
-      document.getElementById('playerLoading').style.display = 'none';
-      return;
-    }
-
-    const { data: constructors, error: constructorsError } = await supabase
-      .from('constructors')
-      .select('*');
-    if (constructorsError) {
-      console.error("Error fetching constructors:", constructorsError.message);
-      document.getElementById('playerLoading').style.display = 'none';
-      return;
-    }
-
-    // ---------------------------------------
-    // GET CURRENT YEAR AND SELECTED RACE
-    // ---------------------------------------
-    const { data: formDetails, error: formDetailsError } = await supabase
-      .from('form_details')
-      .select('*')
-      .eq('id', 1)
-      .single();
-    if (formDetailsError) {
-      console.error("Error fetching form_details:", formDetailsError.message);
-      document.getElementById('playerLoading').style.display = 'none';
-      return;
-    }
-    const currentYear = formDetails.current_year;
-    const raceNumber = document.getElementById('team-select').value;
-
-    // ---------------------------------------
-    // FETCH FORM RESPONSES FOR THE SELECTED RACE
-    // ---------------------------------------
-    const formResponsesTable = `form_responses_${currentYear}`;
-    const { data: formResponses, error: formResponsesError } = await supabase
-      .from(formResponsesTable)
-      .select('*')
-      .eq('race_number', raceNumber);
-    if (formResponsesError) {
-      console.error("Error fetching form responses:", formResponsesError.message);
-      document.getElementById('playerLoading').style.display = 'none';
-      return;
-    }
-    
-    // Process responses assuming the same structure as your home page
-    const questions = formResponses.find(response => response.entry_type === 'questions');
-    const results = formResponses.find(response => response.entry_type === 'results');
-    const players = formResponses.filter(response => response.entry_type === 'player');
-    // (Optionally) lowestScores if needed later:
-    const lowestScores = formResponses.filter(response => response.entry_type === 'player_lowest_score');
-    
-    // ---------------------------------------
-    // BUILD THE PLAYER RESULTS TABLE
-    // ---------------------------------------
-    const playerTable = document.getElementById('player-results-table');
-    // Hide the table until the new table is built
-    playerTable.style.display = 'none';
-    playerTable.innerHTML = ""; // Clear any previous table contents
-
-    // Create table header
-    const headerRow = document.createElement('tr');
-    headerRow.classList.add('header');
-    // First column: Name
-    const thName = document.createElement('th');
-    thName.textContent = "Name";
-    headerRow.appendChild(thName);
-    // One column per player
-    players.forEach(player => {
-      const th = document.createElement('th');
-      th.textContent = player.player_name;
-      headerRow.appendChild(th);
-    });
-    // Spacer column and "Results" column
-    const spacerTh = document.createElement('th');
-    spacerTh.style.backgroundColor = "white";
-    spacerTh.style.borderTop = "none";
-    spacerTh.style.borderBottom = "none";
-    headerRow.appendChild(spacerTh);
-    const resultsTh = document.createElement('th');
-    resultsTh.textContent = "Results";
-    headerRow.appendChild(resultsTh);
-
-    const thead = document.createElement('thead');
-    thead.appendChild(headerRow);
-    playerTable.appendChild(thead);
-
-    // Create table body
-    const tbody = document.createElement('tbody');
-
-    // Helper to create a row for a given question or total.
-    function createRow(id, label) {
-      // Check if this row is a total row (e.g. subtotals, grand total)
-      const isTotalColumn = ['subtotal_1', 'subtotal_2', 'subtotal_3', 'subtotal_4', 'grand_total'].includes(id);
-      if (isTotalColumn) {
-        const row = document.createElement('tr');
-        const tdLabel = document.createElement('td');
-        tdLabel.textContent = label;
-        row.appendChild(tdLabel);
-        players.forEach(player => {
-          const td = document.createElement('td');
-          td.textContent = player[id];
-          td.className = `${id}_score`;
-          td.dataset.playerId = player.player_id;
-          row.appendChild(td);
-        });
-        const spacerTd = document.createElement('td');
-        spacerTd.style.backgroundColor = "white";
-        row.appendChild(spacerTd);
-        const resultTd = document.createElement('td');
-        row.appendChild(resultTd);
-        tbody.appendChild(row);
-      } else {
-        // For regular questions, add a row only if results exist.
-        if (results && results[`form_id_${id}`] !== null) {
-          const row = document.createElement('tr');
-          const tdLabel = document.createElement('td');
-          tdLabel.textContent = label;
-          row.appendChild(tdLabel);
-          players.forEach(player => {
-            const td = document.createElement('td');
-            td.textContent = player[`form_id_${id}`];
-            td.className = `form_id_${id}_score`;
-            td.dataset.playerId = player.player_id;
-            row.appendChild(td);
-          });
-          const spacerTd = document.createElement('td');
-          spacerTd.style.backgroundColor = "white";
-          row.appendChild(spacerTd);
-          const resultTd = document.createElement('td');
-          resultTd.textContent = results[`form_id_${id}`];
-          row.appendChild(resultTd);
-          tbody.appendChild(row);
-        }
-      }
-    }
-    
-    // Build rows mimicking your home page structure:
-    for (let i = 2; i <= 7; i++) {
-      createRow(i, questions[`form_id_${i}`]);
-    }
-    createRow('subtotal_2', 'Subtotal');
-    // Spacer row
-    let spacerRow = document.createElement('tr');
-    let spacerCell = document.createElement('td');
-    spacerCell.colSpan = players.length + 3;
-    spacerCell.style.backgroundColor = "white";
-    spacerRow.appendChild(spacerCell);
-    tbody.appendChild(spacerRow);
-    for (let i = 8; i <= 27; i++) {
-      createRow(i, questions[`form_id_${i}`]);
-    }
-    createRow('subtotal_3', 'Subtotal');
-    spacerRow = document.createElement('tr');
-    spacerCell = document.createElement('td');
-    spacerCell.colSpan = players.length + 3;
-    spacerCell.style.backgroundColor = "white";
-    spacerRow.appendChild(spacerCell);
-    tbody.appendChild(spacerRow);
-    createRow(28, questions[`form_id_28`]);
-    spacerRow = document.createElement('tr');
-    spacerCell = document.createElement('td');
-    spacerCell.colSpan = players.length + 3;
-    spacerCell.style.backgroundColor = "white";
-    spacerRow.appendChild(spacerCell);
-    tbody.appendChild(spacerRow);
-    createRow('grand_total', 'Grand Total');
-
-    playerTable.appendChild(tbody);
-
-    // Make the table visible now that it’s built
-    playerTable.style.display = 'table';
-
-    // ---------------------------------------
-    // APPLY FORMATTING (as on the home page)
-    // ---------------------------------------
-    const applyFormattingScored = (cell, value) => {
-      if (/^[A-Z]{3}$/.test(value)) {
-        const driver = drivers.find(driver => driver.abbreviation === value);
-        if (driver) {
-          const constructor = constructors.find(constructor => constructor.id === driver.constructor_id);
-          if (constructor) {
-            cell.style.backgroundColor = constructor.background_colour;
-            cell.style.color = constructor.text_colour;
-          }
-        }
-      } else if (/^\d+$/.test(value)) {
-        // Numeric values: no extra formatting.
-      } else if (value === 'Yes') {
-        cell.style.color = 'green';
-        cell.style.backgroundColor = 'white';
-      } else if (value === 'No') {
-        cell.style.color = 'red';
-        cell.style.backgroundColor = 'white';
-      } else {
-        const constructor = constructors.find(constructor => constructor.name === value);
-        if (constructor) {
-          cell.style.backgroundColor = constructor.background_colour;
-          cell.style.color = constructor.text_colour;
-        }
-      }
-    };
-
-    document.querySelectorAll('#player-results-table tbody td').forEach(cell => {
-      applyFormattingScored(cell, cell.textContent);
-    });
-
-    // ---------------------------------------
-    // HIGHLIGHTING FUNCTIONS
-    // ---------------------------------------
-
-    // Highlight highest scores for totals (as before)
-    const highlightHighest = (selector, colors) => {
-      const cells = Array.from(document.querySelectorAll(selector));
-      const values = cells
-        .map(cell => parseFloat(cell.textContent))
-        .filter(value => !isNaN(value));
-      const sortedValues = [...new Set(values)].sort((a, b) => b - a);
-      cells.forEach(cell => {
-        const cellValue = parseFloat(cell.textContent);
-        const rank = sortedValues.indexOf(cellValue);
-        if (rank >= 0 && rank < colors.length) {
-          cell.style.backgroundColor = colors[rank];
-          cell.style.color = 'black';
-        }
-      });
-    };
-
-    // For form_id_28 (closest score), check the cell’s numeric value directly.
-    const highlightClosestScore = (selector, color) => {
-            const cells = Array.from(document.querySelectorAll(selector));
-            cells.forEach(cell => {
-                const playerId = cell.dataset.playerId;
-                const player = players.find(player => player.player_id == playerId);
-                const playerScore = player ? player.form_id_28_score : null;
-                if (playerScore === 1) {
-                    cell.style.backgroundColor = color;
-                    cell.style.color = 'black';
-                } else {
-                    cell.style.backgroundColor = '';
-                    cell.style.color = '';
+        // 7. Compute totals for each player.
+        const standings = playerRows.map(row => {
+          let total = 0;
+          let prevTotal = 0;
+          const raceScores = [];
+          for (let i = 1; i <= lastRace; i++) {
+            const col = `race_${i}`;
+            let raw = row[col];
+            if (raw !== null && raw !== "") {
+              // Remove any "(LS)" indicator for numeric conversion.
+              const numStr = raw.replace(/\(LS\)/, "").trim();
+              const num = parseFloat(numStr);
+              raceScores.push(raw);
+              if (!isNaN(num)) {
+                total += num;
+                if (i < lastRace) {
+                  prevTotal += num;
                 }
-            });
-        };
-
-    highlightHighest('td.subtotal_2_score', ['lightyellow']);
-    highlightHighest('td.subtotal_3_score', ['lightyellow']);
-    highlightHighest('td.grand_total_score', ['gold', 'silver', '#cd7f32']);
-    highlightClosestScore('td.form_id_28_score', 'lightyellow');
-
-    // ---------------------------------------
-    // SET UP THE TOGGLE FOR DETAILED SCORING
-    // ---------------------------------------
-    document.getElementById('toggleScoresPlayer').addEventListener('change', (event) => {
-      const showScores = event.target.checked;
-      document.querySelectorAll('#player-results-table tbody td').forEach(cell => {
-        const idMatch = cell.className.match(/form_id_(\d+)_score/);
-        if (idMatch) {
-          const scoreId = `form_id_${idMatch[1]}_score`;
-          const playerId = cell.dataset.playerId;
-          const player = players.find(player => player.player_id == playerId);
-          const playerScore = player ? player[scoreId] : null;
-          if (playerScore !== null) {
-            // Retain the base text (before any appended score) and add/remove the detailed score.
-            const baseText = cell.textContent.split(' ')[0];
-            cell.textContent = showScores ? `${baseText} (${playerScore})` : baseText;
+              }
+            } else {
+              raceScores.push("");
+            }
           }
-        }
-      });
-    });
+          return {
+            player_id: row.player_id,
+            player_name: row.player_name,
+            total: total,
+            prevTotal: prevTotal,
+            raceScores: raceScores
+          };
+        });
 
-    const lowestScoresDiv = document.getElementById('lowestScores');
-        if (lowestScores.length > 0) {
-            const lowestScoresText = lowestScores.map(player => player.player_name).join(', ');
-            lowestScoresDiv.textContent = `Lowest Score: ${lowestScoresText}`;
+        // 8. Sort standings descending by current total.
+        standings.sort((a, b) => b.total - a.total);
+
+        // 9. Build ranking maps with tie-handling.
+        let currentRank = 1;
+        let prevScore = null;
+        const currentRankMap = {};
+        standings.forEach((player, index) => {
+          if (prevScore === null || player.total !== prevScore) {
+            currentRank = index + 1;
+          }
+          currentRankMap[player.player_id] = currentRank;
+          prevScore = player.total;
+        });
+        
+        let prevRank = 1;
+        let prevPrevScore = null;
+        const prevRankMap = {};
+        if (lastRace > 1) {
+          const prevStandings = [...standings].sort((a, b) => b.prevTotal - a.prevTotal);
+          prevStandings.forEach((player, index) => {
+            if (prevPrevScore === null || player.prevTotal !== prevPrevScore) {
+              prevRank = index + 1;
+            }
+            prevRankMap[player.player_id] = prevRank;
+            prevPrevScore = player.prevTotal;
+          });
+        }
+
+        // 10. Build table body rows.
+        let bodyHTML = "<tbody>";
+        standings.forEach(player => {
+          const currRank = currentRankMap[player.player_id];
+          let movement = "";
+          if (lastRace > 1 && prevRankMap[player.player_id] !== undefined) {
+            const diff = prevRankMap[player.player_id] - currRank;
+            if (diff > 0) {
+              movement = `(+${diff})`;
+            } else if (diff < 0) {
+              movement = `(${diff})`;
+            } else {
+              movement = "(=)";
+            }
+          }
+          bodyHTML += `<tr>
+                        <td>${currRank} ${movement}</td>
+                        <td>${player.player_name}</td>
+                        <td>${player.total}</td>`;
+          // Append each race score.
+          player.raceScores.forEach(score => {
+            bodyHTML += `<td>${score}</td>`;
+          });
+          bodyHTML += "</tr>";
+        });
+        bodyHTML += "</tbody>";
+
+        // 11. Combine header and body and inject into the table.
+        const fullHTML = headerHTML + bodyHTML;
+        const tableEl = document.getElementById("full-season-table");
+        tableEl.innerHTML = fullHTML;
+
+        // 12. Post-process the table styling.
+
+        // a) Header styling: dark grey background, white text, center alignment.
+        const headerCells = tableEl.querySelectorAll("thead th");
+        headerCells.forEach(cell => {
+          cell.style.backgroundColor = "#ddd";
+          cell.style.color = "black";
+          cell.style.textAlign = "center";
+        });
+
+        // b) For each row in the body, apply a light grey background to the first three columns.
+        const bodyRows = tableEl.querySelectorAll("tbody tr");
+        bodyRows.forEach(row => {
+          const cells = row.querySelectorAll("td");
+          for (let j = 0; j < 3; j++) {
+            cells[j].style.backgroundColor = "#eeeeee";
+          }
+        });
+
+        // c) For each race column cell, if it contains "(LS)", strip that text and set text colour to grey.
+        //    Race columns start at column index 4 (0-indexed column 3).
+        bodyRows.forEach(row => {
+          const cells = row.querySelectorAll("td");
+          for (let j = 3; j < cells.length; j++) {
+            if (cells[j].textContent.includes("(LS)")) {
+              const stripped = cells[j].textContent.replace(/\(LS\)/, "").trim();
+              cells[j].textContent = stripped;
+              cells[j].style.color = "grey";
+            }
+          }
+        });
+
+        // d) Highlight the top three finishers for each race column individually.
+        //    Loop over each race column (columns 4 to last).
+        const numColumns = tableEl.querySelector("thead tr").children.length;
+        for (let col = 3; col < numColumns; col++) {
+          // For each column, get the cell values from the body.
+          const colCells = Array.from(tableEl.querySelectorAll(`tbody tr td:nth-child(${col + 1})`));
+          // Extract numeric values from each cell.
+          const values = colCells.map(cell => parseFloat(cell.textContent.trim())).filter(val => !isNaN(val));
+          const sortedUnique = [...new Set(values)].sort((a, b) => b - a); // descending order
+          // Define colors for 1st, 2nd, 3rd.
+          const colors = ['gold', 'silver', '#cd7f32'];
+          colCells.forEach(cell => {
+            const val = parseFloat(cell.textContent.trim());
+            if (!isNaN(val)) {
+              const rank = sortedUnique.indexOf(val);
+              if (rank >= 0 && rank < 3) {
+                cell.style.backgroundColor = colors[rank];
+                // If the cell was originally marked as lowest (grey), leave it; otherwise, force black.
+                if (cell.style.color !== "grey") {
+                  cell.style.color = "black";
+                }
+              }
+            }
+          });
         }
         
-    // Finally, hide the loading indicator
-    document.getElementById('playerLoading').style.display = 'none';
-
-  } catch (err) {
-    console.error("loadRaceResultsPlayer error:", err);
-    // Ensure the loading indicator is hidden even on error.
-    document.getElementById('playerLoading').style.display = 'none';
-  }
-}
-
-
-
-// ---------- TEAM RESULTS LOADING ----------
-// This function loads team results for the selected race from team_scoring_{year} and builds the team results table.
-async function loadRaceResultsTeam() {
-  try {
-    // Get current year.
-    const { data: formDetails, error: formDetailsError } = await supabase
-      .from('form_details')
-      .select('*')
-      .eq('id', 1)
-      .single();
-    if (formDetailsError) {
-      console.error("Error fetching form_details:", formDetailsError.message);
-      return;
-    }
-    const currentYear = formDetails.current_year;
-    
-    // Get selected race number from the dropdown.
-    const raceNumber = document.getElementById('team-select').value;
-    
-    // Query team_scoring_{year} table for the selected race.
-    const teamScoringTable = `team_scoring_${currentYear}`;
-    const { data: teamScoringData, error: teamScoringError } = await supabase
-      .from(teamScoringTable)
-      .select('*')
-      .eq('race_number', raceNumber);
-    if (teamScoringError) {
-      console.error("Error fetching team scoring data:", teamScoringError.message);
-      return;
-    }
-    
-    // Sort teams by grand_total descending.
-    teamScoringData.sort((a, b) => b.grand_total - a.grand_total);
-    
-    // Build ranking with tie-handling.
-    let currentRank = 1;
-    let prevScore = null;
-    const currentRankMap = {};
-    teamScoringData.forEach((team, index) => {
-      if (prevScore === null || team.grand_total !== prevScore) {
-        currentRank = index + 1;
+      } catch (err) {
+        console.error("Error loading full season results:", err);
+        document.getElementById("full-season-table").innerHTML =
+          `<tr><td colspan="100%">Error loading season results: ${err.message}</td></tr>`;
       }
-      currentRankMap[team.team_id] = currentRank;
-      prevScore = team.grand_total;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadFullSeasonResults();
     });
-    
-    // Build table header.
-    const headerHTML = `<thead>
-      <tr>
-        <th>Rank</th>
-        <th>Team</th>
-        <th>Player 1</th>
-        <th>Player 1<br>Points</th>
-        <th>Player 2</th>
-        <th>Player 2<br>Points</th>
-        <th>Sub-total</th>
-        <th>Card/Casino<br>Details</th>
-        <th>Card/Casino<br>Points</th>
-        <th>Total</th>
-      </tr>
-    </thead>`;
-    
-    // Build table body rows.
-    let bodyHTML = "<tbody>";
-    teamScoringData.forEach(team => {
-      const rank = currentRankMap[team.team_id];
-      bodyHTML += `<tr>
-        <td>${rank}</td>
-        <td>${team.team_name}</td>
-        <td>${team.player_name_1}</td>
-        <td>${team.player_points_1}</td>
-        <td>${team.player_name_2}</td>
-        <td>${team.player_points_2}</td>
-        <td>${team.subtotal}</td>`;
-      
-      // Build "Cards Played" cell.
-      let cardsHTML = "";
-      
-      // If casino was used (casino_details exists and is nonempty), display the casino image and details.
-      if (team.casino_details && team.casino_details.trim() !== "") {
-        cardsHTML += `<img src="/media/casino/casino.png" style="display:block; width:100px; height:auto; margin-bottom:5px;">`;
-        cardsHTML += `<div style="word-wrap: break-word; white-space: normal;">${team.casino_details}</div>`;
-        console.log(`Team ${team.team_name} casino_details: ${team.casino_details}`);
+
+
+    // --- Team Season Total Display Function ---
+    // Main function to load the full season team results.
+    async function loadFullSeasonTeamResults() {
+      try {
+        // 1. Retrieve the current year from form_details.
+        const formDetails = await getTable('form_details');
+        if (!formDetails || formDetails.length === 0) {
+          console.error("No form_details found.");
+          document.getElementById("full-season-team-table").innerHTML =
+            "<tr><td colspan='3'>No season team data available.</td></tr>";
+          return;
+        }
+        const currentYear = formDetails[0].current_year;
+        console.log("Current Year:", currentYear);
+
+        // 2. Retrieve the full season_team_{currentYear} table.
+        const seasonTeamTableName = `season_team_${currentYear}`;
+        const seasonTeamData = await getTable(seasonTeamTableName);
+        console.log("Season Team Data:", seasonTeamData);
+        if (!seasonTeamData || seasonTeamData.length === 0) {
+          document.getElementById("full-season-team-table").innerHTML =
+            "<tr><td colspan='3'>No season team data available.</td></tr>";
+          return;
+        }
+
+        // 3. Extract the special "Race Names" row (team_id === 0).
+        const raceNamesRow = seasonTeamData.find(row => row.team_id === 0);
+        if (!raceNamesRow) {
+          document.getElementById("full-season-team-table").innerHTML =
+            "<tr><td colspan='3'>No race names row found.</td></tr>";
+          return;
+        }
+
+        // 4. Determine the last race that has been scored.
+        let lastRace = 0;
+        for (let i = 1; i <= 32; i++) {
+          const col = `race_${i}`;
+          if (raceNamesRow[col] !== null && raceNamesRow[col] !== "") {
+            lastRace = i;
+          } else {
+            break;
+          }
+        }
+        console.log("Last race with data:", lastRace);
+        if (lastRace === 0) {
+          document.getElementById("full-season-team-table").innerHTML =
+            "<tr><td colspan='3'>No race scores available yet.</td></tr>";
+          return;
+        }
+
+        // 5. Build table header.
+        let headerHTML = "<thead><tr>" +
+          "<th>Rank</th><th>Team</th><th>Total</th>";
+        for (let i = 1; i <= lastRace; i++) {
+          headerHTML += `<th>${raceNamesRow[`race_${i}`]}</th>`;
+        }
+        headerHTML += "</tr></thead>";
+
+        // 6. Process team rows (exclude team_id === 0).
+        const teamRows = seasonTeamData.filter(row => row.team_id !== 0);
+        if (teamRows.length === 0) {
+          document.getElementById("full-season-team-table").innerHTML =
+            "<tr><td colspan='3'>No team data available.</td></tr>";
+          return;
+        }
+
+        // 7. Compute totals for each team.
+        //    For each race column, we extract the numeric value by stripping any card tags.
+        const standings = teamRows.map(row => {
+          let total = 0;
+          let prevTotal = 0;
+          const raceScores = [];
+          for (let i = 1; i <= lastRace; i++) {
+            const col = `race_${i}`;
+            let raw = row[col];
+            if (raw !== null && raw !== "") {
+              // Remove any parentheses groups (e.g. "(double)") for numeric conversion.
+              const numStr = raw.replace(/\(.*?\)/g, "").trim();
+              const num = parseFloat(numStr);
+              raceScores.push(raw);
+              if (!isNaN(num)) {
+                total += num;
+                if (i < lastRace) {
+                  prevTotal += num;
+                }
+              }
+            } else {
+              raceScores.push("");
+            }
+          }
+          return {
+            team_id: row.team_id,
+            team_name: row.team_name,
+            total: total,
+            prevTotal: prevTotal,
+            raceScores: raceScores
+          };
+        });
+
+        // 8. Sort standings descending by total score.
+        standings.sort((a, b) => b.total - a.total);
+
+        // 9. Build ranking maps with tie-handling.
+        let currentRank = 1;
+        let prevScore = null;
+        const currentRankMap = {};
+        standings.forEach((team, index) => {
+          if (prevScore === null || team.total !== prevScore) {
+            currentRank = index + 1;
+          }
+          currentRankMap[team.team_id] = currentRank;
+          prevScore = team.total;
+        });
+        
+        let prevRank = 1;
+        let prevPrevScore = null;
+        const prevRankMap = {};
+        if (lastRace > 1) {
+          const prevStandings = [...standings].sort((a, b) => b.prevTotal - a.prevTotal);
+          prevStandings.forEach((team, index) => {
+            if (prevPrevScore === null || team.prevTotal !== prevPrevScore) {
+              prevRank = index + 1;
+            }
+            prevRankMap[team.team_id] = prevRank;
+            prevPrevScore = team.prevTotal;
+          });
+        }
+
+        // 10. Helper: Process a race score cell.
+        //     This function extracts the numeric part for display and, if any card tags are found,
+        //     it outputs a small image for each card using a predefined URL structure.
+        function processTeamRaceScore(raw) {
+      if (!raw) return "";
+      // Remove all tag groups to extract the numeric score.
+      const numStr = raw.replace(/\(.*?\)/g, "").trim();
+      let output = "";
+      // Use regex to extract all tags within parentheses.
+      const cardTags = [];
+      const regex = /\(([^)]+)\)/g;
+      let match;
+      while ((match = regex.exec(raw)) !== null) {
+        const tag = match[1].toLowerCase();
+        // Recognize these tags, including the "casino" tag.
+        if (["aero", "double", "halo", "report", "swap", "casino"].includes(tag)) {
+          cardTags.push(tag);
+        }
+      }
+      // If the "casino" tag is present, output the casino image container.
+      if (cardTags.includes("casino")) {
+        output += `<div style="max-width:100px; display:inline-block; vertical-align:middle; word-wrap: break-word;">
+                    <img src="/media/casino/casino.png" style="width:100px; height:auto; display:block; margin-bottom:5px;">
+                  </div>`;
       } else {
-        // Otherwise, display individual card images for each card played.
-        if (team.card_aero_applied && team.card_aero_applied > 0) {
-          for (let i = 0; i < team.card_aero_applied; i++) {
-            cardsHTML += `<img src="/media/cards/card_aero.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+        // Otherwise, append an image for each non-casino tag.
+        cardTags.forEach(tag => {
+          if (tag !== "casino") {
+            output += `<img src="/media/cards/card_${tag}.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
           }
-        }
-        if (team.card_double_applied && team.card_double_applied > 0) {
-          for (let i = 0; i < team.card_double_applied; i++) {
-            cardsHTML += `<img src="/media/cards/card_double.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
-          }
-        }
-        if (team.card_halo_applied && team.card_halo_applied > 0) {
-          for (let i = 0; i < team.card_halo_applied; i++) {
-            cardsHTML += `<img src="/media/cards/card_halo.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
-          }
-        }
-        if (team.card_report_applied && team.card_report_applied > 0) {
-          for (let i = 0; i < team.card_report_applied; i++) {
-            cardsHTML += `<img src="/media/cards/card_report.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
-          }
-        }
-        if (team.card_swap_applied && team.card_swap_applied > 0) {
-          for (let i = 0; i < team.card_swap_applied; i++) {
-            cardsHTML += `<img src="/media/cards/card_swap.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
-          }
-        }
-        // Always display the textual details for report and swap, even if the numeric applied value is zero.
-        if (team.card_report_details) {
-          cardsHTML += `<div style="clear:both; word-wrap: break-word; white-space: normal;">(${team.card_report_details})</div>`;
-        }
-        if (team.card_swap_details) {
-          cardsHTML += `<div style="clear:both; word-wrap: break-word; white-space: normal;">(${team.card_swap_details})</div>`;
-        }
-        console.log(`Team ${team.team_name} card details: ${cardsHTML}`);
+        });
       }
-      
-      // Use a TD with inline styles to force text wrapping.
-      bodyHTML += `<td style="word-wrap: break-word; white-space: normal;">${cardsHTML}</td>
-        <td>${team.card_points_delta}</td>
-        <td>${team.grand_total}</td>
-      </tr>`;
-    });
-    bodyHTML += "</tbody>";
-    
-    // Inject header and body into the team results table.
-    const teamTable = document.getElementById('team-results-table');
-    teamTable.innerHTML = headerHTML + bodyHTML;
-    
-    // Apply basic styling.
-    const headerCells = teamTable.querySelectorAll("thead th");
-    headerCells.forEach(cell => {
-      cell.style.backgroundColor = "#ddd";
-      cell.style.color = "black";
-      cell.style.textAlign = "center";
-    });
-    const bodyRows = teamTable.querySelectorAll("tbody tr");
-    bodyRows.forEach(row => {
-      const cells = row.querySelectorAll("td");
-      for (let i = 0; i < 2; i++) {
-        cells[i].style.backgroundColor = "#eeeeee";
+      // Append the numeric score in a container that forces wrapping.
+      output += `<div style="display:block; max-width:100px; word-wrap: break-word;">${numStr}</div>`;
+      return output;
+    }
+
+
+        // 11. Build table body rows.
+        let bodyHTML = "<tbody>";
+        standings.forEach(team => {
+          const currRank = currentRankMap[team.team_id];
+          let movement = "";
+          if (lastRace > 1 && prevRankMap[team.team_id] !== undefined) {
+            const diff = prevRankMap[team.team_id] - currRank;
+            if (diff > 0) {
+              movement = `(+${diff})`;
+            } else if (diff < 0) {
+              movement = `(${diff})`;
+            } else {
+              movement = "(=)";
+            }
+          }
+          bodyHTML += `<tr>
+                        <td>${currRank} ${movement}</td>
+                        <td>${team.team_name}</td>
+                        <td>${team.total}</td>`;
+          team.raceScores.forEach(score => {
+            bodyHTML += `<td>${processTeamRaceScore(score)}</td>`;
+          });
+          bodyHTML += "</tr>";
+        });
+        bodyHTML += "</tbody>";
+
+        // 12. Combine header and body and inject into the table.
+        const fullHTML = headerHTML + bodyHTML;
+        const tableEl = document.getElementById("full-season-team-table");
+        tableEl.innerHTML = fullHTML;
+
+        // 13. Post-process the table styling.
+        // a) Style header cells.
+        const headerCells = tableEl.querySelectorAll("thead th");
+        headerCells.forEach(cell => {
+          cell.style.backgroundColor = "#ddd";
+          cell.style.color = "black";
+          cell.style.textAlign = "center";
+        });
+
+        // b) For each row in the table body, shade the first three columns.
+        const bodyRows = tableEl.querySelectorAll("tbody tr");
+        bodyRows.forEach(row => {
+          const cells = row.querySelectorAll("td");
+          for (let j = 0; j < 3; j++) {
+            cells[j].style.backgroundColor = "#eeeeee";
+          }
+        });
+
+        // c) For each race column cell, if it contains an "(LS)" indicator,
+        //    remove it and set the text colour to grey.
+        bodyRows.forEach(row => {
+          const cells = row.querySelectorAll("td");
+          for (let j = 3; j < cells.length; j++) {
+            if (cells[j].textContent.includes("(LS)")) {
+              const stripped = cells[j].textContent.replace(/\(LS\)/, "").trim();
+              cells[j].textContent = stripped;
+              cells[j].style.color = "grey";
+            }
+          }
+        });
+
+        // d) Highlight the top three finishers for each race column.
+        //    (Columns 4 onward; for each column, compare numeric values.)
+        const numColumns = tableEl.querySelector("thead tr").children.length;
+        for (let col = 3; col < numColumns; col++) {
+          const colCells = Array.from(tableEl.querySelectorAll(`tbody tr td:nth-child(${col + 1})`));
+          const values = colCells.map(cell => parseFloat(cell.textContent.trim())).filter(val => !isNaN(val));
+          const sortedUnique = [...new Set(values)].sort((a, b) => b - a); // descending order
+          const colors = ['gold', 'silver', '#cd7f32'];
+          colCells.forEach(cell => {
+            const val = parseFloat(cell.textContent.trim());
+            if (!isNaN(val)) {
+              const rank = sortedUnique.indexOf(val);
+              if (rank >= 0 && rank < 3) {
+                cell.style.backgroundColor = colors[rank];
+                if (cell.style.color !== "grey") {
+                  cell.style.color = "black";
+                }
+              }
+            }
+          });
+        }
+
+      } catch (err) {
+        console.error("Error loading full season team results:", err);
+        document.getElementById("full-season-team-table").innerHTML =
+          `<tr><td colspan="100%">Error loading season team results: ${err.message}</td></tr>`;
       }
+    }
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadFullSeasonTeamResults();
     });
-    
-  } catch (err) {
-    console.error("loadRaceResultsTeam error:", err);
-  }
-}
 
-// ---------- INITIALIZATION ----------
-document.addEventListener("DOMContentLoaded", () => {
-  loadRaceOptionsResults();
-});
+    // -----------------
+    // -----------------
+    // -----------------
+
+    // ---------- HELPER FUNCTION ----------
+    async function getTable(tableName) {
+      const { data, error } = await supabase.from(tableName).select('*');
+      if (error) {
+        console.error(`Error fetching ${tableName}:`, error);
+        throw error;
+      }
+      return data;
+    }
 
 
+
+    // ---------- RACE OPTIONS LOADING ----------
+    // This function builds the dropdown by fetching the current year from form_details
+    // and then querying team_scoring_{year} to build a distinct list of races.
+    async function loadRaceOptionsResults() {
+      try {
+        // Retrieve current year from form_details (assumes a single row with id=1)
+        const { data: formDetails, error: formDetailsError } = await supabase
+          .from('form_details')
+          .select('*')
+          .eq('id', 1)
+          .single();
+        if (formDetailsError) {
+          console.error("Error fetching form_details:", formDetailsError.message);
+          return;
+        }
+        const currentYear = formDetails.current_year;
+
+        // Query the team_scoring_{year} table to build a list of races.
+        const teamScoringTable = `team_scoring_${currentYear}`;
+        const { data: teamScoringData, error: teamScoringError } = await supabase
+          .from(teamScoringTable)
+          .select('race_number, race_name');
+        if (teamScoringError) {
+          console.error("Error fetching team scoring data:", teamScoringError.message);
+          return;
+        }
+
+        // Build a unique map of race_number => race_name
+        const raceMap = {};
+        teamScoringData.forEach(record => {
+          if (record.race_number != null && record.race_name) {
+            raceMap[record.race_number] = record.race_name;
+          }
+        });
+        // Convert the map to an array of race objects sorted by race_number
+        const races = Object.keys(raceMap)
+          .map(raceNum => ({
+            race_number: parseInt(raceNum, 10),
+            race_name: raceMap[raceNum]
+          }))
+          .sort((a, b) => a.race_number - b.race_number);
+
+        // Populate the dropdown (with id "team-select")
+        const dropdown = document.getElementById('team-select');
+        dropdown.innerHTML = "";
+        races.forEach(race => {
+          const option = document.createElement('option');
+          option.value = race.race_number;
+          // Display "Race {race_number}: {race_name} GP"
+          option.textContent = `Race ${race.race_number}: ${race.race_name} GP`;
+          dropdown.appendChild(option);
+        });
+        // Set default to the most recent race (largest race_number)
+        if (races.length > 0) {
+          dropdown.value = races[races.length - 1].race_number;
+        }
+
+        // When the dropdown selection changes, reload both player and team results.
+        dropdown.addEventListener('change', () => {
+          loadRaceResultsPlayer();
+          loadRaceResultsTeam();
+        });
+
+        // Initial load of results for the default (most recent) race.
+        loadRaceResultsPlayer();
+        loadRaceResultsTeam();
+
+      } catch (err) {
+        console.error("loadRaceOptionsResults error:", err);
+      }
+    }
+
+
+    // ---------- PLAYER RESULTS LOADING ----------
+    // This function loads player results from form_responses_{year} for the selected race.
+    async function loadRaceResultsPlayer() {
+      try {
+        // Show the loading indicator
+        document.getElementById('playerLoading').style.display = 'block';
+
+        // ---------------------------------------
+        // FETCH DRIVERS AND CONSTRUCTORS
+        // ---------------------------------------
+        const { data: drivers, error: driversError } = await supabase
+          .from('drivers')
+          .select('*');
+        if (driversError) {
+          console.error("Error fetching drivers:", driversError.message);
+          document.getElementById('playerLoading').style.display = 'none';
+          return;
+        }
+
+        const { data: constructors, error: constructorsError } = await supabase
+          .from('constructors')
+          .select('*');
+        if (constructorsError) {
+          console.error("Error fetching constructors:", constructorsError.message);
+          document.getElementById('playerLoading').style.display = 'none';
+          return;
+        }
+
+        // ---------------------------------------
+        // GET CURRENT YEAR AND SELECTED RACE
+        // ---------------------------------------
+        const { data: formDetails, error: formDetailsError } = await supabase
+          .from('form_details')
+          .select('*')
+          .eq('id', 1)
+          .single();
+        if (formDetailsError) {
+          console.error("Error fetching form_details:", formDetailsError.message);
+          document.getElementById('playerLoading').style.display = 'none';
+          return;
+        }
+        const currentYear = formDetails.current_year;
+        const raceNumber = document.getElementById('team-select').value;
+
+        // ---------------------------------------
+        // FETCH FORM RESPONSES FOR THE SELECTED RACE
+        // ---------------------------------------
+        const formResponsesTable = `form_responses_${currentYear}`;
+        const { data: formResponses, error: formResponsesError } = await supabase
+          .from(formResponsesTable)
+          .select('*')
+          .eq('race_number', raceNumber);
+        if (formResponsesError) {
+          console.error("Error fetching form responses:", formResponsesError.message);
+          document.getElementById('playerLoading').style.display = 'none';
+          return;
+        }
+        
+        // Process responses assuming the same structure as your home page
+        const questions = formResponses.find(response => response.entry_type === 'questions');
+        const results = formResponses.find(response => response.entry_type === 'results');
+        const players = formResponses.filter(response => response.entry_type === 'player');
+        // (Optionally) lowestScores if needed later:
+        const lowestScores = formResponses.filter(response => response.entry_type === 'player_lowest_score');
+        
+        // ---------------------------------------
+        // BUILD THE PLAYER RESULTS TABLE
+        // ---------------------------------------
+        const playerTable = document.getElementById('player-results-table');
+        // Hide the table until the new table is built
+        playerTable.style.display = 'none';
+        playerTable.innerHTML = ""; // Clear any previous table contents
+
+        // Create table header
+        const headerRow = document.createElement('tr');
+        headerRow.classList.add('header');
+        // First column: Name
+        const thName = document.createElement('th');
+        thName.textContent = "Name";
+        headerRow.appendChild(thName);
+        // One column per player
+        players.forEach(player => {
+          const th = document.createElement('th');
+          th.textContent = player.player_name;
+          headerRow.appendChild(th);
+        });
+        // Spacer column and "Results" column
+        const spacerTh = document.createElement('th');
+        spacerTh.style.backgroundColor = "white";
+        spacerTh.style.borderTop = "none";
+        spacerTh.style.borderBottom = "none";
+        headerRow.appendChild(spacerTh);
+        const resultsTh = document.createElement('th');
+        resultsTh.textContent = "Results";
+        headerRow.appendChild(resultsTh);
+
+        const thead = document.createElement('thead');
+        thead.appendChild(headerRow);
+        playerTable.appendChild(thead);
+
+        // Create table body
+        const tbody = document.createElement('tbody');
+
+        // Helper to create a row for a given question or total.
+        function createRow(id, label) {
+          // Check if this row is a total row (e.g. subtotals, grand total)
+          const isTotalColumn = ['subtotal_1', 'subtotal_2', 'subtotal_3', 'subtotal_4', 'grand_total'].includes(id);
+          if (isTotalColumn) {
+            const row = document.createElement('tr');
+            const tdLabel = document.createElement('td');
+            tdLabel.textContent = label;
+            row.appendChild(tdLabel);
+            players.forEach(player => {
+              const td = document.createElement('td');
+              td.textContent = player[id];
+              td.className = `${id}_score`;
+              td.dataset.playerId = player.player_id;
+              row.appendChild(td);
+            });
+            const spacerTd = document.createElement('td');
+            spacerTd.style.backgroundColor = "white";
+            row.appendChild(spacerTd);
+            const resultTd = document.createElement('td');
+            row.appendChild(resultTd);
+            tbody.appendChild(row);
+          } else {
+            // For regular questions, add a row only if results exist.
+            if (results && results[`form_id_${id}`] !== null) {
+              const row = document.createElement('tr');
+              const tdLabel = document.createElement('td');
+              tdLabel.textContent = label;
+              row.appendChild(tdLabel);
+              players.forEach(player => {
+                const td = document.createElement('td');
+                td.textContent = player[`form_id_${id}`];
+                td.className = `form_id_${id}_score`;
+                td.dataset.playerId = player.player_id;
+                row.appendChild(td);
+              });
+              const spacerTd = document.createElement('td');
+              spacerTd.style.backgroundColor = "white";
+              row.appendChild(spacerTd);
+              const resultTd = document.createElement('td');
+              resultTd.textContent = results[`form_id_${id}`];
+              row.appendChild(resultTd);
+              tbody.appendChild(row);
+            }
+          }
+        }
+        
+        // Build rows mimicking your home page structure:
+        for (let i = 2; i <= 7; i++) {
+          createRow(i, questions[`form_id_${i}`]);
+        }
+        createRow('subtotal_2', 'Subtotal');
+        // Spacer row
+        let spacerRow = document.createElement('tr');
+        let spacerCell = document.createElement('td');
+        spacerCell.colSpan = players.length + 3;
+        spacerCell.style.backgroundColor = "white";
+        spacerRow.appendChild(spacerCell);
+        tbody.appendChild(spacerRow);
+        for (let i = 8; i <= 27; i++) {
+          createRow(i, questions[`form_id_${i}`]);
+        }
+        createRow('subtotal_3', 'Subtotal');
+        spacerRow = document.createElement('tr');
+        spacerCell = document.createElement('td');
+        spacerCell.colSpan = players.length + 3;
+        spacerCell.style.backgroundColor = "white";
+        spacerRow.appendChild(spacerCell);
+        tbody.appendChild(spacerRow);
+        createRow(28, questions[`form_id_28`]);
+        spacerRow = document.createElement('tr');
+        spacerCell = document.createElement('td');
+        spacerCell.colSpan = players.length + 3;
+        spacerCell.style.backgroundColor = "white";
+        spacerRow.appendChild(spacerCell);
+        tbody.appendChild(spacerRow);
+        createRow('grand_total', 'Grand Total');
+
+        playerTable.appendChild(tbody);
+
+        // Make the table visible now that it’s built
+        playerTable.style.display = 'table';
+
+        // ---------------------------------------
+        // APPLY FORMATTING (as on the home page)
+        // ---------------------------------------
+        const applyFormattingScored = (cell, value) => {
+          if (/^[A-Z]{3}$/.test(value)) {
+            const driver = drivers.find(driver => driver.abbreviation === value);
+            if (driver) {
+              const constructor = constructors.find(constructor => constructor.id === driver.constructor_id);
+              if (constructor) {
+                cell.style.backgroundColor = constructor.background_colour;
+                cell.style.color = constructor.text_colour;
+              }
+            }
+          } else if (/^\d+$/.test(value)) {
+            // Numeric values: no extra formatting.
+          } else if (value === 'Yes') {
+            cell.style.color = 'green';
+            cell.style.backgroundColor = 'white';
+          } else if (value === 'No') {
+            cell.style.color = 'red';
+            cell.style.backgroundColor = 'white';
+          } else {
+            const constructor = constructors.find(constructor => constructor.name === value);
+            if (constructor) {
+              cell.style.backgroundColor = constructor.background_colour;
+              cell.style.color = constructor.text_colour;
+            }
+          }
+        };
+
+        document.querySelectorAll('#player-results-table tbody td').forEach(cell => {
+          applyFormattingScored(cell, cell.textContent);
+        });
+
+        // ---------------------------------------
+        // HIGHLIGHTING FUNCTIONS
+        // ---------------------------------------
+
+        // Highlight highest scores for totals (as before)
+        const highlightHighest = (selector, colors) => {
+          const cells = Array.from(document.querySelectorAll(selector));
+          const values = cells
+            .map(cell => parseFloat(cell.textContent))
+            .filter(value => !isNaN(value));
+          const sortedValues = [...new Set(values)].sort((a, b) => b - a);
+          cells.forEach(cell => {
+            const cellValue = parseFloat(cell.textContent);
+            const rank = sortedValues.indexOf(cellValue);
+            if (rank >= 0 && rank < colors.length) {
+              cell.style.backgroundColor = colors[rank];
+              cell.style.color = 'black';
+            }
+          });
+        };
+
+        // For form_id_28 (closest score), check the cell’s numeric value directly.
+        const highlightClosestScore = (selector, color) => {
+                const cells = Array.from(document.querySelectorAll(selector));
+                cells.forEach(cell => {
+                    const playerId = cell.dataset.playerId;
+                    const player = players.find(player => player.player_id == playerId);
+                    const playerScore = player ? player.form_id_28_score : null;
+                    if (playerScore === 1) {
+                        cell.style.backgroundColor = color;
+                        cell.style.color = 'black';
+                    } else {
+                        cell.style.backgroundColor = '';
+                        cell.style.color = '';
+                    }
+                });
+            };
+
+        highlightHighest('td.subtotal_2_score', ['lightyellow']);
+        highlightHighest('td.subtotal_3_score', ['lightyellow']);
+        highlightHighest('td.grand_total_score', ['gold', 'silver', '#cd7f32']);
+        highlightClosestScore('td.form_id_28_score', 'lightyellow');
+
+        // ---------------------------------------
+        // SET UP THE TOGGLE FOR DETAILED SCORING
+        // ---------------------------------------
+        document.getElementById('toggleScoresPlayer').addEventListener('change', (event) => {
+          const showScores = event.target.checked;
+          document.querySelectorAll('#player-results-table tbody td').forEach(cell => {
+            const idMatch = cell.className.match(/form_id_(\d+)_score/);
+            if (idMatch) {
+              const scoreId = `form_id_${idMatch[1]}_score`;
+              const playerId = cell.dataset.playerId;
+              const player = players.find(player => player.player_id == playerId);
+              const playerScore = player ? player[scoreId] : null;
+              if (playerScore !== null) {
+                // Retain the base text (before any appended score) and add/remove the detailed score.
+                const baseText = cell.textContent.split(' ')[0];
+                cell.textContent = showScores ? `${baseText} (${playerScore})` : baseText;
+              }
+            }
+          });
+        });
+
+        const lowestScoresDiv = document.getElementById('lowestScores');
+            if (lowestScores.length > 0) {
+                const lowestScoresText = lowestScores.map(player => player.player_name).join(', ');
+                lowestScoresDiv.textContent = `Lowest Score: ${lowestScoresText}`;
+            }
+            
+        // Finally, hide the loading indicator
+        document.getElementById('playerLoading').style.display = 'none';
+
+      } catch (err) {
+        console.error("loadRaceResultsPlayer error:", err);
+        // Ensure the loading indicator is hidden even on error.
+        document.getElementById('playerLoading').style.display = 'none';
+      }
+    }
+
+
+
+    // ---------- TEAM RESULTS LOADING ----------
+    // This function loads team results for the selected race from team_scoring_{year} and builds the team results table.
+    async function loadRaceResultsTeam() {
+      try {
+        // Get current year.
+        const { data: formDetails, error: formDetailsError } = await supabase
+          .from('form_details')
+          .select('*')
+          .eq('id', 1)
+          .single();
+        if (formDetailsError) {
+          console.error("Error fetching form_details:", formDetailsError.message);
+          return;
+        }
+        const currentYear = formDetails.current_year;
+        
+        // Get selected race number from the dropdown.
+        const raceNumber = document.getElementById('team-select').value;
+        
+        // Query team_scoring_{year} table for the selected race.
+        const teamScoringTable = `team_scoring_${currentYear}`;
+        const { data: teamScoringData, error: teamScoringError } = await supabase
+          .from(teamScoringTable)
+          .select('*')
+          .eq('race_number', raceNumber);
+        if (teamScoringError) {
+          console.error("Error fetching team scoring data:", teamScoringError.message);
+          return;
+        }
+        
+        // Sort teams by grand_total descending.
+        teamScoringData.sort((a, b) => b.grand_total - a.grand_total);
+        
+        // Build ranking with tie-handling.
+        let currentRank = 1;
+        let prevScore = null;
+        const currentRankMap = {};
+        teamScoringData.forEach((team, index) => {
+          if (prevScore === null || team.grand_total !== prevScore) {
+            currentRank = index + 1;
+          }
+          currentRankMap[team.team_id] = currentRank;
+          prevScore = team.grand_total;
+        });
+        
+        // Build table header.
+        const headerHTML = `<thead>
+          <tr>
+            <th>Rank</th>
+            <th>Team</th>
+            <th>Player 1</th>
+            <th>Player 1<br>Points</th>
+            <th>Player 2</th>
+            <th>Player 2<br>Points</th>
+            <th>Sub-total</th>
+            <th>Card/Casino<br>Details</th>
+            <th>Card/Casino<br>Points</th>
+            <th>Total</th>
+          </tr>
+        </thead>`;
+        
+        // Build table body rows.
+        let bodyHTML = "<tbody>";
+        teamScoringData.forEach(team => {
+          const rank = currentRankMap[team.team_id];
+          bodyHTML += `<tr>
+            <td>${rank}</td>
+            <td>${team.team_name}</td>
+            <td>${team.player_name_1}</td>
+            <td>${team.player_points_1}</td>
+            <td>${team.player_name_2}</td>
+            <td>${team.player_points_2}</td>
+            <td>${team.subtotal}</td>`;
+          
+          // Build "Cards Played" cell.
+          let cardsHTML = "";
+          
+          // If casino was used (casino_details exists and is nonempty), display the casino image and details.
+          if (team.casino_details && team.casino_details.trim() !== "") {
+            cardsHTML += `<img src="/media/casino/casino.png" style="display:block; width:100px; height:auto; margin-bottom:5px;">`;
+            cardsHTML += `<div style="word-wrap: break-word; white-space: normal;">${team.casino_details}</div>`;
+            console.log(`Team ${team.team_name} casino_details: ${team.casino_details}`);
+          } else {
+            // Otherwise, display individual card images for each card played.
+            if (team.card_aero_applied && team.card_aero_applied > 0) {
+              for (let i = 0; i < team.card_aero_applied; i++) {
+                cardsHTML += `<img src="/media/cards/card_aero.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+              }
+            }
+            if (team.card_double_applied && team.card_double_applied > 0) {
+              for (let i = 0; i < team.card_double_applied; i++) {
+                cardsHTML += `<img src="/media/cards/card_double.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+              }
+            }
+            if (team.card_halo_applied && team.card_halo_applied > 0) {
+              for (let i = 0; i < team.card_halo_applied; i++) {
+                cardsHTML += `<img src="/media/cards/card_halo.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+              }
+            }
+            if (team.card_report_applied && team.card_report_applied > 0) {
+              for (let i = 0; i < team.card_report_applied; i++) {
+                cardsHTML += `<img src="/media/cards/card_report.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+              }
+            }
+            if (team.card_swap_applied && team.card_swap_applied > 0) {
+              for (let i = 0; i < team.card_swap_applied; i++) {
+                cardsHTML += `<img src="/media/cards/card_swap.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+              }
+            }
+            // Always display the textual details for report and swap, even if the numeric applied value is zero.
+            if (team.card_report_details) {
+              cardsHTML += `<div style="clear:both; word-wrap: break-word; white-space: normal;">(${team.card_report_details})</div>`;
+            }
+            if (team.card_swap_details) {
+              cardsHTML += `<div style="clear:both; word-wrap: break-word; white-space: normal;">(${team.card_swap_details})</div>`;
+            }
+            console.log(`Team ${team.team_name} card details: ${cardsHTML}`);
+          }
+          
+          // Use a TD with inline styles to force text wrapping.
+          bodyHTML += `<td style="word-wrap: break-word; white-space: normal;">${cardsHTML}</td>
+            <td>${team.card_points_delta}</td>
+            <td>${team.grand_total}</td>
+          </tr>`;
+        });
+        bodyHTML += "</tbody>";
+        
+        // Inject header and body into the team results table.
+        const teamTable = document.getElementById('team-results-table');
+        teamTable.innerHTML = headerHTML + bodyHTML;
+        
+        // Apply basic styling.
+        const headerCells = teamTable.querySelectorAll("thead th");
+        headerCells.forEach(cell => {
+          cell.style.backgroundColor = "#ddd";
+          cell.style.color = "black";
+          cell.style.textAlign = "center";
+        });
+        const bodyRows = teamTable.querySelectorAll("tbody tr");
+        bodyRows.forEach(row => {
+          const cells = row.querySelectorAll("td");
+          for (let i = 0; i < 2; i++) {
+            cells[i].style.backgroundColor = "#eeeeee";
+          }
+        });
+        
+      } catch (err) {
+        console.error("loadRaceResultsTeam error:", err);
+      }
+    }
+
+    // ---------- INITIALIZATION ----------
+    document.addEventListener("DOMContentLoaded", () => {
+      loadRaceOptionsResults();
+    });
     </script>
     <!-- Bootstrap JS Bundle (Local) -->
     <script src="/js/bootstrap.bundle.min.js"></script>

@@ -67,7 +67,7 @@
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
                 <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
                 <li><hr class="dropdown-divider"></li> <!-- Spacer -->
-                <li><a class="dropdown-item pixel-art-body-smallx" href="/admin">Admin</a></li>
+                <li><a class="dropdown-item pixel-art-body-smallxb" href="/admin">Admin</a></li>
             </ul>
         </div>
     </header> 
@@ -1081,445 +1081,441 @@
         });
 
 // --- DRIVERS ---
-// --- DRIVERS ---
-
-// Populate Constructor Dropdown for the "Add Driver" form.
-async function populateConstructorDropdown() {
-  const { data, error } = await supabase
-    .from("constructors")
-    .select("id, name");
-  if (error) {
-    console.error("Error fetching constructors for dropdown:", error);
-    return;
-  }
-
-  const dropdown = document.getElementById("new-driver-constructor");
-  dropdown.innerHTML = `<option value="">Select Constructor</option>`;
-  data.forEach(constructor => {
-    dropdown.innerHTML += `<option value="${constructor.id}">${constructor.name}</option>`;
-  });
-}
-
-// Fetch Drivers and display in the table—with a dropdown for constructor_id and a delete button.
-async function fetchDrivers() {
-  // Fetch driver records.
-  const { data, error } = await supabase
-    .from("drivers")
-    .select("*")
-    .order("id", { ascending: true });
-  if (error) {
-    console.error("Error fetching drivers:", error);
-    return;
-  }
-  
-  // Fetch the constructors list for populating the dropdown.
-  const { data: constructors, error: constError } = await supabase
-    .from("constructors")
-    .select("id, name");
-  if (constError) {
-    console.error("Error fetching constructors for table:", constError);
-    return;
-  }
-  
-  const table = document.getElementById("drivers-table");
-  table.innerHTML = "";
-  data.forEach(driver => {
-    // Build the constructor dropdown as a string.
-    let constructorSelect = `<select class="form-control" data-id="${driver.id}" data-field="constructor_id">`;
-    constructorSelect += `<option value="">Select Constructor</option>`;
-    constructors.forEach(cons => {
-      const selected = (cons.id === driver.constructor_id) ? "selected" : "";
-      constructorSelect += `<option value="${cons.id}" ${selected}>${cons.name}</option>`;
-    });
-    constructorSelect += `</select>`;
-    
-    // Build the row including the delete button.
-    table.innerHTML += `
-      <tr>
-        <td>${driver.id}</td>
-        <td>
-          <input type="text" class="form-control" value="${driver.name}" 
-                 data-id="${driver.id}" data-field="name">
-        </td>
-        <td>
-          <input type="text" class="form-control" value="${driver.abbreviation}" 
-                 data-id="${driver.id}" data-field="abbreviation">
-        </td>
-        <td>
-          ${constructorSelect}
-        </td>
-        <td>
-          <button class="btn btn-danger btn-sm" onclick="deleteDriver(${driver.id})">
-            Delete
-          </button>
-        </td>
-      </tr>
-    `;
-  });
-}
-
-// Save (upsert) Drivers updates with debugging output.
-async function saveDrivers() {
-  // Query both input and select elements.
-  const elements = document.querySelectorAll("#drivers-table input, #drivers-table select");
-  const updates = Array.from(elements).map(element => {
-    const id = Number(element.dataset.id);
-    const field = element.dataset.field; // "name", "abbreviation", or "constructor_id"
-    // If the field is constructor_id, convert the value to a number.
-    const value = (field === "constructor_id") ? Number(element.value) : element.value;
-    return { id, [field]: value };
-  });
-  console.log("Updates array:", updates);
-
-  // Group updates by driver id.
-  const groupedUpdates = updates.reduce((acc, update) => {
-    const id = update.id;
-    if (!acc[id]) acc[id] = { id };
-    Object.assign(acc[id], update);
-    return acc;
-  }, {});
-  console.log("Grouped updates:", groupedUpdates);
-
-  const upsertData = Object.values(groupedUpdates);
-  console.log("Upsert data:", upsertData);
-
-  // Perform the batch update with upsert.
-  const { data: upsertResult, error } = await supabase
-    .from("drivers")
-    .upsert(upsertData, { returning: "representation" });
-  if (error) {
-    console.error("Error saving drivers:", error);
-    alert("Failed to save drivers!");
-    return;
-  }
-  console.log("Upsert result data:", upsertResult);
-
-  alert("Drivers saved successfully!");
-  // Refresh the drivers table after saving.
-  await fetchDrivers();
-  document.getElementById("save-drivers").disabled = true; // Re-disable button if needed
-}
-
-// Add a new Driver.
-async function addDriver() {
-  const name = document.getElementById("new-driver-name").value.trim();
-  const abbreviation = document.getElementById("new-driver-abbr").value.trim();
-  // Get the selected constructor_id (as a string) and convert to number.
-  const constructorIdStr = document.getElementById("new-driver-constructor").value.trim();
-
-  if (!name || !abbreviation || !constructorIdStr) {
-    alert("All fields are required to add a driver.");
-    return;
-  }
-
-  const constructorId = Number(constructorIdStr);
-  // Insert using constructor_id.
-  const { error } = await supabase
-    .from("drivers")
-    .insert([{ name, abbreviation, constructor_id: constructorId }]);
-  if (error) {
-    console.error("Error adding driver:", error);
-    return;
-  }
-  await fetchDrivers();
-  alert("Driver added successfully!");
-  
-  // Clear the input fields after a successful submission.
-  document.getElementById("new-driver-name").value = "";
-  document.getElementById("new-driver-abbr").value = "";
-  document.getElementById("new-driver-constructor").value = "";
-}
-
-// Delete a Driver.
-async function deleteDriver(driverId) {
-  if (!confirm("Are you sure you want to delete this driver?")) return;
-  const { error } = await supabase
-    .from("drivers")
-    .delete()
-    .eq("id", driverId);
-  if (error) {
-    console.error("Error deleting driver:", error);
-    alert("Failed to delete driver!");
-    return;
-  }
-  alert("Driver deleted successfully!");
-  await fetchDrivers();
-}
-
-// Optionally, call these functions on page load.
-document.addEventListener("DOMContentLoaded", async () => {
-  await populateConstructorDropdown();
-  await fetchDrivers();
-});
-
-
-
-// --- CONSTRUCTORS ---
-// Fetch and display all constructors in the table.
-async function fetchConstructors() {
-  const { data, error } = await supabase.from("constructors").select("*").order("id", { ascending: true });
-  if (error) {
-    console.error("Error fetching constructors:", error);
-    return;
-  }
-
-  const table = document.getElementById("constructors-table");
-  table.innerHTML = ""; // Clear existing table content
-
-  data.forEach(constructor => {
-    table.innerHTML += `
-      <tr>
-        <td>${constructor.id}</td>
-        <td><input type="text" class="form-control" value="${constructor.name}" data-id="${constructor.id}" data-field="name"></td>
-        <td><input type="text" class="form-control" value="${constructor.background_colour}" data-id="${constructor.id}" data-field="background_colour"></td>
-        <td><input type="text" class="form-control" value="${constructor.text_colour}" data-id="${constructor.id}" data-field="text_colour"></td>
-        <td>
-          <button class="btn btn-danger btn-sm" onclick="deleteConstructor(${constructor.id})">Delete</button>
-        </td>
-      </tr>
-    `;
-  });
-}
-
-// Save (upsert) constructor changes with debugging
-async function saveConstructors() {
-  const inputs = document.querySelectorAll("#constructors-table input");
-  const updates = Array.from(inputs).map(input => {
-    const id = Number(input.dataset.id);
-    const field = input.dataset.field;
-    return { id, [field]: input.value };
-  });
-
-  // Group updates by ID
-  const groupedUpdates = updates.reduce((acc, update) => {
-    const id = update.id;
-    if (!acc[id]) acc[id] = { id };
-    Object.assign(acc[id], update);
-    return acc;
-  }, {});
-
-  const upsertData = Object.values(groupedUpdates);
-  console.log("Upsert data:", upsertData);
-
-  // Perform batch upsert
-  const { error } = await supabase.from("constructors").upsert(upsertData);
-  if (error) {
-    console.error("Error saving constructors:", error);
-    alert("Failed to save constructors!");
-    return;
-  }
-
-  alert("Constructors saved successfully!");
-  document.getElementById("save-constructors").disabled = true; // Re-disable button
-  await fetchConstructors(); // Refresh the table
-}
-
-// Add a new Constructor and clear fields after submission.
-async function addConstructor() {
-  const name = document.getElementById("new-constructor-name").value.trim();
-  const background_colour = document.getElementById("new-constructor-bg").value.trim();
-  const text_colour = document.getElementById("new-constructor-text").value.trim();
-
-  if (!name || !background_colour || !text_colour) {
-    alert("All fields are required to add a constructor.");
-    return;
-  }
-
-  const { error } = await supabase.from("constructors").insert([{ name, background_colour, text_colour }]);
-  if (error) {
-    console.error("Error adding constructor:", error);
-    alert("Failed to add constructor!");
-    return;
-  }
-
-  await fetchConstructors(); // Refresh table
-  await populateConstructorDropdown(); // Update dropdown
-  alert("Constructor added successfully!");
-
-  // Clear input fields after submission
-  document.getElementById("new-constructor-name").value = "";
-  document.getElementById("new-constructor-bg").value = "";
-  document.getElementById("new-constructor-text").value = "";
-}
-
-// Delete a Constructor and refresh the table.
-async function deleteConstructor(constructorId) {
-  if (!confirm("Are you sure you want to delete this constructor?")) return;
-
-  // Check if the constructor is being used in the "drivers" table
-  const { data: driverData, error: driverError } = await supabase
-    .from("drivers")
-    .select("id")
-    .eq("constructor_id", constructorId);
-
-  if (driverError) {
-    console.error("Error checking constructor dependencies:", driverError);
-    alert("Failed to check dependencies.");
-    return;
-  }
-
-  if (driverData.length > 0) {
-    alert("Cannot delete constructor. It is assigned to one or more drivers.");
-    return;
-  }
-
-  const { error } = await supabase.from("constructors").delete().eq("id", constructorId);
-  if (error) {
-    console.error("Error deleting constructor:", error);
-    alert("Failed to delete constructor!");
-    return;
-  }
-
-  alert("Constructor deleted successfully!");
-  await fetchConstructors();
-}
-
-// --- CALENDAR ---
-async function fetchCalendar() {
-    const { data, error } = await supabase
-        .from("calendar")
-        .select("*")
-        .order("race_number", { ascending: true });
-
-    if (error) {
-        console.error("Error fetching calendar:", error);
-        alert("Failed to fetch calendar data. Please try again.");
-        return;
-    }
-
-    const table = document.getElementById("calendar-table");
-    table.innerHTML = ""; // Clear the table
-
-    data.forEach(event => {
-        // Convert stored UTC time to a valid Date object
-        const dateInUTC = event.date ? new Date(event.date) : null;
-
-        if (!dateInUTC || isNaN(dateInUTC)) {
-            console.error("Invalid date found for event:", event);
+        // Populate Constructor Dropdown for the "Add Driver" form.
+        async function populateConstructorDropdown() {
+        const { data, error } = await supabase
+            .from("constructors")
+            .select("id, name");
+        if (error) {
+            console.error("Error fetching constructors for dropdown:", error);
             return;
         }
 
-        // Format the date for datetime-local input (YYYY-MM-DDTHH:mm)
-        const dateTimeLocal = dateInUTC.toISOString().slice(0, 16);
-
-        table.innerHTML += `
-            <tr>
-                <td>${event.id}</td>
-                <td>
-                    <input type="number" class="form-control" value="${event.race_number || ''}" 
-                        data-id="${event.id}" data-field="race_number" required>
-                </td>
-                <td>
-                    <input type="text" class="form-control" value="${event.name || ''}" 
-                        data-id="${event.id}" data-field="name" required>
-                </td>
-                <td>
-                    <input type="text" class="form-control" value="${event.country || ''}" 
-                        data-id="${event.id}" data-field="country" required>
-                </td>
-                <td>
-                    <input type="datetime-local" class="form-control" value="${dateTimeLocal}" 
-                        data-id="${event.id}" data-field="date" required>
-                </td>
-                <td>
-                    <button class="btn btn-danger" onclick="deleteRace(${event.id})">Delete</button>
-                </td>
-            </tr>
-        `;
-    });
-}
-
-async function saveCalendar() {
-    const inputs = document.querySelectorAll("#calendar-table input");
-    const updates = Array.from(inputs).map((input) => {
-        const id = input.dataset.id;
-        const field = input.dataset.field;
-        let value = input.value;
-
-        if (field === "date") {
-            const localDate = new Date(value); // Parse as local datetime
-            if (!isNaN(localDate)) {
-                value = localDate.toISOString(); // Convert and store in UTC
-            } else {
-                console.error("Invalid date value:", value);
-                return null;
-            }
+        const dropdown = document.getElementById("new-driver-constructor");
+        dropdown.innerHTML = `<option value="">Select Constructor</option>`;
+        data.forEach(constructor => {
+            dropdown.innerHTML += `<option value="${constructor.id}">${constructor.name}</option>`;
+        });
         }
 
-        return { id, [field]: value };
-    });
+        // Fetch Drivers and display in the table—with a dropdown for constructor_id and a delete button.
+        async function fetchDrivers() {
+        // Fetch driver records.
+        const { data, error } = await supabase
+            .from("drivers")
+            .select("*")
+            .order("id", { ascending: true });
+        if (error) {
+            console.error("Error fetching drivers:", error);
+            return;
+        }
+        
+        // Fetch the constructors list for populating the dropdown.
+        const { data: constructors, error: constError } = await supabase
+            .from("constructors")
+            .select("id, name");
+        if (constError) {
+            console.error("Error fetching constructors for table:", constError);
+            return;
+        }
+        
+        const table = document.getElementById("drivers-table");
+        table.innerHTML = "";
+        data.forEach(driver => {
+            // Build the constructor dropdown as a string.
+            let constructorSelect = `<select class="form-control" data-id="${driver.id}" data-field="constructor_id">`;
+            constructorSelect += `<option value="">Select Constructor</option>`;
+            constructors.forEach(cons => {
+            const selected = (cons.id === driver.constructor_id) ? "selected" : "";
+            constructorSelect += `<option value="${cons.id}" ${selected}>${cons.name}</option>`;
+            });
+            constructorSelect += `</select>`;
+            
+            // Build the row including the delete button.
+            table.innerHTML += `
+            <tr>
+                <td>${driver.id}</td>
+                <td>
+                <input type="text" class="form-control" value="${driver.name}" 
+                        data-id="${driver.id}" data-field="name">
+                </td>
+                <td>
+                <input type="text" class="form-control" value="${driver.abbreviation}" 
+                        data-id="${driver.id}" data-field="abbreviation">
+                </td>
+                <td>
+                ${constructorSelect}
+                </td>
+                <td>
+                <button class="btn btn-danger btn-sm" onclick="deleteDriver(${driver.id})">
+                    Delete
+                </button>
+                </td>
+            </tr>
+            `;
+        });
+        }
 
-    // Filter out invalid updates
-    const filteredUpdates = updates.filter((update) => update !== null);
+        // Save (upsert) Drivers updates with debugging output.
+        async function saveDrivers() {
+        // Query both input and select elements.
+        const elements = document.querySelectorAll("#drivers-table input, #drivers-table select");
+        const updates = Array.from(elements).map(element => {
+            const id = Number(element.dataset.id);
+            const field = element.dataset.field; // "name", "abbreviation", or "constructor_id"
+            // If the field is constructor_id, convert the value to a number.
+            const value = (field === "constructor_id") ? Number(element.value) : element.value;
+            return { id, [field]: value };
+        });
+        console.log("Updates array:", updates);
 
-    const groupedUpdates = filteredUpdates.reduce((acc, update) => {
-        const id = update.id;
-        if (!acc[id]) acc[id] = { id };
-        Object.assign(acc[id], update);
-        return acc;
-    }, {});
+        // Group updates by driver id.
+        const groupedUpdates = updates.reduce((acc, update) => {
+            const id = update.id;
+            if (!acc[id]) acc[id] = { id };
+            Object.assign(acc[id], update);
+            return acc;
+        }, {});
+        console.log("Grouped updates:", groupedUpdates);
 
-    const { error } = await supabase.from("calendar").upsert(Object.values(groupedUpdates));
-    if (error) {
-        console.error("Error saving calendar entries:", error);
-        alert("Failed to save calendar!");
-        return;
-    }
+        const upsertData = Object.values(groupedUpdates);
+        console.log("Upsert data:", upsertData);
 
-    alert("Calendar saved successfully!");
-    await fetchCalendar();
-}
+        // Perform the batch update with upsert.
+        const { data: upsertResult, error } = await supabase
+            .from("drivers")
+            .upsert(upsertData, { returning: "representation" });
+        if (error) {
+            console.error("Error saving drivers:", error);
+            alert("Failed to save drivers!");
+            return;
+        }
+        console.log("Upsert result data:", upsertResult);
 
-// Delete Race Function
-async function deleteRace(id) {
-    if (!confirm("Are you sure you want to delete this race?")) return;
+        alert("Drivers saved successfully!");
+        // Refresh the drivers table after saving.
+        await fetchDrivers();
+        document.getElementById("save-drivers").disabled = true; // Re-disable button if needed
+        }
 
-    const { error } = await supabase.from("calendar").delete().eq("id", id);
-    if (error) {
-        console.error("Error deleting race:", error);
-        alert("Failed to delete race!");
-        return;
-    }
+        // Add a new Driver.
+        async function addDriver() {
+        const name = document.getElementById("new-driver-name").value.trim();
+        const abbreviation = document.getElementById("new-driver-abbr").value.trim();
+        // Get the selected constructor_id (as a string) and convert to number.
+        const constructorIdStr = document.getElementById("new-driver-constructor").value.trim();
 
-    alert("Race deleted successfully!");
-    await fetchCalendar();
-}
+        if (!name || !abbreviation || !constructorIdStr) {
+            alert("All fields are required to add a driver.");
+            return;
+        }
 
-// Add Race Function
-async function addRace() {
-    const race_number = document.getElementById("new-race-number").value.trim();
-    const name = document.getElementById("new-race-name").value.trim();
-    const country = document.getElementById("new-race-country").value.trim();
-    const date = document.getElementById("new-race-date").value.trim();
+        const constructorId = Number(constructorIdStr);
+        // Insert using constructor_id.
+        const { error } = await supabase
+            .from("drivers")
+            .insert([{ name, abbreviation, constructor_id: constructorId }]);
+        if (error) {
+            console.error("Error adding driver:", error);
+            return;
+        }
+        await fetchDrivers();
+        alert("Driver added successfully!");
+        
+        // Clear the input fields after a successful submission.
+        document.getElementById("new-driver-name").value = "";
+        document.getElementById("new-driver-abbr").value = "";
+        document.getElementById("new-driver-constructor").value = "";
+        }
 
-    if (!race_number || !name || !country || !date) {
-        alert("All fields are required to add a race.");
-        return;
-    }
+        // Delete a Driver.
+        async function deleteDriver(driverId) {
+        if (!confirm("Are you sure you want to delete this driver?")) return;
+        const { error } = await supabase
+            .from("drivers")
+            .delete()
+            .eq("id", driverId);
+        if (error) {
+            console.error("Error deleting driver:", error);
+            alert("Failed to delete driver!");
+            return;
+        }
+        alert("Driver deleted successfully!");
+        await fetchDrivers();
+        }
 
-    // Convert the provided local datetime to a UTC ISO string
-    const localDate = new Date(date);
-    if (isNaN(localDate)) {
-        alert("Invalid date format!");
-        return;
-    }
-
-    const isoDate = localDate.toISOString(); // Ensure UTC storage
-
-    const { error } = await supabase.from("calendar").insert([
-        { race_number, name, country, date: isoDate }
-    ]);
-    if (error) {
-        console.error("Error adding race:", error);
-        alert("Failed to add race!");
-        return;
-    }
-
-    await fetchCalendar();
-    alert("Race added successfully!");
-}
+        // Optionally, call these functions on page load.
+        document.addEventListener("DOMContentLoaded", async () => {
+        await populateConstructorDropdown();
+        await fetchDrivers();
+        });
 
 
+
+        // --- CONSTRUCTORS ---
+        // Fetch and display all constructors in the table.
+        async function fetchConstructors() {
+        const { data, error } = await supabase.from("constructors").select("*").order("id", { ascending: true });
+        if (error) {
+            console.error("Error fetching constructors:", error);
+            return;
+        }
+
+        const table = document.getElementById("constructors-table");
+        table.innerHTML = ""; // Clear existing table content
+
+        data.forEach(constructor => {
+            table.innerHTML += `
+            <tr>
+                <td>${constructor.id}</td>
+                <td><input type="text" class="form-control" value="${constructor.name}" data-id="${constructor.id}" data-field="name"></td>
+                <td><input type="text" class="form-control" value="${constructor.background_colour}" data-id="${constructor.id}" data-field="background_colour"></td>
+                <td><input type="text" class="form-control" value="${constructor.text_colour}" data-id="${constructor.id}" data-field="text_colour"></td>
+                <td>
+                <button class="btn btn-danger btn-sm" onclick="deleteConstructor(${constructor.id})">Delete</button>
+                </td>
+            </tr>
+            `;
+        });
+        }
+
+        // Save (upsert) constructor changes with debugging
+        async function saveConstructors() {
+        const inputs = document.querySelectorAll("#constructors-table input");
+        const updates = Array.from(inputs).map(input => {
+            const id = Number(input.dataset.id);
+            const field = input.dataset.field;
+            return { id, [field]: input.value };
+        });
+
+        // Group updates by ID
+        const groupedUpdates = updates.reduce((acc, update) => {
+            const id = update.id;
+            if (!acc[id]) acc[id] = { id };
+            Object.assign(acc[id], update);
+            return acc;
+        }, {});
+
+        const upsertData = Object.values(groupedUpdates);
+        console.log("Upsert data:", upsertData);
+
+        // Perform batch upsert
+        const { error } = await supabase.from("constructors").upsert(upsertData);
+        if (error) {
+            console.error("Error saving constructors:", error);
+            alert("Failed to save constructors!");
+            return;
+        }
+
+        alert("Constructors saved successfully!");
+        document.getElementById("save-constructors").disabled = true; // Re-disable button
+        await fetchConstructors(); // Refresh the table
+        }
+
+        // Add a new Constructor and clear fields after submission.
+        async function addConstructor() {
+        const name = document.getElementById("new-constructor-name").value.trim();
+        const background_colour = document.getElementById("new-constructor-bg").value.trim();
+        const text_colour = document.getElementById("new-constructor-text").value.trim();
+
+        if (!name || !background_colour || !text_colour) {
+            alert("All fields are required to add a constructor.");
+            return;
+        }
+
+        const { error } = await supabase.from("constructors").insert([{ name, background_colour, text_colour }]);
+        if (error) {
+            console.error("Error adding constructor:", error);
+            alert("Failed to add constructor!");
+            return;
+        }
+
+        await fetchConstructors(); // Refresh table
+        await populateConstructorDropdown(); // Update dropdown
+        alert("Constructor added successfully!");
+
+        // Clear input fields after submission
+        document.getElementById("new-constructor-name").value = "";
+        document.getElementById("new-constructor-bg").value = "";
+        document.getElementById("new-constructor-text").value = "";
+        }
+
+        // Delete a Constructor and refresh the table.
+        async function deleteConstructor(constructorId) {
+        if (!confirm("Are you sure you want to delete this constructor?")) return;
+
+        // Check if the constructor is being used in the "drivers" table
+        const { data: driverData, error: driverError } = await supabase
+            .from("drivers")
+            .select("id")
+            .eq("constructor_id", constructorId);
+
+        if (driverError) {
+            console.error("Error checking constructor dependencies:", driverError);
+            alert("Failed to check dependencies.");
+            return;
+        }
+
+        if (driverData.length > 0) {
+            alert("Cannot delete constructor. It is assigned to one or more drivers.");
+            return;
+        }
+
+        const { error } = await supabase.from("constructors").delete().eq("id", constructorId);
+        if (error) {
+            console.error("Error deleting constructor:", error);
+            alert("Failed to delete constructor!");
+            return;
+        }
+
+        alert("Constructor deleted successfully!");
+        await fetchConstructors();
+        }
+
+        // --- CALENDAR ---
+        async function fetchCalendar() {
+            const { data, error } = await supabase
+                .from("calendar")
+                .select("*")
+                .order("race_number", { ascending: true });
+
+            if (error) {
+                console.error("Error fetching calendar:", error);
+                alert("Failed to fetch calendar data. Please try again.");
+                return;
+            }
+
+            const table = document.getElementById("calendar-table");
+            table.innerHTML = ""; // Clear the table
+
+            data.forEach(event => {
+                // Convert stored UTC time to a valid Date object
+                const dateInUTC = event.date ? new Date(event.date) : null;
+
+                if (!dateInUTC || isNaN(dateInUTC)) {
+                    console.error("Invalid date found for event:", event);
+                    return;
+                }
+
+                // Format the date for datetime-local input (YYYY-MM-DDTHH:mm)
+                const dateTimeLocal = dateInUTC.toISOString().slice(0, 16);
+
+                table.innerHTML += `
+                    <tr>
+                        <td>${event.id}</td>
+                        <td>
+                            <input type="number" class="form-control" value="${event.race_number || ''}" 
+                                data-id="${event.id}" data-field="race_number" required>
+                        </td>
+                        <td>
+                            <input type="text" class="form-control" value="${event.name || ''}" 
+                                data-id="${event.id}" data-field="name" required>
+                        </td>
+                        <td>
+                            <input type="text" class="form-control" value="${event.country || ''}" 
+                                data-id="${event.id}" data-field="country" required>
+                        </td>
+                        <td>
+                            <input type="datetime-local" class="form-control" value="${dateTimeLocal}" 
+                                data-id="${event.id}" data-field="date" required>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger" onclick="deleteRace(${event.id})">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function saveCalendar() {
+            const inputs = document.querySelectorAll("#calendar-table input");
+            const updates = Array.from(inputs).map((input) => {
+                const id = input.dataset.id;
+                const field = input.dataset.field;
+                let value = input.value;
+
+                if (field === "date") {
+                    const localDate = new Date(value); // Parse as local datetime
+                    if (!isNaN(localDate)) {
+                        value = localDate.toISOString(); // Convert and store in UTC
+                    } else {
+                        console.error("Invalid date value:", value);
+                        return null;
+                    }
+                }
+
+                return { id, [field]: value };
+            });
+
+            // Filter out invalid updates
+            const filteredUpdates = updates.filter((update) => update !== null);
+
+            const groupedUpdates = filteredUpdates.reduce((acc, update) => {
+                const id = update.id;
+                if (!acc[id]) acc[id] = { id };
+                Object.assign(acc[id], update);
+                return acc;
+            }, {});
+
+            const { error } = await supabase.from("calendar").upsert(Object.values(groupedUpdates));
+            if (error) {
+                console.error("Error saving calendar entries:", error);
+                alert("Failed to save calendar!");
+                return;
+            }
+
+            alert("Calendar saved successfully!");
+            await fetchCalendar();
+        }
+
+        // Delete Race Function
+        async function deleteRace(id) {
+            if (!confirm("Are you sure you want to delete this race?")) return;
+
+            const { error } = await supabase.from("calendar").delete().eq("id", id);
+            if (error) {
+                console.error("Error deleting race:", error);
+                alert("Failed to delete race!");
+                return;
+            }
+
+            alert("Race deleted successfully!");
+            await fetchCalendar();
+        }
+
+        // Add Race Function
+        async function addRace() {
+            const race_number = document.getElementById("new-race-number").value.trim();
+            const name = document.getElementById("new-race-name").value.trim();
+            const country = document.getElementById("new-race-country").value.trim();
+            const date = document.getElementById("new-race-date").value.trim();
+
+            if (!race_number || !name || !country || !date) {
+                alert("All fields are required to add a race.");
+                return;
+            }
+
+            // Convert the provided local datetime to a UTC ISO string
+            const localDate = new Date(date);
+            if (isNaN(localDate)) {
+                alert("Invalid date format!");
+                return;
+            }
+
+            const isoDate = localDate.toISOString(); // Ensure UTC storage
+
+            const { error } = await supabase.from("calendar").insert([
+                { race_number, name, country, date: isoDate }
+            ]);
+            if (error) {
+                console.error("Error adding race:", error);
+                alert("Failed to add race!");
+                return;
+            }
+
+            await fetchCalendar();
+            alert("Race added successfully!");
+        }
 
 // --- INITIALISATION ---
         document.addEventListener('DOMContentLoaded', async () => {
@@ -2703,1265 +2699,1244 @@ async function addRace() {
 // === TEAM SCORING FUNCTION ===
 // =============================
 
-/**
- * Logs progress messages to the console and a progress div.
- * @param {string} message - The message to log.
- */
- function updateProgressSeasonTeam(message) {
-  console.log("[Season Team] " + message);
-  const progressDiv = document.getElementById("update-progress-season-team");
-  if (progressDiv) {
-    progressDiv.style.display = "block";
-    progressDiv.innerHTML += message + "<br>";
-  }
-}
-
-/**
- * Clears the progress display.
- */
-function clearProgressSeasonTeam() {
-  const progressDiv = document.getElementById("update-progress-season-team");
-  if (progressDiv) {
-    progressDiv.innerHTML = "";
-    progressDiv.style.display = "none";
-  }
-}
-
-/**
- * Loads race options from the season_player table for the current year,
- * populates the race dropdown, and preselects the latest race.
- */
-async function loadRaceOptionsSeasonTeam() {
-    updateProgressSeasonTeam("Loading race options for Season Team...");
-  
-  const { data: formDetails, error } = await supabase.from("form_details").select("*").single();
-  if (error) {
-    updateProgressSeasonTeam(`Error loading form_details: ${error.message}`);
-    return;
-  }
-  const currentYear = formDetails.current_year;
-  document.getElementById("current-year-season-team").value = currentYear;
-  updateProgressSeasonTeam(`Current Year: ${currentYear}`);
-
-  const seasonPlayerTable = `season_player_${currentYear}`;
-  let seasonPlayerData;
-  try {
-    seasonPlayerData = await getTable(seasonPlayerTable);
-  } catch (err) {
-    updateProgressSeasonTeam("Error fetching season player data: " + err.message);
-    return;
-  }
-  
-  let raceNamesRow = seasonPlayerData.find(row => row.player_id === 0);
-  if (!raceNamesRow) {
-    updateProgressSeasonTeam("No Race Names row found in " + seasonPlayerTable);
-    return;
-  }
-  
-  let uniqueRaces = {};
-  let i = 1;
-  while (true) {
-    let colName = `race_${i}`;
-    let value = raceNamesRow[colName];
-    if (value === null || value === "") break;
-    uniqueRaces[value] = i;
-    i++;
-  }
-  updateProgressSeasonTeam(`Unique races extracted: ${JSON.stringify(uniqueRaces)}`);
-
-  const raceSelect = document.getElementById("race-select-season-team");
-  if (!raceSelect) {
-    updateProgressSeasonTeam("Race select element 'race-select-season-team' not found.");
-    return;
-  }
-  raceSelect.innerHTML = "";
-  let latestRaceNumber = 0;
-  let optionCount = 0;
-  for (const [raceName, raceNum] of Object.entries(uniqueRaces)) {
-    const option = document.createElement("option");
-    option.value = raceName;
-    option.textContent = raceName;
-    option.dataset.raceNumber = raceNum;
-    raceSelect.appendChild(option);
-    optionCount++;
-    updateProgressSeasonTeam(`Added race: ${raceName} with race number ${raceNum}`);
-    if (raceNum > latestRaceNumber) {
-      latestRaceNumber = raceNum;
-    }
-  }
-  updateProgressSeasonTeam(`Total options added: ${optionCount}`);
-  if (raceSelect.options.length === 0) {
-    updateProgressSeasonTeam("No valid races found to populate the dropdown.");
-    alert("No valid races found in the season player table for the current year.");
-    return;
-  }
-  
-  if (window.initialLoad === undefined || window.initialLoad === true) {
-    for (let j = 0; j < raceSelect.options.length; j++) {
-      if (raceSelect.options[j].dataset.raceNumber == latestRaceNumber) {
-        raceSelect.selectedIndex = j;
-        updateProgressSeasonTeam(`Prefilled dropdown with latest race: ${raceSelect.options[j].value}`);
-        break;
-      }
-    }
-    window.initialLoad = false;
-  }
-  
-  updateProgressSeasonTeam("Race options loaded for Season Team.");
-  await updateRaceInfoSeasonTeam();
-}
-
-/**
- * Updates the race info display panel with the selected race.
- */
-async function updateRaceInfoSeasonTeam() {
-  try {
-    const raceSelect = document.getElementById("race-select-season-team");
-    const selectedRaceName = raceSelect.value;
-    const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
-    document.getElementById("race-info-season-team").textContent = `Race ${raceNumber}: ${selectedRaceName}`;
-    updateProgressSeasonTeam(`Race info updated: Race ${raceNumber}: ${selectedRaceName}`);
-  } catch (err) {
-    console.error("updateRaceInfoSeasonTeam error:", err);
-    updateProgressSeasonTeam("Error in updateRaceInfoSeasonTeam: " + err.message);
-  }
-}
-
-/**
- * Updates team scoring for Card Races (includes card adjustments and swap logic).
- */
- async function updateCardTeamScoring() {
-  // INITIAL SETUP & FETCHING DATA
-  clearProgressSeasonTeam();
-  updateProgressSeasonTeam("Starting update of Season Team Totals...");
-
-  const currentYear = document.getElementById("current-year-season-team").value;
-  if (!currentYear) {
-    updateProgressSeasonTeam("Error: Current year is not set.");
-    return;
-  }
-
-  const raceSelect = document.getElementById("race-select-season-team");
-  const selectedRaceName = raceSelect.value;
-  const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
-  updateProgressSeasonTeam(`Selected Race: ${selectedRaceName} (Race Number: ${raceNumber})`);
-
-  const teamsTable = "teams";
-  const playersTable = "players";
-  const seasonPlayerTable = `season_player_${currentYear}`;
-  const teamScoringTable = `team_scoring_${currentYear}`;
-
-  // Fetch teams
-  updateProgressSeasonTeam("Fetching teams data...");
-  let teams;
-  try {
-    teams = await getTable(teamsTable);
-  } catch (err) {
-    updateProgressSeasonTeam("Error fetching teams: " + err.message);
-    return;
-  }
-  updateProgressSeasonTeam(`Fetched ${teams.length} teams.`);
-
-  // Fetch players
-  updateProgressSeasonTeam("Fetching players data...");
-  let players;
-  try {
-    players = await getTable(playersTable);
-  } catch (err) {
-    updateProgressSeasonTeam("Error fetching players: " + err.message);
-    return;
-  }
-  updateProgressSeasonTeam(`Fetched ${players.length} players.`);
-
-  // Fetch season player results
-  updateProgressSeasonTeam(`Fetching season player results from ${seasonPlayerTable}...`);
-  let seasonPlayerResults;
-  try {
-    seasonPlayerResults = await getTable(seasonPlayerTable);
-  } catch (err) {
-    updateProgressSeasonTeam("Error fetching season player results: " + err.message);
-    return;
-  }
-  updateProgressSeasonTeam(`Fetched ${seasonPlayerResults.length} rows from ${seasonPlayerTable}.`);
-
-  // Prepare arrays for later use
-  let teamScoringData = []; // Will store computed records for each team.
-  let swapRequests = [];    // Holds swap card requests.
-  let reportRequests = [];  // Holds report card requests.
-
-  // Build report requests for teams (if a team selected another team to report)
-  for (let team of teams) {
-    if (team.card_report_team_selected) {
-      const reportedTeamId = team.card_report_team_selected;
-      const reportedTeam = teams.find(t => t.id === reportedTeamId);
-      if (reportedTeam) {
-        reportRequests.push({
-          reportingTeamId: team.id,
-          reportedTeamId: reportedTeamId
-        });
-      }
-    }
-  }
-
-  // =====================================================
-  // Part 1: Get player/team scores and handle the cards 
-  //         (aero, double, and halo) and calculate a 
-  //         temporary total.
-  // =====================================================
-  for (let team of teams) {
-    const teamId = team.id;
-    const teamName = team.name;
-    updateProgressSeasonTeam(`Processing team: ${teamName} (ID: ${teamId})`);
-
-    const teamPlayers = players.filter(p => p.participant_team_id === teamId);
-    updateProgressSeasonTeam(`Found ${teamPlayers.length} players for team ${teamName}.`);
-    if (teamPlayers.length !== 2) {
-      updateProgressSeasonTeam(`Skipping team ${teamName}: Expected 2 players, found ${teamPlayers.length}.`);
-      continue;
-    }
-    const [player1, player2] = teamPlayers;
-
-    const colName = `race_${raceNumber}`;
-    const result1 = seasonPlayerResults.find(r => r.player_id === player1.id);
-    const result2 = seasonPlayerResults.find(r => r.player_id === player2.id);
-    if (!result1 || !result2) {
-      updateProgressSeasonTeam(`Skipping team ${teamName}: Missing season results for one or both players.`);
-      continue;
-    }
-
-    const scoreStr1 = result1[colName];
-    const scoreStr2 = result2[colName];
-    const score1 = parseFloat(scoreStr1.replace(/\(LS\)/, "").trim()) || 0;
-    const score2 = parseFloat(scoreStr2.replace(/\(LS\)/, "").trim()) || 0;
-    updateProgressSeasonTeam(`Team ${teamName}: ${player1.name} scored ${score1}, ${player2.name} scored ${score2}.`);
-
-    const subtotal = score1 + score2;
-    let cardPointsDelta = 0;
-    let card_aero_applied = 0; // Aero logic remains unchanged.
-    let card_double_applied = 0;
-    let card_halo_applied = 0;
-    let card_report_applied = 0;
-    let card_report_details = '';
-    let card_swap_applied = 0;
-    let card_swap_details = '';
-
-    // Process the halo card. Only one halo is applied per team.
-    const haloPlayed = team.card_halo_played ? true : false;
-    if (haloPlayed) {
-      card_halo_applied = 1;
-      updateProgressSeasonTeam(`Halo card is recorded for ${teamName}.`);
-    }
-
-    // Process the double card (only if halo was not played)
-    if (team.card_double_played && !haloPlayed) {
-      const higherScore = Math.max(score1, score2);
-      cardPointsDelta += higherScore;
-      card_double_applied = 1;
-      updateProgressSeasonTeam(`Double applied on ${teamName}: +${higherScore}`);
-    }
-
-    // Calculate temporary total (subtotal plus any double bonus)
-    let tempTotal = subtotal + cardPointsDelta;
-    updateProgressSeasonTeam(`Temporary Total for ${teamName}: ${tempTotal}`);
-
-    // Save computed data
-    teamScoringData.push({
-      teamId,
-      teamName,
-      player1,
-      player2,
-      score1,
-      score2,
-      subtotal,
-      cardPointsDelta,
-      grandTotal: tempTotal, // To be updated later.
-      card_aero_applied,
-      card_double_applied,
-      card_halo_applied,
-      card_report_applied,
-      card_report_details,
-      card_swap_applied,
-      card_swap_details
-    });
-
-    // Collect swap requests (if any)
-    if (team.card_swap_team_selected) {
-      swapRequests.push({
-        teamId,
-        swapTargetTeamId: team.card_swap_team_selected,
-        swapTime: team.card_swap_time
-      });
-    }
-  }
-
-  // =====================================================
-  // Part 2: Apply the report card and update the total.
-  // =====================================================
-  for (let teamData of teamScoringData) {
-    // Find any report requests where this team is the target (reported team)
-    const reportsForTeam = reportRequests.filter(r => r.reportedTeamId === teamData.teamId);
-    if (reportsForTeam.length > 0) {
-      let reportCount = reportsForTeam.length;
-      // Start with any existing report details (should be empty at this point)
-      let details = teamData.card_report_details;
-      
-      reportsForTeam.forEach((report) => {
-        const reportingTeam = teams.find(t => t.id === report.reportingTeamId);
-        const reportedTeam = teams.find(t => t.id === report.reportedTeamId);
-        // Check the computed data for the reported (target) team
-        const reportedTeamData = teamScoringData.find(t => t.teamId === report.reportedTeamId);
-        if (reportedTeamData && reportedTeamData.card_halo_applied === 1) {
-          // If the target team has played halo, cancel this report.
-          reportCount = 0;
-          details += details ? ' ' : '';
-          details += `${reportingTeam.name}'s report on ${reportedTeam.name} was stopped by Halo.`;
-          updateProgressSeasonTeam(`${reportingTeam.name}'s report on ${reportedTeam.name} stopped by Halo.`);
-        } else {
-          details += details ? ' ' : '';
-          details += `${reportingTeam.name} reported ${reportedTeam.name}.`;
+        /**
+         * Logs progress messages to the console and a progress div.
+         * @param {string} message - The message to log.
+         */
+        function updateProgressSeasonTeam(message) {
+        console.log("[Season Team] " + message);
+        const progressDiv = document.getElementById("update-progress-season-team");
+        if (progressDiv) {
+            progressDiv.style.display = "block";
+            progressDiv.innerHTML += message + "<br>";
         }
-      });
-
-      teamData.card_report_applied = reportCount;
-      teamData.card_report_details = details;
-      updateProgressSeasonTeam(`Report applied for ${teamData.teamName}: ${details}`);
-
-      // Adjust the team’s total based on the report card:
-      // For a single report, subtract the highest score.
-      // For multiple reports, add (double) the highest score.
-      const highestScore = Math.max(teamData.score1, teamData.score2);
-      if (reportCount === 1) {
-        teamData.grandTotal -= highestScore;
-      } else if (reportCount > 1) {
-        teamData.grandTotal += highestScore;
-      }
-    }
-  }
-
-  // =====================================================
-  // Part 3: Apply the swap card and update the total.
-  // =====================================================
-  // Sort swap requests by swap time.
-  swapRequests.sort((a, b) => a.swapTime - b.swapTime);
-  let swapCount = 1;
-  for (let swap of swapRequests) {
-    const { teamId, swapTargetTeamId } = swap;
-    const teamData = teamScoringData.find(t => t.teamId === teamId);
-    const targetTeamData = teamScoringData.find(t => t.teamId === swapTargetTeamId);
-    if (teamData && targetTeamData) {
-      // Check only the target team for a halo card.
-      if (targetTeamData.card_halo_applied === 1) {
-        // Append details to both initiating and target teams without overriding existing details.
-        teamData.card_swap_details += teamData.card_swap_details ? " " : "";
-        teamData.card_swap_details += `(#${swapCount}) ${teamData.teamName} swap with ${targetTeamData.teamName} was stopped by Halo.`;
-        targetTeamData.card_swap_details += targetTeamData.card_swap_details ? " " : "";
-        targetTeamData.card_swap_details += `(#${swapCount}) Swap attempt by ${teamData.teamName} was stopped by Halo.`;
-        updateProgressSeasonTeam(`${teamData.teamName}'s swap with ${targetTeamData.teamName} aborted due to Halo.`);
-      } else {
-        // Swap the grand totals between the two teams.
-        const tempGrandTotal = teamData.grandTotal;
-        teamData.grandTotal = targetTeamData.grandTotal;
-        targetTeamData.grandTotal = tempGrandTotal;
-        // Append swap details, adding to any existing details.
-        teamData.card_swap_details += teamData.card_swap_details ? " " : "";
-        teamData.card_swap_details += `(#${swapCount}) ${teamData.teamName} swaps with ${targetTeamData.teamName}`;
-        targetTeamData.card_swap_details += targetTeamData.card_swap_details ? " " : "";
-        targetTeamData.card_swap_details += `(#${swapCount}) ${teamData.teamName} swaps with ${targetTeamData.teamName}`;
-        teamData.card_swap_applied += 1;
-        targetTeamData.card_swap_applied += 1;
-        updateProgressSeasonTeam(`${teamData.teamName} swaps with ${targetTeamData.teamName}`);
-        swapCount++;
-      }
-    }
-  }
-
-  // =====================================================
-  // Part 4: Upload the results to the database.
-  // =====================================================
-  for (let teamData of teamScoringData) {
-    // Recalculate the card bonus as the difference between the final total and the subtotal.
-    teamData.cardPointsDelta = teamData.grandTotal - teamData.subtotal;
-
-    const teamScoreRecord = {
-      team_id: teamData.teamId,
-      team_name: teamData.teamName,
-      race_number: raceNumber,
-      race_name: selectedRaceName,
-      subtotal: teamData.subtotal,
-      card_points_delta: teamData.cardPointsDelta,
-      grand_total: teamData.grandTotal,
-      card_aero_applied: teamData.card_aero_applied,
-      card_double_applied: teamData.card_double_applied,
-      card_halo_applied: teamData.card_halo_applied,
-      card_report_applied: teamData.card_report_applied,
-      card_report_details: teamData.card_report_details,
-      card_swap_applied: teamData.card_swap_applied,
-      card_swap_details: teamData.card_swap_details,
-      player_id_1: teamData.player1.id,
-      player_name_1: teamData.player1.name,
-      player_points_1: teamData.score1,
-      player_id_2: teamData.player2.id,
-      player_name_2: teamData.player2.name,
-      player_points_2: teamData.score2
-    };
-
-    try {
-      await upsertTeamScoringData([teamScoreRecord], teamScoringTable);
-      updateProgressSeasonTeam(`Updated/inserted record for team ${teamData.teamName}.`);
-    } catch (err) {
-      updateProgressSeasonTeam(`Error updating record for team ${teamData.teamName}: ${err.message}`);
-    }
-
-    await resetTeamCardsSupabase(teamData.teamId);
-  }
-
-  updateProgressSeasonTeam("Finished updating team scores.");
-}
-
-
-
-
-
-
-
-
-
-
-async function upsertTeamScoringData(teamScoringData, tableName) {
-  try {
-    // Fetch existing records to check for conflicts
-    const { data: existingRecords, error: fetchError } = await supabase
-      .from(tableName)
-      .select('team_id, race_number');  // Only fetch team_id and race_number to check for conflicts
-
-    if (fetchError) {
-      console.error('Error fetching existing records:', fetchError.message);
-      return;
-    }
-
-    // Prepare two arrays: one for new inserts and one for updates
-    let recordsToInsert = [];
-    let recordsToUpdate = [];
-
-    // Check each teamScoringData entry
-    for (let record of teamScoringData) {
-      const existingRecord = existingRecords.find(
-        (r) => r.team_id === record.team_id && r.race_number === record.race_number
-      );
-
-      if (existingRecord) {
-        // If the record exists, push to recordsToUpdate
-        recordsToUpdate.push(record);
-      } else {
-        // If the record doesn't exist, push to recordsToInsert
-        recordsToInsert.push(record);
-      }
-    }
-
-    // Insert new records
-    if (recordsToInsert.length > 0) {
-      const { data: insertData, error: insertError } = await supabase
-        .from(tableName)
-        .insert(recordsToInsert);
-
-      if (insertError) {
-        console.error('Error inserting new team scoring data:', insertError.message);
-      } else {
-        console.log('Inserted new team scoring data:', insertData);
-      }
-    }
-
-    // Update existing records
-    for (let record of recordsToUpdate) {
-      // Check if record already exists in the database, if not insert it
-      const { data: updateData, error: updateError } = await supabase
-        .from(tableName)
-        .update(record)
-        .eq('team_id', record.team_id)
-        .eq('race_number', record.race_number); // Ensures that we are updating the correct record
-
-      if (updateError) {
-        console.error('Error updating team scoring data:', updateError.message);
-      } else {
-        console.log('Updated team scoring data:', updateData);
-      }
-    }
-
-  } catch (error) {
-    console.error('Error upserting team scoring data:', error.message);
-  }
-}
-
-
-
-// Reset the played cards in the teams table using Supabase
-async function resetTeamCardsSupabase(teamId) {
-  const { data, error } = await supabase
-    .from('teams') // Specify the Supabase table name
-    .update({
-      card_aero_played: 0,
-      card_double_played: 0,
-      card_halo_played: 0,
-      card_report_played: 0,
-      card_swap_played: 0,
-      card_report_team_selected: null,
-      card_swap_team_selected: null,
-      card_swap_time: null
-    })
-    .eq('id', teamId); // Target the specific team by ID
-
-  if (error) {
-    console.error('Error resetting team cards:', error.message);
-  } else {
-    console.log('Team cards reset successfully:', data);
-  }
-}
-
-/**
- * Deletes all rows from the casino table where team_id > 0 (i.e. actual betting rows).
- */
- async function deleteCasinoBets() {
-  const { error } = await supabase.from("casino").delete().gt("team_id", 0);
-  if (error) {
-    throw new Error(error.message);
-  }
-}
-
-async function updateCasinoTeamScoring() {
-  clearProgressSeasonTeam();
-  updateProgressSeasonTeam("Starting update of Season Team Totals...");
-
-  // Get the current year and race details from the DOM.
-  const currentYear = document.getElementById("current-year-season-team").value;
-  if (!currentYear) {
-    updateProgressSeasonTeam("Error: Current year is not set.");
-    return;
-  }
-
-  const raceSelect = document.getElementById("race-select-season-team");
-  const selectedRaceName = raceSelect.value;
-  const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
-  updateProgressSeasonTeam(`Selected Race: ${selectedRaceName} (Race Number: ${raceNumber})`);
-
-  // Define table names.
-  const teamsTable = "teams";
-  const playersTable = "players";
-  const seasonPlayerTable = `season_player_${currentYear}`;
-  const teamScoringTable = `team_scoring_${currentYear}`;
-  const casinoTable = "casino";
-
-  // ---------------------------
-  // Fetch necessary data.
-  // ---------------------------
-  updateProgressSeasonTeam("Fetching teams data...");
-  let teams;
-  try {
-    teams = await getTable(teamsTable);
-  } catch (err) {
-    updateProgressSeasonTeam("Error fetching teams: " + err.message);
-    return;
-  }
-
-  updateProgressSeasonTeam("Fetching players data...");
-  let players;
-  try {
-    players = await getTable(playersTable);
-  } catch (err) {
-    updateProgressSeasonTeam("Error fetching players: " + err.message);
-    return;
-  }
-
-  updateProgressSeasonTeam(`Fetching season player results from ${seasonPlayerTable}...`);
-  let seasonPlayerResults;
-  try {
-    seasonPlayerResults = await getTable(seasonPlayerTable);
-  } catch (err) {
-    updateProgressSeasonTeam("Error fetching season player results: " + err.message);
-    return;
-  }
-
-  updateProgressSeasonTeam("Fetching casino bets data...");
-  let casinoBets;
-  try {
-    casinoBets = await getTable(casinoTable);
-    console.log("Casino Bets Data: ", casinoBets);
-  } catch (err) {
-    updateProgressSeasonTeam("Error fetching casino bets: " + err.message);
-    return;
-  }
-
-  // ---------------------------
-  // Extract meta rows from the casino table.
-  // ---------------------------
-  const oddsRow = casinoBets.find(row => row.team_id === 0);
-  const questionRow = casinoBets.find(row => row.team_id === -2);
-  const willPayOutRow = casinoBets.find(row => row.team_id === -4);
-
-  if (!oddsRow || !questionRow || !willPayOutRow) {
-    updateProgressSeasonTeam("Error: Missing meta information (odds, question, or will pay out) in casino table.");
-    return;
-  }
-
-  // ---------------------------
-  // Process each team for casino scoring.
-  // Only process teams with team_id > 0.
-  // ---------------------------
-  let teamScoringData = [];
-  for (let team of teams) {
-    const teamId = team.id;
-    const teamName = team.name;
-    updateProgressSeasonTeam(`Processing team: ${teamName} (ID: ${teamId})`);
-
-    // Skip rows that are not betting rows.
-    if (teamId <= 0) {
-      continue;
-    }
-
-    // Get the team's players; ensure exactly 2.
-    const teamPlayers = players.filter(p => p.participant_team_id === teamId);
-    if (teamPlayers.length !== 2) {
-      updateProgressSeasonTeam(`Skipping team ${teamName}: Expected 2 players, found ${teamPlayers.length}.`);
-      continue;
-    }
-    const [player1, player2] = teamPlayers;
-
-    // Get season results for both players.
-    const colName = `race_${raceNumber}`;
-    const result1 = seasonPlayerResults.find(r => r.player_id === player1.id);
-    const result2 = seasonPlayerResults.find(r => r.player_id === player2.id);
-    if (!result1 || !result2) {
-      updateProgressSeasonTeam(`Skipping team ${teamName}: Missing season results for one or both players.`);
-      continue;
-    }
-
-    const scoreStr1 = result1[colName];
-    const scoreStr2 = result2[colName];
-    const score1 = parseFloat(scoreStr1.replace(/\(LS\)/, "").trim()) || 0;
-    const score2 = parseFloat(scoreStr2.replace(/\(LS\)/, "").trim()) || 0;
-    updateProgressSeasonTeam(`Team ${teamName}: ${player1.name} scored ${score1}, ${player2.name} scored ${score2}.`);
-
-    // The original subtotal from season results.
-    const originalSubtotal = score1 + score2;
-    // We'll leave subtotal unchanged and accumulate the casino bet delta separately.
-    let casinoDelta = 0;
-    // Initialize a string to accumulate detailed bet information.
-    let casinoDetails = "";
-
-    // Get this team’s casino bet row(s) (normally one row per team).
-    const teamCasinoBets = casinoBets.filter(bet => bet.team_id === teamId);
-
-    teamCasinoBets.forEach(bet => {
-      // Process bets 1 through 5.
-      for (let i = 1; i <= 5; i++) {
-        const betRaw = bet[`bet_${i}`];
-        const betAmount = parseFloat(betRaw);
-        if (!isNaN(betAmount)) {
-          // Get odds for this bet.
-          const odds = parseFloat(oddsRow[`bet_${i}`]);
-          // Get will pay out flag.
-          const willPayOut = (willPayOutRow[`bet_${i}`] === 'true' || willPayOutRow[`bet_${i}`] === true);
-          // Get the question text for this bet.
-          const questionText = questionRow[`bet_${i}`] || `Bet ${i}`;
-          let delta = 0;
-          let outcome = "";
-          if (willPayOut) {
-            // Calculate the payout delta.
-            delta = (betAmount * odds) - betAmount;
-            outcome = "Paid out";
-          } else {
-            // Lost bet: subtract the stake.
-            delta = -betAmount;
-            outcome = "Lost";
-          }
-          casinoDelta += delta;
-          casinoDetails += `(#${i} - ${questionText}: Stake = ${betAmount}, Odds = ${odds}, Outcome: ${outcome}, ${delta >= 0 ? '+' : ''}${delta}) `;
-          updateProgressSeasonTeam(`Team ${teamName} Bet ${i}: Stake = ${betAmount}, Odds = ${odds}, Outcome: ${outcome}, Delta = ${delta}.`);
         }
-      }
-    });
 
-    const cardPointsDelta = casinoDelta;
-    const grand_total = originalSubtotal + casinoDelta;
+        /**
+         * Clears the progress display.
+         */
+        function clearProgressSeasonTeam() {
+        const progressDiv = document.getElementById("update-progress-season-team");
+        if (progressDiv) {
+            progressDiv.innerHTML = "";
+            progressDiv.style.display = "none";
+        }
+        }
 
-    // For casino rounds, the card-related fields are zero.
-    const card_aero_applied = 0;
-    const card_double_applied = 0;
-    const card_halo_applied = 0;
-    const card_report_applied = 0;
-    const card_report_details = null;
-    const card_swap_applied = 0;
-    const card_swap_details = null;
-
-    // Prepare the team scoring record including the casino details.
-    const teamScoreRecord = {
-      team_id: teamId,
-      team_name: teamName,
-      player_id_1: player1.id,
-      player_name_1: player1.name,
-      player_points_1: score1,
-      player_id_2: player2.id,
-      player_name_2: player2.name,
-      player_points_2: score2,
-      race_number: raceNumber,
-      race_name: selectedRaceName,
-      subtotal: originalSubtotal,            // Keep the original season points as subtotal.
-      card_points_delta: cardPointsDelta,      // Casino bet delta.
-      grand_total: grand_total,                // Sum of original points + bet delta.
-      card_aero_applied,
-      card_double_applied,
-      card_halo_applied,
-      card_report_applied,
-      card_report_details,
-      card_swap_applied,
-      card_swap_details,
-      casino_details: casinoDetails
-    };
-
-    teamScoringData.push(teamScoreRecord);
-  }
-
-  // ---------------------------
-  // Upload the team scoring data.
-  // ---------------------------
-  for (let teamRecord of teamScoringData) {
-    try {
-      await upsertTeamScoringData([teamRecord], teamScoringTable);
-      updateProgressSeasonTeam(`Updated/inserted record for team ${teamRecord.team_name}.`);
-    } catch (err) {
-      updateProgressSeasonTeam(`Error updating record for team ${teamRecord.team_name}: ${err.message}`);
-    }
-  }
-
-  // ---------------------------
-  // Reset the casino bets by deleting rows with team_id > 0.
-  // ---------------------------
-  try {
-    await deleteCasinoBets();
-    updateProgressSeasonTeam("Casino bets reset successfully.");
-  } catch (err) {
-    updateProgressSeasonTeam("Error resetting casino bets: " + err.message);
-  }
-
-  updateProgressSeasonTeam("Finished updating casino team scores.");
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**
- * Helper function to insert team scoring data into the database.
- * @param {Array} data - Array of team scoring data to insert.
- * @param {string} table - Name of the table to insert into.
- */
-async function insertTeamScoringData(data, table) {
-  const { data: inserted, error } = await supabase.from(table).upsert(data);
-  if (error) {
-    updateProgressSeasonTeam("Error inserting team scoring data: " + error.message);
-    return;
-  }
-  updateProgressSeasonTeam(`Inserted ${inserted.length} team scoring records.`);
-}
-
-async function updateTeamScoring() {
-  const raceType = document.getElementById("raceType").value; // Get selected value
-  if (raceType === 'card') {
-    await updateCardTeamScoring();
-  } else if (raceType === 'casino') {
-    await updateCasinoTeamScoring();
-  }
-}
-
-document.getElementById('update-season-season-team').addEventListener('click', async function() {
-  await updateTeamScoring();
-});
-
-// =============================
-// === SEASON TEAM FUNCTION ===
-// ============================= 
-
-// Progress Helpers for Season Team Summary Section
-function updateProgressTeamSummary(message) {
-  console.log("[Season Team Summary] " + message);
-  const progressDiv = document.getElementById("update-progress-season-team-summary");
-  if (progressDiv) {
-    progressDiv.style.display = "block";
-    progressDiv.innerHTML += message + "<br>";
-  }
-}
-
-function clearProgressTeamSummary() {
-  const progressDiv = document.getElementById("update-progress-season-team-summary");
-  if (progressDiv) {
-    progressDiv.innerHTML = "";
-    progressDiv.style.display = "none";
-  }
-}
-
-// Main function to update Season Team Summary
-async function updateSeasonTeamSummary() {
-  clearProgressTeamSummary();
-  updateProgressTeamSummary("Starting update of Season Team Summary...");
-
-  // Retrieve current year and race info from Season Team UI.
-  const currentYear = document.getElementById("current-year-season-team").value;
-  if (!currentYear) {
-    updateProgressTeamSummary("Error: Current year is not set.");
-    return;
-  }
-  const raceSelect = document.getElementById("race-select-season-team");
-  const selectedRaceName = raceSelect.value;
-  const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
-  updateProgressTeamSummary(`Selected Race: ${selectedRaceName} (Race Number: ${raceNumber})`);
-
-  // Define table names.
-  const teamScoringTable = `team_scoring_${currentYear}`;
-  const seasonTeamTable = `season_team_${currentYear}`;
-
-  // Retrieve team scoring records for the selected race.
-  updateProgressTeamSummary(`Fetching team scoring records from ${teamScoringTable} for race ${raceNumber}...`);
-  let teamScoringData;
-  try {
-    const { data, error } = await supabase
-      .from(teamScoringTable)
-      .select("*")
-      .eq("race_number", raceNumber);
-    teamScoringData = data;
-
-    if (error) {
-      updateProgressTeamSummary("Error fetching team scoring records: " + error.message);
-      console.error("Supabase Error:", error);
-      return;
-    }
-
-    if (!teamScoringData || teamScoringData.length === 0) {
-      updateProgressTeamSummary("No team scoring records found for the selected race.");
-      console.warn("No data returned for team scoring.");
-      alert("No team scoring records found for the selected race.");
-      return;
-    }
-  } catch (err) {
-    updateProgressTeamSummary("Error fetching team scoring records: " + err.message);
-    return;
-  }
-  if (!teamScoringData || teamScoringData.length === 0) {
-    updateProgressTeamSummary("No team scoring records found for the selected race.");
-    alert("No team scoring records found for the selected race.");
-    return;
-  }
-  updateProgressTeamSummary(`Fetched ${teamScoringData.length} team scoring records.`);
-
-  // For each team scoring record, format the final score string by appending card tags.
-  teamScoringData.forEach(record => {
-    let tags = "";
-
-    // Append each card tag as many times as its numeric value.
-    if (record.card_aero_applied && record.card_aero_applied > 0) {
-      for (let i = 0; i < record.card_aero_applied; i++) {
-        tags += "(aero)";
-      }
-    }
-    if (record.card_double_applied && record.card_double_applied > 0) {
-      for (let i = 0; i < record.card_double_applied; i++) {
-        tags += "(double)";
-      }
-    }
-    if (record.card_halo_applied && record.card_halo_applied > 0) {
-      for (let i = 0; i < record.card_halo_applied; i++) {
-        tags += "(halo)";
-      }
-    }
-    if (record.card_report_applied && record.card_report_applied > 0) {
-      for (let i = 0; i < record.card_report_applied; i++) {
-        tags += "(report)";
-      }
-    }
-    if (record.card_swap_applied && record.card_swap_applied > 0) {
-      for (let i = 0; i < record.card_swap_applied; i++) {
-        tags += "(swap)";
-      }
-    }
-    // Append the casino tag if any casino bet was placed.
-    if (record.casino_details && record.casino_details.trim() !== "") {
-      tags += "(casino)";
-      console.log(`Team ${record.team_name} casino_details: ${record.casino_details}`);
-    } else {
-      console.log(`Team ${record.team_name} has no casino_details.`);
-    }
-    // Create the final score string with the grand_total and the applied tags.
-    record.final_score = record.grand_total + tags;
-    console.log(`Team ${record.team_name} final score computed as: ${record.final_score}`);
-    updateProgressTeamSummary(`Team ${record.team_name} final score: ${record.final_score}`);
-  });
-
-  // Next, update the season_team_{year} table.
-  // We assume that season_team_{year} has columns: team_id, team_name, player_name_1, player_name_2, and race_1 ... race_32.
-  // We will upsert one row per team for the selected race.
-  updateProgressTeamSummary(`Updating season_team table (${seasonTeamTable}) for race ${raceNumber}...`);
-
-  // For each team scoring record, upsert into season_team_{year}.
-  for (let record of teamScoringData) {
-    // Build the update object.
-    let updateObj = {
-      team_id: record.team_id,
-      team_name: record.team_name,
-      player_name_1: record.player_name_1,
-      player_name_2: record.player_name_2,
-      // Set the column for the current race to the final score string.
-      [`race_${raceNumber}`]: record.final_score
-    };
-    // Check if a record already exists for the team.
-    const { data: existingRecord, error: fetchError } = await supabase
-      .from(seasonTeamTable)
-      .select("team_id")
-      .eq("team_id", record.team_id)
-      .maybeSingle();
-
-    if (fetchError) {
-      updateProgressTeamSummary(`Error checking existing record for team ${record.team_name}: ${fetchError.message}`);
-    } else if (existingRecord) {
-      // If record exists, update it.
-      const { error: updateError } = await supabase
-        .from(seasonTeamTable)
-        .update(updateObj)
-        .eq("team_id", record.team_id);
-
-      if (updateError) {
-        updateProgressTeamSummary(`Error updating record for team ${record.team_name}: ${updateError.message}`);
-      } else {
-        updateProgressTeamSummary(`Record for team ${record.team_name} updated successfully.`);
-      }
-    } else {
-      // If no record exists, insert a new one.
-      const { error: insertError } = await supabase.from(seasonTeamTable).insert(updateObj);
-      if (insertError) {
-        updateProgressTeamSummary(`Error inserting record for team ${record.team_name}: ${insertError.message}`);
-      } else {
-        updateProgressTeamSummary(`Record for team ${record.team_name} inserted successfully.`);
-      }
-    }
-  }
-
-  // Also update the "Race Names" row (team_id = 0) to store the race name.
-  updateProgressTeamSummary("Updating Race Names row in season_team table...");
-  let raceNamesRow = await supabase
-    .from(seasonTeamTable)
-    .select("*")
-    .eq("team_id", 0)
-    .maybeSingle();
-  if (!raceNamesRow.data) {
-    // Insert new Race Names row.
-    const { error: insertError } = await supabase.from(seasonTeamTable).insert({
-      team_id: 0,
-      team_name: "Race Names",
-      [`race_${raceNumber}`]: selectedRaceName
-    });
-    if (insertError) {
-      updateProgressTeamSummary("Error inserting Race Names row: " + insertError.message);
-    } else {
-      updateProgressTeamSummary("Race Names row inserted successfully.");
-    }
-  } else {
-    // Update existing Race Names row.
-    const { error: updateError } = await supabase.from(seasonTeamTable)
-      .update({ [`race_${raceNumber}`]: selectedRaceName })
-      .eq("team_id", 0);
-    if (updateError) {
-      updateProgressTeamSummary("Error updating Race Names row: " + updateError.message);
-    } else {
-      updateProgressTeamSummary("Race Names row updated successfully.");
-    }
-  }
-
-  updateProgressTeamSummary("✅ Season Team Summary update complete.");
-  alert("Season Team Summary update complete.");
-}
-
-// -------------------------
-// Initialize Season Team Summary Section
-document.addEventListener("DOMContentLoaded", async () => {
-  try {
-    // Re-use the same race options and race info elements as the Season Team section.
-    await loadRaceOptionsSeasonTeam();
-    document.getElementById("race-select-season-team").addEventListener("change", updateRaceInfoSeasonTeam);
-    document.getElementById("update-season-team-summary").addEventListener("click", updateSeasonTeamSummary);
-  } catch (err) {
-    console.error("Error during Season Team Summary initialization:", err);
-    updateProgressTeamSummary("Error during initialization: " + err.message);
-  }
-});
-
-
-
-// =============================
-// === CASINO PAGE ===
-// =============================
-        // =============================
-// === CASINO PAGE ===
-// =============================
-document.addEventListener("DOMContentLoaded", async function () {
-    const casinoStatus = document.getElementById("casino-status");
-    const casinoStatusLabel = document.getElementById("casino-status-label");
-    const saveCasinoDashboard = document.getElementById("save-changes-casino-dashboard");
-    const casinoRows = document.getElementById("casino-rows");
-    const saveCasinoChanges = document.getElementById("saveChangesButtonCasino");
-
-    let casinoEnabled = false;
-    let originalCasinoData = {};
-
-    // Fetch the casino status from form_details
-    async function fetchCasinoStatus() {
-        let { data, error } = await supabase
-            .from("form_details")
-            .select("casino_enabled")
-            .eq("id", 1)
-            .single();
-
+        /**
+         * Loads race options from the season_player table for the current year,
+         * populates the race dropdown, and preselects the latest race.
+         */
+        async function loadRaceOptionsSeasonTeam() {
+            updateProgressSeasonTeam("Loading race options for Season Team...");
+        
+        const { data: formDetails, error } = await supabase.from("form_details").select("*").single();
         if (error) {
-            console.error("Error fetching casino status:", error);
+            updateProgressSeasonTeam(`Error loading form_details: ${error.message}`);
             return;
         }
+        const currentYear = formDetails.current_year;
+        document.getElementById("current-year-season-team").value = currentYear;
+        updateProgressSeasonTeam(`Current Year: ${currentYear}`);
 
-        // Ensure proper handling of boolean values
-        casinoEnabled = Boolean(data.casino_enabled);
-        casinoStatus.checked = casinoEnabled;
-        casinoStatusLabel.textContent = casinoEnabled ? "Enabled" : "Disabled";
-    }
-
-    // Fetch casino bet settings
-    async function fetchCasinoData() {
-        let { data, error } = await supabase.from("casino").select("*");
-        if (error) {
-            console.error("Error fetching casino data:", error);
+        const seasonPlayerTable = `season_player_${currentYear}`;
+        let seasonPlayerData;
+        try {
+            seasonPlayerData = await getTable(seasonPlayerTable);
+        } catch (err) {
+            updateProgressSeasonTeam("Error fetching season player data: " + err.message);
             return;
         }
-
-        originalCasinoData = {
-            enabled: data.find(row => row.team_id === -1) || {},
-            questions: data.find(row => row.team_id === -2) || {},
-            odds: data.find(row => row.team_id === 0) || {},
-            maxBet: data.find(row => row.team_id === -3) || {},
-            willPayOut: data.find(row => row.team_id === -4) || {},
-        };
-
-        populateCasinoTable();
-    }
-
-    // Populate the casino settings table with fetched data
-    function populateCasinoTable() {
-        casinoRows.innerHTML = "";
-
-        for (let i = 1; i <= 5; i++) {
-            const row = document.createElement("tr");
-
-            row.innerHTML = `
-                <td>${i}</td>
-                <td>
-                    <div class="form-check form-switch">
-                        <input type="checkbox" class="form-check-input" data-bet="${i}" data-type="enabled">
-                    </div>
-                </td>
-                <td><input type="text" class="form-control" data-bet="${i}" data-type="question"></td>
-                <td><input type="number" class="form-control" data-bet="${i}" data-type="odds"></td>
-                <td><input type="number" class="form-control" data-bet="${i}" data-type="maxBet"></td>
-                <td>
-                    <div class="form-check form-switch">
-                        <input type="checkbox" class="form-check-input" data-bet="${i}" data-type="willPayOut">
-                    </div>
-                </td>
-            `;
-
-            casinoRows.appendChild(row);
-
-            row.querySelector(`[data-bet="${i}"][data-type="enabled"]`).checked = originalCasinoData.enabled[`bet_${i}`] === "true";
-            row.querySelector(`[data-bet="${i}"][data-type="question"]`).value = originalCasinoData.questions[`bet_${i}`] || "";
-            row.querySelector(`[data-bet="${i}"][data-type="odds"]`).value = originalCasinoData.odds[`bet_${i}`] || 1;
-            row.querySelector(`[data-bet="${i}"][data-type="maxBet"]`).value = originalCasinoData.maxBet[`bet_${i}`] || 10;
-            row.querySelector(`[data-bet="${i}"][data-type="willPayOut"]`).checked = originalCasinoData.willPayOut[`bet_${i}`] === "true";
+        
+        let raceNamesRow = seasonPlayerData.find(row => row.player_id === 0);
+        if (!raceNamesRow) {
+            updateProgressSeasonTeam("No Race Names row found in " + seasonPlayerTable);
+            return;
         }
-    }
+        
+        let uniqueRaces = {};
+        let i = 1;
+        while (true) {
+            let colName = `race_${i}`;
+            let value = raceNamesRow[colName];
+            if (value === null || value === "") break;
+            uniqueRaces[value] = i;
+            i++;
+        }
+        updateProgressSeasonTeam(`Unique races extracted: ${JSON.stringify(uniqueRaces)}`);
 
-    // Define the updateCasinoData function to update the casino table
-    async function updateCasinoData(updatedData) {
-        // Prepare an array of update objects based on team_id mappings:
-        const updates = [
-            { team_id: -1, ...updatedData.enabled },
-            { team_id: -2, ...updatedData.questions },
-            { team_id: 0,  ...updatedData.odds },
-            { team_id: -3, ...updatedData.maxBet },
-            { team_id: -4, ...updatedData.willPayOut },
-        ];
-
-        // Iterate over each update and apply it to the Supabase table
-        for (let update of updates) {
-            let { error } = await supabase
-                .from("casino")
-                .update(update)
-                .eq("team_id", update.team_id);
-            if (error) {
-                console.error(`Error updating casino data for team_id ${update.team_id}:`, error);
-                throw error;
+        const raceSelect = document.getElementById("race-select-season-team");
+        if (!raceSelect) {
+            updateProgressSeasonTeam("Race select element 'race-select-season-team' not found.");
+            return;
+        }
+        raceSelect.innerHTML = "";
+        let latestRaceNumber = 0;
+        let optionCount = 0;
+        for (const [raceName, raceNum] of Object.entries(uniqueRaces)) {
+            const option = document.createElement("option");
+            option.value = raceName;
+            option.textContent = raceName;
+            option.dataset.raceNumber = raceNum;
+            raceSelect.appendChild(option);
+            optionCount++;
+            updateProgressSeasonTeam(`Added race: ${raceName} with race number ${raceNum}`);
+            if (raceNum > latestRaceNumber) {
+            latestRaceNumber = raceNum;
             }
         }
-    }
-
-    // Detect changes and enable Save button
-    document.getElementById("casino-form").addEventListener("input", () => {
-        saveCasinoChanges.disabled = false;
-    });
-
-    // Handle Save for Casino Settings
-    saveCasinoChanges.addEventListener("click", async function (event) {
-        event.preventDefault();
-
-        let updatedData = {
-            enabled: {},
-            questions: {},
-            odds: {},
-            maxBet: {},
-            willPayOut: {},
-        };
-
-        for (let i = 1; i <= 5; i++) {
-            updatedData.enabled[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="enabled"]`).checked.toString();
-            updatedData.questions[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="question"]`).value;
-            updatedData.odds[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="odds"]`).value;
-            updatedData.maxBet[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="maxBet"]`).value;
-            updatedData.willPayOut[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="willPayOut"]`).checked.toString();
-        }
-
-        // Update Supabase with the new casino settings
-        try {
-            await updateCasinoData(updatedData);
-            saveCasinoChanges.disabled = true;
-            alert("Casino settings updated!");
-        } catch (error) {
-            console.error("Failed to update casino settings:", error);
-            alert("There was an error updating the casino settings. Please try again.");
-        }
-    });
-
-    // Save Casino Enabled Status
-    casinoStatus.addEventListener("change", function () {
-        casinoStatusLabel.textContent = casinoStatus.checked ? "Enabled" : "Disabled";
-        saveCasinoDashboard.disabled = false;
-    });
-
-    saveCasinoDashboard.addEventListener("click", async function (event) {
-        event.preventDefault();
-        let { error } = await supabase
-            .from("form_details")
-            .update({ casino_enabled: casinoStatus.checked.toString() })
-            .eq("id", 1);
-        if (error) {
-            console.error("Error updating casino status:", error);
-            alert("Failed to update casino status.");
+        updateProgressSeasonTeam(`Total options added: ${optionCount}`);
+        if (raceSelect.options.length === 0) {
+            updateProgressSeasonTeam("No valid races found to populate the dropdown.");
+            alert("No valid races found in the season player table for the current year.");
             return;
         }
-        saveCasinoDashboard.disabled = true;
-        alert("Casino status updated!");
-    });
-
-    await fetchCasinoStatus();
-    await fetchCasinoData();
-});
-
-// Feedback Page
-document.addEventListener("DOMContentLoaded", async function () {
-  // Function to load and display feedback entries
-  async function loadFeedback() {
-    // Fetch the players table
-    const { data: playersData, error: playersError } = await supabase
-      .from("players")
-      .select("id, name");
-    if (playersError) {
-      console.error("Error fetching players:", playersError);
-      return;
-    }
-    
-    // Create a lookup object for player names keyed by id
-    const playersMap = {};
-    playersData.forEach(player => {
-      playersMap[player.id] = player.name;
-    });
-
-    // Fetch feedback entries
-    const { data: feedbackData, error: feedbackError } = await supabase
-      .from("feedback")
-      .select("*")
-      .order("date", { ascending: false }); // most recent first
-    if (feedbackError) {
-      console.error("Error fetching feedback:", feedbackError);
-      return;
-    }
-
-    // Get the container for feedback cards and clear any existing content
-    const feedbackCardsContainer = document.getElementById("feedback-cards");
-    feedbackCardsContainer.innerHTML = "";
-
-    // Create a card for each feedback entry
-    feedbackData.forEach(feedback => {
-      // Determine player name or default to 'Anonymous'
-      let playerName = "Anonymous";
-      if (feedback.player_id) {
-        playerName = playersMap[feedback.player_id] || "Unknown Player";
-      }
-
-      // Format the date nicely
-      const formattedDate = new Date(feedback.date).toLocaleString();
-
-      // Create a Bootstrap card element for each feedback entry
-      const card = document.createElement("div");
-      card.className = "card mb-3";
-      card.setAttribute("data-feedback-id", feedback.id);
-      card.innerHTML = `
-        <div class="card-body">
-          <h6 class="card-subtitle mb-2 text-muted">${formattedDate}</h6>
-          <p class="card-text">${feedback.message}</p>
-          <p class="card-text"><small class="text-muted">by: ${playerName}</small></p>
-          <button class="btn btn-danger btn-sm delete-feedback">Delete</button>
-        </div>
-      `;
-      feedbackCardsContainer.appendChild(card);
-    });
-
-    // Add event listeners to delete buttons
-    feedbackCardsContainer.querySelectorAll(".delete-feedback").forEach(button => {
-      button.addEventListener("click", async function () {
-        const card = this.closest(".card");
-        const feedbackId = card.getAttribute("data-feedback-id");
-        if (confirm("Are you sure you want to delete this feedback?")) {
-          const { error } = await supabase
-            .from("feedback")
-            .delete()
-            .eq("id", feedbackId);
-          if (error) {
-            console.error("Error deleting feedback:", error);
-            alert("Failed to delete feedback.");
-          } else {
-            // Remove the card from the DOM
-            card.remove();
-          }
+        
+        if (window.initialLoad === undefined || window.initialLoad === true) {
+            for (let j = 0; j < raceSelect.options.length; j++) {
+            if (raceSelect.options[j].dataset.raceNumber == latestRaceNumber) {
+                raceSelect.selectedIndex = j;
+                updateProgressSeasonTeam(`Prefilled dropdown with latest race: ${raceSelect.options[j].value}`);
+                break;
+            }
+            }
+            window.initialLoad = false;
         }
-      });
-    });
-  }
+        
+        updateProgressSeasonTeam("Race options loaded for Season Team.");
+        await updateRaceInfoSeasonTeam();
+        }
 
-  // Initial load of feedback entries
-  loadFeedback();
-});
+        /**
+         * Updates the race info display panel with the selected race.
+         */
+        async function updateRaceInfoSeasonTeam() {
+        try {
+            const raceSelect = document.getElementById("race-select-season-team");
+            const selectedRaceName = raceSelect.value;
+            const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
+            document.getElementById("race-info-season-team").textContent = `Race ${raceNumber}: ${selectedRaceName}`;
+            updateProgressSeasonTeam(`Race info updated: Race ${raceNumber}: ${selectedRaceName}`);
+        } catch (err) {
+            console.error("updateRaceInfoSeasonTeam error:", err);
+            updateProgressSeasonTeam("Error in updateRaceInfoSeasonTeam: " + err.message);
+        }
+        }
+
+        /**
+         * Updates team scoring for Card Races (includes card adjustments and swap logic).
+         */
+        async function updateCardTeamScoring() {
+        // INITIAL SETUP & FETCHING DATA
+        clearProgressSeasonTeam();
+        updateProgressSeasonTeam("Starting update of Season Team Totals...");
+
+        const currentYear = document.getElementById("current-year-season-team").value;
+        if (!currentYear) {
+            updateProgressSeasonTeam("Error: Current year is not set.");
+            return;
+        }
+
+        const raceSelect = document.getElementById("race-select-season-team");
+        const selectedRaceName = raceSelect.value;
+        const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
+        updateProgressSeasonTeam(`Selected Race: ${selectedRaceName} (Race Number: ${raceNumber})`);
+
+        const teamsTable = "teams";
+        const playersTable = "players";
+        const seasonPlayerTable = `season_player_${currentYear}`;
+        const teamScoringTable = `team_scoring_${currentYear}`;
+
+        // Fetch teams
+        updateProgressSeasonTeam("Fetching teams data...");
+        let teams;
+        try {
+            teams = await getTable(teamsTable);
+        } catch (err) {
+            updateProgressSeasonTeam("Error fetching teams: " + err.message);
+            return;
+        }
+        updateProgressSeasonTeam(`Fetched ${teams.length} teams.`);
+
+        // Fetch players
+        updateProgressSeasonTeam("Fetching players data...");
+        let players;
+        try {
+            players = await getTable(playersTable);
+        } catch (err) {
+            updateProgressSeasonTeam("Error fetching players: " + err.message);
+            return;
+        }
+        updateProgressSeasonTeam(`Fetched ${players.length} players.`);
+
+        // Fetch season player results
+        updateProgressSeasonTeam(`Fetching season player results from ${seasonPlayerTable}...`);
+        let seasonPlayerResults;
+        try {
+            seasonPlayerResults = await getTable(seasonPlayerTable);
+        } catch (err) {
+            updateProgressSeasonTeam("Error fetching season player results: " + err.message);
+            return;
+        }
+        updateProgressSeasonTeam(`Fetched ${seasonPlayerResults.length} rows from ${seasonPlayerTable}.`);
+
+        // Prepare arrays for later use
+        let teamScoringData = []; // Will store computed records for each team.
+        let swapRequests = [];    // Holds swap card requests.
+        let reportRequests = [];  // Holds report card requests.
+
+        // Build report requests for teams (if a team selected another team to report)
+        for (let team of teams) {
+            if (team.card_report_team_selected) {
+            const reportedTeamId = team.card_report_team_selected;
+            const reportedTeam = teams.find(t => t.id === reportedTeamId);
+            if (reportedTeam) {
+                reportRequests.push({
+                reportingTeamId: team.id,
+                reportedTeamId: reportedTeamId
+                });
+            }
+            }
+        }
+
+        // =====================================================
+        // Part 1: Get player/team scores and handle the cards 
+        //         (aero, double, and halo) and calculate a 
+        //         temporary total.
+        // =====================================================
+        for (let team of teams) {
+            const teamId = team.id;
+            const teamName = team.name;
+            updateProgressSeasonTeam(`Processing team: ${teamName} (ID: ${teamId})`);
+
+            const teamPlayers = players.filter(p => p.participant_team_id === teamId);
+            updateProgressSeasonTeam(`Found ${teamPlayers.length} players for team ${teamName}.`);
+            if (teamPlayers.length !== 2) {
+            updateProgressSeasonTeam(`Skipping team ${teamName}: Expected 2 players, found ${teamPlayers.length}.`);
+            continue;
+            }
+            const [player1, player2] = teamPlayers;
+
+            const colName = `race_${raceNumber}`;
+            const result1 = seasonPlayerResults.find(r => r.player_id === player1.id);
+            const result2 = seasonPlayerResults.find(r => r.player_id === player2.id);
+            if (!result1 || !result2) {
+            updateProgressSeasonTeam(`Skipping team ${teamName}: Missing season results for one or both players.`);
+            continue;
+            }
+
+            const scoreStr1 = result1[colName];
+            const scoreStr2 = result2[colName];
+            const score1 = parseFloat(scoreStr1.replace(/\(LS\)/, "").trim()) || 0;
+            const score2 = parseFloat(scoreStr2.replace(/\(LS\)/, "").trim()) || 0;
+            updateProgressSeasonTeam(`Team ${teamName}: ${player1.name} scored ${score1}, ${player2.name} scored ${score2}.`);
+
+            const subtotal = score1 + score2;
+            let cardPointsDelta = 0;
+            let card_aero_applied = 0; // Aero logic remains unchanged.
+            let card_double_applied = 0;
+            let card_halo_applied = 0;
+            let card_report_applied = 0;
+            let card_report_details = '';
+            let card_swap_applied = 0;
+            let card_swap_details = '';
+
+            // Process the halo card. Only one halo is applied per team.
+            const haloPlayed = team.card_halo_played ? true : false;
+            if (haloPlayed) {
+            card_halo_applied = 1;
+            updateProgressSeasonTeam(`Halo card is recorded for ${teamName}.`);
+            }
+
+            // Process the double card (only if halo was not played)
+            if (team.card_double_played && !haloPlayed) {
+            const higherScore = Math.max(score1, score2);
+            cardPointsDelta += higherScore;
+            card_double_applied = 1;
+            updateProgressSeasonTeam(`Double applied on ${teamName}: +${higherScore}`);
+            }
+
+            // Calculate temporary total (subtotal plus any double bonus)
+            let tempTotal = subtotal + cardPointsDelta;
+            updateProgressSeasonTeam(`Temporary Total for ${teamName}: ${tempTotal}`);
+
+            // Save computed data
+            teamScoringData.push({
+            teamId,
+            teamName,
+            player1,
+            player2,
+            score1,
+            score2,
+            subtotal,
+            cardPointsDelta,
+            grandTotal: tempTotal, // To be updated later.
+            card_aero_applied,
+            card_double_applied,
+            card_halo_applied,
+            card_report_applied,
+            card_report_details,
+            card_swap_applied,
+            card_swap_details
+            });
+
+            // Collect swap requests (if any)
+            if (team.card_swap_team_selected) {
+            swapRequests.push({
+                teamId,
+                swapTargetTeamId: team.card_swap_team_selected,
+                swapTime: team.card_swap_time
+            });
+            }
+        }
+
+        // =====================================================
+        // Part 2: Apply the report card and update the total.
+        // =====================================================
+        for (let teamData of teamScoringData) {
+            // Find any report requests where this team is the target (reported team)
+            const reportsForTeam = reportRequests.filter(r => r.reportedTeamId === teamData.teamId);
+            if (reportsForTeam.length > 0) {
+            let reportCount = reportsForTeam.length;
+            // Start with any existing report details (should be empty at this point)
+            let details = teamData.card_report_details;
+            
+            reportsForTeam.forEach((report) => {
+                const reportingTeam = teams.find(t => t.id === report.reportingTeamId);
+                const reportedTeam = teams.find(t => t.id === report.reportedTeamId);
+                // Check the computed data for the reported (target) team
+                const reportedTeamData = teamScoringData.find(t => t.teamId === report.reportedTeamId);
+                if (reportedTeamData && reportedTeamData.card_halo_applied === 1) {
+                // If the target team has played halo, cancel this report.
+                reportCount = 0;
+                details += details ? ' ' : '';
+                details += `${reportingTeam.name}'s report on ${reportedTeam.name} was stopped by Halo.`;
+                updateProgressSeasonTeam(`${reportingTeam.name}'s report on ${reportedTeam.name} stopped by Halo.`);
+                } else {
+                details += details ? ' ' : '';
+                details += `${reportingTeam.name} reported ${reportedTeam.name}.`;
+                }
+            });
+
+            teamData.card_report_applied = reportCount;
+            teamData.card_report_details = details;
+            updateProgressSeasonTeam(`Report applied for ${teamData.teamName}: ${details}`);
+
+            // Adjust the team’s total based on the report card:
+            // For a single report, subtract the highest score.
+            // For multiple reports, add (double) the highest score.
+            const highestScore = Math.max(teamData.score1, teamData.score2);
+            if (reportCount === 1) {
+                teamData.grandTotal -= highestScore;
+            } else if (reportCount > 1) {
+                teamData.grandTotal += highestScore;
+            }
+            }
+        }
+
+        // =====================================================
+        // Part 3: Apply the swap card and update the total.
+        // =====================================================
+        // Sort swap requests by swap time.
+        swapRequests.sort((a, b) => a.swapTime - b.swapTime);
+        let swapCount = 1;
+        for (let swap of swapRequests) {
+            const { teamId, swapTargetTeamId } = swap;
+            const teamData = teamScoringData.find(t => t.teamId === teamId);
+            const targetTeamData = teamScoringData.find(t => t.teamId === swapTargetTeamId);
+            if (teamData && targetTeamData) {
+            // Check only the target team for a halo card.
+            if (targetTeamData.card_halo_applied === 1) {
+                // Append details to both initiating and target teams without overriding existing details.
+                teamData.card_swap_details += teamData.card_swap_details ? " " : "";
+                teamData.card_swap_details += `(#${swapCount}) ${teamData.teamName} swap with ${targetTeamData.teamName} was stopped by Halo.`;
+                targetTeamData.card_swap_details += targetTeamData.card_swap_details ? " " : "";
+                targetTeamData.card_swap_details += `(#${swapCount}) Swap attempt by ${teamData.teamName} was stopped by Halo.`;
+                updateProgressSeasonTeam(`${teamData.teamName}'s swap with ${targetTeamData.teamName} aborted due to Halo.`);
+            } else {
+                // Swap the grand totals between the two teams.
+                const tempGrandTotal = teamData.grandTotal;
+                teamData.grandTotal = targetTeamData.grandTotal;
+                targetTeamData.grandTotal = tempGrandTotal;
+                // Append swap details, adding to any existing details.
+                teamData.card_swap_details += teamData.card_swap_details ? " " : "";
+                teamData.card_swap_details += `(#${swapCount}) ${teamData.teamName} swaps with ${targetTeamData.teamName}`;
+                targetTeamData.card_swap_details += targetTeamData.card_swap_details ? " " : "";
+                targetTeamData.card_swap_details += `(#${swapCount}) ${teamData.teamName} swaps with ${targetTeamData.teamName}`;
+                teamData.card_swap_applied += 1;
+                targetTeamData.card_swap_applied += 1;
+                updateProgressSeasonTeam(`${teamData.teamName} swaps with ${targetTeamData.teamName}`);
+                swapCount++;
+            }
+            }
+        }
+
+        // =====================================================
+        // Part 4: Upload the results to the database.
+        // =====================================================
+        for (let teamData of teamScoringData) {
+            // Recalculate the card bonus as the difference between the final total and the subtotal.
+            teamData.cardPointsDelta = teamData.grandTotal - teamData.subtotal;
+
+            const teamScoreRecord = {
+            team_id: teamData.teamId,
+            team_name: teamData.teamName,
+            race_number: raceNumber,
+            race_name: selectedRaceName,
+            subtotal: teamData.subtotal,
+            card_points_delta: teamData.cardPointsDelta,
+            grand_total: teamData.grandTotal,
+            card_aero_applied: teamData.card_aero_applied,
+            card_double_applied: teamData.card_double_applied,
+            card_halo_applied: teamData.card_halo_applied,
+            card_report_applied: teamData.card_report_applied,
+            card_report_details: teamData.card_report_details,
+            card_swap_applied: teamData.card_swap_applied,
+            card_swap_details: teamData.card_swap_details,
+            player_id_1: teamData.player1.id,
+            player_name_1: teamData.player1.name,
+            player_points_1: teamData.score1,
+            player_id_2: teamData.player2.id,
+            player_name_2: teamData.player2.name,
+            player_points_2: teamData.score2
+            };
+
+            try {
+            await upsertTeamScoringData([teamScoreRecord], teamScoringTable);
+            updateProgressSeasonTeam(`Updated/inserted record for team ${teamData.teamName}.`);
+            } catch (err) {
+            updateProgressSeasonTeam(`Error updating record for team ${teamData.teamName}: ${err.message}`);
+            }
+
+            await resetTeamCardsSupabase(teamData.teamId);
+        }
+
+        updateProgressSeasonTeam("Finished updating team scores.");
+        }
 
 
+
+
+
+
+
+
+
+
+        async function upsertTeamScoringData(teamScoringData, tableName) {
+        try {
+            // Fetch existing records to check for conflicts
+            const { data: existingRecords, error: fetchError } = await supabase
+            .from(tableName)
+            .select('team_id, race_number');  // Only fetch team_id and race_number to check for conflicts
+
+            if (fetchError) {
+            console.error('Error fetching existing records:', fetchError.message);
+            return;
+            }
+
+            // Prepare two arrays: one for new inserts and one for updates
+            let recordsToInsert = [];
+            let recordsToUpdate = [];
+
+            // Check each teamScoringData entry
+            for (let record of teamScoringData) {
+            const existingRecord = existingRecords.find(
+                (r) => r.team_id === record.team_id && r.race_number === record.race_number
+            );
+
+            if (existingRecord) {
+                // If the record exists, push to recordsToUpdate
+                recordsToUpdate.push(record);
+            } else {
+                // If the record doesn't exist, push to recordsToInsert
+                recordsToInsert.push(record);
+            }
+            }
+
+            // Insert new records
+            if (recordsToInsert.length > 0) {
+            const { data: insertData, error: insertError } = await supabase
+                .from(tableName)
+                .insert(recordsToInsert);
+
+            if (insertError) {
+                console.error('Error inserting new team scoring data:', insertError.message);
+            } else {
+                console.log('Inserted new team scoring data:', insertData);
+            }
+            }
+
+            // Update existing records
+            for (let record of recordsToUpdate) {
+            // Check if record already exists in the database, if not insert it
+            const { data: updateData, error: updateError } = await supabase
+                .from(tableName)
+                .update(record)
+                .eq('team_id', record.team_id)
+                .eq('race_number', record.race_number); // Ensures that we are updating the correct record
+
+            if (updateError) {
+                console.error('Error updating team scoring data:', updateError.message);
+            } else {
+                console.log('Updated team scoring data:', updateData);
+            }
+            }
+
+        } catch (error) {
+            console.error('Error upserting team scoring data:', error.message);
+        }
+        }
+
+
+
+        // Reset the played cards in the teams table using Supabase
+        async function resetTeamCardsSupabase(teamId) {
+        const { data, error } = await supabase
+            .from('teams') // Specify the Supabase table name
+            .update({
+            card_aero_played: 0,
+            card_double_played: 0,
+            card_halo_played: 0,
+            card_report_played: 0,
+            card_swap_played: 0,
+            card_report_team_selected: null,
+            card_swap_team_selected: null,
+            card_swap_time: null
+            })
+            .eq('id', teamId); // Target the specific team by ID
+
+        if (error) {
+            console.error('Error resetting team cards:', error.message);
+        } else {
+            console.log('Team cards reset successfully:', data);
+        }
+        }
+
+        /**
+         * Deletes all rows from the casino table where team_id > 0 (i.e. actual betting rows).
+         */
+        async function deleteCasinoBets() {
+        const { error } = await supabase.from("casino").delete().gt("team_id", 0);
+        if (error) {
+            throw new Error(error.message);
+        }
+        }
+
+        async function updateCasinoTeamScoring() {
+        clearProgressSeasonTeam();
+        updateProgressSeasonTeam("Starting update of Season Team Totals...");
+
+        // Get the current year and race details from the DOM.
+        const currentYear = document.getElementById("current-year-season-team").value;
+        if (!currentYear) {
+            updateProgressSeasonTeam("Error: Current year is not set.");
+            return;
+        }
+
+        const raceSelect = document.getElementById("race-select-season-team");
+        const selectedRaceName = raceSelect.value;
+        const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
+        updateProgressSeasonTeam(`Selected Race: ${selectedRaceName} (Race Number: ${raceNumber})`);
+
+        // Define table names.
+        const teamsTable = "teams";
+        const playersTable = "players";
+        const seasonPlayerTable = `season_player_${currentYear}`;
+        const teamScoringTable = `team_scoring_${currentYear}`;
+        const casinoTable = "casino";
+
+        // ---------------------------
+        // Fetch necessary data.
+        // ---------------------------
+        updateProgressSeasonTeam("Fetching teams data...");
+        let teams;
+        try {
+            teams = await getTable(teamsTable);
+        } catch (err) {
+            updateProgressSeasonTeam("Error fetching teams: " + err.message);
+            return;
+        }
+
+        updateProgressSeasonTeam("Fetching players data...");
+        let players;
+        try {
+            players = await getTable(playersTable);
+        } catch (err) {
+            updateProgressSeasonTeam("Error fetching players: " + err.message);
+            return;
+        }
+
+        updateProgressSeasonTeam(`Fetching season player results from ${seasonPlayerTable}...`);
+        let seasonPlayerResults;
+        try {
+            seasonPlayerResults = await getTable(seasonPlayerTable);
+        } catch (err) {
+            updateProgressSeasonTeam("Error fetching season player results: " + err.message);
+            return;
+        }
+
+        updateProgressSeasonTeam("Fetching casino bets data...");
+        let casinoBets;
+        try {
+            casinoBets = await getTable(casinoTable);
+            console.log("Casino Bets Data: ", casinoBets);
+        } catch (err) {
+            updateProgressSeasonTeam("Error fetching casino bets: " + err.message);
+            return;
+        }
+
+        // ---------------------------
+        // Extract meta rows from the casino table.
+        // ---------------------------
+        const oddsRow = casinoBets.find(row => row.team_id === 0);
+        const questionRow = casinoBets.find(row => row.team_id === -2);
+        const willPayOutRow = casinoBets.find(row => row.team_id === -4);
+
+        if (!oddsRow || !questionRow || !willPayOutRow) {
+            updateProgressSeasonTeam("Error: Missing meta information (odds, question, or will pay out) in casino table.");
+            return;
+        }
+
+        // ---------------------------
+        // Process each team for casino scoring.
+        // Only process teams with team_id > 0.
+        // ---------------------------
+        let teamScoringData = [];
+        for (let team of teams) {
+            const teamId = team.id;
+            const teamName = team.name;
+            updateProgressSeasonTeam(`Processing team: ${teamName} (ID: ${teamId})`);
+
+            // Skip rows that are not betting rows.
+            if (teamId <= 0) {
+            continue;
+            }
+
+            // Get the team's players; ensure exactly 2.
+            const teamPlayers = players.filter(p => p.participant_team_id === teamId);
+            if (teamPlayers.length !== 2) {
+            updateProgressSeasonTeam(`Skipping team ${teamName}: Expected 2 players, found ${teamPlayers.length}.`);
+            continue;
+            }
+            const [player1, player2] = teamPlayers;
+
+            // Get season results for both players.
+            const colName = `race_${raceNumber}`;
+            const result1 = seasonPlayerResults.find(r => r.player_id === player1.id);
+            const result2 = seasonPlayerResults.find(r => r.player_id === player2.id);
+            if (!result1 || !result2) {
+            updateProgressSeasonTeam(`Skipping team ${teamName}: Missing season results for one or both players.`);
+            continue;
+            }
+
+            const scoreStr1 = result1[colName];
+            const scoreStr2 = result2[colName];
+            const score1 = parseFloat(scoreStr1.replace(/\(LS\)/, "").trim()) || 0;
+            const score2 = parseFloat(scoreStr2.replace(/\(LS\)/, "").trim()) || 0;
+            updateProgressSeasonTeam(`Team ${teamName}: ${player1.name} scored ${score1}, ${player2.name} scored ${score2}.`);
+
+            // The original subtotal from season results.
+            const originalSubtotal = score1 + score2;
+            // We'll leave subtotal unchanged and accumulate the casino bet delta separately.
+            let casinoDelta = 0;
+            // Initialize a string to accumulate detailed bet information.
+            let casinoDetails = "";
+
+            // Get this team’s casino bet row(s) (normally one row per team).
+            const teamCasinoBets = casinoBets.filter(bet => bet.team_id === teamId);
+
+            teamCasinoBets.forEach(bet => {
+            // Process bets 1 through 5.
+            for (let i = 1; i <= 5; i++) {
+                const betRaw = bet[`bet_${i}`];
+                const betAmount = parseFloat(betRaw);
+                if (!isNaN(betAmount)) {
+                // Get odds for this bet.
+                const odds = parseFloat(oddsRow[`bet_${i}`]);
+                // Get will pay out flag.
+                const willPayOut = (willPayOutRow[`bet_${i}`] === 'true' || willPayOutRow[`bet_${i}`] === true);
+                // Get the question text for this bet.
+                const questionText = questionRow[`bet_${i}`] || `Bet ${i}`;
+                let delta = 0;
+                let outcome = "";
+                if (willPayOut) {
+                    // Calculate the payout delta.
+                    delta = (betAmount * odds) - betAmount;
+                    outcome = "Paid out";
+                } else {
+                    // Lost bet: subtract the stake.
+                    delta = -betAmount;
+                    outcome = "Lost";
+                }
+                casinoDelta += delta;
+                casinoDetails += `(#${i} - ${questionText}: Stake = ${betAmount}, Odds = ${odds}, Outcome: ${outcome}, ${delta >= 0 ? '+' : ''}${delta}) `;
+                updateProgressSeasonTeam(`Team ${teamName} Bet ${i}: Stake = ${betAmount}, Odds = ${odds}, Outcome: ${outcome}, Delta = ${delta}.`);
+                }
+            }
+            });
+
+            const cardPointsDelta = casinoDelta;
+            const grand_total = originalSubtotal + casinoDelta;
+
+            // For casino rounds, the card-related fields are zero.
+            const card_aero_applied = 0;
+            const card_double_applied = 0;
+            const card_halo_applied = 0;
+            const card_report_applied = 0;
+            const card_report_details = null;
+            const card_swap_applied = 0;
+            const card_swap_details = null;
+
+            // Prepare the team scoring record including the casino details.
+            const teamScoreRecord = {
+            team_id: teamId,
+            team_name: teamName,
+            player_id_1: player1.id,
+            player_name_1: player1.name,
+            player_points_1: score1,
+            player_id_2: player2.id,
+            player_name_2: player2.name,
+            player_points_2: score2,
+            race_number: raceNumber,
+            race_name: selectedRaceName,
+            subtotal: originalSubtotal,            // Keep the original season points as subtotal.
+            card_points_delta: cardPointsDelta,      // Casino bet delta.
+            grand_total: grand_total,                // Sum of original points + bet delta.
+            card_aero_applied,
+            card_double_applied,
+            card_halo_applied,
+            card_report_applied,
+            card_report_details,
+            card_swap_applied,
+            card_swap_details,
+            casino_details: casinoDetails
+            };
+
+            teamScoringData.push(teamScoreRecord);
+        }
+
+        // ---------------------------
+        // Upload the team scoring data.
+        // ---------------------------
+        for (let teamRecord of teamScoringData) {
+            try {
+            await upsertTeamScoringData([teamRecord], teamScoringTable);
+            updateProgressSeasonTeam(`Updated/inserted record for team ${teamRecord.team_name}.`);
+            } catch (err) {
+            updateProgressSeasonTeam(`Error updating record for team ${teamRecord.team_name}: ${err.message}`);
+            }
+        }
+
+        // ---------------------------
+        // Reset the casino bets by deleting rows with team_id > 0.
+        // ---------------------------
+        try {
+            await deleteCasinoBets();
+            updateProgressSeasonTeam("Casino bets reset successfully.");
+        } catch (err) {
+            updateProgressSeasonTeam("Error resetting casino bets: " + err.message);
+        }
+
+        updateProgressSeasonTeam("Finished updating casino team scores.");
+        }
+
+        /**
+         * Helper function to insert team scoring data into the database.
+         * @param {Array} data - Array of team scoring data to insert.
+         * @param {string} table - Name of the table to insert into.
+         */
+        async function insertTeamScoringData(data, table) {
+        const { data: inserted, error } = await supabase.from(table).upsert(data);
+        if (error) {
+            updateProgressSeasonTeam("Error inserting team scoring data: " + error.message);
+            return;
+        }
+        updateProgressSeasonTeam(`Inserted ${inserted.length} team scoring records.`);
+        }
+
+        async function updateTeamScoring() {
+        const raceType = document.getElementById("raceType").value; // Get selected value
+        if (raceType === 'card') {
+            await updateCardTeamScoring();
+        } else if (raceType === 'casino') {
+            await updateCasinoTeamScoring();
+        }
+        }
+
+        document.getElementById('update-season-season-team').addEventListener('click', async function() {
+        await updateTeamScoring();
+        });
+
+        // =============================
+        // === SEASON TEAM FUNCTION ===
+        // ============================= 
+
+        // Progress Helpers for Season Team Summary Section
+        function updateProgressTeamSummary(message) {
+        console.log("[Season Team Summary] " + message);
+        const progressDiv = document.getElementById("update-progress-season-team-summary");
+        if (progressDiv) {
+            progressDiv.style.display = "block";
+            progressDiv.innerHTML += message + "<br>";
+        }
+        }
+
+        function clearProgressTeamSummary() {
+        const progressDiv = document.getElementById("update-progress-season-team-summary");
+        if (progressDiv) {
+            progressDiv.innerHTML = "";
+            progressDiv.style.display = "none";
+        }
+        }
+
+        // Main function to update Season Team Summary
+        async function updateSeasonTeamSummary() {
+        clearProgressTeamSummary();
+        updateProgressTeamSummary("Starting update of Season Team Summary...");
+
+        // Retrieve current year and race info from Season Team UI.
+        const currentYear = document.getElementById("current-year-season-team").value;
+        if (!currentYear) {
+            updateProgressTeamSummary("Error: Current year is not set.");
+            return;
+        }
+        const raceSelect = document.getElementById("race-select-season-team");
+        const selectedRaceName = raceSelect.value;
+        const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
+        updateProgressTeamSummary(`Selected Race: ${selectedRaceName} (Race Number: ${raceNumber})`);
+
+        // Define table names.
+        const teamScoringTable = `team_scoring_${currentYear}`;
+        const seasonTeamTable = `season_team_${currentYear}`;
+
+        // Retrieve team scoring records for the selected race.
+        updateProgressTeamSummary(`Fetching team scoring records from ${teamScoringTable} for race ${raceNumber}...`);
+        let teamScoringData;
+        try {
+            const { data, error } = await supabase
+            .from(teamScoringTable)
+            .select("*")
+            .eq("race_number", raceNumber);
+            teamScoringData = data;
+
+            if (error) {
+            updateProgressTeamSummary("Error fetching team scoring records: " + error.message);
+            console.error("Supabase Error:", error);
+            return;
+            }
+
+            if (!teamScoringData || teamScoringData.length === 0) {
+            updateProgressTeamSummary("No team scoring records found for the selected race.");
+            console.warn("No data returned for team scoring.");
+            alert("No team scoring records found for the selected race.");
+            return;
+            }
+        } catch (err) {
+            updateProgressTeamSummary("Error fetching team scoring records: " + err.message);
+            return;
+        }
+        if (!teamScoringData || teamScoringData.length === 0) {
+            updateProgressTeamSummary("No team scoring records found for the selected race.");
+            alert("No team scoring records found for the selected race.");
+            return;
+        }
+        updateProgressTeamSummary(`Fetched ${teamScoringData.length} team scoring records.`);
+
+        // For each team scoring record, format the final score string by appending card tags.
+        teamScoringData.forEach(record => {
+            let tags = "";
+
+            // Append each card tag as many times as its numeric value.
+            if (record.card_aero_applied && record.card_aero_applied > 0) {
+            for (let i = 0; i < record.card_aero_applied; i++) {
+                tags += "(aero)";
+            }
+            }
+            if (record.card_double_applied && record.card_double_applied > 0) {
+            for (let i = 0; i < record.card_double_applied; i++) {
+                tags += "(double)";
+            }
+            }
+            if (record.card_halo_applied && record.card_halo_applied > 0) {
+            for (let i = 0; i < record.card_halo_applied; i++) {
+                tags += "(halo)";
+            }
+            }
+            if (record.card_report_applied && record.card_report_applied > 0) {
+            for (let i = 0; i < record.card_report_applied; i++) {
+                tags += "(report)";
+            }
+            }
+            if (record.card_swap_applied && record.card_swap_applied > 0) {
+            for (let i = 0; i < record.card_swap_applied; i++) {
+                tags += "(swap)";
+            }
+            }
+            // Append the casino tag if any casino bet was placed.
+            if (record.casino_details && record.casino_details.trim() !== "") {
+            tags += "(casino)";
+            console.log(`Team ${record.team_name} casino_details: ${record.casino_details}`);
+            } else {
+            console.log(`Team ${record.team_name} has no casino_details.`);
+            }
+            // Create the final score string with the grand_total and the applied tags.
+            record.final_score = record.grand_total + tags;
+            console.log(`Team ${record.team_name} final score computed as: ${record.final_score}`);
+            updateProgressTeamSummary(`Team ${record.team_name} final score: ${record.final_score}`);
+        });
+
+        // Next, update the season_team_{year} table.
+        // We assume that season_team_{year} has columns: team_id, team_name, player_name_1, player_name_2, and race_1 ... race_32.
+        // We will upsert one row per team for the selected race.
+        updateProgressTeamSummary(`Updating season_team table (${seasonTeamTable}) for race ${raceNumber}...`);
+
+        // For each team scoring record, upsert into season_team_{year}.
+        for (let record of teamScoringData) {
+            // Build the update object.
+            let updateObj = {
+            team_id: record.team_id,
+            team_name: record.team_name,
+            player_name_1: record.player_name_1,
+            player_name_2: record.player_name_2,
+            // Set the column for the current race to the final score string.
+            [`race_${raceNumber}`]: record.final_score
+            };
+            // Check if a record already exists for the team.
+            const { data: existingRecord, error: fetchError } = await supabase
+            .from(seasonTeamTable)
+            .select("team_id")
+            .eq("team_id", record.team_id)
+            .maybeSingle();
+
+            if (fetchError) {
+            updateProgressTeamSummary(`Error checking existing record for team ${record.team_name}: ${fetchError.message}`);
+            } else if (existingRecord) {
+            // If record exists, update it.
+            const { error: updateError } = await supabase
+                .from(seasonTeamTable)
+                .update(updateObj)
+                .eq("team_id", record.team_id);
+
+            if (updateError) {
+                updateProgressTeamSummary(`Error updating record for team ${record.team_name}: ${updateError.message}`);
+            } else {
+                updateProgressTeamSummary(`Record for team ${record.team_name} updated successfully.`);
+            }
+            } else {
+            // If no record exists, insert a new one.
+            const { error: insertError } = await supabase.from(seasonTeamTable).insert(updateObj);
+            if (insertError) {
+                updateProgressTeamSummary(`Error inserting record for team ${record.team_name}: ${insertError.message}`);
+            } else {
+                updateProgressTeamSummary(`Record for team ${record.team_name} inserted successfully.`);
+            }
+            }
+        }
+
+        // Also update the "Race Names" row (team_id = 0) to store the race name.
+        updateProgressTeamSummary("Updating Race Names row in season_team table...");
+        let raceNamesRow = await supabase
+            .from(seasonTeamTable)
+            .select("*")
+            .eq("team_id", 0)
+            .maybeSingle();
+        if (!raceNamesRow.data) {
+            // Insert new Race Names row.
+            const { error: insertError } = await supabase.from(seasonTeamTable).insert({
+            team_id: 0,
+            team_name: "Race Names",
+            [`race_${raceNumber}`]: selectedRaceName
+            });
+            if (insertError) {
+            updateProgressTeamSummary("Error inserting Race Names row: " + insertError.message);
+            } else {
+            updateProgressTeamSummary("Race Names row inserted successfully.");
+            }
+        } else {
+            // Update existing Race Names row.
+            const { error: updateError } = await supabase.from(seasonTeamTable)
+            .update({ [`race_${raceNumber}`]: selectedRaceName })
+            .eq("team_id", 0);
+            if (updateError) {
+            updateProgressTeamSummary("Error updating Race Names row: " + updateError.message);
+            } else {
+            updateProgressTeamSummary("Race Names row updated successfully.");
+            }
+        }
+
+        updateProgressTeamSummary("✅ Season Team Summary update complete.");
+        alert("Season Team Summary update complete.");
+        }
+
+        // -------------------------
+        // Initialize Season Team Summary Section
+        document.addEventListener("DOMContentLoaded", async () => {
+        try {
+            // Re-use the same race options and race info elements as the Season Team section.
+            await loadRaceOptionsSeasonTeam();
+            document.getElementById("race-select-season-team").addEventListener("change", updateRaceInfoSeasonTeam);
+            document.getElementById("update-season-team-summary").addEventListener("click", updateSeasonTeamSummary);
+        } catch (err) {
+            console.error("Error during Season Team Summary initialization:", err);
+            updateProgressTeamSummary("Error during initialization: " + err.message);
+        }
+        });
+
+// =============================
+// === CASINO PAGE ===
+// =============================
+        document.addEventListener("DOMContentLoaded", async function () {
+            const casinoStatus = document.getElementById("casino-status");
+            const casinoStatusLabel = document.getElementById("casino-status-label");
+            const saveCasinoDashboard = document.getElementById("save-changes-casino-dashboard");
+            const casinoRows = document.getElementById("casino-rows");
+            const saveCasinoChanges = document.getElementById("saveChangesButtonCasino");
+
+            let casinoEnabled = false;
+            let originalCasinoData = {};
+
+            // Fetch the casino status from form_details
+            async function fetchCasinoStatus() {
+                let { data, error } = await supabase
+                    .from("form_details")
+                    .select("casino_enabled")
+                    .eq("id", 1)
+                    .single();
+
+                if (error) {
+                    console.error("Error fetching casino status:", error);
+                    return;
+                }
+
+                // Ensure proper handling of boolean values
+                casinoEnabled = Boolean(data.casino_enabled);
+                casinoStatus.checked = casinoEnabled;
+                casinoStatusLabel.textContent = casinoEnabled ? "Enabled" : "Disabled";
+            }
+
+            // Fetch casino bet settings
+            async function fetchCasinoData() {
+                let { data, error } = await supabase.from("casino").select("*");
+                if (error) {
+                    console.error("Error fetching casino data:", error);
+                    return;
+                }
+
+                originalCasinoData = {
+                    enabled: data.find(row => row.team_id === -1) || {},
+                    questions: data.find(row => row.team_id === -2) || {},
+                    odds: data.find(row => row.team_id === 0) || {},
+                    maxBet: data.find(row => row.team_id === -3) || {},
+                    willPayOut: data.find(row => row.team_id === -4) || {},
+                };
+
+                populateCasinoTable();
+            }
+
+            // Populate the casino settings table with fetched data
+            function populateCasinoTable() {
+                casinoRows.innerHTML = "";
+
+                for (let i = 1; i <= 5; i++) {
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = `
+                        <td>${i}</td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" data-bet="${i}" data-type="enabled">
+                            </div>
+                        </td>
+                        <td><input type="text" class="form-control" data-bet="${i}" data-type="question"></td>
+                        <td><input type="number" class="form-control" data-bet="${i}" data-type="odds"></td>
+                        <td><input type="number" class="form-control" data-bet="${i}" data-type="maxBet"></td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" data-bet="${i}" data-type="willPayOut">
+                            </div>
+                        </td>
+                    `;
+
+                    casinoRows.appendChild(row);
+
+                    row.querySelector(`[data-bet="${i}"][data-type="enabled"]`).checked = originalCasinoData.enabled[`bet_${i}`] === "true";
+                    row.querySelector(`[data-bet="${i}"][data-type="question"]`).value = originalCasinoData.questions[`bet_${i}`] || "";
+                    row.querySelector(`[data-bet="${i}"][data-type="odds"]`).value = originalCasinoData.odds[`bet_${i}`] || 1;
+                    row.querySelector(`[data-bet="${i}"][data-type="maxBet"]`).value = originalCasinoData.maxBet[`bet_${i}`] || 10;
+                    row.querySelector(`[data-bet="${i}"][data-type="willPayOut"]`).checked = originalCasinoData.willPayOut[`bet_${i}`] === "true";
+                }
+            }
+
+            // Define the updateCasinoData function to update the casino table
+            async function updateCasinoData(updatedData) {
+                // Prepare an array of update objects based on team_id mappings:
+                const updates = [
+                    { team_id: -1, ...updatedData.enabled },
+                    { team_id: -2, ...updatedData.questions },
+                    { team_id: 0,  ...updatedData.odds },
+                    { team_id: -3, ...updatedData.maxBet },
+                    { team_id: -4, ...updatedData.willPayOut },
+                ];
+
+                // Iterate over each update and apply it to the Supabase table
+                for (let update of updates) {
+                    let { error } = await supabase
+                        .from("casino")
+                        .update(update)
+                        .eq("team_id", update.team_id);
+                    if (error) {
+                        console.error(`Error updating casino data for team_id ${update.team_id}:`, error);
+                        throw error;
+                    }
+                }
+            }
+
+            // Detect changes and enable Save button
+            document.getElementById("casino-form").addEventListener("input", () => {
+                saveCasinoChanges.disabled = false;
+            });
+
+            // Handle Save for Casino Settings
+            saveCasinoChanges.addEventListener("click", async function (event) {
+                event.preventDefault();
+
+                let updatedData = {
+                    enabled: {},
+                    questions: {},
+                    odds: {},
+                    maxBet: {},
+                    willPayOut: {},
+                };
+
+                for (let i = 1; i <= 5; i++) {
+                    updatedData.enabled[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="enabled"]`).checked.toString();
+                    updatedData.questions[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="question"]`).value;
+                    updatedData.odds[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="odds"]`).value;
+                    updatedData.maxBet[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="maxBet"]`).value;
+                    updatedData.willPayOut[`bet_${i}`] = document.querySelector(`[data-bet="${i}"][data-type="willPayOut"]`).checked.toString();
+                }
+
+                // Update Supabase with the new casino settings
+                try {
+                    await updateCasinoData(updatedData);
+                    saveCasinoChanges.disabled = true;
+                    alert("Casino settings updated!");
+                } catch (error) {
+                    console.error("Failed to update casino settings:", error);
+                    alert("There was an error updating the casino settings. Please try again.");
+                }
+            });
+
+            // Save Casino Enabled Status
+            casinoStatus.addEventListener("change", function () {
+                casinoStatusLabel.textContent = casinoStatus.checked ? "Enabled" : "Disabled";
+                saveCasinoDashboard.disabled = false;
+            });
+
+            saveCasinoDashboard.addEventListener("click", async function (event) {
+                event.preventDefault();
+                let { error } = await supabase
+                    .from("form_details")
+                    .update({ casino_enabled: casinoStatus.checked.toString() })
+                    .eq("id", 1);
+                if (error) {
+                    console.error("Error updating casino status:", error);
+                    alert("Failed to update casino status.");
+                    return;
+                }
+                saveCasinoDashboard.disabled = true;
+                alert("Casino status updated!");
+            });
+
+            await fetchCasinoStatus();
+            await fetchCasinoData();
+        });
+
+        // Feedback Page
+        document.addEventListener("DOMContentLoaded", async function () {
+        // Function to load and display feedback entries
+        async function loadFeedback() {
+            // Fetch the players table
+            const { data: playersData, error: playersError } = await supabase
+            .from("players")
+            .select("id, name");
+            if (playersError) {
+            console.error("Error fetching players:", playersError);
+            return;
+            }
+            
+            // Create a lookup object for player names keyed by id
+            const playersMap = {};
+            playersData.forEach(player => {
+            playersMap[player.id] = player.name;
+            });
+
+            // Fetch feedback entries
+            const { data: feedbackData, error: feedbackError } = await supabase
+            .from("feedback")
+            .select("*")
+            .order("date", { ascending: false }); // most recent first
+            if (feedbackError) {
+            console.error("Error fetching feedback:", feedbackError);
+            return;
+            }
+
+            // Get the container for feedback cards and clear any existing content
+            const feedbackCardsContainer = document.getElementById("feedback-cards");
+            feedbackCardsContainer.innerHTML = "";
+
+            // Create a card for each feedback entry
+            feedbackData.forEach(feedback => {
+            // Determine player name or default to 'Anonymous'
+            let playerName = "Anonymous";
+            if (feedback.player_id) {
+                playerName = playersMap[feedback.player_id] || "Unknown Player";
+            }
+
+            // Format the date nicely
+            const formattedDate = new Date(feedback.date).toLocaleString();
+
+            // Create a Bootstrap card element for each feedback entry
+            const card = document.createElement("div");
+            card.className = "card mb-3";
+            card.setAttribute("data-feedback-id", feedback.id);
+            card.innerHTML = `
+                <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">${formattedDate}</h6>
+                <p class="card-text">${feedback.message}</p>
+                <p class="card-text"><small class="text-muted">by: ${playerName}</small></p>
+                <button class="btn btn-danger btn-sm delete-feedback">Delete</button>
+                </div>
+            `;
+            feedbackCardsContainer.appendChild(card);
+            });
+
+            // Add event listeners to delete buttons
+            feedbackCardsContainer.querySelectorAll(".delete-feedback").forEach(button => {
+            button.addEventListener("click", async function () {
+                const card = this.closest(".card");
+                const feedbackId = card.getAttribute("data-feedback-id");
+                if (confirm("Are you sure you want to delete this feedback?")) {
+                const { error } = await supabase
+                    .from("feedback")
+                    .delete()
+                    .eq("id", feedbackId);
+                if (error) {
+                    console.error("Error deleting feedback:", error);
+                    alert("Failed to delete feedback.");
+                } else {
+                    // Remove the card from the DOM
+                    card.remove();
+                }
+                }
+            });
+            });
+        }
+
+        // Initial load of feedback entries
+        loadFeedback();
+        });
     </script>
 </body>
 </html>

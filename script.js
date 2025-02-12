@@ -142,7 +142,6 @@ export function createHeadsTailsInput(container, id) {
 export async function generateFormBlocks() {
     // Show the loading indicator for form blocks
     
-
     // Get the form section containers
     const formContainer1 = document.getElementById('form-section-1');
     const formContainer2 = document.getElementById('form-section-2');
@@ -269,7 +268,6 @@ export async function generateFormBlocks() {
         loadingIndicator.style.display = 'none';
     }
 }
-
 
 // Register Page Functions
 export async function fetchAndDisplayList(table, containerId) {
