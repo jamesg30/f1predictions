@@ -225,7 +225,7 @@ footer {
 }
 
 .pixel-art-body-smallxb {
-  font-family: 'Pixeloid Sans Bold', Helvetica, sans-serif; /* Custom font with fallbacks */
+  font-family: 'Pixeloid Sans Bold','Pixeloid Sans', Helvetica, sans-serif; /* Custom font with fallbacks */
   font-size: 1rem; /* Adjust as needed */
   color: #333; /* Main text color */
   letter-spacing: 0.1em; /* For pixel art readability */

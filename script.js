@@ -247,7 +247,11 @@ export async function generateFormBlocks() {
 
             // Add the form-control class to any inputs or selects
             const inputs = block.querySelectorAll('input, select');
-            inputs.forEach(input => input.classList.add('form-control'));
+            inputs.forEach(input => {
+            if (input.type !== 'radio') {
+                input.classList.add('form-control');
+            }
+            });
 
             // Assign blocks to the correct form sections based on config id
             if (config.id === 1) {
