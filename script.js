@@ -224,38 +224,42 @@ export async function generateFormBlocks() {
                     break;
                 }
                 case 'Select - Name List': {
-                    // Retrieve the logged-in player's ID from cookies
+                    // Retrieve the logged-in player's ID from cookies.
                     const loggedInPlayerId = getCookie("playerId");
                     let displayText = "Please log in";
-                
+                    let hiddenValue = "";
+                  
                     if (loggedInPlayerId) {
-                        // Find the player's name using the ID
+                        // Find the player's name using the ID.
                         const matchingPlayer = players.find(p => String(p.id) === String(loggedInPlayerId));
                         if (matchingPlayer) {
                             displayText = matchingPlayer.name;
+                            hiddenValue = loggedInPlayerId;
                         }
                     }
-                
-                    // Create a non-editable input field styled as a form control.
-                    const displayElem = document.createElement('input');
-                    displayElem.type = 'text';
-                    displayElem.value = displayText;
-                    displayElem.className = 'form-control autofilled-player-name';
-                    displayElem.disabled = true; // Prevents user from editing
-                
-                    // Store player ID as a hidden input for submission
+                  
+                    // Create a visible, readonly input for display.
+                    const visibleInput = document.createElement('input');
+                    visibleInput.type = 'text';
+                    visibleInput.value = displayText;
+                    visibleInput.id = `input-${config.id}-visible`;
+                    visibleInput.className = 'form-control autofilled-player-name';
+                    visibleInput.readOnly = true;
+                    visibleInput.disabled = true; // Makes it look disabled
+                  
+                    // Create a hidden input to store the actual player ID for form submission.
                     const hiddenInput = document.createElement('input');
                     hiddenInput.type = 'hidden';
                     hiddenInput.name = `input-${config.id}`;
-                    hiddenInput.value = loggedInPlayerId || '';
-                
-                    // Append both elements to the form block
-                    block.appendChild(displayElem);
+                    hiddenInput.id = `input-${config.id}`;
+                    hiddenInput.value = hiddenValue;
+                  
+                    // Append both elements to the form block.
+                    block.appendChild(visibleInput);
                     block.appendChild(hiddenInput);
-                    
+                  
                     break;
                 }
-                
                 
                 case 'Number - Integer':
                     createNumberInput(block, `input-${config.id}`, false);

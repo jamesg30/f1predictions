@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/style.css">
-    <script type="module" src="/script.js"></script>
     <style> 
         /* Container for the image and overlay */
         .full-width-image-container {
@@ -61,6 +60,9 @@
     </script>
     <!-- Encryption Script -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+    <!-- script.js import -->
+    <script type="module" src="/script.js"></script>
 </head>
 <body>
     <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999;"></div>
@@ -758,7 +760,7 @@
                 // Process form responses
                 const questions = formResponses.find(response => response.entry_type === 'questions');
                 const results = formResponses.find(response => response.entry_type === 'results');
-                console.log('Results object:', results);
+                //console.log('Results object:', results);
                 const players = formResponses.filter(response => response.entry_type === 'player');
                 const lowestScores = formResponses.filter(response => response.entry_type === 'player_lowest_score');
 
@@ -777,44 +779,44 @@
                 // Create data rows for scored results
                 const tableBody = document.getElementById('tableBody');
                 const createRow = (id, label) => {
-                    console.log(`Creating row for ID: ${id}, Label: ${label}`);
+                    //console.log(`Creating row for ID: ${id}, Label: ${label}`);
                     const isTotalColumn = ['subtotal_1', 'subtotal_2', 'subtotal_3', 'subtotal_4', 'grand_total'].includes(id);
                     if (isTotalColumn) {
-                        console.log(`Checking total column: ${id}`);
+                        //console.log(`Checking total column: ${id}`);
                         const row = document.createElement('tr');
                         row.innerHTML = `<td>${label}</td>`;
                         players.forEach(player => {
-                            console.log(`Processing player: ${player.player_name}, Player ID: ${player.player_id}`);
+                            //console.log(`Processing player: ${player.player_name}, Player ID: ${player.player_id}`);
                             const td = document.createElement('td');
                             td.textContent = player[id];
-                            console.log(`Player ${player.player_name} score for ${id}: ${player[id]}`);
+                            //console.log(`Player ${player.player_name} score for ${id}: ${player[id]}`);
                             td.className = `${id}_score`;
                             td.dataset.playerId = player.player_id;
                             row.appendChild(td);
                         });
                         row.innerHTML += `<td style="background-color: white;"></td><td></td>`;
-                        console.log(`Appending row: ${row.innerHTML}`);
+                        //console.log(`Appending row: ${row.innerHTML}`);
                         tableBody.appendChild(row);
                     } else {
-                        console.log(`Checking form_id column: form_id_${id}`);
+                        //console.log(`Checking form_id column: form_id_${id}`);
                         if (results[`form_id_${id}`] !== null) {
-                            console.log(`Results for form_id_${id}: ${results[`form_id_${id}`]}`);
+                            //console.log(`Results for form_id_${id}: ${results[`form_id_${id}`]}`);
                             const row = document.createElement('tr');
                             row.innerHTML = `<td>${label}</td>`;
                             players.forEach(player => {
-                                console.log(`Processing player: ${player.player_name}, Player ID: ${player.player_id}`);
+                                //console.log(`Processing player: ${player.player_name}, Player ID: ${player.player_id}`);
                                 const td = document.createElement('td');
                                 td.textContent = player[`form_id_${id}`];
-                                console.log(`Player ${player.player_name} score for form_id_${id}: ${player[`form_id_${id}`]}`);
+                                //console.log(`Player ${player.player_name} score for form_id_${id}: ${player[`form_id_${id}`]}`);
                                 td.className = `form_id_${id}_score`;
                                 td.dataset.playerId = player.player_id;
                                 row.appendChild(td);
                             });
                             row.innerHTML += `<td style="background-color: white;"></td><td>${results[`form_id_${id}`]}</td>`;
-                            console.log(`Appending row: ${row.innerHTML}`);
+                            //console.log(`Appending row: ${row.innerHTML}`);
                             tableBody.appendChild(row);
                         } else {
-                            console.log(`No results found for form_id_${id}`);
+                            //console.log(`No results found for form_id_${id}`);
                         }
                     }
                 };
@@ -960,12 +962,12 @@
             return;
             }
             const currentYear = formDetails[0].current_year;
-            console.log("Current Year:", currentYear);
+            //console.log("Current Year:", currentYear);
 
             // 2. Retrieve the full season_player_{year} table.
             const seasonTableName = `season_player_${currentYear}`;
             const seasonData = await getTable(seasonTableName);
-            console.log("Season Data:", seasonData);
+            //console.log("Season Data:", seasonData);
 
             if (!seasonData || seasonData.length === 0) {
             document.querySelector("#standings-table tbody").innerHTML =
@@ -995,7 +997,7 @@
                 }
             }
             }
-            console.log("Last race with data:", lastRace);
+            //console.log("Last race with data:", lastRace);
             if (lastRace === 0) {
             document.querySelector("#standings-table tbody").innerHTML =
                 "<tr><td colspan='3'>No race scores available yet.</td></tr>";
@@ -1103,12 +1105,12 @@
             return;
             }
             const currentYear = formDetails[0].current_year;
-            console.log("Current Year:", currentYear);
+            //console.log("Current Year:", currentYear);
 
             // 2. Retrieve the full season_team_{year} table.
             const seasonTeamTable = `season_team_${currentYear}`;
             const seasonTeamData = await getTable(seasonTeamTable);
-            console.log("Season Team Data:", seasonTeamData);
+            //console.log("Season Team Data:", seasonTeamData);
 
             if (!seasonTeamData || seasonTeamData.length === 0) {
             document.querySelector("#standings-team-table tbody").innerHTML =
@@ -1138,7 +1140,7 @@
                 }
             }
             }
-            console.log("Last race with data:", lastRace);
+            //console.log("Last race with data:", lastRace);
             if (lastRace === 0) {
             document.querySelector("#standings-team-table tbody").innerHTML =
                 "<tr><td colspan='3'>No race scores available yet.</td></tr>";

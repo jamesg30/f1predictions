@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="/style.css">
     <!-- Supabase Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <script type="module" src="/script.js"></script>
     <script>
         // Initialize Supabase globally
         const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
@@ -20,6 +19,9 @@
     </script>
     <!-- Encryption Script -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+    <!-- script.js import -->
+    <script type="module" src="/script.js"></script>
 </head>
 <body>
   <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999;"></div>
@@ -513,16 +515,15 @@
     }
 
     function lockCasinoPage() {
-      const teamSelectCasino = document.getElementById("casino-team-select");
-      const submitButton = document.getElementById("submit-bets");
-      teamSelectCasino.disabled = true;
-      submitButton.disabled = true;
-      document.querySelectorAll(".bet-button").forEach(btn => {
-        btn.disabled = true;
-        btn.onclick = null;
-      });
-      teamSelectCasino.onchange = null;
-    }
+  const teamSelectCasino = document.getElementById("casino-team-select");
+  const submitButton = document.getElementById("submit-bets");
+  teamSelectCasino.disabled = true;
+  submitButton.disabled = true;
+  document.querySelectorAll(".bet-button").forEach(btn => {
+    btn.disabled = true;
+  });
+  // Do not remove any event listeners here.
+}
     // Global variable to store teams data once loaded.
     let teamsData = [];
 
@@ -1004,33 +1005,49 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // New helper: update bet values without re-enabling the team select.
   async function updateCasinoBets() {
+    console.log("updateCasinoBets() is running");
     const teamId = teamSelectCasino.value;
+    console.log("Selected teamId:", teamId);
+    
     if (!teamId) {
-      submitButton.disabled = true;
-      document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = true);
-      return;
+        console.log("No team selected. Disabling buttons.");
+        submitButton.disabled = true;
+        document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = true);
+        return;
     }
+
     let data = await fetchData("casino", "*");
+    console.log("Fetched data:", data);
+
     let teamBets = data.find(row => row.team_id == teamId);
+    console.log("Found team bets:", teamBets);
+
     if (teamBets && Object.keys(teamBets).some(key => key.startsWith("bet_") && teamBets[key] > 0)) {
-      document.getElementById("casino-loading").style.display = "block";
-      submitButton.disabled = true;
-      document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = true);
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      document.getElementById("casino-loading").style.display = "none";
+        console.log("Existing bets detected. Showing loading spinner...");
+        document.getElementById("casino-loading").style.display = "block";
+        submitButton.disabled = true;
+        document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = true);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        document.getElementById("casino-loading").style.display = "none";
     }
+
+    // Enable buttons
+    console.log("Enabling submit button and bet buttons.");
     submitButton.disabled = false;
     document.querySelectorAll(".bet-button").forEach(btn => btn.disabled = false);
+
     for (let i = 1; i <= 5; i++) {
-      const betInput = document.getElementById(`bet-${i}`);
-      if (betInput) {
-        const betValue = teamBets ? teamBets[`bet_${i}`] || 0 : 0;
-        betInput.value = betValue;
-        currentBets[i - 1] = parseInt(betValue);
-        updateCoinDisplay(i);
-      }
+        const betInput = document.getElementById(`bet-${i}`);
+        if (betInput) {
+            const betValue = teamBets ? teamBets[`bet_${i}`] || 0 : 0;
+            console.log(`Setting bet-${i} value to:`, betValue);
+            betInput.value = betValue;
+            currentBets[i - 1] = parseInt(betValue);
+            updateCoinDisplay(i);
+        }
     }
-  }
+}
+
 
   // Update coin display function remains the same.
   function updateCoinDisplay(index) {
