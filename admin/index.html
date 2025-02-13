@@ -448,20 +448,22 @@
   
 
             <!-- Edit Players -->
-            <div class="tab-pane fade" id="edit-players" role="tabpanel" aria-labelledby="edit-players-tab">
-                <h4>Edit Players</h4>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Team</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="players-table"></tbody>
-                </table>
-            </div>
+<div class="tab-pane fade" id="edit-players" role="tabpanel" aria-labelledby="edit-players-tab">
+    <h4>Edit Players</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Team</th>
+                <th>Password</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="players-table"></tbody>
+    </table>
+</div>
+
 
             <!-- Edit Teams -->
             <div class="tab-pane fade" id="edit-teams" role="tabpanel" aria-labelledby="edit-teams-tab">
@@ -914,28 +916,73 @@
 
 // --- POPULATE TABLES ---
         // Populate Players Table
-        async function populatePlayers() {
-            const players = await fetchData('players');
-            const teams = await fetchData('teams');
-            const table = document.getElementById('players-table');
+        // Populate Players Table with extra Password column
+async function populatePlayers() {
+    const players = await fetchData('players');
+    const teams = await fetchData('teams');
+    const table = document.getElementById('players-table');
 
-            table.innerHTML = players.map(player => `
-                <tr>
-                    <td>${player.id}</td>
-                    <td><input type="text" class="form-control" id="player-name-${player.id}" value="${player.name}"></td>
-                    <td>${teams.find(team => team.id === player.participant_team_id)?.name || 'Unassigned'}</td>
-                    <td>
-                        <button class="btn btn-primary btn-sm" id="update-player-${player.id}" onclick="updatePlayer(${player.id})" disabled>Update</button>
-                        <button class="btn btn-danger btn-sm" onclick="deletePlayer(${player.id})">Delete</button>
-                    </td>
-                </tr>
-            `).join('');
+    table.innerHTML = players.map(player => `
+        <tr>
+            <td>${player.id}</td>
+            <td>
+              <input type="text" class="form-control" id="player-name-${player.id}" value="${player.name}">
+            </td>
+            <td>${teams.find(team => team.id === player.participant_team_id)?.name || 'Unassigned'}</td>
+            <td>
+              <input type="text" class="form-control" id="player-password-${player.id}" placeholder="New 4-digit PIN" maxlength="4" style="width: 100px; display: inline-block;">
+            </td>
+            <td>
+              <button class="btn btn-primary btn-sm" id="update-player-${player.id}" onclick="updatePlayer(${player.id})" disabled>Update</button>
+              <button class="btn btn-danger btn-sm" onclick="deletePlayer(${player.id})">Delete</button>
+              <br><br>
+              <button class="btn btn-secondary btn-sm" id="update-password-${player.id}" onclick="updatePlayerPassword(${player.id})">Update Password</button>
+            </td>
+        </tr>
+    `).join('');
 
-            // Add change detection to enable "Update" buttons
-            players.forEach(player => {
-                enableUpdateButton(`player-name-${player.id}`, `update-player-${player.id}`, player.name);
-            });
+    // Add change detection to enable "Update" buttons for name changes
+    players.forEach(player => {
+        enableUpdateButton(`player-name-${player.id}`, `update-player-${player.id}`, player.name);
+    });
+}
+
+// Function to update the player's password (using MD5)
+async function updatePlayerPassword(id) {
+    const passwordInput = document.getElementById(`player-password-${id}`);
+    const newPin = passwordInput.value.trim();
+
+    // Validate that the PIN is exactly 4 digits
+    if (!/^\d{4}$/.test(newPin)) {
+        alert('Please enter a valid 4-digit PIN.');
+        return;
+    }
+
+    // Hash the PIN using MD5 (as a hexadecimal string)
+    const hashedPin = CryptoJS.MD5(newPin).toString();
+
+    try {
+        // Update the player's password in the 'players' table
+        const { error } = await supabase
+            .from('players')
+            .update({ password: hashedPin })
+            .eq('id', id);
+            
+        if (error) {
+            console.error('Error updating password:', error);
+            alert('Failed to update password.');
+            return;
         }
+
+        alert('Password updated successfully!');
+        // Optionally clear the input field after a successful update:
+        passwordInput.value = '';
+    } catch (err) {
+        console.error('Unexpected error:', err);
+        alert('An unexpected error occurred while updating password.');
+    }
+}
+
 
         // Populate Teams Table
         async function populateTeams() {
