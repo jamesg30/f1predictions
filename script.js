@@ -484,8 +484,10 @@ export function getCookie(name) {
             loginMenuItem.classList.remove('d-none');
           }
           hideUserAvatar();
-          showAlert('You have logged out!', 'success');
+          
           updateFormPlayerDisplay(null);
+          document.dispatchEvent(new CustomEvent("loginStateChanged", { detail: { loggedIn: false } }));
+          showAlert('You have logged out!', 'success');
         }
       });
     }
@@ -562,7 +564,7 @@ export function getCookie(name) {
         
             // Update the login UI in the menu, avatar, etc.
             updateLoginUI(playerData);
-        
+            document.dispatchEvent(new CustomEvent("loginStateChanged", { detail: { loggedIn: true } }));
             // Update the auto-filled player display in the form.
             updateFormPlayerDisplay(playerData.name);
         } else {

@@ -1,200 +1,404 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Page Details -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
-    <title>F1 Predictions | Feedback</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/style.css">
-    <!-- Supabase Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <script type="module" src="/script.js"></script>
-    <script>
-        // Initialize Supabase globally
-        const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
-        var supabase = supabase.createClient(supabaseUrl, supabaseKey);
-    </script>
-    <!-- Encryption Script -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <!-- Page Details -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
+  <title>F1 Predictions | Feedback & Account Settings</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/style.css">
+  <!-- Supabase Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script type="module" src="/script.js"></script>
+  <script>
+    // Initialize Supabase globally
+    const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
+    var supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Simple getCookie helper (if not defined elsewhere)
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+  </script>
+  <!-- Encryption Script -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
-    <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
-        <!-- Left Section: Logo and Heading -->
-        <div class="d-flex align-items-center">
-          <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
-            <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
-          </a>
-          <a href="/" class="text-decoration-none text-black">
-            <h5 class="mb-0 pixel-art-heading-2" style="font-size: 1.1rem;">F1 Predictions</h5>
-          </a>
-        </div>
+  <!-- Alert Container with high z-index so it appears on top -->
+  <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999;"></div>
+  
+  <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
+    <!-- Left Section: Logo and Heading -->
+    <div class="d-flex align-items-center">
+      <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
+        <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
+      </a>
+      <a href="/" class="text-decoration-none text-black">
+        <h5 class="mb-0 pixel-art-heading-2" style="font-size: 1.1rem;">F1 Predictions</h5>
+      </a>
+    </div>
+    <!-- Right Section: User Avatar and Hamburger Menu -->
+    <div class="d-flex align-items-center">
+      <div id="user-avatar" class="user-avatar d-none me-2"></div>
+      <div class="pixel-dropdown me-3">
+        <button class="pixel-button" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
+          Menu
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/">Home</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallxb" href="/feedback">Feedback<br>& Account</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li id="loggedInUserDisplay" class="dropdown-item-text d-none pixel-art-body-smallx" style="color: darkgrey">
+            Logged in as <strong></strong>
+          </li>
+          <li id="logoutMenuItem" class="d-none">
+            <a class="dropdown-item logout-link pixel-art-body-smallx" href="#" id="logoutBtn">Log Out</a>
+          </li>
+          <li id="loginMenuItem">
+            <a class="dropdown-item pixel-art-body-smallx" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log In</a>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/admin">Admin</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+  
+  <main class="container my-5">
+    <div class="container my-5">
+      <h2 class="mb-3 pixel-art-heading-3">Feedback & Account Settings</h2>
       
-        <!-- Right Section: User Avatar and Hamburger Menu -->
-        <div class="d-flex align-items-center">
-          <!-- Pixel Avatar (initially hidden) -->
-          <div id="user-avatar" class="user-avatar d-none me-2"></div>
-          <!-- Hamburger Menu Dropdown -->
-          <div class="pixel-dropdown me-3">
-            <button class="pixel-button" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
-              Menu
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
-              <!-- Other Menu Items -->
-              <li><a class="dropdown-item pixel-art-body-smallx" href="/">Home</a></li>
-              <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
-              <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
-              <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
-              <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
-              <li><a class="dropdown-item pixel-art-body-smallxb" href="/feedback">Feedback</a></li>
-              <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
-              <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <!-- Login/Logout Items -->
-              <li id="loggedInUserDisplay" class="dropdown-item-text d-none pixel-art-body-smallx" style="color: darkgrey">
-                Logged in as <strong></strong>
-              </li>
-              <li id="logoutMenuItem" class="d-none">
-                <a class="dropdown-item logout-link pixel-art-body-smallx" href="#" id="logoutBtn">
-                    Log Out
-                </a>
-              </li>
-              <li id="loginMenuItem">
-                <a class="dropdown-item pixel-art-body-smallx" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
-                  Log In
-                </a>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item pixel-art-body-smallx" href="/admin">Admin</a></li>
-            </ul>
-          </div>
+      <!-- Feedback Section -->
+      <div>
+        <p>
+          Provide feedback, make suggestions or report bugs.<br>
+          If you wish for your feedback to remain anonymous, tick the box below.<br>
+          Thanks :)<br>
+        </p>
+      </div>
+      <hr>
+      <form id="feedbackForm">
+        <!-- Autofilled Name Field (disabled) -->
+        <div class="mb-3">
+          <label for="feedback-name" class="form-label">Name:</label>
+          <input type="text" id="feedback-name" class="form-control" disabled>
         </div>
-      </header>   
+        <!-- Anonymous Checkbox -->
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="anonymousCheckbox">
+          <label class="form-check-label" for="anonymousCheckbox">
+            Submit anonymously
+          </label>
+        </div>
+        <div class="mb-3">
+          <label for="exampleFormControlTextarea1" class="form-label">Message:</label>
+          <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+        </div>
+        <!-- Submit Button -->
+        <div class="text-center">
+            <button type="submit" id="feedbackSubmitBtn" class="pixel-button primary">Submit Feedback</button>
+
+        </div>
+      </form>
+      <hr>
+      
+      <!-- Password Reset & Change Section -->
+      <h2 class="mb-3 pixel-art-heading-3">Password Reset & Change</h2>
+      <div>
+        <p>
+          To reset your password, email <a href="mailto:f1predictionsform@outlook.com">f1predictionsform@outlook.com</a> with your username.
+          You will receive a response with a new password, which you can change using the form below.
+        </p>
+      </div>
+      <form id="passwordResetForm">
+        <!-- Autofilled Logged-In Name -->
+        <div class="mb-3">
+          <label for="logged-in-name" class="form-label">Logged In Name:</label>
+          <input type="text" id="logged-in-name" class="form-control" disabled>
+        </div>
+        <!-- Existing PIN -->
+        <div class="mb-3">
+          <label for="current-pin" class="form-label">Current PIN:</label>
+          <input type="password" id="current-pin" class="form-control" placeholder="Re-enter your current PIN" required>
+        </div>
+        <!-- New PIN -->
+        <div class="mb-3">
+          <label for="new-pin" class="form-label">New PIN:</label>
+          <input type="password" id="new-pin" class="form-control" placeholder="Enter new PIN" required>
+        </div>
+        <!-- Confirm New PIN -->
+        <div class="mb-3">
+          <label for="confirm-new-pin" class="form-label">Confirm New PIN:</label>
+          <input type="password" id="confirm-new-pin" class="form-control" placeholder="Re-enter new PIN" required>
+        </div>
+        <!-- Update Password Button -->
+        <div class="text-center">
+            <button type="submit" id="passwordUpdateBtn" class="pixel-button primary">Update Password</button>
+
+        </div>
+      </form>
+    </div>
     
-    <main class="container my-5">
-        <div class="container my-5">
-            <h2 class="mb-3 pixel-art-heading-3">Feedback</h2>
-            <div>
-                <p>
-                   Provide feedback, make suggestions or reports bugs.<br>
-                   If you wish for your feedback to remain anonymous, use the 'Anonymous' name.<br>
-                   Thanks 🙂 <br>
-                </p>
-            </div>
-            <hr>
-            <form id="feedbackForm">
-                <!-- Name Selection -->
-                <div class="mb-3">
-                    <label for="join-player-name" class="form-label">Select Name:</label>
-                    <select id="join-player-name" class="form-select"></select>
-                </div>
-                <div class="mb-3">
-                    <label for="exampleFormControlTextarea1" class="form-label">Message:</label>
-                    <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
-                </div>
-                <!-- Submit Button -->
-                <div class="text-center">
-                    <button type="submit" class="pixel-button primary">Submit</button>
-                </div>
+    <!-- LOGIN MODAL -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title pixel-art-heading-2" id="loginModalLabel">Login</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="login-form">
+              <div class="mb-3">
+                <label for="login-player-name" class="form-label pixel-art-body">Select Player</label>
+                <select id="login-player-name" class="form-select pixel-art-body" required>
+                  <!-- Options populated dynamically -->
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="login-pin" class="form-label pixel-art-body">Enter PIN</label>
+                <input type="password" id="login-pin" class="form-control pixel-art-body" maxlength="4" pattern="\d*" required />
+              </div>
+              <div class="mb-3">
+                <label for="rememberMe" class="form-check-label pixel-art-body">
+                  <input type="checkbox" id="rememberMe" class="form-check-input pixel-art-body" />
+                  Remember me
+                </label>
+              </div>
+              <button type="submit" class="pixel-button">Login</button>
             </form>
-        </div>
-        <!-- LOGIN MODAL -->
-<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title pixel-art-heading-2" id="loginModalLabel">Login</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="login-form">
-            <div class="mb-3">
-              <label for="login-player-name" class="form-label pixel-art-body">Select Player</label>
-              <select id="login-player-name" class="form-select pixel-art-body" required>
-                <!-- Options populated dynamically -->
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="login-pin" class="form-label pixel-art-body">Enter PIN</label>
-              <input type="password" id="login-pin" class="form-control pixel-art-body" maxlength="4" pattern="\d*" required />
-            </div>
-            <div class="mb-3">
-              <label for="rememberMe" class="form-check-label pixel-art-body">
-                <input type="checkbox" id="rememberMe" class="form-check-input pixel-art-body" />
-                Remember me
-              </label>
-            </div>
-            <!-- Alert Container -->
-            <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 1050;"></div>
-            <button type="submit" class="pixel-button">Login</button>
-          </form>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-    </main>
- 
-    <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
-        <p>&copy; 2024 F1 Predictions Form</p>
-    </footer>
+    
+  </main>
+  
+  <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
+    <p>&copy; 2024 F1 Predictions Form</p>
+  </footer>
+  
+  <!-- Bootstrap JS Bundle (Local) -->
+  <script src="/js/bootstrap.bundle.min.js"></script>
+  
+  <script type="module">
+    import { fetchData, getCookie} from '/script.js';
+    
+    // Autofill the feedback name field and disable it.
+    async function autofillFeedbackName() {
+  const playerId = getCookie("playerId");
+  const nameField = document.getElementById("feedback-name");
+  const anonCheckbox = document.getElementById("anonymousCheckbox");
+  const messageField = document.getElementById("exampleFormControlTextarea1");
+  const submitButton = document.getElementById("feedbackSubmitBtn");
 
-    <!-- Bootstrap JS Bundle (Local) -->
-     <script type="module">
-        import { fetchData } from '/script.js';
+  if (!playerId) {
+    // Not logged in: disable all fields, change placeholder and disable the submit button.
+    nameField.value = "";
+    nameField.placeholder = "Please log in to submit feedback.";
+    nameField.disabled = true;
+    anonCheckbox.disabled = true;
+    messageField.disabled = true;
+    submitButton.disabled = true;
+    return;
+  }
+  
+  // If logged in, fetch player's name.
+  const { data: player, error } = await supabase
+    .from('players')
+    .select('name')
+    .eq('id', playerId)
+    .single();
+    
+  if (error || !player) {
+    console.error("Error fetching player name:", error);
+    return;
+  }
+  
+  nameField.value = player.name;
+  nameField.disabled = true; // keep it read-only
+  anonCheckbox.disabled = false;
+  messageField.disabled = false;
+  submitButton.disabled = false;
+}
 
-        async function populatePlayerDropdown() {
-            const { data: players } = await supabase.from('players').select('id, name').order('name');
-            document.getElementById('join-player-name').innerHTML = 
-                `<option value="" disabled selected>Select a name</option>
-                <option value="anonymous">Anonymous</option>` + 
-                players.map(player => `<option value="${player.id}">${player.name}</option>`).join('');
+
+    
+    // Autofill the password reset form's logged in name field.
+    async function autofillLoggedInName() {
+  const playerId = getCookie("playerId");
+  const loggedInNameField = document.getElementById("logged-in-name");
+  const currentPINField = document.getElementById("current-pin");
+  const newPINField = document.getElementById("new-pin");
+  const confirmNewPINField = document.getElementById("confirm-new-pin");
+  const updateButton = document.getElementById("passwordUpdateBtn");
+  
+  if (!playerId) {
+    // Not logged in: disable all fields and set placeholder text.
+    loggedInNameField.value = "";
+    loggedInNameField.placeholder = "Please log in to change your password.";
+    loggedInNameField.disabled = true;
+    currentPINField.disabled = true;
+    newPINField.disabled = true;
+    confirmNewPINField.disabled = true;
+    updateButton.disabled = true;
+    return;
+  }
+  
+  // Logged in: fetch player's name.
+  const { data: player, error } = await supabase
+    .from('players')
+    .select('name')
+    .eq('id', playerId)
+    .single();
+    
+  if (error || !player) {
+    console.error("Error fetching player name:", error);
+    return;
+  }
+  
+  loggedInNameField.value = player.name;
+  loggedInNameField.disabled = true;
+  currentPINField.disabled = false;
+  newPINField.disabled = false;
+  confirmNewPINField.disabled = false;
+  updateButton.disabled = false;
+}
+
+
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      autofillFeedbackName();
+      autofillLoggedInName();
+      
+      // Handle anonymous checkbox for feedback.
+      const anonymousCheckbox = document.getElementById("anonymousCheckbox");
+      anonymousCheckbox.addEventListener("change", (event) => {
+        const feedbackNameField = document.getElementById("feedback-name");
+        if (event.target.checked) {
+          feedbackNameField.value = "Anonymous";
+        } else {
+          autofillFeedbackName();
         }
+      });
+      
+      // Handle feedback form submission.
+      document.getElementById('feedbackForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        
+        const playerId = getCookie("playerId");
+        const nameValue = document.getElementById("feedback-name").value;
+        const feedbackMessage = document.getElementById('exampleFormControlTextarea1').value;
+        
+        if (!nameValue || !feedbackMessage) {
+          alert('Please enter your name and a message.');
+          return;
+        }
+        
+        try {
+            const { data, error } = await supabase.from('feedback').insert([
+            {
+                player_id: (nameValue === "Anonymous") ? null : parseInt(playerId),
+                message: feedbackMessage,
+                date: new Date().toISOString(), // ✅ Add timestamp
+            },
+            ]);
+          
+          if (error) {
+            console.error('Error inserting feedback:', error);
+            alert('Failed to submit feedback. Please try again.');
+          } else {
+            alert('Feedback submitted successfully!');
+            document.getElementById('feedbackForm').reset();
+            autofillFeedbackName();
+          }
+        } catch (err) {
+          console.error('Unexpected error:', err);
+          alert('An unexpected error occurred. Please try again.');
+        }
+      });
+      
+      // Handle password reset form submission.
+document.getElementById('passwordResetForm').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  
+  const currentPIN = document.getElementById('current-pin').value;
+  const newPIN = document.getElementById('new-pin').value;
+  const confirmNewPIN = document.getElementById('confirm-new-pin').value;
+  const playerId = getCookie("playerId");
+  
+  if (!currentPIN || !newPIN || !confirmNewPIN) {
+    alert("Please fill in all fields.");
+    return;
+  }
+  
+  if (newPIN !== confirmNewPIN) {
+    alert("New PIN and confirmation do not match.");
+    return;
+  }
+  
+  try {
+    // Fetch the current hashed password associated with the user.
+    const { data: userData, error: fetchError } = await supabase
+      .from('players')
+      .select('password')
+      .eq('id', playerId)
+      .single();
+    
+    if (fetchError || !userData) {
+      console.error("Error fetching user data:", fetchError);
+      alert("Failed to fetch user data. Please try again.");
+      return;
+    }
+    
+    // Hash the current PIN entered by the user.
+    const hashedCurrentPIN = CryptoJS.MD5(currentPIN).toString();
+    if (hashedCurrentPIN !== userData.password) {
+      alert("Current PIN is incorrect.");
+      return;
+    }
+    
+    // Hash the new PIN before updating.
+    const hashedNewPIN = CryptoJS.MD5(newPIN).toString();
+    
+    // Update the player's password (i.e. PIN).
+    const { error: updateError } = await supabase
+      .from('players')
+      .update({ password: hashedNewPIN })
+      .eq('id', playerId);
+    
+    if (updateError) {
+      console.error("Error updating PIN:", updateError);
+      alert("Failed to update PIN. Please try again.");
+    } else {
+      alert("PIN updated successfully!");
+      document.getElementById('passwordResetForm').reset();
+      autofillLoggedInName();
+    }
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    alert("An unexpected error occurred. Please try again.");
+  }
+});
 
-        document.addEventListener('DOMContentLoaded', () => {
-            populatePlayerDropdown();
+    });
 
-            // Handle feedback form submission
-            document.getElementById('feedbackForm').addEventListener('submit', async (event) => {
-                event.preventDefault(); // Prevent default form submission
+    document.addEventListener("loginStateChanged", async (event) => {
+  await autofillFeedbackName();
+  await autofillLoggedInName();
+});
 
-                // Get the selected player ID and feedback message
-                const playerId = document.getElementById('join-player-name').value;
-                const feedbackMessage = document.getElementById('exampleFormControlTextarea1').value;
-
-                // Validate inputs
-                if (!playerId || !feedbackMessage) {
-                    alert('Please select a name and enter a message.');
-                    return;
-                }
-
-                try {
-                    // Insert feedback into the database
-                    const { data, error } = await supabase.from('feedback').insert([
-                        {
-                            player_id: parseInt(playerId), // Save the player ID
-                            message: feedbackMessage,     // Save the feedback message
-                        },
-                    ]);
-
-                    if (error) {
-                        console.error('Error inserting feedback:', error);
-                        alert('Failed to submit feedback. Please try again.');
-                    } else {
-                        alert('Feedback submitted successfully!');
-                        // Clear the form
-                        document.getElementById('feedbackForm').reset();
-                    }
-                } catch (err) {
-                    console.error('Unexpected error:', err);
-                    alert('An unexpected error occurred. Please try again.');
-                }
-            });
-        });
-
-     </script>
-    <script src="/js/bootstrap.bundle.min.js"></script>
+  </script>
 </body>
 </html>

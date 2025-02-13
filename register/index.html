@@ -22,6 +22,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
+    <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999;"></div>
     <!-- Header Section -->
     <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
         <!-- Left Section: Logo and Heading -->
@@ -50,7 +51,7 @@
               <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
               <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
               <li><a class="dropdown-item pixel-art-body-smallxb" href="/register">Register</a></li>
-              <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
+              <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback<br>& Account</a></li>
               <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
               <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
               <li><hr class="dropdown-divider"></li>
@@ -198,8 +199,6 @@
                 Remember me
               </label>
             </div>
-            <!-- Alert Container -->
-            <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 1050;"></div>
             <button type="submit" class="pixel-button">Login</button>
           </form>
         </div>
@@ -290,10 +289,11 @@
 }
 
 
-        async function autofillJoinTeamPlayer() {
+async function autofillJoinTeamPlayer() {
     const playerId = getCookie("playerId");
     const playerInput = document.getElementById("join-player-name");
     const loginPrompt = document.getElementById("loginPrompt");
+    const joinTeamBtn = document.getElementById("join-team-btn");
 
     if (playerId) {
         // Fetch the player's name from Supabase
@@ -305,16 +305,20 @@
         if (!error && playerData) {
             playerInput.value = playerData.name;
             loginPrompt.textContent = "";
+            joinTeamBtn.disabled = false;
         } else {
             playerInput.value = "";
             loginPrompt.textContent = "Error fetching your details. Please log in again.";
+            joinTeamBtn.disabled = true;
         }
     } else {
         // No logged-in player; prompt the user to log in.
         playerInput.value = "";
         loginPrompt.textContent = "Please log in to join a team.";
+        joinTeamBtn.disabled = true;
     }
 }
+
 
 
 
@@ -533,6 +537,9 @@ async function refreshJoinTeamDisplay() {
   await autofillJoinTeamPlayer();
 }
 
+document.addEventListener("loginStateChanged", async (event) => {
+    await autofillJoinTeamPlayer();
+});
 
     </script>
     <script src="/js/bootstrap.bundle.min.js"></script>

@@ -22,6 +22,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
+  <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999;"></div>
   <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
     <!-- Left Section: Logo and Heading -->
     <div class="d-flex align-items-center">
@@ -49,7 +50,7 @@
           <li><a class="dropdown-item pixel-art-body-smallxb" href="/teams">Teams</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback<br>& Account</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
           <li><hr class="dropdown-divider"></li>
@@ -268,8 +269,6 @@
               Remember me
             </label>
           </div>
-          <!-- Alert Container -->
-          <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 1050;"></div>
           <button type="submit" class="pixel-button">Login</button>
         </form>
       </div>
