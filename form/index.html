@@ -135,9 +135,9 @@
           <div id="repeated-predictions-alert" class="pixel-alert pixel-alert-warning d-none">
             Existing predictions have been pre-filled. Submitting new predictions will override the previous ones.
           </div>
-          <div class="pixel-alert pixel-alert-info">
+          <div id="register-notice" class="pixel-alert pixel-alert-info" style="display: none;">
             Not seeing your name? Register at the <a href="/register">Register Page</a>, and ensure you are logged in.
-          </div>
+        </div>        
           <div>
             <p><i>For detailed question rules, please see info page.</i></p>
           </div>
@@ -396,21 +396,16 @@ async function loadExistingSubmissions() {
       const playerId = getCookie("playerId");
       const hiddenInput = document.getElementById("input-1");       // hidden field for submission
       const visibleInput = document.getElementById("input-1-visible"); // disabled field showing player name
+      const registerNotice = document.getElementById("register-notice");
       if (hiddenInput && visibleInput) {
         if (playerId) {
           hiddenInput.value = playerId;
+          registerNotice.style.display = "none";
           // Assume generateFormBlocks already sets visibleInput with the player's name.
         } else {
           hiddenInput.value = "";
           visibleInput.value = "Please log in";
-          let helperText = document.getElementById("login-helper-text");
-          if (!helperText) {
-            helperText = document.createElement("small");
-            helperText.id = "login-helper-text";
-            helperText.classList.add("form-text", "text-muted");
-            helperText.textContent = "Please log in to autofill your name.";
-            visibleInput.parentNode.appendChild(helperText);
-          }
+          registerNotice.style.display = "block";
         }
       }
     }
@@ -578,8 +573,70 @@ if (hasPreviousSubmission && window.previousFormData && Object.keys(window.previ
         window.location.href = '/confirmation';
       });
     });
-  </script>
+// Helper function: Clears all pre-filled responses (inputs 2 to 28), including radio groups.
+function clearFormPrefill() {
+  for (let i = 2; i <= 28; i++) {
+    // For each input group (radio buttons, text inputs, etc.)
+    const elements = document.getElementsByName(`input-${i}`);
+    if (elements && elements.length > 0) {
+      Array.from(elements).forEach(element => {
+        if (element.type === "radio") {
+          element.checked = false;
+        } else {
+          element.value = "";
+        }
+      });
+    }
+  }
+  // Also clear any stored previous form data.
+  window.previousFormData = {};
+}
+
+// Listen for the custom "loginStateChanged" event dispatched from script.js.
+document.addEventListener("loginStateChanged", async (event) => {
+  const { loggedIn } = event.detail;
   
+  // Always update the player field.
+  autofillFormPlayer();
+  
+  if (loggedIn) {
+    // Re-run the prefill checks by re-loading any existing submissions.
+    await loadExistingSubmissions();
+    
+    // If there is previous submission data, prefill the form and show the alert.
+    if (hasPreviousSubmission && window.previousFormData && Object.keys(window.previousFormData).length > 0) {
+      prefillFormResponses();
+      document.getElementById("repeated-predictions-alert").classList.remove("d-none");
+    } else {
+      // If no previous data is found, hide the alert.
+      document.getElementById("repeated-predictions-alert").classList.add("d-none");
+    }
+  } else {
+    // Logged out: Update the form to reflect a logged-out state.
+    const hiddenInput = document.getElementById("input-1");       // Hidden field for submission.
+    const visibleInput = document.getElementById("input-1-visible"); // Disabled field showing player name.
+    const registerNotice = document.getElementById("register-notice");
+    
+    if (hiddenInput) {
+      hiddenInput.value = "";
+    }
+    if (visibleInput) {
+      visibleInput.value = "Please log in";
+    }
+    if (registerNotice) {
+      registerNotice.style.display = "block";
+    }
+    
+    // Clear any prefilled responses to prevent mixing data between players.
+    clearFormPrefill();
+    
+    // Hide the repeated predictions alert.
+    document.getElementById("repeated-predictions-alert").classList.add("d-none");
+  }
+});
+
+
+  </script>
   <!-- Bootstrap JS Bundle -->
   <script src="/js/bootstrap.bundle.min.js"></script>
 </body>

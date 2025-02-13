@@ -479,21 +479,24 @@ export function getCookie(name) {
     const logoutMenuItem = document.getElementById('logoutMenuItem');
     if (logoutMenuItem) {
       logoutMenuItem.classList.remove('d-none');
-      document.getElementById('logoutBtn').addEventListener('click', () => {
-        if (confirm('Are you sure you want to log out?')) {
-          clearCookie("playerId");
-          loggedInUserDisplay.classList.add('d-none');
-          logoutMenuItem.classList.add('d-none');
-          if (loginMenuItem) {
-            loginMenuItem.classList.remove('d-none');
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        // Use "onclick" to ensure only one event handler is attached.
+        logoutBtn.onclick = () => {
+          if (confirm('Are you sure you want to log out?')) {
+            clearCookie("playerId");
+            loggedInUserDisplay.classList.add('d-none');
+            logoutMenuItem.classList.add('d-none');
+            if (loginMenuItem) {
+              loginMenuItem.classList.remove('d-none');
+            }
+            hideUserAvatar();
+            updateFormPlayerDisplay(null);
+            document.dispatchEvent(new CustomEvent("loginStateChanged", { detail: { loggedIn: false } }));
+            showAlert('You have logged out!', 'success');
           }
-          hideUserAvatar();
-          
-          updateFormPlayerDisplay(null);
-          document.dispatchEvent(new CustomEvent("loginStateChanged", { detail: { loggedIn: false } }));
-          showAlert('You have logged out!', 'success');
-        }
-      });
+        };
+      }
     }
   
     // Update the header avatar.
@@ -510,6 +513,7 @@ export function getCookie(name) {
       document.getElementById('hamburgerMenu').focus();
     }, 300);
   }
+  
   
   // --- INITIALIZATION ---
   document.addEventListener("DOMContentLoaded", async () => {
