@@ -378,6 +378,11 @@ async function autofillJoinTeamPlayer() {
         alert('Player name must be 32 characters or less.');
         return;
     }
+    // Allow only A-Z, 0-9 and spaces:
+    if (!/^[A-Za-z0-9 ]+$/.test(playerName)) {
+        alert('Player name can only contain letters, numbers, and spaces.');
+        return;
+    }
     if (!/^\d{4}$/.test(playerPin)) {
         alert('Please enter a valid 4-digit PIN.');
         return;
@@ -398,6 +403,7 @@ async function autofillJoinTeamPlayer() {
             return;
         }
 
+        // If any existing player is found, prevent registration
         if (existingPlayers.length > 0) {
             alert('This player name is already taken. Please choose a different name.');
             return;
@@ -425,6 +431,7 @@ async function autofillJoinTeamPlayer() {
 
 
 
+
 async function registerTeam() {
     const teamName = document.getElementById('team-name').value.trim();
     if (!teamName) {
@@ -433,6 +440,11 @@ async function registerTeam() {
     }
     if (teamName.length > 32) {
         alert('Team name must be 32 characters or less.');
+        return;
+    }
+    // Allow only A-Z, 0-9 and spaces:
+    if (!/^[A-Za-z0-9 ]+$/.test(teamName)) {
+        alert('Team name can only contain letters, numbers, and spaces.');
         return;
     }
 
@@ -447,19 +459,12 @@ async function registerTeam() {
         if (checkError && checkError.code !== 'PGRST116') {
             throw checkError;
         }
-
         if (existingTeam) {
             alert('This team name is already taken. Please choose a different name.');
             return;
         }
 
         // Define card allocations (update these numbers if needed):
-        // card_aero_unplayed: Aero card count, default 1.
-        // card_double_unplayed: Double card count, default 1.
-        // card_halo_unplayed: Halo card count, default 3.
-        // card_report_unplayed: Report card count, default 1.
-        // card_swap_unplayed: Swap card count, default 1.
-        // For played cards, we start at 0.
         const newTeam = {
             name: teamName,
             card_aero_unplayed: 1,    // Aero cards available initially.
@@ -486,6 +491,7 @@ async function registerTeam() {
         alert('Failed to register team.');
     }
 }
+
 
 
 
