@@ -555,7 +555,7 @@ export function getCookie(name) {
         
             // Set cookie, update login UI, etc.
             if (rememberMe) {
-                setCookie("playerId", playerId, 90 * 24 * 60 * 60);
+                setCookie("playerId", playerId, 30 * 24 * 60 * 60); // 30 day cookie
             } else {
                 setCookie("playerId", playerId);
             }
