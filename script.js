@@ -416,24 +416,29 @@ export function getCookie(name) {
   export function updateUserAvatar(playerName) {
     const userAvatar = document.getElementById('user-avatar');
     if (!userAvatar) return;
-  
+
     const firstLetter = playerName.charAt(0).toUpperCase();
     const bgColor = getColorForLetter(firstLetter);
-    // Darken the chosen background color by 20% for the text shadow effect
     const shadowColor = darkenColor(bgColor, 50);
-  
+
     userAvatar.textContent = firstLetter;
     userAvatar.style.backgroundColor = bgColor;
     userAvatar.style.color = "#fff";
-    // Use two-layer text shadow similar to your heading (scaled down for the small avatar)
     userAvatar.style.textShadow = `1px 1px 0 ${shadowColor}, 2px 2px 0 ${shadowColor}`;
-    // Ensure the font styling matches your heading style:
     userAvatar.style.fontFamily = "'Press Start 2P', Helvetica, sans-serif";
     userAvatar.style.fontWeight = "bold";
     userAvatar.style.textAlign = "center";
-    userAvatar.style.lineHeight = userAvatar.style.height; // vertically center text
+    userAvatar.style.lineHeight = userAvatar.style.height;
     userAvatar.classList.remove('d-none');
-  }
+
+    // 🔥 Check if playerId is 1 and update border color
+    if (getCookie("playerId") === "1") {
+        userAvatar.style.borderColor = "gold";
+    } else {
+        userAvatar.style.borderColor = "#c0c0c0"; // Default border
+    }
+}
+
   
   export function hideUserAvatar() {
     const userAvatar = document.getElementById('user-avatar');
