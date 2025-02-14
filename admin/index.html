@@ -1138,9 +1138,12 @@ async function updatePlayerPassword(id) {
         }
 
         async function deletePlayer(id) {
-            if (await deleteData('players', id)) populatePlayers();
+    if (confirm("Are you sure you want to delete this player?")) {
+        if (await deleteData('players', id)) {
+            populatePlayers();
         }
-
+    }
+}
         async function updateTeam(id) {
             const nameInput = document.getElementById(`team-name-${id}`);
             const name = nameInput.value.trim();
@@ -1157,8 +1160,12 @@ async function updatePlayerPassword(id) {
         }
 
         async function deleteTeam(id) {
-            if (await deleteData('teams', id)) populateTeams();
+    if (confirm("Are you sure you want to delete this team?")) {
+        if (await deleteData('teams', id)) {
+            populateTeams();
         }
+    }
+}
 
         document.addEventListener("DOMContentLoaded", async () => {
             // Fetch and render data

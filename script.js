@@ -305,20 +305,6 @@ export async function generateFormBlocks() {
     }
 }
 
-// Register Page Functions
-export async function fetchAndDisplayList(table, containerId) {
-    const data = await fetchData(table, 'name');
-    const container = document.getElementById(containerId);
-    container.innerHTML = '';
-
-    data.forEach(item => {
-        const listItem = document.createElement('li');
-        listItem.textContent = item.name;
-        listItem.className = 'list-group-item';
-        container.appendChild(listItem);
-    });
-}
-
 // script.js (ES Module)
 
 // --- COOKIE HELPERS ---
@@ -389,7 +375,7 @@ export function getCookie(name) {
       '#F3FF33', // 6
       '#FF8C33', // 7
       '#33FF8C', // 8
-      '#8C33FF'  // 9
+      '#00cfff'  // 9
     ];
   
     let index;

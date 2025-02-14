@@ -133,7 +133,7 @@
                     </h4>
                     <ul>
                         <li>Log in via the MENU dropdown.</li>
-                        <li>A box with the first letter of your username will appear next to the menu button when logged in. You can also see this from the menu dropdown.</li>
+                        <li>A box with the first letter of your username will appear next to the MENU button when logged in. You can also see this login status in the MENU dropdown.</li>
                         <li>Passwords can be reset or changed in <a href="/feedback">Feedback & Account Page</a>.</li>
                     </ul>
                 </div>
@@ -171,6 +171,9 @@
             <!-- Join Team -->
             <div id="join-team" class="tab-pane fade" role="tabpanel" aria-labelledby="join-team-tab">
                 <div id="join-team">
+                    <div class="d-flex justify-content-left">
+                        <h2 class="mb-3 pixel-art-heading-3">Join Team</h2>
+                    </div>
                     <div class="mb-3">
                         <label for="join-player-name" class="form-label">Player:</label>
                         <!-- A disabled input that will show the logged in player's name -->
@@ -237,7 +240,21 @@
     </footer>
 
     <script type="module">
-        import { fetchData, fetchAndDisplayList, getCookie} from '/script.js';
+        import { fetchData, getCookie, populateLoginPlayerDropdown} from '/script.js';
+
+        // Register Page Functions
+async function fetchAndDisplayList(table, containerId) {
+    const data = await fetchData(table, 'name');
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+
+    data.forEach(item => {
+        const listItem = document.createElement('li');
+        listItem.textContent = item.name;
+        listItem.className = 'list-group-item';
+        container.appendChild(listItem);
+    });
+}
 
         async function joinTeam() {
     // Use the cookie for the playerId
@@ -386,72 +403,67 @@ async function autofillJoinTeamPlayer() {
 
 
 
-        async function registerPlayer() {
-    const playerName = document.getElementById('player-name').value.trim();
-    const playerPin = document.getElementById('player-pin').value.trim();
+    async function registerPlayer() {
+            const playerName = document.getElementById('player-name').value.trim();
+            const playerPin = document.getElementById('player-pin').value.trim();
 
-    // Validation checks
-    if (!playerName) {
-        alert('Please enter a valid name.');
-        return;
-    }
-    if (playerName.length > 32) {
-        alert('Player name must be 32 characters or less.');
-        return;
-    }
-    // Allow only A-Z, 0-9 and spaces:
-    if (!/^[A-Za-z0-9 ]+$/.test(playerName)) {
-        alert('Player name can only contain letters, numbers, and spaces.');
-        return;
-    }
-    if (!/^\d{4}$/.test(playerPin)) {
-        alert('Please enter a valid 4-digit PIN.');
-        return;
-    }
+            // Validation checks for name.
+            if (!playerName) {
+                alert('Please enter a valid name.');
+                return;
+            }
+            if (playerName.length > 32) {
+                alert('Player name must be 32 characters or less.');
+                return;
+            }
+            // Allow only A-Z, 0-9 and spaces.
+            if (!/^[A-Za-z0-9 ]+$/.test(playerName)) {
+                alert('Player name can only contain letters, numbers, and spaces.');
+                return;
+            }
+            if (!/^\d{4}$/.test(playerPin)) {
+                alert('Please enter a valid 4-digit PIN.');
+                return;
+            }
 
-    // Hash the PIN using MD5 before storing
-    const hashedPin = CryptoJS.MD5(playerPin).toString();
+            // Hash the PIN using MD5 before storing.
+            const hashedPin = CryptoJS.MD5(playerPin).toString();
 
-    try {
-        // Check if the player name already exists
-        const { data: existingPlayers, error: checkError } = await supabase
-            .from('players')
-            .select('id')
-            .eq('name', playerName);
+            try {
+                // Check if the player name already exists.
+                const { data: existingPlayers, error: checkError } = await supabase
+                    .from('players')
+                    .select('id')
+                    .eq('name', playerName);
 
-        if (checkError) {
-            console.error('Error checking for existing player:', checkError);
-            return;
+                if (checkError) {
+                    console.error('Error checking for existing player:', checkError);
+                    return;
+                }
+                if (existingPlayers.length > 0) {
+                    alert('This player name is already taken. Please choose a different name.');
+                    return;
+                }
+
+                // Insert the new player with the hashed PIN.
+                const { error: insertError } = await supabase.from('players').insert([
+                    { name: playerName, password: hashedPin }
+                ]);
+                if (insertError) throw insertError;
+
+                alert('Player registered successfully!');
+                document.getElementById('player-name').value = '';
+                document.getElementById('player-pin').value = '';
+
+                // Refresh the players list.
+                await fetchAndDisplayList('players', 'player-list');
+                // Refresh the login modal's player dropdown.
+                await populateLoginPlayerDropdown();
+            } catch (err) {
+                console.error('Error registering player:', err);
+                alert('Failed to register player.');
+            }
         }
-
-        // If any existing player is found, prevent registration
-        if (existingPlayers.length > 0) {
-            alert('This player name is already taken. Please choose a different name.');
-            return;
-        }
-
-        // Insert the new player with the hashed PIN
-        const { error: insertError } = await supabase.from('players').insert([
-            { name: playerName, password: hashedPin }
-        ]);
-
-        if (insertError) throw insertError;
-
-        alert('Player registered successfully!');
-        document.getElementById('player-name').value = '';
-        document.getElementById('player-pin').value = '';
-
-        await fetchAndDisplayList('players', 'player-list');
-    } catch (err) {
-        console.error('Error registering player:', err);
-        alert('Failed to register player.');
-    }
-}
-
-
-
-
-
 
 async function registerTeam() {
     const teamName = document.getElementById('team-name').value.trim();
@@ -463,7 +475,7 @@ async function registerTeam() {
         alert('Team name must be 32 characters or less.');
         return;
     }
-    // Allow only A-Z, 0-9 and spaces:
+    // Allow only A-Z, 0-9 and spaces.
     if (!/^[A-Za-z0-9 ]+$/.test(teamName)) {
         alert('Team name can only contain letters, numbers, and spaces.');
         return;
@@ -485,14 +497,14 @@ async function registerTeam() {
             return;
         }
 
-        // Define card allocations (update these numbers if needed):
+        // Define card allocations.
         const newTeam = {
             name: teamName,
-            card_aero_unplayed: 1,    // Aero cards available initially.
-            card_double_unplayed: 1,  // Double cards available initially.
-            card_halo_unplayed: 3,    // Halo cards available initially.
-            card_report_unplayed: 1,  // Report cards available initially.
-            card_swap_unplayed: 1,    // Swap cards available initially.
+            card_aero_unplayed: 1,
+            card_double_unplayed: 1,
+            card_halo_unplayed: 3,
+            card_report_unplayed: 1,
+            card_swap_unplayed: 1,
             card_aero_played: 0,
             card_double_played: 0,
             card_halo_played: 0,
@@ -500,21 +512,21 @@ async function registerTeam() {
             card_swap_played: 0
         };
 
-        // Add the new team along with the card allocations.
+        // Insert the new team into the database.
         const { error: insertError } = await supabase.from('teams').insert([newTeam]);
         if (insertError) throw insertError;
 
         alert('Team registered successfully!');
         document.getElementById('team-name').value = '';
+
+        // Refresh the registered teams list and update the join team dropdown.
         await fetchAndDisplayList('teams', 'team-list');
+        await populateTeamDropdown();
     } catch (err) {
         console.error('Error registering team:', err);
         alert('Failed to register team.');
     }
 }
-
-
-
 
         async function populateTeamListWithMembers() {
             const teamListElement = document.getElementById('join-team-list');
