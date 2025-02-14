@@ -37,6 +37,11 @@
         #admin-content {
             display: none;
         }
+
+        body.admin-unlocked {
+  overflow-x: hidden;
+}
+
     </style>
 
     <!-- Encryption Script -->
@@ -625,47 +630,41 @@
     <script type="module">
         import { getCookie } from '/script.js'; // Adjust the path as needed
 
-// Polling function to check for the admin cookie.
-function checkAdminCookie(retries = 10, delay = 500) {
-  if (getCookie("playerId") === "1") {
-    // Unlock admin page if user_id equals "1"
-    document.getElementById("password-input-section").style.display = "none";
-    document.getElementById("admin-content").style.display = "block";
-    console.log("Admin detected via cookie; unlocking admin page.");
-  } else if (retries > 0) {
-    // Try again after a delay.
-    setTimeout(() => {
-      checkAdminCookie(retries - 1, delay);
-    }, delay);
-  } else {
-    console.log("Admin cookie not detected after multiple checks.");
-  }
-}
-
-// Start checking once the DOM is fully loaded.
 window.addEventListener("DOMContentLoaded", () => {
-  checkAdminCookie();
+  // Delay the auto-check by 2000ms to allow time for the cookie to be set.
+  setTimeout(() => {
+    if (getCookie("playerId") === "1") {
+      document.getElementById("password-input-section").style.display = "none";
+      document.getElementById("admin-content").style.display = "block";
+      // Add a class to the body to help control layout when admin is unlocked.
+      document.body.classList.add("admin-unlocked");
+      console.log("Admin detected via cookie; unlocking admin page.");
+    } else {
+      console.log("Admin cookie not found; manual login required.");
+    }
+  }, 1000);
 });
 
-
 // --- PASSWORD CODE ---
-        const hashedPassword = "4e668929edb3bf915e1a3a9d96c3c97e";
-        // Validate the Password
-        function validatePassword() {
-            const inputPassword = document.getElementById("password-input").value.trim(); // Trim whitespace
-            const hashedInputPassword = CryptoJS.MD5(inputPassword).toString();
+const hashedPassword = "4e668929edb3bf915e1a3a9d96c3c97e";
 
-            if (hashedInputPassword === hashedPassword) {
-                document.getElementById("password-input-section").style.display = "none";
-                document.getElementById("admin-content").style.display = "block";
-            } else {
-                const errorElement = document.getElementById("password-error");
-                errorElement.style.display = "block";
-                setTimeout(() => {
-                    errorElement.style.display = "none";
-                }, 3000);
-            }
-        }
+// Validate the Password
+function validatePassword() {
+  const inputPassword = document.getElementById("password-input").value.trim();
+  const hashedInputPassword = CryptoJS.MD5(inputPassword).toString();
+
+  if (hashedInputPassword === hashedPassword) {
+    document.getElementById("password-input-section").style.display = "none";
+    document.getElementById("admin-content").style.display = "block";
+    document.body.classList.add("admin-unlocked");
+  } else {
+    const errorElement = document.getElementById("password-error");
+    errorElement.style.display = "block";
+    setTimeout(() => {
+      errorElement.style.display = "none";
+    }, 3000);
+  }
+}
 
 // --- FORM CONFIGURATION CODE ---
         // Fetch and render the table
