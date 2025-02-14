@@ -138,19 +138,19 @@ footer {
     font-style: normal;
 }
 
-  @font-face {
-    font-family: 'Pixeloid Sans';
-    src: url('fonts/PixeloidSans.ttf') format('truetype'),
-    font-weight: normal;
-    font-style: normal;
-  }
+@font-face {
+  font-family: 'Pixeloid Sans';
+  src: url('fonts/PixeloidSans.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
 
-  @font-face {
-    font-family: 'Pixeloid Sans Bold';
-    src: url('fonts/PixeloidSansBold.ttf') format('truetype'),
-    font-weight: normal;
-    font-style: normal;
-  }
+@font-face {
+  font-family: 'Pixeloid Sans Bold';
+  src: url('fonts/PixeloidSansBold.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
 
     /* 2. Apply the custom font to your body text */
    
@@ -248,22 +248,24 @@ footer {
 }
 
 .centered-text-pixel-art-heading {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-family: 'Press Start 2P', Helvetica, sans-serif; /* Fallback fonts */
-    color: white; /* Main text color */
-    text-shadow: 3px 3px 0 black, /* Offset shadow color */
-                 6px 6px 0 black; /* Layered shadow effect */
-    font-size: clamp(0.8rem, 5vw, 2rem); /* Dynamic size for responsiveness */
-    letter-spacing: 0em;  For pixel art readability */
-    line-height: 1.2; /* Adjust for spacing */
-    font-weight: bold;          /* Bold for emphasis */
-    /*text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);  Optional shadow for readability */
-    text-align: center;         /* Ensure text is centered in smaller containers */
-    z-index: 2;                 /* Above the overlay */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Press Start 2P', Helvetica, sans-serif; /* Fallback fonts */
+  color: white; /* Main text color */
+  text-shadow: 3px 3px 0 black, /* Offset shadow color */
+               6px 6px 0 black; /* Layered shadow effect */
+  font-size: clamp(0.8rem, 5vw, 2rem); /* Dynamic size for responsiveness */
+  letter-spacing: 0em; /* For pixel art readability */
+  line-height: 1.2; /* Adjust for spacing */
+  font-weight: bold; /* Bold for emphasis */
+  /* Optional shadow for readability:
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7); */
+  text-align: center; /* Center text in smaller containers */
+  z-index: 2; /* Ensure it's above overlays */
 }
+
 .pixel-button {
   font-family: 'Press Start 2P', Helvetica, Arial, sans-serif;
   font-size: 0.8rem;
@@ -360,10 +362,6 @@ footer {
 .pixel-dropdown {
   position: relative;
   display: inline-block;
-}
-
-.pixel-dropdown .pixel-button {
-  /* Inherits .pixel-button styles */
 }
 
 .pixel-dropdown .pixel-button::after {
@@ -771,7 +769,6 @@ footer {
 /* Hide input text and replace with dots */
 #login-system-pin-input {
   -webkit-text-security: disc; /* For Webkit browsers (Chrome, Safari) */
-  text-security: disc;         /* For Firefox */
 }
 
 /* User Avatar Box */

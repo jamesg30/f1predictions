@@ -170,6 +170,14 @@
             </div>
         </div>
         <hr>
+        <!-- Loading Indicator for Scored Results -->
+        <div id="loadingPlaceholderBar" class="loading-indicator mb-3 pixel-art-heading-2">
+            <div class="container my-3 d-flex justify-content-left">
+                <h4 class="mb-3 pixel-art-heading-3">Loading...</h4>
+            </div>
+            Loading...
+            <div class="loading-bar"></div>
+        </div>
         <!-- Scored Results Section -->
         <div id="scoredResults" style="display: none;"> <!-- Scored Results Placeholder -->
             <div class="container my-3 d-flex justify-content-left">
@@ -224,6 +232,9 @@
                 </div>
                 <div id="lowestScores" class="mt-3">
                     <!-- Lowest scores will be displayed here -->
+                </div>
+                <div class="pixel-alert pixel-alert-info" style="margin-top: 5px"">
+                    NEW: Toggle the switch 'Show Detailed Scoring' to show the breakdown of scores!
                 </div>
             </div>
         </div>
@@ -555,6 +566,7 @@
 
 // RESULTS DISPLAY CODE
         document.addEventListener("DOMContentLoaded", async () => {
+            document.getElementById('loadingPlaceholderBar').style.display = 'block';
             // ----- INITIAL DATA FETCHING -----
 
             // Fetch initial form details
@@ -632,6 +644,7 @@
                 document.getElementById('unscoredRaceTitle').textContent = `${raceName} ${current_year} - Predictions`;
 
                 // Show loading indicator for Unscored Predictions
+                document.getElementById('loadingPlaceholderBar').style.display = 'none'; // Hide Placeholder Bar
                 document.getElementById('unscoredLoading').style.display = 'block';
 
                 // Fetch form responses from form_raw for the current race
@@ -748,6 +761,7 @@
                 document.getElementById('raceTitle').textContent = `${raceName} ${current_year} - Results`;
 
                 // Show loading indicator for Scored Results
+                document.getElementById('loadingPlaceholderBar').style.display = 'none'; // Hide Placeholder Bar
                 document.getElementById('scoredLoading').style.display = 'block';
 
                 // Fetch form responses from form_responses_{current_year}
@@ -940,6 +954,7 @@
                 // Hide the loading indicator after the scored results table is built.
                 document.getElementById('scoredLoading').style.display = 'none';
             } else if (results_display_type === 'No Display') {
+                document.getElementById('loadingPlaceholderBar').style.display = 'none'; // Hide Placeholder Bar
                 document.getElementById('unscoredPredictions').style.display = 'none';
                 document.getElementById('scoredResults').style.display = 'none';
                 document.getElementById('noDisplay').style.display = 'block';
