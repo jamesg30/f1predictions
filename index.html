@@ -42,6 +42,14 @@
     padding: 0 20px; /* Add padding on desktop */
 }
 
+.flag-img {
+  width: 64px;
+  height: 36px;
+  image-rendering: pixelated;
+  /* 8-bit style shadow: crisp, no blur, offset to bottom-right */
+  box-shadow: 4px 4px 0px #a0a0a0;
+}
+
 @media (max-width: 768px) {
     .chart-wrapper {
         height: 500px; /* Increase height on smaller screens */
@@ -432,12 +440,13 @@
         const flagUrl = `/media/flags/${raceDetails.country.toLowerCase()}.png`;
 
         document.getElementById("next-race-info").innerHTML = `
-        <img src="${flagUrl}" alt="${raceDetails.country} Flag" style="width: 64px; height: 36px; image-rendering: pixelated;">
-        <h6 class="mt-2 pixel-art-body-small">${raceDetails.name} GP</h6>
-        <div id="countdown-timer" class="mt-2" style="font-size: 0.8rem; text-align: center; display: inline-block;">
-            <strong>Time left:</strong> <span id="countdown"></span>
-        </div>
-        `;
+  <img src="${flagUrl}" alt="${raceDetails.country} Flag" class="flag-img">
+  <h6 class="mt-2 pixel-art-body-small">${raceDetails.name} GP</h6>
+  <div id="countdown-timer" class="mt-2" style="font-size: 0.8rem; text-align: center; display: inline-block;">
+      <strong>Time left:</strong> <span id="countdown"></span>
+  </div>
+`;
+
 
         // Show the countdown container (it should now size to its content)
         document.getElementById("countdown-timer").style.display = "inline-block";

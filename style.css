@@ -64,7 +64,7 @@ footer {
 
 /* First column styling for both tables */
 #mainResultsTable td:first-child,
-#player-results-table td:first-child, #standings-table td:first-child, #standings-team-table td:first-child {
+#player-results-table td:first-child, #standings-table td:first-child, #standings-team-table td:first-child, #unscoredResultsTable td:first-child{
   background-color: #eeeeee;
 }
 

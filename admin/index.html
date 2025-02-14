@@ -582,6 +582,8 @@
             </div>
         </div>
         <!-- LOGIN MODAL -->
+    </main>
+    <main>
 <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -613,14 +615,39 @@
       </div>
     </div>
   </div>
-    </main>
+</main>
 
     <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
         <p>&copy; 2024 F1 Predictions Form</p>
     </footer>
 
     <script src="/js/bootstrap.bundle.min.js"></script>
-    <script>
+    <script type="module">
+        import { getCookie } from '/script.js'; // Adjust the path as needed
+
+// Polling function to check for the admin cookie.
+function checkAdminCookie(retries = 10, delay = 500) {
+  if (getCookie("playerId") === "1") {
+    // Unlock admin page if user_id equals "1"
+    document.getElementById("password-input-section").style.display = "none";
+    document.getElementById("admin-content").style.display = "block";
+    console.log("Admin detected via cookie; unlocking admin page.");
+  } else if (retries > 0) {
+    // Try again after a delay.
+    setTimeout(() => {
+      checkAdminCookie(retries - 1, delay);
+    }, delay);
+  } else {
+    console.log("Admin cookie not detected after multiple checks.");
+  }
+}
+
+// Start checking once the DOM is fully loaded.
+window.addEventListener("DOMContentLoaded", () => {
+  checkAdminCookie();
+});
+
+
 // --- PASSWORD CODE ---
         const hashedPassword = "4e668929edb3bf915e1a3a9d96c3c97e";
         // Validate the Password
@@ -1805,6 +1832,45 @@ async function updatePlayerPassword(id) {
             // Show confirmation modal
             const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
             confirmationModal.show();
+
+            // Function to retrieve data from a table
+            async function getTable(tableName) {
+                const { data, error } = await supabase
+                    .from(tableName)
+                    .select('*');
+                if (error) {
+                    console.error(`Error retrieving data from ${tableName}:`, error.message);
+                    return [];
+                }
+                return data;
+            }
+            const calendar = await getTable('calendar');
+            const formRaw = await getTable('form_raw');
+            const relevantRaceNumber = raceNumber;
+            // Function to check race information and results submission status
+            function checkRaceInfo() {
+                const raceInfoList = document.getElementById('raceInfo');
+                raceInfoList.innerHTML = ''; // Clear existing items
+
+                // Check what race is being submitted
+                const race = calendar.find(race => race.race_number === relevantRaceNumber);
+                const raceName = race ? race.name : 'Unknown Race';
+                const raceItem = document.createElement('li');
+                raceItem.className = 'list-group-item';
+                raceItem.textContent = `Race: ${raceName} (Race Number: ${relevantRaceNumber})`;
+                raceInfoList.appendChild(raceItem);
+
+                // Check if results have been submitted for this race
+                const resultsSubmitted = formRaw.some(response => response.race_number === relevantRaceNumber && response.player_id === 0);
+                const resultsItem = document.createElement('li');
+                resultsItem.className = 'list-group-item';
+                resultsItem.textContent = resultsSubmitted ? 'Results Submitted' : 'Results Not Submitted';
+                resultsItem.style.color = resultsSubmitted ? 'darkgreen' : 'red';
+                raceInfoList.appendChild(resultsItem);
+            }
+
+            // Call the function to check race information and results submission status
+            checkRaceInfo();
         });
     });
 
@@ -1914,32 +1980,36 @@ async function updatePlayerPassword(id) {
         await fetchFormDetails();
 
         // Fetch race options and populate the select lists
-        async function fetchRaceOptions() {
-            const { data: races, error: racesError } = await supabase
-            .from('calendar')
-            .select('race_number, name');
+// Fetch race options and populate the select lists
+async function fetchRaceOptions() {
+  const { data: races, error: racesError } = await supabase
+    .from('calendar')
+    .select('race_number, name')
+    .order('race_number', { ascending: true }); // Order by race_number in ascending order
 
-            if (racesError) {
-            console.error('Error fetching race options:', racesError);
-            return;
-            }
+  if (racesError) {
+    console.error('Error fetching race options:', racesError);
+    return;
+  }
 
-            races.forEach(race => {
-            const option = document.createElement('option');
-            option.value = race.race_number;
-            option.textContent = race.name;
-            if (race.race_number === currentRaceNumber) {
-                option.selected = true;
-            }
-            raceSelect.appendChild(option);
+  races.forEach(race => {
+    const option = document.createElement('option');
+    option.value = race.race_number;
+    option.textContent = `Race ${race.race_number}: ${race.name} GP`;
+    if (race.race_number === currentRaceNumber) {
+      option.selected = true;
+    }
+    raceSelect.appendChild(option);
 
-            const resultsOption = option.cloneNode(true);
-            if (race.race_number === resultsDisplayRaceNumber) {
-                resultsOption.selected = true;
-            }
-            resultsDisplayRaceSelect.appendChild(resultsOption);
-            });
-        }
+    const resultsOption = option.cloneNode(true);
+    if (race.race_number === resultsDisplayRaceNumber) {
+      resultsOption.selected = true;
+    }
+    resultsDisplayRaceSelect.appendChild(resultsOption);
+  });
+}
+
+
 
         await fetchRaceOptions();
 
@@ -2480,6 +2550,7 @@ async function updatePlayerPassword(id) {
         scoreRoundButton.addEventListener('click', async () => {
             let relevantResponses = formRaw.filter(response => response.race_number === relevantRaceNumber);
             let results = relevantResponses.find(response => response.player_id === 0);
+            console.log("Retrieved results:", results);
 
             // Define raceName outside the loops
             let race = calendar.find(race => race.race_number === relevantRaceNumber);
@@ -2578,6 +2649,29 @@ async function updatePlayerPassword(id) {
         }
         return data;
         }
+
+
+         // Helper function: Returns the lowest numeric score for a given round.
+// It ignores rows with player_id 0 (the Race Names row).
+function getLowestScoreForRound(roundNumber, seasonPlayers) {
+  const column = `race_${roundNumber}`;
+  let lowest = null;
+  seasonPlayers.forEach(row => {
+    if (row.player_id === 0) return; // skip the Race Names row
+    const scoreStr = row[column];
+    if (scoreStr) {
+      // Remove any "(LS)" suffix and parse the numeric part.
+      const numericPart = parseFloat(scoreStr.replace(/\(LS\)/, ''));
+      if (!isNaN(numericPart)) {
+        if (lowest === null || numericPart < lowest) {
+          lowest = numericPart;
+        }
+      }
+    }
+  });
+  return lowest;
+}
+
 
         // Helper: Append message to progress area and log to console.
         function updateProgress(message) {
@@ -2806,39 +2900,62 @@ async function updatePlayerPassword(id) {
         updateProgress("Race Names row updated.");
 
         // Process each player response.
-        for (const resp of playerResponses) {
-            let score = resp.grand_total;
-            if (resp.entry_type === 'player_lowest_score') {
-            score = `${score}(LS)`;
-            }
-            updateProgress(`Processing player ${resp.player_name} (ID: ${resp.player_id}) with score: ${score}`);
+        // Process each player response.
+for (const resp of playerResponses) {
+  let score = resp.grand_total;
+  if (resp.entry_type === 'player_lowest_score') {
+    score = `${score}(LS)`;
+  }
+  updateProgress(`Processing player ${resp.player_name} (ID: ${resp.player_id}) with score: ${score}`);
 
-            let playerRow = seasonPlayers.find(row => row.player_id === resp.player_id);
-            if (!playerRow) {
-            updateProgress(`Creating new entry for player ${resp.player_name} (ID: ${resp.player_id}).`);
-            let newRow = { player_id: resp.player_id, player_name: resp.player_name, [raceColumn]: score };
+  let playerRow = seasonPlayers.find(row => row.player_id === resp.player_id);
+  if (!playerRow) {
+    updateProgress(`Creating new entry for player ${resp.player_name} (ID: ${resp.player_id}).`);
+    
+    // Create a new row with the player details.
+    let newRow = { 
+      player_id: resp.player_id, 
+      player_name: resp.player_name 
+    };
 
-            const { error: insertPlayerError } = await supabase
-                .from(seasonPlayerTable)
-                .insert([newRow]);
-            if (insertPlayerError) {
-                updateProgress(`Error inserting player ${resp.player_name}: ${insertPlayerError.message}`);
-            } else {
-                updateProgress(`Player ${resp.player_name} inserted successfully.`);
-            }
-            } else {
-            updateProgress(`Updating player ${resp.player_name} in column ${raceColumn}.`);
-            let { error: updatePlayerError } = await supabase
-                .from(seasonPlayerTable)
-                .update({ [raceColumn]: score })
-                .eq('player_id', resp.player_id);
-            if (updatePlayerError) {
-                updateProgress(`Error updating player ${resp.player_name}: ${updatePlayerError.message}`);
-            } else {
-                updateProgress(`Player ${resp.player_name} updated successfully.`);
-            }
-            }
-        }
+    // Backfill previous rounds with the lowest score (appended with (LS)).
+    // Loop from round 1 to the round before the current race.
+    for (let i = 1; i < raceNumber; i++) {
+      const lowestScore = getLowestScoreForRound(i, seasonPlayers);
+      if (lowestScore !== null) {
+        newRow[`race_${i}`] = `${lowestScore}(LS)`;
+      } else {
+        // If no score exists yet for this round, you can leave it null or set to an empty string.
+        newRow[`race_${i}`] = null;
+      }
+    }
+    
+    // Set the current race's column.
+    newRow[raceColumn] = score;
+
+    // Insert the new player row.
+    const { error: insertPlayerError } = await supabase
+      .from(seasonPlayerTable)
+      .insert([newRow]);
+    if (insertPlayerError) {
+      updateProgress(`Error inserting player ${resp.player_name}: ${insertPlayerError.message}`);
+    } else {
+      updateProgress(`Player ${resp.player_name} inserted successfully.`);
+    }
+  } else {
+    updateProgress(`Updating player ${resp.player_name} in column ${raceColumn}.`);
+    let { error: updatePlayerError } = await supabase
+      .from(seasonPlayerTable)
+      .update({ [raceColumn]: score })
+      .eq('player_id', resp.player_id);
+    if (updatePlayerError) {
+      updateProgress(`Error updating player ${resp.player_name}: ${updatePlayerError.message}`);
+    } else {
+      updateProgress(`Player ${resp.player_name} updated successfully.`);
+    }
+  }
+}
+
 
         updateProgress("Season totals update complete.");
         alert("Season Totals update complete.");
@@ -2868,6 +2985,7 @@ async function updatePlayerPassword(id) {
          * Logs progress messages to the console and a progress div.
          * @param {string} message - The message to log.
          */
+
         function updateProgressSeasonTeam(message) {
         console.log("[Season Team] " + message);
         const progressDiv = document.getElementById("update-progress-season-team");
@@ -3279,15 +3397,6 @@ async function updatePlayerPassword(id) {
         updateProgressSeasonTeam("Finished updating team scores.");
         }
 
-
-
-
-
-
-
-
-
-
         async function upsertTeamScoringData(teamScoringData, tableName) {
         try {
             // Fetch existing records to check for conflicts
@@ -3637,6 +3746,28 @@ async function updatePlayerPassword(id) {
         // === SEASON TEAM FUNCTION ===
         // ============================= 
 
+// Helper function for Season Team: Get the lowest team score for a given round.
+function getLowestTeamScoreForRound(roundNumber, seasonTeamData) {
+  const column = `race_${roundNumber}`;
+  let lowest = null;
+  seasonTeamData.forEach(row => {
+    if (row.team_id === 0) return; // Skip the Race Names row.
+    const scoreStr = row[column];
+    if (scoreStr) {
+      // Extract the numeric portion at the start of the string.
+      const match = scoreStr.match(/^(\d+(\.\d+)?)/);
+      if (match) {
+        let num = parseFloat(match[1]);
+        if (lowest === null || num < lowest) {
+          lowest = num;
+        }
+      }
+    }
+  });
+  return lowest;
+}
+
+
         // Progress Helpers for Season Team Summary Section
         function updateProgressTeamSummary(message) {
         console.log("[Season Team Summary] " + message);
@@ -3756,6 +3887,17 @@ async function updatePlayerPassword(id) {
         // We will upsert one row per team for the selected race.
         updateProgressTeamSummary(`Updating season_team table (${seasonTeamTable}) for race ${raceNumber}...`);
 
+        // Fetch current season team data to use for backfilling new records.
+const { data: seasonTeamData, error: seasonTeamDataError } = await supabase
+  .from(seasonTeamTable)
+  .select("*");
+if (seasonTeamDataError) {
+  updateProgressTeamSummary("Error fetching season team data: " + seasonTeamDataError.message);
+  return;
+}
+updateProgressTeamSummary(`Fetched ${seasonTeamData.length} season team rows.`);
+
+
         // For each team scoring record, upsert into season_team_{year}.
         for (let record of teamScoringData) {
             // Build the update object.
@@ -3788,15 +3930,24 @@ async function updatePlayerPassword(id) {
             } else {
                 updateProgressTeamSummary(`Record for team ${record.team_name} updated successfully.`);
             }
-            } else {
-            // If no record exists, insert a new one.
-            const { error: insertError } = await supabase.from(seasonTeamTable).insert(updateObj);
-            if (insertError) {
-                updateProgressTeamSummary(`Error inserting record for team ${record.team_name}: ${insertError.message}`);
-            } else {
-                updateProgressTeamSummary(`Record for team ${record.team_name} inserted successfully.`);
-            }
-            }
+        } else {
+  // If no record exists, backfill previous rounds with the lowest team score.
+  for (let i = 1; i < raceNumber; i++) {
+    const lowest = getLowestTeamScoreForRound(i, seasonTeamData);
+    if (lowest !== null) {
+      updateObj[`race_${i}`] = `${lowest}(LS)`;
+    } else {
+      updateObj[`race_${i}`] = null; // or set as an empty string if preferred
+    }
+  }
+  // Insert new record with the backfilled data.
+  const { error: insertError } = await supabase.from(seasonTeamTable).insert(updateObj);
+  if (insertError) {
+    updateProgressTeamSummary(`Error inserting record for team ${record.team_name}: ${insertError.message}`);
+  } else {
+    updateProgressTeamSummary(`Record for team ${record.team_name} inserted successfully.`);
+  }
+}
         }
 
         // Also update the "Race Names" row (team_id = 0) to store the race name.
