@@ -366,16 +366,16 @@ export function getCookie(name) {
   // Returns a color from a fixed palette based on the letter (or a default color)
   export function getColorForLetter(letter) {
     const colors = [
-      '#FF5733', // 0
-      '#33FF57', // 1
-      '#3357FF', // 2
-      '#F333FF', // 3
-      '#33FFF3', // 4
-      '#FF33F3', // 5
-      '#F3FF33', // 6
-      '#FF8C33', // 7
-      '#33FF8C', // 8
-      '#00cfff'  // 9
+      '#fb9605', // 0 - orange
+      '#fc3d11', // 1 - red
+      '#A7FC00', // 2 - bright green
+      '#20e1d1', // 3 - aqua
+      '#9c1ae7', // 4 - purple
+      '#0B6623', // 5 - forest green
+      '#f5ed16', // 6 - yellow
+      '#178bd5', // 7 - dark blue
+      '#fb5cab', // 8 - light pink
+      '#52c1fa'  // 9 - light blue
     ];
   
     let index;
