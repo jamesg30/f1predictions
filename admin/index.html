@@ -107,7 +107,7 @@
     <main id="password-input-section">
         <h4 class="pixel-art-heading-2">Admin Page</h4>
         <input type="password" id="password-input" class="form-control w-25 text-center" placeholder="Enter Password">
-        <button class="pixel-button dark mt-3" onclick="validatePassword()">Submit</button>
+        <button id="login-button" class="pixel-button dark mt-3" onclick="validatePassword()">Submit</button>
         <p id="password-error" style="display: none;">Incorrect Password. Please try again.</p>
     </main>
 
@@ -630,19 +630,29 @@
     <script type="module">
         import { getCookie } from '/script.js'; // Adjust the path as needed
 
+// Polling function to check for the admin cookie.
+function checkAdminCookie(retries = 10, delay = 500) {
+  if (getCookie("playerId") === "1") {
+    // Unlock admin page if user_id equals "1"
+    document.getElementById("password-input-section").style.display = "none";
+    document.getElementById("admin-content").style.display = "block";
+    console.log("Admin detected via cookie; unlocking admin page.");
+  } else if (retries > 0) {
+    console.log(`Admin cookie not found. Retrying... (${retries} attempts left)`);
+    setTimeout(() => {
+      checkAdminCookie(retries - 1, delay);
+    }, delay);
+  } else {
+    console.log("Admin cookie not detected after multiple checks.");
+  }
+}
+
+// Start checking immediately when the script runs
+checkAdminCookie();
+
+// Also retry once DOM is fully loaded (ensures it runs even if script executes too early)
 window.addEventListener("DOMContentLoaded", () => {
-  // Delay the auto-check by 2000ms to allow time for the cookie to be set.
-  setTimeout(() => {
-    if (getCookie("playerId") === "1") {
-      document.getElementById("password-input-section").style.display = "none";
-      document.getElementById("admin-content").style.display = "block";
-      // Add a class to the body to help control layout when admin is unlocked.
-      document.body.classList.add("admin-unlocked");
-      console.log("Admin detected via cookie; unlocking admin page.");
-    } else {
-      console.log("Admin cookie not found; manual login required.");
-    }
-  }, 1000);
+  checkAdminCookie();
 });
 
 // --- PASSWORD CODE ---
@@ -650,13 +660,12 @@ const hashedPassword = "4e668929edb3bf915e1a3a9d96c3c97e";
 
 // Validate the Password
 function validatePassword() {
-  const inputPassword = document.getElementById("password-input").value.trim();
+  const inputPassword = document.getElementById("password-input").value.trim(); // Trim whitespace
   const hashedInputPassword = CryptoJS.MD5(inputPassword).toString();
 
   if (hashedInputPassword === hashedPassword) {
     document.getElementById("password-input-section").style.display = "none";
     document.getElementById("admin-content").style.display = "block";
-    document.body.classList.add("admin-unlocked");
   } else {
     const errorElement = document.getElementById("password-error");
     errorElement.style.display = "block";
@@ -665,6 +674,10 @@ function validatePassword() {
     }, 3000);
   }
 }
+
+// Ensure the function is available globally
+window.validatePassword = validatePassword;
+
 
 // --- FORM CONFIGURATION CODE ---
         // Fetch and render the table
