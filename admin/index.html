@@ -38,8 +38,8 @@
             display: none;
         }
 
-        body.admin-unlocked {
-  overflow-x: hidden;
+        html, body {
+  overflow-x: hidden; /* stops horizontal scroll if you never want it */
 }
 
     </style>
@@ -634,19 +634,12 @@
 function checkAdminCookie(retries = 10, delay = 500) {
   if (getCookie("playerId") === "1") {
     console.log("Admin detected via cookie; unlocking admin page.");
-
     const passwordSection = document.getElementById("password-input-section");
     const adminContent = document.getElementById("admin-content");
-
-    // Hide the password section immediately
+    // Hide the password section
     passwordSection.style.display = "none";
-
-    // Force a reflow before showing the admin content
-    setTimeout(() => {
-      adminContent.style.display = "block";
-      document.documentElement.style.overflow = "hidden"; // Prevents weird shifting
-      document.documentElement.style.overflow = ""; // Restores normal scrolling
-    }, 0);
+    // Show the admin content
+    adminContent.style.display = "block";
   } else if (retries > 0) {
     console.log(`Admin cookie not found. Retrying... (${retries} attempts left)`);
     setTimeout(() => {
@@ -656,6 +649,7 @@ function checkAdminCookie(retries = 10, delay = 500) {
     console.log("Admin cookie not detected after multiple checks.");
   }
 }
+
 
 // Start checking immediately when the script runs
 checkAdminCookie();
