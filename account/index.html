@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Page Details -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
+  <title>F1 Predictions | Account</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/style.css">
+
+  <!-- Supabase Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    // Initialize Supabase globally
+    const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
+    var supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Simple getCookie helper (if not defined elsewhere)
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+  </script>
+
+  <!-- Encryption Script -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+  <!-- script.js import -->
+  <script type="module" src="/script.js"></script>
+
+  <!-- Custom Avatar Styling -->
+   <style>
+
+.avatar-customisation-container {
+  max-width: 800px;
+  margin: auto;
+}
+
+/* Avatar preview: center content and add internal padding */
+.avatar-preview.preview {
+    width: 5rem;
+    height: 5rem;
+    padding: 0.5rem;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 4px solid #c0c0c0;
+    margin: auto;
+    box-sizing: border-box;
+  }
+
+.current-avatar-section {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.current-avatar-section .avatar-label {
+  margin-top: 0.5rem;
+  font-weight: bold;
+}
+
+.icon-options-section {
+  margin-bottom: 1rem;
+}
+
+.icon-options-section .section-title {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.icon-group {
+  margin-bottom: 1rem;
+}
+
+.icon-group h4 {
+  margin-bottom: 0.5rem;
+}
+
+.icon-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.icon-option {
+  text-align: center;
+  flex: 1 1 80px;
+}
+
+.icon-option input {
+  display: none;
+}
+
+/* When the radio input is checked, add a blue border to its image or icon */
+.icon-option label > input:checked + img,
+.icon-option label > input:checked + .icon-image {
+  border: 3px solid blue;
+}
+
+/* Icon options: Ensure images and letter-based icons are scaled, padded and centered */
+.icon-option img,
+  .icon-option .icon-image {
+    width: 60px;
+    height: 60px;
+    object-fit: contain; /* Ensures aspect ratio is preserved */
+    padding: 5px;
+    image-rendering: pixelated;
+    border: 3px solid #c0c0c0;
+    box-sizing: border-box;
+  }
+  /* For letter-based radio options */
+  .icon-option .icon-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Press Start 2P', Helvetica, sans-serif;
+    font-weight: bold;
+  }
+
+.icon-label {
+  margin-top: 0.25rem;
+  text-align: center;
+  font-family: 'Pixeloid Sans', Helvetica, sans-serif; /* Custom font with fallbacks */
+    font-size: 1rem; /* Adjust as needed */
+    color: #333; /* Main text color */
+    letter-spacing: 0.1em; /* For pixel art readability */
+    line-height: 1.3; /* Adjust for spacing */
+}
+
+.colour-options-section {
+  margin-bottom: 1rem;
+}
+
+.colour-options-section .section-title {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.colour-pickers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.colour-picker-group label {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.new-avatar-preview-section {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.new-avatar-preview-section .section-title {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 576px) {
+  .colour-pickers {
+    grid-template-columns: 1fr;
+  }
+}
+/* Ensure our masked (monochrome) icon displays as block */
+.monochrome-icon {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+  }
+
+   </style>
+</head>
+<body>
+  <!-- Alert Container with high z-index so it appears on top -->
+  <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999;"></div>
+  
+  <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
+    <!-- Left Section: Logo and Heading -->
+    <div class="d-flex align-items-center">
+      <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
+        <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
+      </a>
+      <a href="/" class="text-decoration-none text-black">
+        <h5 class="mb-0 pixel-art-heading-2" style="font-size: 1.1rem;">F1 Predictions</h5>
+      </a>
+    </div>
+    <!-- Right Section: User Avatar and Hamburger Menu -->
+    <div class="d-flex align-items-center">
+      <div id="user-avatar" class="user-avatar d-none me-2"></div>
+      <div class="pixel-dropdown me-3">
+        <button class="pixel-button" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
+          Menu
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/">Home</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallxb" href="/account">Account</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li id="loggedInUserDisplay" class="dropdown-item-text d-none pixel-art-body-smallx" style="color: darkgrey">
+            Logged in as <strong></strong>
+          </li>
+          <li id="logoutMenuItem" class="d-none">
+            <a class="dropdown-item logout-link pixel-art-body-smallx" href="#" id="logoutBtn">Log Out</a>
+          </li>
+          <li id="loginMenuItem">
+            <a class="dropdown-item pixel-art-body-smallx" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log In</a>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/admin">Admin</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+  
+  <main class="container my-5">
+    <div class="container my-5">
+      
+      <h2 class="mb-3 pixel-art-heading-3">Account</h2>
+      <hr>
+<!-- AVATAR CUSTOMISATION -->
+<h2 class="pixel-art-heading-3">Avatar Customisation</h2>
+<div class="container avatar-customisation-container">
+  <!-- Current Avatar Preview -->
+  <div class="current-avatar-section">
+    <div id="current-avatar" class="avatar-preview preview">A</div>
+    <div class="mb-3 pixel-art-heading-2" style="margin-top: 10px">Current Avatar</div>
+  </div>
+  
+  <!-- Icon Options -->
+  <div class="icon-options-section">
+    <h3 class="mb-3 pixel-art-heading-2">Icon Options:</h3>
+    
+    <div class="icon-group">
+      <h4 class="pixel-art-body" style="font-size: 1.2rem">Monochrome Icons:</h4>
+      <div class="icon-options">
+        <div class="icon-option">
+            <label>
+              <!-- Use data-type="letter" so the JS treats it as a letter-based avatar -->
+              <input type="radio" name="avatar-icon" value="letter" data-type="letter">
+              <div class="icon-image">A</div>
+            </label>
+            <div class="icon-label">Letter</div>
+          </div>
+        <div class="icon-option">
+          <label>
+            <input type="radio" name="avatar-icon" value="icon_car.png" data-type="monochrome">
+            <img src="/media/icons/icon_car.png" alt="Car">
+          </label>
+          <div class="icon-label">Car</div>
+        </div>
+        <div class="icon-option">
+          <label>
+            <input type="radio" name="avatar-icon" value="icon_helmet.png" data-type="monochrome">
+            <img src="/media/icons/icon_helmet.png" alt="Helmet">
+          </label>
+          <div class="icon-label">Helmet</div>
+        </div>
+        <div class="icon-option">
+          <label>
+            <input type="radio" name="avatar-icon" value="icon_star.png" data-type="monochrome">
+            <img src="/media/icons/icon_star.png" alt="Star">
+          </label>
+          <div class="icon-label">Star</div>
+        </div>
+        <div class="icon-option">
+          <label>
+            <input type="radio" name="avatar-icon" value="icon_trophy.png" data-type="monochrome">
+            <img src="/media/icons/icon_trophy.png" alt="Trophy">
+          </label>
+          <div class="icon-label">Trophy</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="icon-group">
+        <h4 class="pixel-art-body" style="font-size: 1.2rem">Tyres:</h4>
+      <div class="icon-options">
+        <div class="icon-option">
+          <label>
+            <input type="radio" name="avatar-icon" value="icon_tyre_soft.png" data-type="fixed">
+            <img src="/media/icons/icon_tyre_soft.png" alt="Soft">
+          </label>
+          <div class="icon-label">Soft</div>
+        </div>
+        <div class="icon-option">
+          <label>
+            <input type="radio" name="avatar-icon" value="icon_tyre_medium.png" data-type="fixed">
+            <img src="/media/icons/icon_tyre_medium.png" alt="Medium">
+          </label>
+          <div class="icon-label">Medium</div>
+        </div>
+        <div class="icon-option">
+          <label>
+            <input type="radio" name="avatar-icon" value="icon_tyre_hard.png" data-type="fixed">
+            <img src="/media/icons/icon_tyre_hard.png" alt="Hard">
+          </label>
+          <div class="icon-label">Hard</div>
+        </div>
+        <div class="icon-option">
+          <label>
+            <input type="radio" name="avatar-icon" value="icon_tyre_inter.png" data-type="fixed">
+            <img src="/media/icons/icon_tyre_inter.png" alt="Inter">
+          </label>
+          <div class="icon-label">Inter</div>
+        </div>
+        <div class="icon-option">
+          <label>
+            <input type="radio" name="avatar-icon" value="icon_tyre_wet.png" data-type="fixed">
+            <img src="/media/icons/icon_tyre_wet.png" alt="Wet">
+          </label>
+          <div class="icon-label">Wet</div>
+        </div>
+        <div class="icon-option">
+          <label>
+            <input type="radio" name="avatar-icon" value="icon_tyre_hypersoft.png" data-type="fixed">
+            <img src="/media/icons/icon_tyre_hypersoft.png" alt="Hypersoft">
+          </label>
+          <div class="icon-label">Hypersoft</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Colour Options -->
+  <div class="colour-options-section">
+    <h3 class="mb-3 pixel-art-heading-2">Colour Options:</h3>
+    <div class="colour-pickers">
+      <div class="colour-picker-group">
+        <label for="icon-color" class="icon-label">Icon:</label>
+        <input type="color" id="icon-color" class="form-control">
+      </div>
+      <div class="colour-picker-group">
+        <label for="background-color" class="icon-label">Background:</label>
+        <input type="color" id="background-color" class="form-control">
+      </div>
+    </div>
+  </div>
+  
+  <!-- New Avatar Preview -->
+  <div class="new-avatar-preview-section">
+    <h3 class="mb-3 pixel-art-heading-2">New Avatar Preview</h3>
+    <div id="new-avatar" class="avatar-preview preview">A</div>
+  </div>
+  
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <button id="save-avatar" class="pixel-button primary">Save Avatar</button>
+    <button id="reset-avatar" class="pixel-button secondary">Reset to Default</button>
+  </div>
+</div>
+
+      <hr>
+<!-- PASSWORD CHANGE AND RESET-->      
+      <h2 class="mb-3 pixel-art-heading-3">Password Change & Reset</h2>
+      <div>
+        <p>
+          To reset your password, email <a href="mailto:f1predictionsform@outlook.com?subject=F1 Predictions Form Password Reset&body=Hi, I would like to request a password reset. My username is: ">f1predictionsform@outlook.com</a> with your username.
+          You will receive a response with a new password, which you can change using the form below.
+        </p>
+      </div>
+      <form id="passwordResetForm">
+        <!-- Autofilled Logged-In Name -->
+        <div class="mb-3">
+          <label for="logged-in-name" class="form-label">Name:</label>
+          <input type="text" id="logged-in-name" class="form-control" disabled>
+        </div>
+        <!-- Existing PIN -->
+<div class="mb-3">
+    <label for="current-pin" class="form-label">Current PIN:</label>
+    <input type="password" id="current-pin" class="form-control" placeholder="Re-enter your current PIN" maxlength="4" pattern="^\d{4}$" required>
+  </div>
+  <!-- New PIN -->
+  <div class="mb-3">
+    <label for="new-pin" class="form-label">New PIN:</label>
+    <input type="password" id="new-pin" class="form-control" placeholder="Enter new PIN" maxlength="4" pattern="^\d{4}$" required>
+  </div>
+  <!-- Confirm New PIN -->
+  <div class="mb-3">
+    <label for="confirm-new-pin" class="form-label">Confirm New PIN:</label>
+    <input type="password" id="confirm-new-pin" class="form-control" placeholder="Re-enter new PIN" maxlength="4" pattern="^\d{4}$" required>
+  </div>
+  
+        <!-- Update Password Button -->
+        <div class="text-center">
+            <button type="submit" id="passwordUpdateBtn" class="pixel-button primary">Update Password</button>
+
+        </div>
+      </form>
+    </div>
+    
+    <!-- LOGIN MODAL -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title pixel-art-heading-2" id="loginModalLabel">Login</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="login-form">
+              <div class="mb-3">
+                <label for="login-player-name" class="form-label pixel-art-body">Select Player</label>
+                <select id="login-player-name" class="form-select pixel-art-body" required>
+                  <!-- Options populated dynamically -->
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="login-pin" class="form-label pixel-art-body">Enter PIN</label>
+                <input type="password" id="login-pin" class="form-control pixel-art-body" maxlength="4" pattern="\d*" inputmode="numeric" required />
+              </div>              
+              <div class="mb-3">
+                <label for="rememberMe" class="form-check-label pixel-art-body">
+                  <input type="checkbox" id="rememberMe" class="form-check-input pixel-art-body" />
+                  Remember me
+                </label>
+              </div>
+              <button type="submit" class="pixel-button">Login</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </main>
+  
+  <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
+    <p>&copy; 2024 F1 Predictions Form</p>
+  </footer>
+  
+  <!-- Bootstrap JS Bundle (Local) -->
+  <script src="/js/bootstrap.bundle.min.js"></script>
+  
+  <script type="module">
+    import { fetchData, getCookie, darkenColor, getColorForLetter} from '/script.js';
+    // Autofill the password reset form's logged in name field.
+    async function autofillLoggedInName() {
+  const playerId = getCookie("playerId");
+  const loggedInNameField = document.getElementById("logged-in-name");
+  const currentPINField = document.getElementById("current-pin");
+  const newPINField = document.getElementById("new-pin");
+  const confirmNewPINField = document.getElementById("confirm-new-pin");
+  const updateButton = document.getElementById("passwordUpdateBtn");
+  
+  if (!playerId) {
+    // Not logged in: disable all fields and set placeholder text.
+    loggedInNameField.value = "";
+    loggedInNameField.placeholder = "Please log in to change your password.";
+    loggedInNameField.disabled = true;
+    currentPINField.disabled = true;
+    newPINField.disabled = true;
+    confirmNewPINField.disabled = true;
+    updateButton.disabled = true;
+    return;
+  }
+  
+  // Logged in: fetch player's name.
+  const { data: player, error } = await supabase
+    .from('players')
+    .select('name')
+    .eq('id', playerId)
+    .single();
+    
+  if (error || !player) {
+    console.error("Error fetching player name:", error);
+    return;
+  }
+  
+  loggedInNameField.value = player.name;
+  loggedInNameField.disabled = true;
+  currentPINField.disabled = false;
+  newPINField.disabled = false;
+  confirmNewPINField.disabled = false;
+  updateButton.disabled = false;
+}
+
+
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      autofillLoggedInName();
+      
+      // Handle password reset form submission.
+      document.getElementById('passwordResetForm').addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  const currentPIN = document.getElementById('current-pin').value.trim();
+  const newPIN = document.getElementById('new-pin').value.trim();
+  const confirmNewPIN = document.getElementById('confirm-new-pin').value.trim();
+  const playerId = getCookie("playerId");
+
+  // Check that each PIN is exactly 4 digits.
+  const pinRegex = /^\d{4}$/;
+  if (!pinRegex.test(currentPIN) || !pinRegex.test(newPIN) || !pinRegex.test(confirmNewPIN)) {
+    alert("PIN must be exactly 4 digits.");
+    return;
+  }
+
+  if (!currentPIN || !newPIN || !confirmNewPIN) {
+    alert("Please fill in all fields.");
+    return;
+  }
+
+  if (newPIN !== confirmNewPIN) {
+    alert("New PIN and confirmation do not match.");
+    return;
+  }
+
+  try {
+    // Fetch the current hashed password associated with the user.
+    const { data: userData, error: fetchError } = await supabase
+      .from('players')
+      .select('password')
+      .eq('id', playerId)
+      .single();
+
+    if (fetchError || !userData) {
+      console.error("Error fetching user data:", fetchError);
+      alert("Failed to fetch user data. Please try again.");
+      return;
+    }
+
+    // Hash the current PIN entered by the user.
+    const hashedCurrentPIN = CryptoJS.MD5(currentPIN).toString();
+    if (hashedCurrentPIN !== userData.password) {
+      alert("Current PIN is incorrect.");
+      return;
+    }
+
+    // Hash the new PIN before updating.
+    const hashedNewPIN = CryptoJS.MD5(newPIN).toString();
+
+    // Update the player's password (i.e. PIN).
+    const { error: updateError } = await supabase
+      .from('players')
+      .update({ password: hashedNewPIN })
+      .eq('id', playerId);
+
+    if (updateError) {
+      console.error("Error updating PIN:", updateError);
+      alert("Failed to update PIN. Please try again.");
+    } else {
+      alert("PIN updated successfully!");
+      document.getElementById('passwordResetForm').reset();
+      autofillLoggedInName();
+    }
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    alert("An unexpected error occurred. Please try again.");
+  }
+});
+    });
+
+    document.addEventListener("loginStateChanged", async (event) => {
+  await autofillLoggedInName();
+});
+
+// AVATAR CODE
+document.addEventListener('DOMContentLoaded', async () => {
+  const currentAvatarEl = document.getElementById('current-avatar');
+  const newAvatarEl = document.getElementById('new-avatar');
+  const iconColorPicker = document.getElementById('icon-color');
+  const backgroundColorPicker = document.getElementById('background-color');
+  const saveButton = document.getElementById('save-avatar');
+  const resetButton = document.getElementById('reset-avatar');
+
+  // Initially disable the Save button.
+  saveButton.disabled = true;
+  // Always enable Reset so users can reset their settings.
+  resetButton.disabled = false;
+
+  const playerId = getCookie('playerId');
+  const { data: user, error } = await supabase
+    .from('players')
+    .select('avatar_settings, name')
+    .eq('id', playerId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching avatar settings:', error);
+    return;
+  }
+
+  // Get the player's first letter.
+  const letter = user.name.charAt(0).toUpperCase();
+
+  // Update the letter radio option so it displays the player's letter using "Press Start 2P".
+  const letterIconEl = document.querySelector('input[name="avatar-icon"][value="letter"] + .icon-image');
+  if (letterIconEl) {
+    letterIconEl.textContent = letter;
+    letterIconEl.style.fontFamily = "'Press Start 2P', Helvetica, sans-serif";
+    letterIconEl.style.fontWeight = "bold";
+  }
+
+  // Default settings: if no avatar settings exist, default to a letter avatar.
+  let savedSettings = user.avatar_settings || {
+    type: 'letter',
+    icon: 'letter',
+    iconColor: '#ffffff', // Letter colour (adjustable)
+    backgroundColor: getColorForLetter(letter)
+  };
+
+  // Render the current avatar preview.
+  renderAvatar(currentAvatarEl, savedSettings);
+
+  // Reflect saved settings in the UI.
+  const radio = document.querySelector(`input[name="avatar-icon"][value="${savedSettings.icon}"]`);
+  if (radio) {
+    radio.checked = true;
+    // Disable the colour picker only for fixed icons.
+    iconColorPicker.disabled = (radio.dataset.type === 'fixed');
+  }
+  if (savedSettings.iconColor) iconColorPicker.value = savedSettings.iconColor;
+  if (savedSettings.backgroundColor) backgroundColorPicker.value = savedSettings.backgroundColor;
+
+  // Helper: Get current settings from the UI.
+  function getAvatarSettingsFromUI() {
+    const selectedRadio = document.querySelector('input[name="avatar-icon"]:checked');
+    let type, icon;
+    if (selectedRadio) {
+      icon = selectedRadio.value;
+      type = selectedRadio.dataset.type;
+    } else {
+      type = 'letter';
+      icon = 'letter';
+    }
+    return {
+      type,
+      icon,
+      // For fixed icons ignore the tint; for letter & monochrome, use the chosen color.
+      iconColor: (type === 'fixed') ? null : iconColorPicker.value,
+      backgroundColor: backgroundColorPicker.value
+    };
+  }
+
+  // Helper: Enable the Save button if settings have changed.
+  function checkForAvatarChanges() {
+    const currentSettings = getAvatarSettingsFromUI();
+    if (JSON.stringify(currentSettings) !== JSON.stringify(savedSettings)) {
+      saveButton.disabled = false;
+    } else {
+      saveButton.disabled = true;
+    }
+  }
+
+  // Listen for changes on the radio options.
+  document.querySelectorAll('input[name="avatar-icon"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const selected = document.querySelector('input[name="avatar-icon"]:checked');
+      iconColorPicker.disabled = (selected.dataset.type === 'fixed');
+      updateNewAvatarPreview();
+      checkForAvatarChanges();
+    });
+  });
+
+  // Listen for changes on the colour pickers.
+  iconColorPicker.addEventListener('input', () => {
+    updateNewAvatarPreview();
+    checkForAvatarChanges();
+  });
+  backgroundColorPicker.addEventListener('input', () => {
+    updateNewAvatarPreview();
+    checkForAvatarChanges();
+  });
+
+  // Render the avatar preview based on settings.
+  function renderAvatar(element, settings) {
+    let shadow;
+    if (settings.type === 'monochrome') {
+      shadow = darkenColor(settings.iconColor, 50);
+    } else if (settings.type === 'letter') {
+      shadow = darkenColor(getColorForLetter(letter), 50);
+    } else {
+      shadow = 'rgba(0,0,0,0.5)';
+    }
+
+    let innerContent;
+    if (settings.type === 'letter') {
+      // Render a letter avatar using "Press Start 2P".
+      innerContent = `<div class="avatar-inner" style="
+        font-family: 'Press Start 2P', Helvetica, sans-serif;
+        font-weight: bold;
+        color: ${settings.iconColor};
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+      ">${letter}</div>`;
+    } else if (settings.type === 'monochrome') {
+      // Render a monochrome icon.
+      innerContent = `<div style="display:inline-block; filter: drop-shadow(2px 2px 0 ${shadow});">
+        <div class="monochrome-icon" style="
+          background-color: ${settings.iconColor};
+          -webkit-mask-image: url('/media/icons/${settings.icon}');
+          -webkit-mask-repeat: no-repeat;
+          -webkit-mask-position: center;
+          -webkit-mask-size: contain;
+          mask-image: url('/media/icons/${settings.icon}');
+          mask-repeat: no-repeat;
+          mask-position: center;
+          mask-size: contain;
+          width: 100%;
+          height: 100%;
+        "></div>
+      </div>`;
+    } else {
+      // Fixed icon.
+      if (settings.icon.includes('tyre')) {
+        // For tyre icons (17x17 pixel art), render with 1px padding.
+        innerContent = `<img src="/media/icons/${settings.icon}" alt="Avatar Icon" style="
+          width: calc(100% - 2px);
+          padding: 1px;
+          image-rendering: pixelated;
+          filter: drop-shadow(2px 2px 0 ${shadow});
+        ">`;
+      } else {
+        innerContent = `<img src="/media/icons/${settings.icon}" alt="Avatar Icon" style="
+          width: 100%;
+          image-rendering: pixelated;
+          filter: drop-shadow(2px 2px 0 ${shadow});
+        ">`;
+      }
+    }
+    element.innerHTML = innerContent;
+    element.style.backgroundColor = settings.backgroundColor;
+    element.style.textShadow = `1px 1px 0 ${shadow}, 2px 2px 0 ${shadow}`;
+  }
+
+  // Update the new avatar preview.
+  function updateNewAvatarPreview() {
+    const settings = getAvatarSettingsFromUI();
+    renderAvatar(newAvatarEl, settings);
+  }
+
+  // Update the new avatar preview on page load.
+  updateNewAvatarPreview();
+
+  // Save new avatar settings (stored as JSONB).
+  saveButton.addEventListener('click', async () => {
+    const newSettings = getAvatarSettingsFromUI();
+    const { error } = await supabase
+      .from('players')
+      .update({ avatar_settings: newSettings })
+      .eq('id', playerId);
+    if (error) {
+      console.error('Error updating avatar settings:', error);
+      alert('Failed to update avatar.');
+    } else {
+      alert('Avatar updated!');
+      renderAvatar(currentAvatarEl, newSettings);
+      savedSettings = newSettings;
+      saveButton.disabled = true;
+    }
+  });
+
+  // Reset to default settings (always available) with confirmation.
+  resetButton.addEventListener('click', async () => {
+    if (!confirm('Are you sure you want to reset to defaults?')) return;
+    const { error } = await supabase
+      .from('players')
+      .update({ avatar_settings: null })
+      .eq('id', playerId);
+    if (error) {
+      console.error('Error resetting avatar settings:', error);
+      alert('Failed to reset avatar.');
+    } else {
+      alert('Avatar reset!');
+      location.reload();
+    }
+  });
+});
+  </script>
+</body>
+</html>

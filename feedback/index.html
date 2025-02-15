@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
-  <title>F1 Predictions | Feedback & Account</title>
+  <title>F1 Predictions | Feedback</title>
 
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
@@ -60,9 +60,10 @@
           <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallxb" href="/feedback">Feedback<br>& Account</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallxb" href="/feedback">Feedback</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/account">Account</a></li>
           <li><hr class="dropdown-divider"></li>
           <li id="loggedInUserDisplay" class="dropdown-item-text d-none pixel-art-body-smallx" style="color: darkgrey">
             Logged in as <strong></strong>
@@ -119,44 +120,6 @@
       <p style="margin-top: 10px">
         You can also contact us via email <a href="mailto:f1predictionsform@outlook.com">f1predictionsform@outlook.com</a>.
       </p>
-      <hr>
-      
-      <!-- Password Reset & Change Section -->
-      <h2 class="mb-3 pixel-art-heading-3">Account</h2>
-      <div>
-        <p>
-          To reset your password, email <a href="mailto:f1predictionsform@outlook.com?subject=F1 Predictions Form Password Reset&body=Hi, I would like to request a password reset. My username is: ">f1predictionsform@outlook.com</a> with your username.
-          You will receive a response with a new password, which you can change using the form below.
-        </p>
-      </div>
-      <form id="passwordResetForm">
-        <!-- Autofilled Logged-In Name -->
-        <div class="mb-3">
-          <label for="logged-in-name" class="form-label">Name:</label>
-          <input type="text" id="logged-in-name" class="form-control" disabled>
-        </div>
-        <!-- Existing PIN -->
-        <div class="mb-3">
-          <label for="current-pin" class="form-label">Current PIN:</label>
-          <input type="password" id="current-pin" class="form-control" placeholder="Re-enter your current PIN" required>
-        </div>
-        <!-- New PIN -->
-        <div class="mb-3">
-          <label for="new-pin" class="form-label">New PIN:</label>
-          <input type="password" id="new-pin" class="form-control" placeholder="Enter new PIN" required>
-        </div>
-        <!-- Confirm New PIN -->
-        <div class="mb-3">
-          <label for="confirm-new-pin" class="form-label">Confirm New PIN:</label>
-          <input type="password" id="confirm-new-pin" class="form-control" placeholder="Re-enter new PIN" required>
-        </div>
-        <!-- Update Password Button -->
-        <div class="text-center">
-            <button type="submit" id="passwordUpdateBtn" class="pixel-button primary">Update Password</button>
-
-        </div>
-      </form>
-    </div>
     
     <!-- LOGIN MODAL -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
@@ -176,8 +139,9 @@
               </div>
               <div class="mb-3">
                 <label for="login-pin" class="form-label pixel-art-body">Enter PIN</label>
-                <input type="password" id="login-pin" class="form-control pixel-art-body" maxlength="4" pattern="\d*" required />
+                <input type="password" id="login-pin" class="form-control pixel-art-body" maxlength="4" pattern="\d*" inputmode="numeric" required />
               </div>
+              
               <div class="mb-3">
                 <label for="rememberMe" class="form-check-label pixel-art-body">
                   <input type="checkbox" id="rememberMe" class="form-check-input pixel-art-body" />
@@ -241,54 +205,8 @@
   submitButton.disabled = false;
 }
 
-
-    
-    // Autofill the password reset form's logged in name field.
-    async function autofillLoggedInName() {
-  const playerId = getCookie("playerId");
-  const loggedInNameField = document.getElementById("logged-in-name");
-  const currentPINField = document.getElementById("current-pin");
-  const newPINField = document.getElementById("new-pin");
-  const confirmNewPINField = document.getElementById("confirm-new-pin");
-  const updateButton = document.getElementById("passwordUpdateBtn");
-  
-  if (!playerId) {
-    // Not logged in: disable all fields and set placeholder text.
-    loggedInNameField.value = "";
-    loggedInNameField.placeholder = "Please log in to change your password.";
-    loggedInNameField.disabled = true;
-    currentPINField.disabled = true;
-    newPINField.disabled = true;
-    confirmNewPINField.disabled = true;
-    updateButton.disabled = true;
-    return;
-  }
-  
-  // Logged in: fetch player's name.
-  const { data: player, error } = await supabase
-    .from('players')
-    .select('name')
-    .eq('id', playerId)
-    .single();
-    
-  if (error || !player) {
-    console.error("Error fetching player name:", error);
-    return;
-  }
-  
-  loggedInNameField.value = player.name;
-  loggedInNameField.disabled = true;
-  currentPINField.disabled = false;
-  newPINField.disabled = false;
-  confirmNewPINField.disabled = false;
-  updateButton.disabled = false;
-}
-
-
-    
     document.addEventListener('DOMContentLoaded', () => {
       autofillFeedbackName();
-      autofillLoggedInName();
       
       // Handle anonymous checkbox for feedback.
       const anonymousCheckbox = document.getElementById("anonymousCheckbox");
@@ -336,75 +254,10 @@
           alert('An unexpected error occurred. Please try again.');
         }
       });
-      
-      // Handle password reset form submission.
-document.getElementById('passwordResetForm').addEventListener('submit', async (event) => {
-  event.preventDefault();
-  
-  const currentPIN = document.getElementById('current-pin').value;
-  const newPIN = document.getElementById('new-pin').value;
-  const confirmNewPIN = document.getElementById('confirm-new-pin').value;
-  const playerId = getCookie("playerId");
-  
-  if (!currentPIN || !newPIN || !confirmNewPIN) {
-    alert("Please fill in all fields.");
-    return;
-  }
-  
-  if (newPIN !== confirmNewPIN) {
-    alert("New PIN and confirmation do not match.");
-    return;
-  }
-  
-  try {
-    // Fetch the current hashed password associated with the user.
-    const { data: userData, error: fetchError } = await supabase
-      .from('players')
-      .select('password')
-      .eq('id', playerId)
-      .single();
-    
-    if (fetchError || !userData) {
-      console.error("Error fetching user data:", fetchError);
-      alert("Failed to fetch user data. Please try again.");
-      return;
-    }
-    
-    // Hash the current PIN entered by the user.
-    const hashedCurrentPIN = CryptoJS.MD5(currentPIN).toString();
-    if (hashedCurrentPIN !== userData.password) {
-      alert("Current PIN is incorrect.");
-      return;
-    }
-    
-    // Hash the new PIN before updating.
-    const hashedNewPIN = CryptoJS.MD5(newPIN).toString();
-    
-    // Update the player's password (i.e. PIN).
-    const { error: updateError } = await supabase
-      .from('players')
-      .update({ password: hashedNewPIN })
-      .eq('id', playerId);
-    
-    if (updateError) {
-      console.error("Error updating PIN:", updateError);
-      alert("Failed to update PIN. Please try again.");
-    } else {
-      alert("PIN updated successfully!");
-      document.getElementById('passwordResetForm').reset();
-      autofillLoggedInName();
-    }
-  } catch (err) {
-    console.error("Unexpected error:", err);
-    alert("An unexpected error occurred. Please try again.");
-  }
-});
-
     });
 
     document.addEventListener("loginStateChanged", async (event) => {
   await autofillFeedbackName();
-  await autofillLoggedInName();
 });
 
   </script>

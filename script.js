@@ -80,15 +80,21 @@ export async function createDriverDropdownWithDNF(container, id) {
 }
 
 // Number input field
+// Number input field
 export function createNumberInput(container, id, isDecimal) {
-    const input = document.createElement('input');
-    input.type = 'number';
-    input.id = id;
-    input.name = id;
-    input.step = isDecimal ? '0.01' : '1';
-    input.placeholder = isDecimal ? 'Enter a number (2 decimal places)' : 'Enter a number (0-20)';
-    container.appendChild(input);
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.id = id;
+  input.name = id;
+  input.step = isDecimal ? '0.01' : '1';
+  input.min = '0';
+  input.max = isDecimal ? '1000' : '20';
+  input.placeholder = isDecimal 
+    ? 'Enter a number (up to 2 decimal places)' 
+    : 'Enter a number (0-20)';
+  container.appendChild(input);
 }
+
 
 // Yes/No input field
 export function createYesNoInput(container, id) {

@@ -774,12 +774,12 @@ footer {
 /* User Avatar Box */
 .user-avatar {
   /* The size here determines the box dimensions */
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2.4rem;
+  height: 2.4rem;
   /* Ensure the text is centered */
   display: inline-block;
   text-align: center;
-  line-height: 2.2rem;
+  line-height: 2.4rem;
   margin-right: 0.5rem;
   border: 2px solid #c0c0c0;
   /* The dynamic background, text-shadow, font, and color are set via JS */
