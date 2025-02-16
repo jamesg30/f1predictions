@@ -18,13 +18,6 @@
     const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
     var supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-    // Simple getCookie helper (if not defined elsewhere)
-    function getCookie(name) {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop().split(';').shift();
-    }
   </script>
 
   <!-- Encryption Script -->
@@ -86,6 +79,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  justify-content: center; /* Centers the icons in a row */
 }
 
 .icon-option {
@@ -227,7 +221,7 @@
           <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
+          <!--<li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>-->
           <li><a class="dropdown-item pixel-art-body-smallxb" href="/account">Account</a></li>
           <li><hr class="dropdown-divider"></li>
           <li id="loggedInUserDisplay" class="dropdown-item-text d-none pixel-art-body-smallx" style="color: darkgrey">
@@ -267,7 +261,7 @@
     <div class="icon-group">
       <h4 class="pixel-art-body" style="font-size: 1.2rem">Monochrome Icons:</h4>
       <div class="icon-options">
-        <div class="icon-options">
+        
           <!-- Letter Option -->
           <div class="icon-option">
             <label>
@@ -324,12 +318,12 @@
             </label>
             <div class="icon-label">Monster</div>
           </div>
-        </div>
+        
       </div>
     </div>
     
     <div class="icon-group">
-        <h4 class="pixel-art-body" style="font-size: 1.2rem">Tyres:</h4>
+      <h4 class="pixel-art-body" style="font-size: 1.2rem">Coloured Icons:</h4>
       <div class="icon-options">
         <div class="icon-option">
           <label>
@@ -373,9 +367,17 @@
           </label>
           <div class="icon-label">Hypersoft</div>
         </div>
+        <!-- New option: Red Bull coloured icon -->
+        <div class="icon-option">
+          <label>
+            <input type="radio" name="avatar-icon" value="icon_redbullcolour" data-type="fixed">
+            <img src="/media/icons/icon_redbullcolour.png" alt="Red Bull Colour">
+          </label>
+          <div class="icon-label">Red Bull</div>
+        </div>
       </div>
     </div>
-  </div>
+    
   
   <!-- Colour Options -->
   <div class="colour-options-section">
@@ -487,9 +489,10 @@
   <script src="/js/bootstrap.bundle.min.js"></script>
   
   <script type="module">
-    import { fetchData, getCookie, darkenColor, getColorForLetter, renderAvatar} from '/script.js';
-    // Autofill the password reset form's logged in name field.
-    async function autofillLoggedInName() {
+   import { fetchData, getCookie, darkenColor, getColorForLetter, renderAvatar } from '/script.js';
+
+// Existing function to autofill the password reset form.
+async function autofillLoggedInName() {
   const playerId = getCookie("playerId");
   const loggedInNameField = document.getElementById("logged-in-name");
   const currentPINField = document.getElementById("current-pin");
@@ -498,7 +501,6 @@
   const updateButton = document.getElementById("passwordUpdateBtn");
   
   if (!playerId) {
-    // Not logged in: disable all fields and set placeholder text.
     loggedInNameField.value = "";
     loggedInNameField.placeholder = "Please log in to change your password.";
     loggedInNameField.disabled = true;
@@ -529,88 +531,8 @@
   updateButton.disabled = false;
 }
 
-
-    
-    document.addEventListener('DOMContentLoaded', () => {
-      autofillLoggedInName();
-      
-      // Handle password reset form submission.
-      document.getElementById('passwordResetForm').addEventListener('submit', async (event) => {
-  event.preventDefault();
-
-  const currentPIN = document.getElementById('current-pin').value.trim();
-  const newPIN = document.getElementById('new-pin').value.trim();
-  const confirmNewPIN = document.getElementById('confirm-new-pin').value.trim();
-  const playerId = getCookie("playerId");
-
-  // Check that each PIN is exactly 4 digits.
-  const pinRegex = /^\d{4}$/;
-  if (!pinRegex.test(currentPIN) || !pinRegex.test(newPIN) || !pinRegex.test(confirmNewPIN)) {
-    alert("PIN must be exactly 4 digits.");
-    return;
-  }
-
-  if (!currentPIN || !newPIN || !confirmNewPIN) {
-    alert("Please fill in all fields.");
-    return;
-  }
-
-  if (newPIN !== confirmNewPIN) {
-    alert("New PIN and confirmation do not match.");
-    return;
-  }
-
-  try {
-    // Fetch the current hashed password associated with the user.
-    const { data: userData, error: fetchError } = await supabase
-      .from('players')
-      .select('password')
-      .eq('id', playerId)
-      .single();
-
-    if (fetchError || !userData) {
-      console.error("Error fetching user data:", fetchError);
-      alert("Failed to fetch user data. Please try again.");
-      return;
-    }
-
-    // Hash the current PIN entered by the user.
-    const hashedCurrentPIN = CryptoJS.MD5(currentPIN).toString();
-    if (hashedCurrentPIN !== userData.password) {
-      alert("Current PIN is incorrect.");
-      return;
-    }
-
-    // Hash the new PIN before updating.
-    const hashedNewPIN = CryptoJS.MD5(newPIN).toString();
-
-    // Update the player's password (i.e. PIN).
-    const { error: updateError } = await supabase
-      .from('players')
-      .update({ password: hashedNewPIN })
-      .eq('id', playerId);
-
-    if (updateError) {
-      console.error("Error updating PIN:", updateError);
-      alert("Failed to update PIN. Please try again.");
-    } else {
-      alert("PIN updated successfully!");
-      document.getElementById('passwordResetForm').reset();
-      autofillLoggedInName();
-    }
-  } catch (err) {
-    console.error("Unexpected error:", err);
-    alert("An unexpected error occurred. Please try again.");
-  }
-});
-    });
-
-    document.addEventListener("loginStateChanged", async (event) => {
-  await autofillLoggedInName();
-});
-
-// AVATAR CODE
-document.addEventListener('DOMContentLoaded', async () => {
+// New function to initialise (or clear) the avatar customisation UI.
+async function initializeAvatarCustomization() {
   const currentAvatarEl = document.getElementById('current-avatar');
   const newAvatarEl = document.getElementById('new-avatar');
   const iconColorPicker = document.getElementById('icon-color');
@@ -618,12 +540,34 @@ document.addEventListener('DOMContentLoaded', async () => {
   const saveButton = document.getElementById('save-avatar');
   const resetButton = document.getElementById('reset-avatar');
 
-  // Initially disable the Save button.
+  // Always disable the Save button initially.
   saveButton.disabled = true;
-  // Always enable Reset.
   resetButton.disabled = false;
 
   const playerId = getCookie('playerId');
+  if (!playerId) {
+    // User logged out: clear the form and disable fields.
+    currentAvatarEl.textContent = '';
+    newAvatarEl.textContent = '';
+    iconColorPicker.value = '#ffffff';
+    backgroundColorPicker.value = '#000000';
+    iconColorPicker.disabled = true;
+    backgroundColorPicker.disabled = true;
+    document.querySelectorAll('input[name="avatar-icon"]').forEach(radio => {
+      radio.checked = false;
+      radio.disabled = true;
+    });
+    return;
+  }
+
+  // Re-enable form fields if a user is logged in.
+  iconColorPicker.disabled = false;
+  backgroundColorPicker.disabled = false;
+  document.querySelectorAll('input[name="avatar-icon"]').forEach(radio => {
+    radio.disabled = false;
+  });
+
+  // Fetch user avatar settings from Supabase.
   const { data: user, error } = await supabase
     .from('players')
     .select('avatar_settings, name')
@@ -635,10 +579,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  // Get the player's first letter.
   const letter = user.name.charAt(0).toUpperCase();
-
-  // Update the letter radio option to display the player's letter using "Press Start 2P".
+  // Update the letter radio option display.
   const letterIconEl = document.querySelector('input[name="avatar-icon"][value="letter"] + .icon-image');
   if (letterIconEl) {
     letterIconEl.textContent = letter;
@@ -646,30 +588,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     letterIconEl.style.fontWeight = "bold";
   }
 
-  // Default settings: if no avatar settings exist, default to a letter avatar.
+  // Use saved settings if available, or default to a letter avatar.
   let savedSettings = user.avatar_settings || {
     type: 'letter',
     icon: 'letter',
-    iconColor: '#ffffff', // Letter colour (adjustable)
+    iconColor: '#ffffff',
     backgroundColor: getColorForLetter(letter)
   };
 
   // Render the current avatar preview.
-  // Render the current avatar preview with the correct letter.
-renderAvatar(currentAvatarEl, savedSettings, letter);
+  renderAvatar(currentAvatarEl, savedSettings, letter);
 
-
-  // Reflect saved settings in the UI.
+  // Populate the UI with saved settings.
   const radio = document.querySelector(`input[name="avatar-icon"][value="${savedSettings.icon}"]`);
   if (radio) {
     radio.checked = true;
-    // Disable the icon colour picker only for fixed icons.
+    // Disable the icon colour picker for fixed icons.
     iconColorPicker.disabled = (radio.dataset.type === 'fixed');
   }
   if (savedSettings.iconColor) iconColorPicker.value = savedSettings.iconColor;
   if (savedSettings.backgroundColor) backgroundColorPicker.value = savedSettings.backgroundColor;
 
-  // Helper: Get current settings from the UI.
+  // Helper: read current settings from the UI.
   function getAvatarSettingsFromUI() {
     const selectedRadio = document.querySelector('input[name="avatar-icon"]:checked');
     let type, icon;
@@ -683,20 +623,21 @@ renderAvatar(currentAvatarEl, savedSettings, letter);
     return {
       type,
       icon,
-      // For fixed icons ignore the tint; for letter & monochrome, use the chosen color.
       iconColor: (type === 'fixed') ? null : iconColorPicker.value,
       backgroundColor: backgroundColorPicker.value
     };
   }
 
-  // Helper: Enable the Save button if settings have changed.
+  // Helper: check if the settings have changed.
   function checkForAvatarChanges() {
     const currentSettings = getAvatarSettingsFromUI();
-    if (JSON.stringify(currentSettings) !== JSON.stringify(savedSettings)) {
-      saveButton.disabled = false;
-    } else {
-      saveButton.disabled = true;
-    }
+    saveButton.disabled = (JSON.stringify(currentSettings) === JSON.stringify(savedSettings));
+  }
+
+  // Helper: update the new avatar preview.
+  function updateNewAvatarPreview() {
+    const settings = getAvatarSettingsFromUI();
+    renderAvatar(newAvatarEl, settings, letter);
   }
 
   // Listen for changes on the radio options.
@@ -719,20 +660,10 @@ renderAvatar(currentAvatarEl, savedSettings, letter);
     checkForAvatarChanges();
   });
 
-
-
-
-  // Update the new avatar preview.
-  function updateNewAvatarPreview() {
-  const settings = getAvatarSettingsFromUI();
-  renderAvatar(newAvatarEl, settings, letter);
-}
-
-
-  // Update the new avatar preview on page load.
+  // Update preview on initialisation.
   updateNewAvatarPreview();
 
-  // Save new avatar settings (stored as JSONB).
+  // Save new avatar settings.
   saveButton.addEventListener('click', async () => {
     const newSettings = getAvatarSettingsFromUI();
     const { error } = await supabase
@@ -744,17 +675,16 @@ renderAvatar(currentAvatarEl, savedSettings, letter);
       alert('Failed to update avatar.');
     } else {
       alert('Avatar updated!');
-      renderAvatar(currentAvatarEl, newSettings);
+      renderAvatar(currentAvatarEl, newSettings, letter);
       savedSettings = newSettings;
       saveButton.disabled = true;
-      // Also update the header avatar with the new settings
-const headerAvatar = document.getElementById('user-avatar');
-renderAvatar(headerAvatar, newSettings, letter);
-
+      // Also update the header avatar.
+      const headerAvatar = document.getElementById('user-avatar');
+      renderAvatar(headerAvatar, newSettings, letter);
     }
   });
 
-  // Reset to default settings (always available) with confirmation.
+  // Reset to default settings.
   resetButton.addEventListener('click', async () => {
     if (!confirm('Are you sure you want to reset to defaults?')) return;
     const { error } = await supabase
@@ -769,6 +699,18 @@ renderAvatar(headerAvatar, newSettings, letter);
       location.reload();
     }
   });
+}
+
+// Initial setup when the DOM is ready.
+document.addEventListener('DOMContentLoaded', () => {
+  autofillLoggedInName();
+  initializeAvatarCustomization();
+});
+
+// When the login state changes, update both the password reset and avatar forms.
+document.addEventListener("loginStateChanged", async (event) => {
+  await autofillLoggedInName();
+  await initializeAvatarCustomization();
 });
   </script>
 </body>

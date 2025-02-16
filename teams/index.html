@@ -54,7 +54,7 @@
           <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
+          <!--<li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>-->
           <li><a class="dropdown-item pixel-art-body-smallx" href="/account">Account</a></li>
           <li><hr class="dropdown-divider"></li>
           <!-- Login/Logout Items -->
@@ -1035,17 +1035,17 @@ async function refreshCardPage() {
         document.getElementById("card-warning-notice").style.display = "block";
       } else {
         // Race open: Enable controls and start countdown.
-        submitCardBtn.disabled = false;
-        document.querySelectorAll("input[name='card']").forEach(radio => {
-          radio.disabled = false;
-        });
-        document.getElementById("card-info-notice").style.display = "none";
-        document.getElementById("card-warning-notice").style.display = "none";
-        document.getElementById("card-countdown-container").style.display = "block";
-        startGenericCountdown(raceStart, "card-countdown", function () {
-          lockCardPage();
-          document.getElementById("card-warning-notice").style.display = "block";
-        });
+submitCardBtn.disabled = false;
+// Instead of unconditionally enabling all card radios,
+// update the card stock display (which disables options with no stock).
+updateTeamCardStock();
+document.getElementById("card-info-notice").style.display = "none";
+document.getElementById("card-warning-notice").style.display = "none";
+document.getElementById("card-countdown-container").style.display = "block";
+startGenericCountdown(raceStart, "card-countdown", function () {
+  lockCardPage();
+  document.getElementById("card-warning-notice").style.display = "block";
+});
       }
     }
   }

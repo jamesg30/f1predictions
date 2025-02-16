@@ -1,240 +1,342 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Page Details -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
-    <title>F1 Predictions | Archive</title>
+  <!-- Page Details -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
+  <title>F1 Predictions | Archive</title>
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/style.css">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/style.css">
 
-    <!-- Supabase Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <script>
-        // Initialize Supabase globally
-        const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
-        var supabase = supabase.createClient(supabaseUrl, supabaseKey);
-    </script>
-    
-    <!-- Encryption Script -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <!-- Supabase Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    // Initialize Supabase globally
+    const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
+    var supabase = supabase.createClient(supabaseUrl, supabaseKey);
+  </script>
+  
+  <!-- Encryption Script -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
-    <!-- script.js import -->
-    <script type="module" src="/script.js"></script>
+  <!-- Import central script -->
+  <script type="module" src="/script.js"></script>
 </head>
 <body>
-    <!-- Alert Container -->
-    <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999;"></div>
-    <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
-        <!-- Left Section: Logo and Heading -->
-        <div class="d-flex align-items-center">
-          <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
-            <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
-          </a>
-          <a href="/" class="text-decoration-none text-black">
-            <h5 class="mb-0 pixel-art-heading-2" style="font-size: 1.1rem;">F1 Predictions</h5>
-          </a>
-        </div>
-      
-        <!-- Right Section: User Avatar and Hamburger Menu -->
-        <div class="d-flex align-items-center">
-          <!-- Pixel Avatar (initially hidden) -->
-          <div id="user-avatar" class="user-avatar d-none me-2"></div>
-          <!-- Hamburger Menu Dropdown -->
-          <div class="pixel-dropdown me-3">
-            <button class="pixel-button" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
-              Menu
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
-              <!-- Other Menu Items -->
-              <li><a class="dropdown-item pixel-art-body-smallx" href="/">Home</a></li>
+  <!-- Alert Container -->
+  <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999;"></div>
+  
+  <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
+    <!-- Left Section: Logo and Heading -->
+    <div class="d-flex align-items-center">
+      <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
+        <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
+      </a>
+      <a href="/" class="text-decoration-none text-black">
+        <h5 class="mb-0 pixel-art-heading-2" style="font-size: 1.1rem;">F1 Predictions</h5>
+      </a>
+    </div>
+    
+    <!-- Right Section: User Avatar and Hamburger Menu -->
+    <div class="d-flex align-items-center">
+      <div id="user-avatar" class="user-avatar d-none me-2"></div>
+      <div class="pixel-dropdown me-3">
+        <button class="pixel-button" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
+          Menu
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
+          <!-- Other Menu Items -->
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/">Home</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/account">Account</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <!-- Login/Logout Items -->
-              <li id="loggedInUserDisplay" class="dropdown-item-text d-none pixel-art-body-smallx" style="color: darkgrey">
-                Logged in as <strong></strong>
-              </li>
-              <li id="logoutMenuItem" class="d-none">
-                <a class="dropdown-item logout-link pixel-art-body-smallx" href="#" id="logoutBtn">
-                    Log Out
-                </a>
-              </li>
-              <li id="loginMenuItem">
-                <a class="dropdown-item pixel-art-body-smallx" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
-                  Log In
-                </a>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item pixel-art-body-smallx" href="/admin">Admin</a></li>
-            </ul>
-          </div>
-        </div>
-      </header>  
-
-    <main class="container my-5">
-        <h2 class="mb-3 pixel-art-heading-3">Form Submission Confirmation</h2>
-        <p class="mb-3">Your predictions have been successfully submitted. Please find a copy of your predictions below:</p>
-        <div id="confirmation-details" class="mb-3">
-            <!-- User responses will be displayed here -->
-        </div>
-        <div class="text-center mt-4">
-            <a href="/" style="text-decoration:none;">
-                <button type="button" class="pixel-button primary">Back to Home</button>
+          <li><hr class="dropdown-divider"></li>
+          <!-- Login/Logout Items -->
+          <li id="loggedInUserDisplay" class="dropdown-item-text d-none pixel-art-body-smallx" style="color: darkgrey">
+            Logged in as <strong></strong>
+          </li>
+          <li id="logoutMenuItem" class="d-none">
+            <a class="dropdown-item logout-link pixel-art-body-smallx" href="#" id="logoutBtn">Log Out</a>
+          </li>
+          <li id="loginMenuItem">
+            <a class="dropdown-item pixel-art-body-smallx" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
+              Log In
             </a>
-        </div>
-        <!-- LOGIN MODAL -->
-<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title pixel-art-heading-2" id="loginModalLabel">Login</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="login-form">
-            <div class="mb-3">
-              <label for="login-player-name" class="form-label pixel-art-body">Select Player</label>
-              <select id="login-player-name" class="form-select pixel-art-body" required>
-                <!-- Options populated dynamically -->
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="login-pin" class="form-label pixel-art-body">Enter PIN</label>
-              <input type="password" id="login-pin" class="form-control pixel-art-body" maxlength="4" pattern="\d*" inputmode="numeric" required />
-            </div>
-            
-            <div class="mb-3">
-              <label for="rememberMe" class="form-check-label pixel-art-body">
-                <input type="checkbox" id="rememberMe" class="form-check-input pixel-art-body" />
-                Remember me
-              </label>
-            </div>
-            <button type="submit" class="pixel-button">Login</button>
-          </form>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item pixel-art-body-smallx" href="/admin">Admin</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>  
+
+  <main class="container my-5">
+    <h2 class="mb-3 pixel-art-heading-3">Form Submission Confirmation</h2>
+    <p class="mb-3 pixel-art-body-smallx">Your predictions have been successfully submitted. Please find a copy of your predictions below:</p>
+
+    
+    <!-- Submission header: displays player's name, race name, and submission time -->
+    <p class="pixel-art-heading-2">Submission Details:</p>
+    <!-- Loading Placeholder -->
+    <div id="loadingPlaceholderBar" class="loading-indicator mb-3 pixel-art-heading-2">
+      Submission details loading...
+      <div class="loading-bar"></div>
+    </div>
+    <div id="submission-header" class="mb-4"></div>
+    
+    <div class="pixel-alert pixel-alert-info" style="margin-top: 5px"">
+      NOTE: You can edit submissions until the race begins. Simply open the form and your responses will be pre-filled
+  </div>
+  
+    <!-- Confirmation details -->
+    <p class="pixel-art-heading-2">Form Responses:</p>
+    <div id="loadingPlaceholderBar2" class="loading-indicator mb-3 pixel-art-heading-2">
+      Form responses loading...
+      <div class="loading-bar"></div>
+    </div>
+    <div id="confirmation-details" class="mb-3">
+      <!-- Submission details will be loaded here -->
+    </div>
+    
+    <div class="text-center mt-4">
+      <a href="/" style="text-decoration:none;">
+        <button type="button" class="pixel-button primary">Back to Home</button>
+      </a>
+    </div>
+    
+    <!-- LOGIN MODAL -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title pixel-art-heading-2" id="loginModalLabel">Login</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="login-form">
+              <div class="mb-3">
+                <label for="login-player-name" class="form-label pixel-art-body">Select Player</label>
+                <select id="login-player-name" class="form-select pixel-art-body" required>
+                  <!-- Options populated dynamically -->
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="login-pin" class="form-label pixel-art-body">Enter PIN</label>
+                <input type="password" id="login-pin" class="form-control pixel-art-body" maxlength="4" pattern="\d*" inputmode="numeric" required />
+              </div>              
+              <div class="mb-3">
+                <label for="rememberMe" class="form-check-label pixel-art-body">
+                  <input type="checkbox" id="rememberMe" class="form-check-input pixel-art-body" />
+                  Remember me
+                </label>
+              </div>
+              <button type="submit" class="pixel-button">Login</button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-    </main>
-
-    <footer class="bg-light text-black text-center py-1">
-        <p>&copy; 2024 F1 Predictions Form</p>
-    </footer>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const confirmationDetails = document.getElementById('confirmation-details');
-            const submissionData = JSON.parse(localStorage.getItem('submissionData'));
-
-            if (!submissionData) {
-                confirmationDetails.innerHTML = '<p>No submission data found.</p>';
-                return;
-            }
-
-            // Fetch form configuration
-            const { data: formConfig, error: formConfigError } = await supabase
-                .from('form_configuration')
-                .select('id, text, enabled, response_type');
-            if (formConfigError) {
-                console.error('Error fetching form configuration:', formConfigError);
-                confirmationDetails.innerHTML = '<p>Error loading confirmation details.</p>';
-                return;
-            }
-
-            // Fetch race name
-            const { data: raceDetails, error: raceDetailsError } = await supabase
-                .from('calendar')
-                .select('name')
-                .eq('race_number', submissionData.race_number)
-                .single();
-            if (raceDetailsError) {
-                console.error('Error fetching race details:', raceDetailsError);
-                confirmationDetails.innerHTML = '<p>Error loading race details.</p>';
-                return;
-            }
-            const raceName = `${raceDetails.name} GP`;
-
-            // Function to fetch name based on response type and ID
-            async function fetchName(responseType, id) {
-                let table, column;
-                switch (responseType) {
-                    case 'Select - Name List':
-                        table = 'players';
-                        column = 'name';
-                        break;
-                    case 'Select - Driver List':
-                    case 'Select - Driver List + DNF':
-                        table = 'drivers';
-                        column = 'name';
-                        break;
-                    case 'Select - Team List':
-                        table = 'constructors';
-                        column = 'name';
-                        break;
-                    default:
-                        return id; // Return the ID if the response type is not one of the above
-                }
-
-                const { data, error } = await supabase
-                    .from(table)
-                    .select(column)
-                    .eq('id', id)
-                    .single();
-
-                if (error) {
-                    console.error(`Error fetching ${responseType} name:`, error);
-                    return responseType === 'Select - Driver List + DNF' && id === 'no-dnf' ? 'No DNFs' : id;
-                }
-
-                return data ? data[column] : id;
-            }
-
-            // Display submission data
-            for (const [key, value] of Object.entries(submissionData)) {
-                if (key.startsWith('form_id_')) {
-                    const id = parseInt(key.replace('form_id_', ''));
-                    const config = formConfig.find(c => c.id === id);
-
-                    if (config && config.enabled) {
-                        const name = await fetchName(config.response_type, value);
-                        const div = document.createElement('div');
-                        div.className = 'list-group-item mb-2';
-                        div.innerHTML = `<strong>${config.text}:</strong><br>${name}`;
-                        confirmationDetails.appendChild(div);
-                    }
-                } else if (key === 'race_number') {
-                    const div = document.createElement('div');
-                    div.className = 'list-group-item mb-2';
-                    div.innerHTML = `<strong>Race:</strong><br>${raceName}`;
-                    confirmationDetails.appendChild(div);
-                } else if (key === 'player_id') {
-                    const playerName = await fetchName('Select - Name List', value);
-                    const div = document.createElement('div');
-                    div.className = 'list-group-item mb-2';
-                    div.innerHTML = `<strong>Player Name:</strong><br>${playerName}`;
-                    confirmationDetails.appendChild(div);
-                } else {
-                    const div = document.createElement('div');
-                    div.className = 'list-group-item mb-2';
-                    div.innerHTML = `<strong>${key.replace(/_/g, ' ')}:</strong><br>${value}`;
-                    confirmationDetails.appendChild(div);
-                }
-            }
-
-            // Clear local storage after displaying data
-            localStorage.removeItem('submissionData');
-        });
-    </script>
+  </main>
+    
+  <footer class="bg-light text-black text-center py-1">
+    <p>&copy; 2024 F1 Predictions Form</p>
+  </footer>
+    
+  <!-- Confirmation Page Script -->
+  <script type="module">
+    import { getCookie } from '/script.js';
+    
+    // Helper: Convert a timestamptz string into a readable AEST format.
+    function formatTimestampAEST(timestamp) {
+      const options = {
+        timeZone: 'Australia/Sydney',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      };
+      return new Intl.DateTimeFormat('en-AU', options).format(new Date(timestamp));
+    }
+    
+    // Helper: Capitalize common responses (Yes, No, Heads, Tails)
+    function capitalizeResponse(str) {
+      if (typeof str !== 'string') return str;
+      const lower = str.toLowerCase();
+      if (['yes', 'no', 'heads', 'tails'].includes(lower)) {
+        return lower.charAt(0).toUpperCase() + lower.slice(1);
+      }
+      return str;
+    }
+    
+    // Main function to load and refresh confirmation content.
+    async function loadConfirmationContent() {
+      const confirmationDetails = document.getElementById('confirmation-details');
+      const submissionHeader = document.getElementById('submission-header');
+      const loadingPlaceholder = document.getElementById('loadingPlaceholderBar');
+      const loadingPlaceholder2 = document.getElementById('loadingPlaceholderBar2');
+    
+      // Show the loading placeholder until content is loaded.
+      loadingPlaceholder.style.display = 'block';
+      loadingPlaceholder2.style.display = 'block';
+    
+      // Get the logged-in player's ID from the cookie.
+      const playerId = getCookie("playerId");
+      if (!playerId) {
+        confirmationDetails.innerHTML = '<p>You are not logged in. Please log in to view your submission.</p>';
+        loadingPlaceholder.style.display = 'none';
+        loadingPlaceholder2.style.display = 'none';
+        return;
+      }
+    
+      // Download all relevant tables concurrently.
+      const [formDetailsResult, formConfigResult, submissionResult, playersResult, driversResult, constructorsResult] = await Promise.all([
+        supabase.from('form_details').select('*').eq('id', 1).single(),
+        supabase.from('form_configuration').select('*'),
+        supabase.from('form_raw').select('*').eq('player_id', playerId),
+        supabase.from('players').select('id, name'),
+        supabase.from('drivers').select('id, name'),
+        supabase.from('constructors').select('id, name')
+      ]);
+    
+      if (formDetailsResult.error) {
+        console.error('Error fetching form details:', formDetailsResult.error);
+        confirmationDetails.innerHTML = '<p>Error loading confirmation details.</p>';
+        loadingPlaceholder.style.display = 'none';
+        loadingPlaceholder2.style.display = 'none';
+        return;
+      }
+      const formDetails = formDetailsResult.data;
+      const raceNumber = formDetails.race_number;
+    
+      // Fetch calendar data for the race.
+      const { data: raceData, error: raceError } = await supabase
+        .from('calendar')
+        .select('*')
+        .eq('race_number', raceNumber)
+        .single();
+      if (raceError) {
+        console.error('Error fetching race details:', raceError);
+        confirmationDetails.innerHTML = '<p>Error loading race details.</p>';
+        loadingPlaceholder.style.display = 'none';
+        loadingPlaceholder2.style.display = 'none';
+        return;
+      }
+      const raceName = `${raceData.name} GP`;
+    
+      if (formConfigResult.error) {
+        console.error('Error fetching form configuration:', formConfigResult.error);
+        confirmationDetails.innerHTML = '<p>Error loading confirmation details.</p>';
+        loadingPlaceholder.style.display = 'none';
+        loadingPlaceholder2.style.display = 'none';
+        return;
+      }
+      const formConfig = formConfigResult.data;
+    
+      // Get the submission for the current race.
+      let submissionData;
+      if (submissionResult.error || !submissionResult.data || submissionResult.data.length === 0) {
+        confirmationDetails.innerHTML = '<p>No submission data found.</p>';
+        loadingPlaceholder.style.display = 'none';
+        loadingPlaceholder2.style.display = 'none';
+        return;
+      } else {
+        submissionData = submissionResult.data.find(sub => sub.race_number === raceNumber);
+        if (!submissionData) {
+          confirmationDetails.innerHTML = '<p>No submission data found for the current race.</p>';
+          loadingPlaceholder.style.display = 'none';
+          loadingPlaceholder2.style.display = 'none';
+          return;
+        }
+      }
+    
+      // Build lookup maps from pre-downloaded tables.
+      const playersMap = {}; 
+      playersResult.data.forEach(p => { playersMap[p.id] = p.name; });
+      const driversMap = {};
+      driversResult.data.forEach(d => { driversMap[d.id] = d.name; });
+      const constructorsMap = {};
+      constructorsResult.data.forEach(c => { constructorsMap[c.id] = c.name; });
+    
+      // Helper: Get display name using the lookup maps.
+      function getDisplayName(responseType, id) {
+        switch(responseType) {
+          case 'Select - Name List':
+            return playersMap[id] || id;
+          case 'Select - Driver List':
+          case 'Select - Driver List + DNF':
+            if(id === 'no-dnf') return 'No DNFs';
+            return driversMap[id] || id;
+          case 'Select - Team List':
+            return constructorsMap[id] || id;
+          default:
+            return id;
+        }
+      }
+    
+      // Clear previous content.
+      confirmationDetails.innerHTML = '';
+      submissionHeader.innerHTML = '';
+    
+      // Create header: show player's name, race name, and submission time.
+      let headerDiv = document.createElement('div');
+      headerDiv.className = 'list-group-item mb-3';
+      let submissionTime = submissionData.submission_time ? formatTimestampAEST(submissionData.submission_time) : 'Unknown Time';
+      let playerNameDisplay = getDisplayName('Select - Name List', submissionData.player_id);
+      headerDiv.innerHTML = `<p class="pixel-art-body-smallx">Player: ${playerNameDisplay}</p>
+                             <p class="pixel-art-body-smallx">Race: ${raceName}</p>
+                             <p class="pixel-art-body-smallx">Submitted: ${submissionTime}</p>`;
+      submissionHeader.appendChild(headerDiv);
+    
+      // Loop over submissionData keys and display details.
+      for (const [key, value] of Object.entries(submissionData)) {
+        // Skip irrelevant keys.
+        if (['id', 'submission_time', 'player_id', 'race_number'].includes(key)) continue;
+    
+        let div = document.createElement('div');
+        div.className = 'list-group-item mb-2';
+    
+        if (key.startsWith('form_id_')) {
+          const configId = parseInt(key.replace('form_id_', ''));
+          const config = formConfig.find(c => c.id === configId);
+          if (config && config.enabled) {
+            let displayValue = getDisplayName(config.response_type, value);
+            // Capitalize specific responses.
+            displayValue = capitalizeResponse(displayValue);
+            div.innerHTML = `<strong>${config.text}:</strong><br>${displayValue}`;
+            confirmationDetails.appendChild(div);
+          }
+        } else {
+          // For any other keys, display them with proper capitalization.
+          div.innerHTML = `<strong>${key.replace(/_/g, ' ')}:</strong><br>${capitalizeResponse(value)}`;
+          confirmationDetails.appendChild(div);
+        }
+      }
+    
+      // Hide the loading placeholder once all content is loaded.
+      loadingPlaceholder.style.display = 'none';
+      loadingPlaceholder2.style.display = 'none';
+    }
+    
+    // Initial load.
+    document.addEventListener('DOMContentLoaded', loadConfirmationContent);
+    
+    // Refresh confirmation content when login state changes.
+    document.addEventListener("loginStateChanged", async (event) => {
+      await loadConfirmationContent();
+    });
+  </script>
+    
+  <!-- Bootstrap JS Bundle -->
+  <script src="/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

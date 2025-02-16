@@ -421,43 +421,48 @@ export function getCookie(name) {
 // Renders an avatar icon into a given element using the provided settings.
 // The 'letter' parameter should be the player's actual first letter.
 export function renderAvatar(element, settings, letter = 'A') {
-  // Define padding for small containers.
-  // If the element is either a header avatar (2.4rem) or an account preview, apply extra inner padding.
-  const usePadding = element.classList.contains('user-avatar') || element.classList.contains('avatar-preview');
-  const padVal = usePadding ? "0.2rem" : "0";
-  // padDouble will be subtracted from width/height (2*padVal).
-  const padDouble = usePadding ? "0.4rem" : "0";
-
+  // Determine if this is the small header icon vs. a larger preview.
+  const isSmall = element.classList.contains('user-avatar');
+  // Use different padding based on the size.
+  const padVal = isSmall ? "0.1rem" : "0.2rem";
+  
   let shadow;
   let innerContent = "";
 
   if (settings.type === 'letter') {
-    // Use a custom letter if one exists in settings; otherwise use the passed letter.
+    // Letter-based avatar: fully center the letter.
     const displayLetter = settings.letter ? settings.letter.toUpperCase() : letter;
     const baseColor = settings.iconColor ? settings.iconColor : getColorForLetter(displayLetter);
     shadow = darkenColor(baseColor, 60);
+    // Adjust text-shadow based on element size.
+    element.style.textShadow = isSmall
+      ? `0.5px 0.5px 0 ${shadow}, 1px 1px 0 ${shadow}`
+      : `1px 1px 0 ${shadow}, 2px 2px 0 ${shadow}`;
     innerContent = `<div class="avatar-inner" style="
-  font-family: 'Press Start 2P', Helvetica, sans-serif;
-  font-weight: bold;
-  color: ${baseColor};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: normal;
-  width: calc(100% - ${padDouble});
-  height: calc(100% - ${padDouble});
-  margin: auto;
-">${displayLetter}</div>`;
-    element.style.textShadow = `1px 1px 0 ${shadow}, 2px 2px 0 ${shadow}`;
-
+      font-family: 'Press Start 2P', Helvetica, sans-serif;
+      font-weight: bold;
+      color: ${baseColor};
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: ${isSmall ? "1.2rem" : "2rem"};
+      width: 100%;
+      height: 100%;
+      padding: ${padVal};
+      box-sizing: border-box;
+    ">${displayLetter}</div>`;
+    
   } else if (settings.type === 'monochrome') {
-    // Use the white (inverted) icon version.
+    // Monochrome icons: use inverted asset and apply a shadow offset.
     const newIcon = `icon_invert_${settings.icon}`;
     shadow = darkenColor(settings.iconColor, 60);
-    // For certain higher-resolution icons, adjust the shadow offset.
-    let offset = (settings.icon === 'icon_monster.png' || settings.icon === 'icon_redbull.png') ? 1 : 2;
+    let offset = isSmall
+      ? ((settings.icon === 'icon_monster.png' || settings.icon === 'icon_redbull.png') ? 0.5 : 1)
+      : ((settings.icon === 'icon_monster.png' || settings.icon === 'icon_redbull.png') ? 1 : 2);
+      
     innerContent = `<div style="padding: ${padVal}; width: 100%; height: 100%; box-sizing: border-box;">
-      <div style="position: relative; width: 100%; height: 100%; margin: auto;">
+      <div style="position: relative; width: 100%; height: 100%;">
         <!-- Shadow layer -->
         <div style="
           position: absolute;
@@ -499,27 +504,21 @@ export function renderAvatar(element, settings, letter = 'A') {
     element.style.textShadow = 'none';
 
   } else {
-    // Fixed icons (including tyre icons)
+    // For fixed icons (e.g. tyre icons and the new Red Bull coloured icon)
+    // For the red bull coloured icon, we render it as a normal image (no mask) and use a smaller shadow offset.
+    let fixedShadowOffset = (settings.icon === 'icon_redbullcolour')
+      ? (isSmall ? "0.5px" : "1px")
+      : (isSmall ? "1px" : "2px");
     shadow = '#000000';
-    let imgContent;
-    // For fixed icons, wrap the image in a padded container.
-    if (settings.icon.includes('tyre')) {
-      imgContent = `<img src="/media/icons/${settings.icon}" alt="Avatar Icon" style="
-        width: calc(100% - ${padDouble});
-        height: calc(100% - ${padDouble});
-        object-fit: contain;
-        image-rendering: pixelated;
-        filter: drop-shadow(2px 2px 0px ${shadow});
-      ">`;
-    } else {
-      imgContent = `<img src="/media/icons/${settings.icon}" alt="Avatar Icon" style="
-        width: calc(100% - ${padDouble});
-        height: calc(100% - ${padDouble});
-        object-fit: contain;
-        image-rendering: pixelated;
-        filter: drop-shadow(2px 2px 0px ${shadow});
-      ">`;
-    }
+    // Ensure that if the icon value doesn’t already include an extension, add .png.
+    const iconSrc = settings.icon.includes('.png') ? settings.icon : settings.icon + '.png';
+    let imgContent = `<img src="/media/icons/${iconSrc}" alt="Avatar Icon" style="
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+      filter: drop-shadow(${fixedShadowOffset} ${fixedShadowOffset} 0px ${shadow});
+    ">`;
     innerContent = `<div style="padding: ${padVal}; width: 100%; height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center;">
       ${imgContent}
     </div>`;
@@ -530,9 +529,6 @@ export function renderAvatar(element, settings, letter = 'A') {
   element.style.backgroundColor = settings.backgroundColor;
 }
 
-
-
-  
   // --- Avatar & UI ---
   // Updates the user avatar using the accent color and styles it similar to the heading
   export function updateUserAvatar(playerData) {

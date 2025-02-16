@@ -96,7 +96,7 @@
           <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
           <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>
+          <!--<li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>-->
           <li><a class="dropdown-item pixel-art-body-smallx" href="/account">Account</a></li>
           <li><hr class="dropdown-divider"></li>
           <!-- Login/Logout Items -->
@@ -507,7 +507,8 @@ if (hasPreviousSubmission && window.previousFormData && Object.keys(window.previ
       const alertContainer = document.getElementById('repeated-predictions-alert');
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
-  
+
+        // Fetch form details as usual.
         const { data: formDetails, error: formDetailsError } = await supabase
           .from('form_details')
           .select('race_number, form_enabled')
@@ -522,11 +523,12 @@ if (hasPreviousSubmission && window.previousFormData && Object.keys(window.previ
           alert('Form submissions are currently closed.');
           return;
         }
-  
+
         const formData = new FormData(form);
         const playerId = Number(formData.get('input-1'));
         const raceNumber = formDetails.race_number;
-  
+
+        // Validate that all required fields are filled.
         for (const config of window.formConfig) {
           if (config.enabled) {
             const value = formData.get(`input-${config.id}`);
@@ -536,11 +538,24 @@ if (hasPreviousSubmission && window.previousFormData && Object.keys(window.previ
             }
           }
         }
-  
+
+        // *** NEW CODE: Check that top 6 driver selections are unique ***
+        let driverValues = [];
+        for (let i = 2; i <= 7; i++) {
+          driverValues.push(formData.get(`input-${i}`));
+        }
+        const uniqueDriverValues = new Set(driverValues);
+        if (uniqueDriverValues.size < driverValues.length) {
+          alert("Duplicate Drivers in Top 6");
+          return;
+        }
+
+        // Optional: if updating an existing submission, show an alert.
         if (hasPreviousSubmission) {
           alertContainer.classList.remove('d-none');
         }
-  
+
+        // Prepare submission data.
         const submissionData = {
           submission_time: new Date().toISOString(),
           race_number: raceNumber,
@@ -549,7 +564,8 @@ if (hasPreviousSubmission && window.previousFormData && Object.keys(window.previ
         for (let i = 2; i <= 28; i++) {
           submissionData[`form_id_${i}`] = formData.get(`input-${i}`);
         }
-  
+
+        // Insert or update the submission.
         let saveError;
         if (hasPreviousSubmission) {
           const { error: updateError } = await supabase
@@ -564,14 +580,15 @@ if (hasPreviousSubmission && window.previousFormData && Object.keys(window.previ
             .insert([submissionData]);
           saveError = insertError;
         }
-  
+
         if (saveError) {
           alert('Error saving form submission');
           console.error('Error saving form submission:', saveError);
           return;
         }
-  
-        localStorage.setItem('submissionData', JSON.stringify(submissionData));
+
+        // *** NEW: Instead of using localStorage, simply redirect to confirmation.
+        // On the confirmation page, re-query the submission (or use the playerId cookie) as needed.
         window.location.href = '/confirmation';
       });
     });
