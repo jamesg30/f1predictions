@@ -175,6 +175,19 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Ensure letters in avatar previews use "Press Start 2P" */
+.avatar-inner {
+    font-family: 'Press Start 2P', Helvetica, sans-serif !important;
+  }
+  /* Ensure our masked (monochrome) icon displays correctly */
+  .monochrome-icon {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+  }
+
 /* Ensure our masked (monochrome) icon displays as block */
 .monochrome-icon {
     display: block;
@@ -254,41 +267,63 @@
     <div class="icon-group">
       <h4 class="pixel-art-body" style="font-size: 1.2rem">Monochrome Icons:</h4>
       <div class="icon-options">
-        <div class="icon-option">
+        <div class="icon-options">
+          <!-- Letter Option -->
+          <div class="icon-option">
             <label>
-              <!-- Use data-type="letter" so the JS treats it as a letter-based avatar -->
               <input type="radio" name="avatar-icon" value="letter" data-type="letter">
               <div class="icon-image">A</div>
             </label>
             <div class="icon-label">Letter</div>
           </div>
-        <div class="icon-option">
-          <label>
-            <input type="radio" name="avatar-icon" value="icon_car.png" data-type="monochrome">
-            <img src="/media/icons/icon_car.png" alt="Car">
-          </label>
-          <div class="icon-label">Car</div>
-        </div>
-        <div class="icon-option">
-          <label>
-            <input type="radio" name="avatar-icon" value="icon_helmet.png" data-type="monochrome">
-            <img src="/media/icons/icon_helmet.png" alt="Helmet">
-          </label>
-          <div class="icon-label">Helmet</div>
-        </div>
-        <div class="icon-option">
-          <label>
-            <input type="radio" name="avatar-icon" value="icon_star.png" data-type="monochrome">
-            <img src="/media/icons/icon_star.png" alt="Star">
-          </label>
-          <div class="icon-label">Star</div>
-        </div>
-        <div class="icon-option">
-          <label>
-            <input type="radio" name="avatar-icon" value="icon_trophy.png" data-type="monochrome">
-            <img src="/media/icons/icon_trophy.png" alt="Trophy">
-          </label>
-          <div class="icon-label">Trophy</div>
+          <!-- Car -->
+          <div class="icon-option">
+            <label>
+              <input type="radio" name="avatar-icon" value="icon_car.png" data-type="monochrome">
+              <img src="/media/icons/icon_car.png" alt="Car">
+            </label>
+            <div class="icon-label">Car</div>
+          </div>
+          <!-- Helmet -->
+          <div class="icon-option">
+            <label>
+              <input type="radio" name="avatar-icon" value="icon_helmet.png" data-type="monochrome">
+              <img src="/media/icons/icon_helmet.png" alt="Helmet">
+            </label>
+            <div class="icon-label">Helmet</div>
+          </div>
+          <!-- Star -->
+          <div class="icon-option">
+            <label>
+              <input type="radio" name="avatar-icon" value="icon_star.png" data-type="monochrome">
+              <img src="/media/icons/icon_star.png" alt="Star">
+            </label>
+            <div class="icon-label">Star</div>
+          </div>
+          <!-- Trophy -->
+          <div class="icon-option">
+            <label>
+              <input type="radio" name="avatar-icon" value="icon_trophy.png" data-type="monochrome">
+              <img src="/media/icons/icon_trophy.png" alt="Trophy">
+            </label>
+            <div class="icon-label">Trophy</div>
+          </div>
+          <!-- Red Bull -->
+          <div class="icon-option">
+            <label>
+              <input type="radio" name="avatar-icon" value="icon_redbull.png" data-type="monochrome">
+              <img src="/media/icons/icon_redbull.png" alt="Red Bull">
+            </label>
+            <div class="icon-label">Red Bull</div>
+          </div>
+          <!-- Monster -->
+          <div class="icon-option">
+            <label>
+              <input type="radio" name="avatar-icon" value="icon_monster.png" data-type="monochrome">
+              <img src="/media/icons/icon_monster.png" alt="Monster">
+            </label>
+            <div class="icon-label">Monster</div>
+          </div>
         </div>
       </div>
     </div>
@@ -452,7 +487,7 @@
   <script src="/js/bootstrap.bundle.min.js"></script>
   
   <script type="module">
-    import { fetchData, getCookie, darkenColor, getColorForLetter} from '/script.js';
+    import { fetchData, getCookie, darkenColor, getColorForLetter, renderAvatar} from '/script.js';
     // Autofill the password reset form's logged in name field.
     async function autofillLoggedInName() {
   const playerId = getCookie("playerId");
@@ -585,7 +620,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Initially disable the Save button.
   saveButton.disabled = true;
-  // Always enable Reset so users can reset their settings.
+  // Always enable Reset.
   resetButton.disabled = false;
 
   const playerId = getCookie('playerId');
@@ -603,7 +638,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Get the player's first letter.
   const letter = user.name.charAt(0).toUpperCase();
 
-  // Update the letter radio option so it displays the player's letter using "Press Start 2P".
+  // Update the letter radio option to display the player's letter using "Press Start 2P".
   const letterIconEl = document.querySelector('input[name="avatar-icon"][value="letter"] + .icon-image');
   if (letterIconEl) {
     letterIconEl.textContent = letter;
@@ -620,13 +655,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   // Render the current avatar preview.
-  renderAvatar(currentAvatarEl, savedSettings);
+  // Render the current avatar preview with the correct letter.
+renderAvatar(currentAvatarEl, savedSettings, letter);
+
 
   // Reflect saved settings in the UI.
   const radio = document.querySelector(`input[name="avatar-icon"][value="${savedSettings.icon}"]`);
   if (radio) {
     radio.checked = true;
-    // Disable the colour picker only for fixed icons.
+    // Disable the icon colour picker only for fixed icons.
     iconColorPicker.disabled = (radio.dataset.type === 'fixed');
   }
   if (savedSettings.iconColor) iconColorPicker.value = savedSettings.iconColor;
@@ -682,74 +719,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     checkForAvatarChanges();
   });
 
-  // Render the avatar preview based on settings.
-  function renderAvatar(element, settings) {
-    let shadow;
-    if (settings.type === 'monochrome') {
-      shadow = darkenColor(settings.iconColor, 50);
-    } else if (settings.type === 'letter') {
-      shadow = darkenColor(getColorForLetter(letter), 50);
-    } else {
-      shadow = 'rgba(0,0,0,0.5)';
-    }
 
-    let innerContent;
-    if (settings.type === 'letter') {
-      // Render a letter avatar using "Press Start 2P".
-      innerContent = `<div class="avatar-inner" style="
-        font-family: 'Press Start 2P', Helvetica, sans-serif;
-        font-weight: bold;
-        color: ${settings.iconColor};
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-      ">${letter}</div>`;
-    } else if (settings.type === 'monochrome') {
-      // Render a monochrome icon.
-      innerContent = `<div style="display:inline-block; filter: drop-shadow(2px 2px 0 ${shadow});">
-        <div class="monochrome-icon" style="
-          background-color: ${settings.iconColor};
-          -webkit-mask-image: url('/media/icons/${settings.icon}');
-          -webkit-mask-repeat: no-repeat;
-          -webkit-mask-position: center;
-          -webkit-mask-size: contain;
-          mask-image: url('/media/icons/${settings.icon}');
-          mask-repeat: no-repeat;
-          mask-position: center;
-          mask-size: contain;
-          width: 100%;
-          height: 100%;
-        "></div>
-      </div>`;
-    } else {
-      // Fixed icon.
-      if (settings.icon.includes('tyre')) {
-        // For tyre icons (17x17 pixel art), render with 1px padding.
-        innerContent = `<img src="/media/icons/${settings.icon}" alt="Avatar Icon" style="
-          width: calc(100% - 2px);
-          padding: 1px;
-          image-rendering: pixelated;
-          filter: drop-shadow(2px 2px 0 ${shadow});
-        ">`;
-      } else {
-        innerContent = `<img src="/media/icons/${settings.icon}" alt="Avatar Icon" style="
-          width: 100%;
-          image-rendering: pixelated;
-          filter: drop-shadow(2px 2px 0 ${shadow});
-        ">`;
-      }
-    }
-    element.innerHTML = innerContent;
-    element.style.backgroundColor = settings.backgroundColor;
-    element.style.textShadow = `1px 1px 0 ${shadow}, 2px 2px 0 ${shadow}`;
-  }
+
 
   // Update the new avatar preview.
   function updateNewAvatarPreview() {
-    const settings = getAvatarSettingsFromUI();
-    renderAvatar(newAvatarEl, settings);
-  }
+  const settings = getAvatarSettingsFromUI();
+  renderAvatar(newAvatarEl, settings, letter);
+}
+
 
   // Update the new avatar preview on page load.
   updateNewAvatarPreview();
@@ -769,6 +747,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderAvatar(currentAvatarEl, newSettings);
       savedSettings = newSettings;
       saveButton.disabled = true;
+      // Also update the header avatar with the new settings
+const headerAvatar = document.getElementById('user-avatar');
+renderAvatar(headerAvatar, newSettings, letter);
+
     }
   });
 

@@ -416,34 +416,161 @@ export function getCookie(name) {
     b = b.toString(16).padStart(2, '0');
     return `#${r}${g}${b}`;
   }
+
+  // --- Avatar Rendering ---
+// Renders an avatar icon into a given element using the provided settings.
+// The 'letter' parameter should be the player's actual first letter.
+export function renderAvatar(element, settings, letter = 'A') {
+  // Define padding for small containers.
+  // If the element is either a header avatar (2.4rem) or an account preview, apply extra inner padding.
+  const usePadding = element.classList.contains('user-avatar') || element.classList.contains('avatar-preview');
+  const padVal = usePadding ? "0.2rem" : "0";
+  // padDouble will be subtracted from width/height (2*padVal).
+  const padDouble = usePadding ? "0.4rem" : "0";
+
+  let shadow;
+  let innerContent = "";
+
+  if (settings.type === 'letter') {
+    // Use a custom letter if one exists in settings; otherwise use the passed letter.
+    const displayLetter = settings.letter ? settings.letter.toUpperCase() : letter;
+    const baseColor = settings.iconColor ? settings.iconColor : getColorForLetter(displayLetter);
+    shadow = darkenColor(baseColor, 60);
+    innerContent = `<div class="avatar-inner" style="
+  font-family: 'Press Start 2P', Helvetica, sans-serif;
+  font-weight: bold;
+  color: ${baseColor};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: normal;
+  width: calc(100% - ${padDouble});
+  height: calc(100% - ${padDouble});
+  margin: auto;
+">${displayLetter}</div>`;
+    element.style.textShadow = `1px 1px 0 ${shadow}, 2px 2px 0 ${shadow}`;
+
+  } else if (settings.type === 'monochrome') {
+    // Use the white (inverted) icon version.
+    const newIcon = `icon_invert_${settings.icon}`;
+    shadow = darkenColor(settings.iconColor, 60);
+    // For certain higher-resolution icons, adjust the shadow offset.
+    let offset = (settings.icon === 'icon_monster.png' || settings.icon === 'icon_redbull.png') ? 1 : 2;
+    innerContent = `<div style="padding: ${padVal}; width: 100%; height: 100%; box-sizing: border-box;">
+      <div style="position: relative; width: 100%; height: 100%; margin: auto;">
+        <!-- Shadow layer -->
+        <div style="
+          position: absolute;
+          top: ${offset}px;
+          left: ${offset}px;
+          width: 100%;
+          height: 100%;
+          background-color: ${shadow};
+          -webkit-mask-image: url('/media/icons/${newIcon}');
+          -webkit-mask-size: contain;
+          -webkit-mask-repeat: no-repeat;
+          -webkit-mask-position: center;
+          mask-image: url('/media/icons/${newIcon}');
+          mask-size: contain;
+          mask-repeat: no-repeat;
+          mask-position: center;
+          image-rendering: pixelated;
+        "></div>
+        <!-- Icon layer -->
+        <div style="
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: ${settings.iconColor};
+          -webkit-mask-image: url('/media/icons/${newIcon}');
+          -webkit-mask-size: contain;
+          -webkit-mask-repeat: no-repeat;
+          -webkit-mask-position: center;
+          mask-image: url('/media/icons/${newIcon}');
+          mask-size: contain;
+          mask-repeat: no-repeat;
+          mask-position: center;
+          image-rendering: pixelated;
+        "></div>
+      </div>
+    </div>`;
+    element.style.textShadow = 'none';
+
+  } else {
+    // Fixed icons (including tyre icons)
+    shadow = '#000000';
+    let imgContent;
+    // For fixed icons, wrap the image in a padded container.
+    if (settings.icon.includes('tyre')) {
+      imgContent = `<img src="/media/icons/${settings.icon}" alt="Avatar Icon" style="
+        width: calc(100% - ${padDouble});
+        height: calc(100% - ${padDouble});
+        object-fit: contain;
+        image-rendering: pixelated;
+        filter: drop-shadow(2px 2px 0px ${shadow});
+      ">`;
+    } else {
+      imgContent = `<img src="/media/icons/${settings.icon}" alt="Avatar Icon" style="
+        width: calc(100% - ${padDouble});
+        height: calc(100% - ${padDouble});
+        object-fit: contain;
+        image-rendering: pixelated;
+        filter: drop-shadow(2px 2px 0px ${shadow});
+      ">`;
+    }
+    innerContent = `<div style="padding: ${padVal}; width: 100%; height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center;">
+      ${imgContent}
+    </div>`;
+    element.style.textShadow = 'none';
+  }
+
+  element.innerHTML = innerContent;
+  element.style.backgroundColor = settings.backgroundColor;
+}
+
+
+
   
   // --- Avatar & UI ---
   // Updates the user avatar using the accent color and styles it similar to the heading
-  export function updateUserAvatar(playerName) {
+  export function updateUserAvatar(playerData) {
     const userAvatar = document.getElementById('user-avatar');
     if (!userAvatar) return;
-
-    const firstLetter = playerName.charAt(0).toUpperCase();
-    const bgColor = getColorForLetter(firstLetter);
-    const shadowColor = darkenColor(bgColor, 50);
-
-    userAvatar.textContent = firstLetter;
-    userAvatar.style.backgroundColor = bgColor;
-    userAvatar.style.color = "#fff";
-    userAvatar.style.textShadow = `1px 1px 0 ${shadowColor}, 2px 2px 0 ${shadowColor}`;
-    userAvatar.style.fontFamily = "'Press Start 2P', Helvetica, sans-serif";
-    userAvatar.style.fontWeight = "bold";
-    userAvatar.style.textAlign = "center";
-    userAvatar.style.lineHeight = userAvatar.style.height;
-    userAvatar.classList.remove('d-none');
-
-    // 🔥 Check if playerId is 1 and update border color
-    if (getCookie("playerId") === "1") {
-        userAvatar.style.borderColor = "gold";
+    
+    const letter = playerData.name.charAt(0).toUpperCase();
+    
+    if (playerData.avatar_settings) {
+      // Use the custom avatar settings (pass the player's letter)
+      renderAvatar(userAvatar, playerData.avatar_settings, letter);
     } else {
-        userAvatar.style.borderColor = "#c0c0c0"; // Default border
+      // Fallback: render a default letter avatar.
+      const bgColor = getColorForLetter(letter);
+      const shadowColor = darkenColor(bgColor, 50);
+      
+      userAvatar.textContent = letter;
+      userAvatar.style.backgroundColor = bgColor;
+      userAvatar.style.color = "#fff";
+      userAvatar.style.textShadow = `1px 1px 0 ${shadowColor}, 2px 2px 0 ${shadowColor}`;
+      userAvatar.style.fontFamily = "'Press Start 2P', Helvetica, sans-serif";
+      userAvatar.style.fontWeight = "bold";
+      userAvatar.style.textAlign = "center";
+      userAvatar.style.lineHeight = userAvatar.style.height;
     }
-}
+    
+    userAvatar.classList.remove('d-none');
+    
+    // Special styling for playerId "1"
+    if (getCookie("playerId") === "1") {
+      userAvatar.style.borderColor = "gold";
+    } else {
+      userAvatar.style.borderColor = "#c0c0c0";
+    }
+  }
+  
+  
+  
 
   
   export function hideUserAvatar() {
@@ -458,27 +585,26 @@ export function getCookie(name) {
   
   export function updateLoginUI(playerData) {
     const playerName = playerData.name;
-  
+    
     // Hide the "Log In" menu item.
     const loginMenuItem = document.getElementById('loginMenuItem');
     if (loginMenuItem) {
       loginMenuItem.classList.add('d-none');
     }
-  
+    
     // Show "Logged in as ..." text.
     const loggedInUserDisplay = document.getElementById('loggedInUserDisplay');
     if (loggedInUserDisplay) {
       loggedInUserDisplay.innerHTML = `Logged in as <strong>${playerName}</strong>`;
       loggedInUserDisplay.classList.remove('d-none');
     }
-  
-    // Show the "Log Out" link and attach its event listener.
+    
+    // Show the "Log Out" link.
     const logoutMenuItem = document.getElementById('logoutMenuItem');
     if (logoutMenuItem) {
       logoutMenuItem.classList.remove('d-none');
       const logoutBtn = document.getElementById('logoutBtn');
       if (logoutBtn) {
-        // Use "onclick" to ensure only one event handler is attached.
         logoutBtn.onclick = () => {
           if (confirm('Are you sure you want to log out?')) {
             clearCookie("playerId");
@@ -495,11 +621,11 @@ export function getCookie(name) {
         };
       }
     }
-  
-    // Update the header avatar.
-    updateUserAvatar(playerName);
-  
-    // Close the login modal and shift focus to the hamburger menu (to avoid ARIA issues).
+    
+    // Update the header avatar using the entire player data.
+    updateUserAvatar(playerData);
+    
+    // Close the login modal and shift focus.
     const loginModalEl = document.getElementById('loginModal');
     let modalInstance = bootstrap.Modal.getInstance(loginModalEl);
     if (!modalInstance) {
@@ -512,6 +638,7 @@ export function getCookie(name) {
   }
   
   
+  
   // --- INITIALIZATION ---
   document.addEventListener("DOMContentLoaded", async () => {
     await populateLoginPlayerDropdown();
@@ -521,7 +648,7 @@ export function getCookie(name) {
     if (playerIdCookie) {
       const { data: playerData, error } = await supabase
         .from('players')
-        .select('id, name, password')
+        .select('id, name, password, avatar_settings')
         .eq('id', playerIdCookie)
         .single();
       if (!error && playerData) {
@@ -546,7 +673,7 @@ export function getCookie(name) {
   
         const { data: playerData, error } = await supabase
           .from('players')
-          .select('id, name, password')
+          .select('id, name, password, avatar_settings')
           .eq('id', playerId)
           .single();
   
