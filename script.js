@@ -430,29 +430,25 @@ export function renderAvatar(element, settings, letter = 'A') {
   let innerContent = "";
 
   if (settings.type === 'letter') {
-    // Letter-based avatar: fully center the letter.
+    // Use the default logic for letter avatars from updateUserAvatar:
     const displayLetter = settings.letter ? settings.letter.toUpperCase() : letter;
-    const baseColor = settings.iconColor ? settings.iconColor : getColorForLetter(displayLetter);
-    shadow = darkenColor(baseColor, 60);
-    // Adjust text-shadow based on element size.
-    element.style.textShadow = isSmall
-      ? `0.5px 0.5px 0 ${shadow}, 1px 1px 0 ${shadow}`
-      : `1px 1px 0 ${shadow}, 2px 2px 0 ${shadow}`;
-    innerContent = `<div class="avatar-inner" style="
-      font-family: 'Press Start 2P', Helvetica, sans-serif;
-      font-weight: bold;
-      color: ${baseColor};
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      font-size: ${isSmall ? "1.2rem" : "2rem"};
-      width: 100%;
-      height: 100%;
-      padding: ${padVal};
-      box-sizing: border-box;
-    ">${displayLetter}</div>`;
+    // Use the backgroundColor from settings if available, otherwise calculate it.
+    const bgColor = settings.backgroundColor || getColorForLetter(displayLetter);
+    const shadowColor = darkenColor(settings.iconColor, 50);
     
+    // Directly apply the default styling
+    element.textContent = displayLetter;
+    element.style.backgroundColor = bgColor;
+    element.style.color = settings.iconColor;
+    element.style.textShadow = `1px 1px 0 ${shadowColor}, 2px 2px 0 ${shadowColor}`;
+    element.style.fontFamily = "'Press Start 2P', Helvetica, sans-serif";
+    element.style.fontWeight = "bold";
+    element.style.textAlign = "center";
+    // Set lineHeight to the element's height (ensure the height is defined via CSS)
+    element.style.lineHeight = element.style.height;
+    
+    // Exit early so that the default content isn’t overwritten.
+    return;
   } else if (settings.type === 'monochrome') {
     // Monochrome icons: use inverted asset and apply a shadow offset.
     const newIcon = `icon_invert_${settings.icon}`;

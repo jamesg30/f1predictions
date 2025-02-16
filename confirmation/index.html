@@ -184,7 +184,11 @@
       // Get the logged-in player's ID from the cookie.
       const playerId = getCookie("playerId");
       if (!playerId) {
-        confirmationDetails.innerHTML = '<p>You are not logged in. Please log in to view your submission.</p>';
+        confirmationDetails.innerHTML = `
+        <div class="pixel-alert pixel-alert-warning" style="margin-top: 5px"">
+      Please log in to view your form confirmation.
+        </div>
+        `;
         loadingPlaceholder.style.display = 'none';
         return;
       }
