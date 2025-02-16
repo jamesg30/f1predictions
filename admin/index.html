@@ -1705,9 +1705,7 @@ async function updatePlayerPassword(id) {
 
             document.getElementById('add-race').addEventListener('click', addRace);
         });
-    </script>
 
-    <script type="module">
 // --- RESULTS ENTRY CODE ---
         import { generateFormBlocks } from '/script.js';
 
@@ -4271,6 +4269,26 @@ updateProgressTeamSummary(`Fetched ${seasonTeamData.length} season team rows.`);
         // Initial load of feedback entries
         loadFeedback();
         });
+
+        // Expose functions to the global scope so inline event handlers can access them
+window.updatePlayer = updatePlayer;
+window.deletePlayer = deletePlayer;
+window.updatePlayerPassword = updatePlayerPassword;
+window.updateTeam = updateTeam;
+window.deleteTeam = deleteTeam;
+window.deleteDriver = deleteDriver;
+window.deleteConstructor = deleteConstructor;
+window.deleteRace = deleteRace;
+window.addDriver = addDriver;
+window.addConstructor = addConstructor;
+window.addRace = addRace;
+window.populatePlayers = populatePlayers;
+window.populateTeams = populateTeams;
+window.populateDrivers = populateDrivers;
+window.populateConstructors = populateConstructors;
+window.populateCalendar = populateCalendar;
+window.saveChanges = saveChanges;
+
     </script>
 </body>
 </html>

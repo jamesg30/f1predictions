@@ -87,7 +87,7 @@
     <p class="pixel-art-heading-2">Submission Details:</p>
     <!-- Loading Placeholder -->
     <div id="loadingPlaceholderBar" class="loading-indicator mb-3 pixel-art-heading-2">
-      Submission details loading...
+      Submission confirmation loading...
       <div class="loading-bar"></div>
     </div>
     <div id="submission-header" class="mb-4"></div>
@@ -95,13 +95,7 @@
     <div class="pixel-alert pixel-alert-info" style="margin-top: 5px"">
       NOTE: You can edit submissions until the race begins. Simply open the form and your responses will be pre-filled
   </div>
-  
-    <!-- Confirmation details -->
-    <p class="pixel-art-heading-2">Form Responses:</p>
-    <div id="loadingPlaceholderBar2" class="loading-indicator mb-3 pixel-art-heading-2">
-      Form responses loading...
-      <div class="loading-bar"></div>
-    </div>
+  <p class="pixel-art-heading-2">Form Responses:</p>
     <div id="confirmation-details" class="mb-3">
       <!-- Submission details will be loaded here -->
     </div>
@@ -183,18 +177,15 @@
       const confirmationDetails = document.getElementById('confirmation-details');
       const submissionHeader = document.getElementById('submission-header');
       const loadingPlaceholder = document.getElementById('loadingPlaceholderBar');
-      const loadingPlaceholder2 = document.getElementById('loadingPlaceholderBar2');
     
       // Show the loading placeholder until content is loaded.
       loadingPlaceholder.style.display = 'block';
-      loadingPlaceholder2.style.display = 'block';
     
       // Get the logged-in player's ID from the cookie.
       const playerId = getCookie("playerId");
       if (!playerId) {
         confirmationDetails.innerHTML = '<p>You are not logged in. Please log in to view your submission.</p>';
         loadingPlaceholder.style.display = 'none';
-        loadingPlaceholder2.style.display = 'none';
         return;
       }
     
@@ -212,7 +203,6 @@
         console.error('Error fetching form details:', formDetailsResult.error);
         confirmationDetails.innerHTML = '<p>Error loading confirmation details.</p>';
         loadingPlaceholder.style.display = 'none';
-        loadingPlaceholder2.style.display = 'none';
         return;
       }
       const formDetails = formDetailsResult.data;
@@ -228,7 +218,6 @@
         console.error('Error fetching race details:', raceError);
         confirmationDetails.innerHTML = '<p>Error loading race details.</p>';
         loadingPlaceholder.style.display = 'none';
-        loadingPlaceholder2.style.display = 'none';
         return;
       }
       const raceName = `${raceData.name} GP`;
@@ -237,7 +226,6 @@
         console.error('Error fetching form configuration:', formConfigResult.error);
         confirmationDetails.innerHTML = '<p>Error loading confirmation details.</p>';
         loadingPlaceholder.style.display = 'none';
-        loadingPlaceholder2.style.display = 'none';
         return;
       }
       const formConfig = formConfigResult.data;
@@ -247,14 +235,12 @@
       if (submissionResult.error || !submissionResult.data || submissionResult.data.length === 0) {
         confirmationDetails.innerHTML = '<p>No submission data found.</p>';
         loadingPlaceholder.style.display = 'none';
-        loadingPlaceholder2.style.display = 'none';
         return;
       } else {
         submissionData = submissionResult.data.find(sub => sub.race_number === raceNumber);
         if (!submissionData) {
           confirmationDetails.innerHTML = '<p>No submission data found for the current race.</p>';
           loadingPlaceholder.style.display = 'none';
-          loadingPlaceholder2.style.display = 'none';
           return;
         }
       }
@@ -324,7 +310,6 @@
     
       // Hide the loading placeholder once all content is loaded.
       loadingPlaceholder.style.display = 'none';
-      loadingPlaceholder2.style.display = 'none';
     }
     
     // Initial load.

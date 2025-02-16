@@ -712,6 +712,89 @@ document.addEventListener("loginStateChanged", async (event) => {
   await autofillLoggedInName();
   await initializeAvatarCustomization();
 });
+
+// Update Password Functionality for the password reset form
+document.getElementById("passwordResetForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  // Get the input field values
+  const currentPINField = document.getElementById("current-pin");
+  const newPINField = document.getElementById("new-pin");
+  const confirmNewPINField = document.getElementById("confirm-new-pin");
+
+  const currentPIN = currentPINField.value.trim();
+  const newPIN = newPINField.value.trim();
+  const confirmNewPIN = confirmNewPINField.value.trim();
+
+  // Validate that all PINs are 4 digits
+  if (!/^\d{4}$/.test(currentPIN)) {
+    alert("Please enter a valid 4-digit current PIN.");
+    return;
+  }
+  if (!/^\d{4}$/.test(newPIN)) {
+    alert("Please enter a valid 4-digit new PIN.");
+    return;
+  }
+  if (newPIN !== confirmNewPIN) {
+    alert("New PIN and confirmation do not match.");
+    return;
+  }
+
+  // Get the logged in player's ID (ensure getCookie is defined and imported)
+  const playerId = getCookie("playerId");
+  if (!playerId) {
+    alert("You must be logged in to update your password.");
+    return;
+  }
+
+  try {
+    // Fetch the player's current hashed password from Supabase
+    const { data: player, error: fetchError } = await supabase
+      .from("players")
+      .select("password")
+      .eq("id", playerId)
+      .single();
+      
+    if (fetchError || !player) {
+      console.error("Error fetching player data:", fetchError);
+      alert("Failed to fetch player data.");
+      return;
+    }
+
+    // Compare the entered current PIN (hashed) with the stored hash
+    const hashedCurrentPIN = CryptoJS.MD5(currentPIN).toString();
+    if (hashedCurrentPIN !== player.password) {
+      alert("Current PIN is incorrect.");
+      return;
+    }
+
+    // Hash the new PIN
+    const hashedNewPIN = CryptoJS.MD5(newPIN).toString();
+
+    // Update the player's password in Supabase
+    const { error: updateError } = await supabase
+      .from("players")
+      .update({ password: hashedNewPIN })
+      .eq("id", playerId);
+
+    if (updateError) {
+      console.error("Error updating password:", updateError);
+      alert("Failed to update password.");
+      return;
+    }
+
+    alert("Password updated successfully!");
+
+    // Clear the form fields
+    currentPINField.value = "";
+    newPINField.value = "";
+    confirmNewPINField.value = "";
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    alert("An unexpected error occurred while updating your password.");
+  }
+});
+
   </script>
 </body>
 </html>
