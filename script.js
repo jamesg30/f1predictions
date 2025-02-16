@@ -424,7 +424,7 @@ export function renderAvatar(element, settings, letter = 'A') {
   // Determine if this is the small header icon vs. a larger preview.
   const isSmall = element.classList.contains('user-avatar');
   // Use different padding based on the size.
-  const padVal = isSmall ? "0.1rem" : "0.2rem";
+  const padVal = isSmall ? "0.2rem" : "0.2rem";
   
   let shadow;
   let innerContent = "";
