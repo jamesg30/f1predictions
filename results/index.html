@@ -1196,16 +1196,16 @@ if (userResultPulled) {
       const brightness = (r * 299 + g * 587 + b * 114) / 1000;
       return brightness > 128 ? '#000' : '#fff';
     }
-    function getUserBackgroundColor(username, avatar_settings) {
+    function getUserBackgroundColor(name, avatar_settings) {
       if (avatar_settings && avatar_settings.backgroundColor) {
         return avatar_settings.backgroundColor;
       }
-      return getColorForLetter(username.charAt(0).toUpperCase());
+      return getColorForLetter(name.charAt(0).toUpperCase());
     }
-    function applyHeaderColor(username, avatar_settings) {
+    function applyHeaderColor(name, avatar_settings) {
       const headerElement = document.querySelector("th.your-results-header");
       if (headerElement) {
-        const bgColor = getUserBackgroundColor(username, avatar_settings);
+        const bgColor = getUserBackgroundColor(name, avatar_settings);
         const textColor = getContrastTextColor(bgColor);
         headerElement.style.backgroundColor = bgColor;
         headerElement.style.color = textColor;
@@ -1229,7 +1229,7 @@ if (userResultPulled) {
     }
     const user = await getCurrentUser();
     if (user) {
-      applyHeaderColor(user.username, user.avatar_settings);
+      applyHeaderColor(user.name, user.avatar_settings);
     } else {
       console.warn("No current user found for header coloring.");
     }

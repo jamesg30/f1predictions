@@ -799,7 +799,7 @@ unscoredBody.innerHTML = '';
     // Apply header color for the logged-in user's column after table is built.
   const user = await getCurrentUser();
   if (user) {
-    applyHeaderColor(user.username, user.avatar_settings);
+    applyHeaderColor(user.name, user.avatar_settings);
   } else {
     console.warn("loadResultsPredictions: No user data available to apply header color.");
 }
@@ -1039,7 +1039,7 @@ if (userResultPulled) {
   // Apply header color for the logged-in user's column after table is built.
   const user = await getCurrentUser();
   if (user) {
-    applyHeaderColor(user.username, user.avatar_settings);
+    applyHeaderColor(user.name, user.avatar_settings);
   } else {
     console.warn("loadResultsPredictions: No user data available to apply header color.");
 }
@@ -1158,21 +1158,24 @@ function getContrastTextColor(backgroundColor) {
 }
 
 // Determines the user's background color.
-function getUserBackgroundColor(username, avatar_settings) {
+function getUserBackgroundColor(name, avatar_settings) {
   if (avatar_settings && avatar_settings.backgroundColor) {
-    console.log(`Using custom avatar background color: ${avatar_settings.backgroundColor}`);
     return avatar_settings.backgroundColor;
   }
-  const defaultColor = getColorForLetter(username.charAt(0).toUpperCase());
-  console.log(`Using default color based on letter '${username.charAt(0).toUpperCase()}': ${defaultColor}`);
-  return defaultColor;
+console.log(name)
+  if (!name || name.length === 0) {
+    return '#52c1fa'; // Default fallback color (light blue)
+  }
+
+  const firstLetter = name.charAt(0).toUpperCase();
+  return getColorForLetter(firstLetter);
 }
 
 // Applies the computed background and text colors to the header cell.
-function applyHeaderColor(username, avatar_settings) {
+function applyHeaderColor(name, avatar_settings) {
   const headerElement = document.querySelector("th.your-results-header");
   if (headerElement) {
-    const bgColor = getUserBackgroundColor(username, avatar_settings);
+    const bgColor = getUserBackgroundColor(name, avatar_settings);
     const textColor = getContrastTextColor(bgColor);
     headerElement.style.backgroundColor = bgColor;
     headerElement.style.color = textColor;
