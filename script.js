@@ -454,8 +454,8 @@ export function renderAvatar(element, settings, letter = 'A') {
     const newIcon = `icon_invert_${settings.icon}`;
     shadow = darkenColor(settings.iconColor, 60);
     let offset = isSmall
-      ? ((settings.icon === 'icon_monster.png' || settings.icon === 'icon_redbull.png') ? 0.5 : 1)
-      : ((settings.icon === 'icon_monster.png' || settings.icon === 'icon_redbull.png') ? 1 : 2);
+      ? ((settings.icon === 'icon_monster.png' || settings.icon === 'icon_redbull.png' || settings.icon === 'icon_fish.png') ? 0.5 : 1)
+      : ((settings.icon === 'icon_monster.png' || settings.icon === 'icon_redbull.png' || settings.icon === 'icon_fish.png') ? 1 : 2);
       
     innerContent = `<div style="padding: ${padVal}; width: 100%; height: 100%; box-sizing: border-box;">
       <div style="position: relative; width: 100%; height: 100%;">
