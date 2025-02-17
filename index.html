@@ -392,7 +392,7 @@
     <script src="/js/bootstrap.bundle.min.js"></script>
 
     <script type="module">
-      import { getCookie } from '/script.js';
+      import { getCookie, getColorForLetter } from '/script.js';
         // Fetch the race details from form_details and calendar tables
         async function fetchRaceDetails() {
             try {
@@ -795,6 +795,14 @@ unscoredBody.innerHTML = '';
 
     // Hide the loading indicator after the unscored table has been built.
     document.getElementById('unscoredLoading').style.display = 'none';
+
+    // Apply header color for the logged-in user's column after table is built.
+  const user = await getCurrentUser();
+  if (user) {
+    applyHeaderColor(user.username, user.avatar_settings);
+  } else {
+    console.warn("loadResultsPredictions: No user data available to apply header color.");
+}
 }
             // --- Scored Results Section Begins ---
             else if (results_display_type === 'Scored Results') { 
@@ -1027,6 +1035,14 @@ if (userResultPulled) {
     document.getElementById('scoredLoading').style.display = 'none';
 
   markTableAsReady();
+
+  // Apply header color for the logged-in user's column after table is built.
+  const user = await getCurrentUser();
+  if (user) {
+    applyHeaderColor(user.username, user.avatar_settings);
+  } else {
+    console.warn("loadResultsPredictions: No user data available to apply header color.");
+}
 }
  else if (results_display_type === 'No Display') {
                 document.getElementById('loadingPlaceholderBar').style.display = 'none'; // Hide Placeholder Bar
@@ -1117,6 +1133,75 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// Colouring Column Header
+
+// Converts a hex color string to an RGB object.
+function hexToRgb(hex) {
+  hex = hex.replace(/^#/, '');
+  if (hex.length === 3) {
+    hex = hex.split('').map(x => x + x).join('');
+  }
+  const bigint = parseInt(hex, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return { r, g, b };
+}
+
+// Given a background color, returns either black or white for optimal contrast.
+function getContrastTextColor(backgroundColor) {
+  const { r, g, b } = hexToRgb(backgroundColor);
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  const result = brightness > 128 ? '#000' : '#fff';
+  console.log(`getContrastTextColor: background ${backgroundColor}, brightness ${brightness}, text ${result}`);
+  return result;
+}
+
+// Determines the user's background color.
+function getUserBackgroundColor(username, avatar_settings) {
+  if (avatar_settings && avatar_settings.backgroundColor) {
+    console.log(`Using custom avatar background color: ${avatar_settings.backgroundColor}`);
+    return avatar_settings.backgroundColor;
+  }
+  const defaultColor = getColorForLetter(username.charAt(0).toUpperCase());
+  console.log(`Using default color based on letter '${username.charAt(0).toUpperCase()}': ${defaultColor}`);
+  return defaultColor;
+}
+
+// Applies the computed background and text colors to the header cell.
+function applyHeaderColor(username, avatar_settings) {
+  const headerElement = document.querySelector("th.your-results-header");
+  if (headerElement) {
+    const bgColor = getUserBackgroundColor(username, avatar_settings);
+    const textColor = getContrastTextColor(bgColor);
+    headerElement.style.backgroundColor = bgColor;
+    headerElement.style.color = textColor;
+    console.log(`applyHeaderColor: Applied bgColor ${bgColor} and textColor ${textColor} to header cell`, headerElement);
+  } else {
+    console.warn("applyHeaderColor: No element with class 'your-results-header' found.");
+  }
+}
+
+// Updated getCurrentUser: gets user from cookie and fetches details from the "players" table.
+async function getCurrentUser() {
+  const playerId = getCookie("playerId");
+  console.log("getCurrentUser: Cookie playerId =", playerId);
+  if (!playerId) {
+    console.warn("getCurrentUser: No playerId cookie found.");
+    return null;
+  }
+  const { data, error } = await supabase
+    .from('players')
+    .select('*')
+    .eq('id', playerId)
+    .single();
+  if (error) {
+    console.error("Error fetching current user:", error.message);
+    return null;
+  }
+  console.log("getCurrentUser: Fetched user data:", data);
+  return data;
+}
 
 
 // --- Player Standings Tables ---

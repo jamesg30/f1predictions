@@ -178,6 +178,21 @@
                       </select>
                     </div>
                   </div>
+                  <!-- New row for Form Alert Text fields -->
+<div class="row mb-2">
+    <div class="col-md-6">
+      <label class="form-label">Form Alert Text Enabled</label>
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="form-alert-text-enabled">
+        <label class="form-check-label" for="form-alert-text-enabled" id="form-alert-text-enabled-label">Loading...</label>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <label for="form-alert-text-input" class="form-label">Form Alert Text</label>
+      <input type="text" class="form-control" id="form-alert-text-input">
+    </div>
+  </div>
+  
                   <button type="submit" class="btn btn-primary" id="save-changes" disabled>Save Changes</button>
                 </form>
               </div>
@@ -1930,205 +1945,240 @@ async function updatePlayerPassword(id) {
 
 
 // --- INFORMATION DASHBOARD ---
-        document.addEventListener('DOMContentLoaded', async () => {
-        const raceSelect = document.getElementById('race-select');
-        const resultsDisplayRaceSelect = document.getElementById('results-display-race-select');
-        const resultsDisplayTypeSelect = document.getElementById('results-display-type-select');
-        const formResponses = document.getElementById('form-responses');
-        const formStatus = document.getElementById('form-status');
-        const formStatusLabel = document.getElementById('form-status-label');
-        const currentYearInput = document.getElementById('current-year');
+        // --- INFORMATION DASHBOARD ---
+document.addEventListener('DOMContentLoaded', async () => {
+  const raceSelect = document.getElementById('race-select');
+  const resultsDisplayRaceSelect = document.getElementById('results-display-race-select');
+  const resultsDisplayTypeSelect = document.getElementById('results-display-type-select');
+  const formResponses = document.getElementById('form-responses');
+  const formStatus = document.getElementById('form-status');
+  const formStatusLabel = document.getElementById('form-status-label');
+  const currentYearInput = document.getElementById('current-year');
 
-        // New elements for Form Status Text fields
-        const formStatusTextEnabledInput = document.getElementById('form-status-text-enabled');
-        const formStatusTextEnabledLabel = document.getElementById('form-status-text-enabled-label');
-        const formStatusTextInput = document.getElementById('form-status-text');
+  // Existing Form Status Text fields
+  const formStatusTextEnabledInput = document.getElementById('form-status-text-enabled');
+  const formStatusTextEnabledLabel = document.getElementById('form-status-text-enabled-label');
+  const formStatusTextInput = document.getElementById('form-status-text');
 
-        const saveChangesButton = document.getElementById('save-changes');
+  // New Form Alert Text fields
+  const formAlertTextEnabledInput = document.getElementById('form-alert-text-enabled');
+  const formAlertTextEnabledLabel = document.getElementById('form-alert-text-enabled-label');
+  const formAlertTextInput = document.getElementById('form-alert-text-input');
 
-        let currentRaceNumber;
-        let formEnabled;
-        let resultsDisplayRaceNumber;
-        let resultsDisplayType;
-        let currentYear;
-        let formStatusText;
-        let formStatusTextEnabled;
+  const saveChangesButton = document.getElementById('save-changes');
 
-        // Fetch current form details including new form status text fields
-        async function fetchFormDetails() {
-            const { data: formDetails, error: formDetailsError } = await supabase
-            .from('form_details')
-            .select(
-                'race_number, form_enabled, results_display_race_number, results_display_type, current_year, form_status_text, form_status_text_enabled'
-            )
-            .eq('id', 1)
-            .single();
+  let currentRaceNumber;
+  let formEnabled;
+  let resultsDisplayRaceNumber;
+  let resultsDisplayType;
+  let currentYear;
+  let formStatusText;
+  let formStatusTextEnabled;
+  // New variables for alert text
+  let formAlertText;
+  let formAlertTextEnabled;
 
-            if (formDetailsError) {
-            console.error('Error fetching form details:', formDetailsError);
-            return;
-            }
+  // Fetch current form details including new alert text fields
+  async function fetchFormDetails() {
+    const { data: formDetails, error: formDetailsError } = await supabase
+      .from('form_details')
+      .select(
+        `race_number,
+         form_enabled,
+         results_display_race_number,
+         results_display_type,
+         current_year,
+         form_status_text,
+         form_status_text_enabled,
+         form_alert_text,
+         form_alert_text_enabled`
+      )
+      .eq('id', 1)
+      .single();
 
-            currentRaceNumber = formDetails.race_number;
-            formEnabled = formDetails.form_enabled;
-            resultsDisplayRaceNumber = formDetails.results_display_race_number;
-            resultsDisplayType = formDetails.results_display_type;
-            currentYear = formDetails.current_year;
-            formStatusText = formDetails.form_status_text;
-            formStatusTextEnabled = formDetails.form_status_text_enabled;
+    if (formDetailsError) {
+      console.error('Error fetching form details:', formDetailsError);
+      return;
+    }
 
-            // Update form status toggle
-            formStatus.checked = formEnabled;
-            formStatusLabel.textContent = formEnabled ? 'Enabled' : 'Disabled';
+    currentRaceNumber = formDetails.race_number;
+    formEnabled = formDetails.form_enabled;
+    resultsDisplayRaceNumber = formDetails.results_display_race_number;
+    resultsDisplayType = formDetails.results_display_type;
+    currentYear = formDetails.current_year;
+    formStatusText = formDetails.form_status_text;
+    formStatusTextEnabled = formDetails.form_status_text_enabled;
+    // Set alert text values
+    formAlertText = formDetails.form_alert_text;
+    formAlertTextEnabled = formDetails.form_alert_text_enabled;
 
-            // Update current year input
-            currentYearInput.value = currentYear;
+    // Update form status toggle
+    formStatus.checked = formEnabled;
+    formStatusLabel.textContent = formEnabled ? 'Enabled' : 'Disabled';
 
-            // Update results display type select
-            resultsDisplayTypeSelect.value = resultsDisplayType;
+    // Update current year input
+    currentYearInput.value = currentYear;
 
-            // Update form status text and its enabled toggle
-            formStatusTextEnabledInput.checked = formStatusTextEnabled;
-            formStatusTextEnabledLabel.textContent = formStatusTextEnabled ? 'Enabled' : 'Disabled';
-            formStatusTextInput.value = formStatusText;
-        }
+    // Update results display type select
+    resultsDisplayTypeSelect.value = resultsDisplayType;
 
-        await fetchFormDetails();
+    // Update form status text and its enabled toggle
+    formStatusTextEnabledInput.checked = formStatusTextEnabled;
+    formStatusTextEnabledLabel.textContent = formStatusTextEnabled ? 'Enabled' : 'Disabled';
+    formStatusTextInput.value = formStatusText;
 
-        // Fetch race options and populate the select lists
-// Fetch race options and populate the select lists
-async function fetchRaceOptions() {
-  const { data: races, error: racesError } = await supabase
-    .from('calendar')
-    .select('race_number, name')
-    .order('race_number', { ascending: true }); // Order by race_number in ascending order
-
-  if (racesError) {
-    console.error('Error fetching race options:', racesError);
-    return;
+    // Update form alert text and its enabled toggle
+    formAlertTextEnabledInput.checked = formAlertTextEnabled;
+    formAlertTextEnabledLabel.textContent = formAlertTextEnabled ? 'Enabled' : 'Disabled';
+    formAlertTextInput.value = formAlertText;
   }
 
-  races.forEach(race => {
-    const option = document.createElement('option');
-    option.value = race.race_number;
-    option.textContent = `Race ${race.race_number}: ${race.name} GP`;
-    if (race.race_number === currentRaceNumber) {
-      option.selected = true;
-    }
-    raceSelect.appendChild(option);
+  await fetchFormDetails();
 
-    const resultsOption = option.cloneNode(true);
-    if (race.race_number === resultsDisplayRaceNumber) {
-      resultsOption.selected = true;
+  // Fetch race options and populate the select lists
+  async function fetchRaceOptions() {
+    const { data: races, error: racesError } = await supabase
+      .from('calendar')
+      .select('race_number, name')
+      .order('race_number', { ascending: true }); // Order by race_number in ascending order
+
+    if (racesError) {
+      console.error('Error fetching race options:', racesError);
+      return;
     }
-    resultsDisplayRaceSelect.appendChild(resultsOption);
+
+    races.forEach(race => {
+      const option = document.createElement('option');
+      option.value = race.race_number;
+      option.textContent = `Race ${race.race_number}: ${race.name} GP`;
+      if (race.race_number === currentRaceNumber) {
+        option.selected = true;
+      }
+      raceSelect.appendChild(option);
+
+      const resultsOption = option.cloneNode(true);
+      if (race.race_number === resultsDisplayRaceNumber) {
+        resultsOption.selected = true;
+      }
+      resultsDisplayRaceSelect.appendChild(resultsOption);
+    });
+  }
+
+  await fetchRaceOptions();
+
+  // Fetch number of form responses
+  async function fetchFormResponses() {
+    const { data: responses, error: responsesError } = await supabase
+      .from('form_raw')
+      .select('id')
+      .eq('race_number', currentRaceNumber);
+
+    if (responsesError) {
+      console.error('Error fetching form responses:', responsesError);
+      return;
+    }
+
+    formResponses.textContent = responses.length;
+  }
+
+  await fetchFormResponses();
+
+  // Enable save button when changes are made
+  raceSelect.addEventListener('change', () => {
+    saveChangesButton.disabled = false;
   });
-}
+  resultsDisplayRaceSelect.addEventListener('change', () => {
+    saveChangesButton.disabled = false;
+  });
+  resultsDisplayTypeSelect.addEventListener('change', () => {
+    saveChangesButton.disabled = false;
+  });
+  formStatus.addEventListener('change', () => {
+    saveChangesButton.disabled = false;
+    formStatusLabel.textContent = formStatus.checked ? 'Enabled' : 'Disabled';
+  });
+  currentYearInput.addEventListener('input', () => {
+    saveChangesButton.disabled = false;
+  });
 
+  // New event listeners for form status text fields
+  formStatusTextEnabledInput.addEventListener('change', () => {
+    saveChangesButton.disabled = false;
+    formStatusTextEnabledLabel.textContent = formStatusTextEnabledInput.checked ? 'Enabled' : 'Disabled';
+  });
+  formStatusTextInput.addEventListener('input', () => {
+    saveChangesButton.disabled = false;
+  });
 
+  // New event listeners for form alert text fields
+  formAlertTextEnabledInput.addEventListener('change', () => {
+    saveChangesButton.disabled = false;
+    formAlertTextEnabledLabel.textContent = formAlertTextEnabledInput.checked ? 'Enabled' : 'Disabled';
+  });
+  formAlertTextInput.addEventListener('input', () => {
+    saveChangesButton.disabled = false;
+  });
 
-        await fetchRaceOptions();
+  // Save changes
+  document.getElementById('dashboard-form').addEventListener('submit', async event => {
+    event.preventDefault();
 
-        // Fetch number of form responses
-        async function fetchFormResponses() {
-            const { data: responses, error: responsesError } = await supabase
-            .from('form_raw')
-            .select('id')
-            .eq('race_number', currentRaceNumber);
+    const selectedRaceNumber = raceSelect.value;
+    const selectedFormStatus = formStatus.checked;
+    const selectedResultsDisplayRaceNumber = resultsDisplayRaceSelect.value;
+    const selectedResultsDisplayType = resultsDisplayTypeSelect.value;
+    const selectedCurrentYear = currentYearInput.value;
+    const selectedFormStatusTextEnabled = formStatusTextEnabledInput.checked;
+    const selectedFormStatusText = formStatusTextInput.value;
+    // New alert text selections
+    const selectedFormAlertTextEnabled = formAlertTextEnabledInput.checked;
+    const selectedFormAlertText = formAlertTextInput.value;
 
-            if (responsesError) {
-            console.error('Error fetching form responses:', responsesError);
-            return;
-            }
+    // Update form details in the database
+    const { error: updateError } = await supabase
+      .from('form_details')
+      .update({
+        race_number: selectedRaceNumber,
+        form_enabled: selectedFormStatus,
+        results_display_race_number: selectedResultsDisplayRaceNumber,
+        results_display_type: selectedResultsDisplayType,
+        current_year: selectedCurrentYear,
+        form_status_text_enabled: selectedFormStatusTextEnabled,
+        form_status_text: selectedFormStatusText,
+        form_alert_text_enabled: selectedFormAlertTextEnabled,
+        form_alert_text: selectedFormAlertText
+      })
+      .eq('id', 1);
 
-            formResponses.textContent = responses.length;
-        }
+    if (updateError) {
+      alert('Error saving changes');
+      console.error('Error saving changes:', updateError);
+      return;
+    }
 
-        await fetchFormResponses();
+    // Update the UI with the new values
+    currentRaceNumber = selectedRaceNumber;
+    formEnabled = selectedFormStatus;
+    resultsDisplayRaceNumber = selectedResultsDisplayRaceNumber;
+    resultsDisplayType = selectedResultsDisplayType;
+    currentYear = selectedCurrentYear;
+    formStatusTextEnabled = selectedFormStatusTextEnabled;
+    formStatusText = selectedFormStatusText;
+    formAlertTextEnabled = selectedFormAlertTextEnabled;
+    formAlertText = selectedFormAlertText;
 
-        // Enable save button when changes are made
-        raceSelect.addEventListener('change', () => {
-            saveChangesButton.disabled = false;
-        });
+    formStatusLabel.textContent = formEnabled ? 'Enabled' : 'Disabled';
+    formStatusTextEnabledLabel.textContent = formStatusTextEnabled ? 'Enabled' : 'Disabled';
+    formAlertTextEnabledLabel.textContent = formAlertTextEnabled ? 'Enabled' : 'Disabled';
+    saveChangesButton.disabled = true;
 
-        resultsDisplayRaceSelect.addEventListener('change', () => {
-            saveChangesButton.disabled = false;
-        });
+    // Fetch updated form responses
+    await fetchFormResponses();
 
-        resultsDisplayTypeSelect.addEventListener('change', () => {
-            saveChangesButton.disabled = false;
-        });
+    alert('Changes saved successfully');
+  });
+});
 
-        formStatus.addEventListener('change', () => {
-            saveChangesButton.disabled = false;
-            formStatusLabel.textContent = formStatus.checked ? 'Enabled' : 'Disabled';
-        });
-
-        currentYearInput.addEventListener('input', () => {
-            saveChangesButton.disabled = false;
-        });
-
-        // New event listeners for form status text fields
-        formStatusTextEnabledInput.addEventListener('change', () => {
-            saveChangesButton.disabled = false;
-            formStatusTextEnabledLabel.textContent = formStatusTextEnabledInput.checked ? 'Enabled' : 'Disabled';
-        });
-
-        formStatusTextInput.addEventListener('input', () => {
-            saveChangesButton.disabled = false;
-        });
-
-        // Save changes
-        document.getElementById('dashboard-form').addEventListener('submit', async event => {
-            event.preventDefault();
-
-            const selectedRaceNumber = raceSelect.value;
-            const selectedFormStatus = formStatus.checked;
-            const selectedResultsDisplayRaceNumber = resultsDisplayRaceSelect.value;
-            const selectedResultsDisplayType = resultsDisplayTypeSelect.value;
-            const selectedCurrentYear = currentYearInput.value;
-            const selectedFormStatusTextEnabled = formStatusTextEnabledInput.checked;
-            const selectedFormStatusText = formStatusTextInput.value;
-
-            // Update form details in the database
-            const { error: updateError } = await supabase
-            .from('form_details')
-            .update({
-                race_number: selectedRaceNumber,
-                form_enabled: selectedFormStatus,
-                results_display_race_number: selectedResultsDisplayRaceNumber,
-                results_display_type: selectedResultsDisplayType,
-                current_year: selectedCurrentYear,
-                form_status_text_enabled: selectedFormStatusTextEnabled,
-                form_status_text: selectedFormStatusText
-            })
-            .eq('id', 1);
-
-            if (updateError) {
-            alert('Error saving changes');
-            console.error('Error saving changes:', updateError);
-            return;
-            }
-
-            // Update the UI
-            currentRaceNumber = selectedRaceNumber;
-            formEnabled = selectedFormStatus;
-            resultsDisplayRaceNumber = selectedResultsDisplayRaceNumber;
-            resultsDisplayType = selectedResultsDisplayType;
-            currentYear = selectedCurrentYear;
-            formStatusTextEnabled = selectedFormStatusTextEnabled;
-            formStatusText = selectedFormStatusText;
-
-            formStatusLabel.textContent = formEnabled ? 'Enabled' : 'Disabled';
-            formStatusTextEnabledLabel.textContent = formStatusTextEnabled ? 'Enabled' : 'Disabled';
-            saveChangesButton.disabled = true;
-
-            // Fetch updated form responses
-            await fetchFormResponses();
-
-            alert('Changes saved successfully');
-        });
-        });
 
 
 // --- FORM SCORING ---

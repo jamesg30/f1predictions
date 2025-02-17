@@ -146,10 +146,27 @@
           <hr>
   
           <!-- Starting Grid Block with Image -->
-          <div id="starting-grid">
-            <h5 class="mb-3 pixel-art-heading-2">Starting Grid</h5>
-            <img id="startingGridPlaceholder" src="" alt="Starting Grid" style="max-width: 100%; max-height: 300px; height: auto;">
-          </div>
+<!-- Starting Grid Block with Image -->
+<div id="starting-grid">
+  <h5 class="mb-3 pixel-art-heading-2">Starting Grid</h5>
+  <!-- Placeholder shown while image loads -->
+  <div id="startingGridPlaceholderContainer">
+    <p class="placeholder-glow">
+      <span class="placeholder col-12" style="display: block; height: 200px;"></span>
+    </p>
+  </div>
+  <!-- Actual starting grid image (initially hidden) -->
+  <img
+    id="startingGridImage"
+    src=""
+    alt="Starting Grid"
+    style="max-width: 100%; max-height: 200px; height: auto; display: none;"
+  >
+</div>
+
+
+          
+          <div id="form-alert-text" class="pixel-alert pixel-alert-warning d-none" style="margin-top: 10px"></div>
   
           <hr>
   
@@ -414,28 +431,44 @@ async function loadExistingSubmissions() {
     
     // LOAD STARTING GRID IMAGE
     async function loadStartingGridImage() {
-      console.log("Loading starting grid image...");
-      const startingGridPlaceholder = document.getElementById("startingGridPlaceholder");
-      const bucketName = "media";
-      const fileNamePrefix = "current_starting_grid";
-      const fileExtensions = ["png", "jpg", "jpeg"];
-      for (const ext of fileExtensions) {
-        const fileName = `${fileNamePrefix}.${ext}`;
-        const { data, error } = await supabase.storage
-          .from(bucketName)
-          .download(fileName);
-        if (error) {
-          console.log(`Error loading ${fileName}:`, error.message);
-        } else {
-          console.log(`Loaded ${fileName}`);
-          const url = URL.createObjectURL(data);
-          startingGridPlaceholder.src = url;
-          return;
-        }
-      }
-      console.error("No matching file found");
-      startingGridPlaceholder.src = "";
+  console.log("Loading starting grid image...");
+  
+  const startingGridImage = document.getElementById("startingGridImage");
+  const placeholderContainer = document.getElementById("startingGridPlaceholderContainer");
+  
+  const bucketName = "media";
+  const fileNamePrefix = "current_starting_grid";
+  const fileExtensions = ["png", "jpg", "jpeg"];
+  
+  for (const ext of fileExtensions) {
+    const fileName = `${fileNamePrefix}.${ext}`;
+    const { data, error } = await supabase.storage
+      .from(bucketName)
+      .download(fileName);
+    
+    if (error) {
+      console.log(`Error loading ${fileName}:`, error.message);
+    } else {
+      console.log(`Loaded ${fileName}`);
+      const url = URL.createObjectURL(data);
+      startingGridImage.src = url;
+      
+      // When the image loads, hide the placeholder and show the image
+      startingGridImage.onload = function() {
+        placeholderContainer.style.display = 'none';
+        startingGridImage.style.display = 'block';
+      };
+      
+      return; // Stop trying other extensions once one loads
     }
+  }
+  
+  console.error("No matching file found");
+  startingGridImage.src = "";
+  // Optionally, update the placeholder to inform the user no image is available.
+  placeholderContainer.innerHTML = "<p class='text-center'>No image available</p>";
+}
+
     
     // MAIN FORM PAGE LOGIC
     document.addEventListener('DOMContentLoaded', async () => {
@@ -653,6 +686,39 @@ document.addEventListener("loginStateChanged", async (event) => {
     document.getElementById("repeated-predictions-alert").classList.add("d-none");
   }
 });
+
+async function updateFormAlert() {
+  try {
+    // Fetch the form alert settings from form_details (assumes record with id=1)
+    const { data, error } = await supabase
+      .from('form_details')
+      .select('form_alert_text, form_alert_text_enabled')
+      .eq('id', 1)
+      .single();
+
+    if (error) {
+      console.error('Error fetching form details:', error.message);
+      return;
+    }
+
+    // Get the alert element
+    const alertDiv = document.getElementById('form-alert-text');
+    if (!alertDiv) return;
+
+    // Check if the alert should be enabled
+    if (data.form_alert_text_enabled) {
+      alertDiv.classList.remove('d-none');  // Show the alert
+      alertDiv.textContent = data.form_alert_text;  // Set the alert text
+    } else {
+      alertDiv.classList.add('d-none');  // Keep the alert hidden
+    }
+  } catch (err) {
+    console.error('Error updating form alert:', err);
+  }
+}
+
+// Call the function on page load
+document.addEventListener('DOMContentLoaded', updateFormAlert);
 
 
   </script>

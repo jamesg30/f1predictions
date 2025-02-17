@@ -121,10 +121,23 @@
               </div>
 
               <!-- Toggle Detailed Scoring -->
-              <div class="form-check form-switch mt-3">
+              <div class="form-check form-switch mt-3" style="margin-top: 5px; margin-bottom: 5px">
                 <label class="form-check-label" for="toggleScoresPlayer">Show Detailed Scoring</label>
                 <input class="form-check-input" type="checkbox" id="toggleScoresPlayer">
               </div>
+            <div class="form-check" style="margin-top: 5px; margin-bottom: 5px">
+              <input class="form-check-input" type="checkbox" id="pinQuestionColumn">
+              <label class="form-check-label" for="pinQuestionColumn">
+                Pin Questions
+              </label>
+            </div>
+            
+            <div class="form-check" style="margin-top: 5px; margin-bottom: 5px">
+              <input class="form-check-input" type="checkbox" id="pinBothColumns">
+              <label class="form-check-label" for="pinBothColumns">
+                Pin Questions & My Results
+              </label>
+            </div>
 
               <div id="lowestScores" class="mt-3" style="margin-bottom: 15px">
                 <!-- Lowest scores will be displayed here -->
@@ -204,7 +217,8 @@
     <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
         <p>&copy; 2025 F1 Predictions Form</p>
     </footer>
-    <script>
+    <script type="module">
+      import { getCookie, getColorForLetter } from '/script.js';
         // Helper: Retrieve an entire table from Supabase.
     async function getTable(tableName) {
       const { data, error } = await supabase.from(tableName).select('*');
@@ -708,18 +722,6 @@
     // -----------------
     // -----------------
 
-    // ---------- HELPER FUNCTION ----------
-    async function getTable(tableName) {
-      const { data, error } = await supabase.from(tableName).select('*');
-      if (error) {
-        console.error(`Error fetching ${tableName}:`, error);
-        throw error;
-      }
-      return data;
-    }
-
-
-
     // ---------- RACE OPTIONS LOADING ----------
     // This function builds the dropdown by fetching the current year from form_details
     // and then querying team_scoring_{year} to build a distinct list of races.
@@ -795,303 +797,453 @@
 
     // ---------- PLAYER RESULTS LOADING ----------
     // This function loads player results from form_responses_{year} for the selected race.
-    async function loadRaceResultsPlayer() {
-      try {
-        // Show the loading indicator
-        document.getElementById('playerLoading').style.display = 'block';
+    // ---------- PLAYER RESULTS LOADING ----------
+async function loadRaceResultsPlayer() {
+  try {
+    // Show the loading indicator
+    document.getElementById('playerLoading').style.display = 'block';
 
-        // ---------------------------------------
-        // FETCH DRIVERS AND CONSTRUCTORS
-        // ---------------------------------------
-        const { data: drivers, error: driversError } = await supabase
-          .from('drivers')
-          .select('*');
-        if (driversError) {
-          console.error("Error fetching drivers:", driversError.message);
-          document.getElementById('playerLoading').style.display = 'none';
-          return;
-        }
+    // ---------------------------------------
+    // FETCH DRIVERS AND CONSTRUCTORS
+    // ---------------------------------------
+    const { data: drivers, error: driversError } = await supabase
+      .from('drivers')
+      .select('*');
+    if (driversError) {
+      console.error("Error fetching drivers:", driversError.message);
+      document.getElementById('playerLoading').style.display = 'none';
+      return;
+    }
 
-        const { data: constructors, error: constructorsError } = await supabase
-          .from('constructors')
-          .select('*');
-        if (constructorsError) {
-          console.error("Error fetching constructors:", constructorsError.message);
-          document.getElementById('playerLoading').style.display = 'none';
-          return;
-        }
+    const { data: constructors, error: constructorsError } = await supabase
+      .from('constructors')
+      .select('*');
+    if (constructorsError) {
+      console.error("Error fetching constructors:", constructorsError.message);
+      document.getElementById('playerLoading').style.display = 'none';
+      return;
+    }
 
-        // ---------------------------------------
-        // GET CURRENT YEAR AND SELECTED RACE
-        // ---------------------------------------
-        const { data: formDetails, error: formDetailsError } = await supabase
-          .from('form_details')
-          .select('*')
-          .eq('id', 1)
-          .single();
-        if (formDetailsError) {
-          console.error("Error fetching form_details:", formDetailsError.message);
-          document.getElementById('playerLoading').style.display = 'none';
-          return;
-        }
-        const currentYear = formDetails.current_year;
-        const raceNumber = document.getElementById('team-select').value;
+    // ---------------------------------------
+    // GET CURRENT YEAR AND SELECTED RACE
+    // ---------------------------------------
+    const { data: formDetails, error: formDetailsError } = await supabase
+      .from('form_details')
+      .select('*')
+      .eq('id', 1)
+      .single();
+    if (formDetailsError) {
+      console.error("Error fetching form_details:", formDetailsError.message);
+      document.getElementById('playerLoading').style.display = 'none';
+      return;
+    }
+    const currentYear = formDetails.current_year;
+    const raceNumber = document.getElementById('team-select').value;
 
-        // ---------------------------------------
-        // FETCH FORM RESPONSES FOR THE SELECTED RACE
-        // ---------------------------------------
-        const formResponsesTable = `form_responses_${currentYear}`;
-        const { data: formResponses, error: formResponsesError } = await supabase
-          .from(formResponsesTable)
-          .select('*')
-          .eq('race_number', raceNumber);
-        if (formResponsesError) {
-          console.error("Error fetching form responses:", formResponsesError.message);
-          document.getElementById('playerLoading').style.display = 'none';
-          return;
-        }
-        
-        // Process responses assuming the same structure as your home page
-        const questions = formResponses.find(response => response.entry_type === 'questions');
-        const results = formResponses.find(response => response.entry_type === 'results');
-        const players = formResponses.filter(response => response.entry_type === 'player');
-        // (Optionally) lowestScores if needed later:
-        const lowestScores = formResponses.filter(response => response.entry_type === 'player_lowest_score');
-        
-        // ---------------------------------------
-        // BUILD THE PLAYER RESULTS TABLE
-        // ---------------------------------------
-        const playerTable = document.getElementById('player-results-table');
-        // Hide the table until the new table is built
-        playerTable.style.display = 'none';
-        playerTable.innerHTML = ""; // Clear any previous table contents
+    // ---------------------------------------
+    // FETCH FORM RESPONSES FOR THE SELECTED RACE
+    // ---------------------------------------
+    const formResponsesTable = `form_responses_${currentYear}`;
+    const { data: formResponses, error: formResponsesError } = await supabase
+      .from(formResponsesTable)
+      .select('*')
+      .eq('race_number', raceNumber);
+    if (formResponsesError) {
+      console.error("Error fetching form responses:", formResponsesError.message);
+      document.getElementById('playerLoading').style.display = 'none';
+      return;
+    }
 
-        // Create table header
-        const headerRow = document.createElement('tr');
-        headerRow.classList.add('header');
-        // First column: Name
-        const thName = document.createElement('th');
-        thName.textContent = "Name";
-        headerRow.appendChild(thName);
-        // One column per player
+    // Process responses (assuming same structure as your home page)
+    const questions = formResponses.find(response => response.entry_type === 'questions');
+    const results = formResponses.find(response => response.entry_type === 'results');
+    const players = formResponses.filter(response => response.entry_type === 'player');
+    const lowestScores = formResponses.filter(response => response.entry_type === 'player_lowest_score');
+
+    // ---------------------------------------
+// REORDER THE PLAYERS ARRAY SO THAT THE LOGGED-IN PLAYER IS FIRST
+// ---------------------------------------
+const currentUserId = getCookie("playerId");
+let userResultPulled = false; // Flag to track if the current user's result exists
+
+if (currentUserId) {
+  const userIndex = players.findIndex(player => player.player_id == currentUserId);
+  if (userIndex !== -1) {
+    userResultPulled = true;
+    const [userPlayer] = players.splice(userIndex, 1);
+    players.unshift(userPlayer);
+  }
+}
+
+// ---------------------------------------
+// ENABLE/DISABLE THE "PIN BOTH" CHECKBOX BASED ON THE PRESENCE OF THE USER RESULT
+// ---------------------------------------
+const pinBothCheckbox = document.getElementById('pinBothColumns');
+if (userResultPulled) {
+  pinBothCheckbox.disabled = false;
+} else {
+  pinBothCheckbox.disabled = true;
+}
+
+
+
+    // ---------------------------------------
+    // BUILD THE PLAYER RESULTS TABLE
+    // ---------------------------------------
+    const playerTable = document.getElementById('player-results-table');
+    // Hide the table until rebuilt
+    playerTable.style.display = 'none';
+    playerTable.innerHTML = ""; // Clear previous contents
+
+    // Create table header
+    const headerRow = document.createElement('tr');
+    headerRow.classList.add('header');
+    // First column: Name
+    const thName = document.createElement('th');
+    thName.textContent = "Name";
+    headerRow.appendChild(thName);
+    // One column per player
+    players.forEach(player => {
+      const th = document.createElement('th');
+      th.textContent = player.player_name;
+      // If this player's ID matches the current user, add a special class
+      if (currentUserId && player.player_id == currentUserId) {
+        th.classList.add("your-results-header");
+      }
+      headerRow.appendChild(th);
+    });
+    // Spacer column and "Results" column
+    const spacerTh = document.createElement('th');
+    spacerTh.style.backgroundColor = "white";
+    spacerTh.style.borderTop = "none";
+    spacerTh.style.borderBottom = "none";
+    headerRow.appendChild(spacerTh);
+    const resultsTh = document.createElement('th');
+    resultsTh.textContent = "Results";
+    headerRow.appendChild(resultsTh);
+
+    const thead = document.createElement('thead');
+    thead.appendChild(headerRow);
+    playerTable.appendChild(thead);
+
+    // Create table body
+    const tbody = document.createElement('tbody');
+
+    // Helper to create a row for a given question or total.
+    function createRow(id, label) {
+      const isTotalColumn = ['subtotal_1', 'subtotal_2', 'subtotal_3', 'subtotal_4', 'grand_total'].includes(id);
+      if (isTotalColumn) {
+        const row = document.createElement('tr');
+        const tdLabel = document.createElement('td');
+        tdLabel.textContent = label;
+        row.appendChild(tdLabel);
         players.forEach(player => {
-          const th = document.createElement('th');
-          th.textContent = player.player_name;
-          headerRow.appendChild(th);
+          const td = document.createElement('td');
+          td.textContent = player[id];
+          td.className = `${id}_score`;
+          td.dataset.playerId = player.player_id;
+          row.appendChild(td);
         });
-        // Spacer column and "Results" column
-        const spacerTh = document.createElement('th');
-        spacerTh.style.backgroundColor = "white";
-        spacerTh.style.borderTop = "none";
-        spacerTh.style.borderBottom = "none";
-        headerRow.appendChild(spacerTh);
-        const resultsTh = document.createElement('th');
-        resultsTh.textContent = "Results";
-        headerRow.appendChild(resultsTh);
-
-        const thead = document.createElement('thead');
-        thead.appendChild(headerRow);
-        playerTable.appendChild(thead);
-
-        // Create table body
-        const tbody = document.createElement('tbody');
-
-        // Helper to create a row for a given question or total.
-        function createRow(id, label) {
-          // Check if this row is a total row (e.g. subtotals, grand total)
-          const isTotalColumn = ['subtotal_1', 'subtotal_2', 'subtotal_3', 'subtotal_4', 'grand_total'].includes(id);
-          if (isTotalColumn) {
-            const row = document.createElement('tr');
-            const tdLabel = document.createElement('td');
-            tdLabel.textContent = label;
-            row.appendChild(tdLabel);
-            players.forEach(player => {
-              const td = document.createElement('td');
-              td.textContent = player[id];
-              td.className = `${id}_score`;
-              td.dataset.playerId = player.player_id;
-              row.appendChild(td);
-            });
-            const spacerTd = document.createElement('td');
-            spacerTd.style.backgroundColor = "white";
-            row.appendChild(spacerTd);
-            const resultTd = document.createElement('td');
-            row.appendChild(resultTd);
-            tbody.appendChild(row);
-          } else {
-            // For regular questions, add a row only if results exist.
-            if (results && results[`form_id_${id}`] !== null) {
-              const row = document.createElement('tr');
-              const tdLabel = document.createElement('td');
-              tdLabel.textContent = label;
-              row.appendChild(tdLabel);
-              players.forEach(player => {
-                const td = document.createElement('td');
-                td.textContent = player[`form_id_${id}`];
-                td.className = `form_id_${id}_score`;
-                td.dataset.playerId = player.player_id;
-                row.appendChild(td);
-              });
-              const spacerTd = document.createElement('td');
-              spacerTd.style.backgroundColor = "white";
-              row.appendChild(spacerTd);
-              const resultTd = document.createElement('td');
-              resultTd.textContent = results[`form_id_${id}`];
-              row.appendChild(resultTd);
-              tbody.appendChild(row);
-            }
-          }
-        }
-        
-        // Build rows mimicking your home page structure:
-        for (let i = 2; i <= 7; i++) {
-          createRow(i, questions[`form_id_${i}`]);
-        }
-        createRow('subtotal_2', 'Subtotal');
-        // Spacer row
-        let spacerRow = document.createElement('tr');
-        let spacerCell = document.createElement('td');
-        spacerCell.colSpan = players.length + 3;
-        spacerCell.style.backgroundColor = "white";
-        spacerRow.appendChild(spacerCell);
-        tbody.appendChild(spacerRow);
-        for (let i = 8; i <= 27; i++) {
-          createRow(i, questions[`form_id_${i}`]);
-        }
-        createRow('subtotal_3', 'Subtotal');
-        spacerRow = document.createElement('tr');
-        spacerCell = document.createElement('td');
-        spacerCell.colSpan = players.length + 3;
-        spacerCell.style.backgroundColor = "white";
-        spacerRow.appendChild(spacerCell);
-        tbody.appendChild(spacerRow);
-        createRow(28, questions[`form_id_28`]);
-        spacerRow = document.createElement('tr');
-        spacerCell = document.createElement('td');
-        spacerCell.colSpan = players.length + 3;
-        spacerCell.style.backgroundColor = "white";
-        spacerRow.appendChild(spacerCell);
-        tbody.appendChild(spacerRow);
-        createRow('grand_total', 'Grand Total');
-
-        playerTable.appendChild(tbody);
-
-        // Make the table visible now that it’s built
-        playerTable.style.display = 'table';
-
-        // ---------------------------------------
-        // APPLY FORMATTING (as on the home page)
-        // ---------------------------------------
-        const applyFormattingScored = (cell, value) => {
-          if (/^[A-Z]{3}$/.test(value)) {
-            const driver = drivers.find(driver => driver.abbreviation === value);
-            if (driver) {
-              const constructor = constructors.find(constructor => constructor.id === driver.constructor_id);
-              if (constructor) {
-                cell.style.backgroundColor = constructor.background_colour;
-                cell.style.color = constructor.text_colour;
-              }
-            }
-          } else if (/^\d+$/.test(value)) {
-            // Numeric values: no extra formatting.
-          } else if (value === 'Yes') {
-            cell.style.color = 'green';
-            cell.style.backgroundColor = 'white';
-          } else if (value === 'No') {
-            cell.style.color = 'red';
-            cell.style.backgroundColor = 'white';
-          } else {
-            const constructor = constructors.find(constructor => constructor.name === value);
-            if (constructor) {
-              cell.style.backgroundColor = constructor.background_colour;
-              cell.style.color = constructor.text_colour;
-            }
-          }
-        };
-
-        document.querySelectorAll('#player-results-table tbody td').forEach(cell => {
-          applyFormattingScored(cell, cell.textContent);
-        });
-
-        // ---------------------------------------
-        // HIGHLIGHTING FUNCTIONS
-        // ---------------------------------------
-
-        // Highlight highest scores for totals (as before)
-        const highlightHighest = (selector, colors) => {
-          const cells = Array.from(document.querySelectorAll(selector));
-          const values = cells
-            .map(cell => parseFloat(cell.textContent))
-            .filter(value => !isNaN(value));
-          const sortedValues = [...new Set(values)].sort((a, b) => b - a);
-          cells.forEach(cell => {
-            const cellValue = parseFloat(cell.textContent);
-            const rank = sortedValues.indexOf(cellValue);
-            if (rank >= 0 && rank < colors.length) {
-              cell.style.backgroundColor = colors[rank];
-              cell.style.color = 'black';
-            }
+        const spacerTd = document.createElement('td');
+        spacerTd.style.backgroundColor = "white";
+        row.appendChild(spacerTd);
+        const resultTd = document.createElement('td');
+        row.appendChild(resultTd);
+        tbody.appendChild(row);
+      } else {
+        if (results && results[`form_id_${id}`] !== null) {
+          const row = document.createElement('tr');
+          const tdLabel = document.createElement('td');
+          tdLabel.textContent = label;
+          row.appendChild(tdLabel);
+          players.forEach(player => {
+            const td = document.createElement('td');
+            td.textContent = player[`form_id_${id}`];
+            td.className = `form_id_${id}_score`;
+            td.dataset.playerId = player.player_id;
+            row.appendChild(td);
           });
-        };
-
-        // For form_id_28 (closest score), check the cell’s numeric value directly.
-        const highlightClosestScore = (selector, color) => {
-                const cells = Array.from(document.querySelectorAll(selector));
-                cells.forEach(cell => {
-                    const playerId = cell.dataset.playerId;
-                    const player = players.find(player => player.player_id == playerId);
-                    const playerScore = player ? player.form_id_28_score : null;
-                    if (playerScore === 1) {
-                        cell.style.backgroundColor = color;
-                        cell.style.color = 'black';
-                    } else {
-                        cell.style.backgroundColor = '';
-                        cell.style.color = '';
-                    }
-                });
-            };
-
-        highlightHighest('td.subtotal_2_score', ['lightyellow']);
-        highlightHighest('td.subtotal_3_score', ['lightyellow']);
-        highlightHighest('td.grand_total_score', ['gold', 'silver', '#cd7f32']);
-        highlightClosestScore('td.form_id_28_score', 'lightyellow');
-
-        // ---------------------------------------
-        // SET UP THE TOGGLE FOR DETAILED SCORING
-        // ---------------------------------------
-        document.getElementById('toggleScoresPlayer').addEventListener('change', (event) => {
-          const showScores = event.target.checked;
-          document.querySelectorAll('#player-results-table tbody td').forEach(cell => {
-            const idMatch = cell.className.match(/form_id_(\d+)_score/);
-            if (idMatch) {
-              const scoreId = `form_id_${idMatch[1]}_score`;
-              const playerId = cell.dataset.playerId;
-              const player = players.find(player => player.player_id == playerId);
-              const playerScore = player ? player[scoreId] : null;
-              if (playerScore !== null) {
-                // Retain the base text (before any appended score) and add/remove the detailed score.
-                const baseText = cell.textContent.split(' ')[0];
-                cell.textContent = showScores ? `${baseText} (${playerScore})` : baseText;
-              }
-            }
-          });
-        });
-
-        const lowestScoresDiv = document.getElementById('lowestScores');
-            if (lowestScores.length > 0) {
-                const lowestScoresText = lowestScores.map(player => player.player_name).join(', ');
-                lowestScoresDiv.textContent = `Lowest Score: ${lowestScoresText}`;
-            }
-            
-        // Finally, hide the loading indicator
-        document.getElementById('playerLoading').style.display = 'none';
-
-      } catch (err) {
-        console.error("loadRaceResultsPlayer error:", err);
-        // Ensure the loading indicator is hidden even on error.
-        document.getElementById('playerLoading').style.display = 'none';
+          const spacerTd = document.createElement('td');
+          spacerTd.style.backgroundColor = "white";
+          row.appendChild(spacerTd);
+          const resultTd = document.createElement('td');
+          resultTd.textContent = results[`form_id_${id}`];
+          row.appendChild(resultTd);
+          tbody.appendChild(row);
+        }
       }
     }
+    
+    // Build rows (example structure similar to home page)
+    for (let i = 2; i <= 7; i++) {
+      createRow(i, questions[`form_id_${i}`]);
+    }
+    createRow('subtotal_2', 'Subtotal');
+    // Spacer row
+    let spacerRow = document.createElement('tr');
+    let spacerCell = document.createElement('td');
+    spacerCell.colSpan = players.length + 3;
+    spacerCell.style.backgroundColor = "white";
+    spacerRow.appendChild(spacerCell);
+    tbody.appendChild(spacerRow);
+    for (let i = 8; i <= 27; i++) {
+      createRow(i, questions[`form_id_${i}`]);
+    }
+    createRow('subtotal_3', 'Subtotal');
+    spacerRow = document.createElement('tr');
+    spacerCell = document.createElement('td');
+    spacerCell.colSpan = players.length + 3;
+    spacerCell.style.backgroundColor = "white";
+    spacerRow.appendChild(spacerCell);
+    tbody.appendChild(spacerRow);
+    createRow(28, questions[`form_id_28`]);
+    spacerRow = document.createElement('tr');
+    spacerCell = document.createElement('td');
+    spacerCell.colSpan = players.length + 3;
+    spacerCell.style.backgroundColor = "white";
+    spacerRow.appendChild(spacerCell);
+    tbody.appendChild(spacerRow);
+    createRow('grand_total', 'Grand Total');
+
+    playerTable.appendChild(tbody);
+    playerTable.style.display = 'table';
+
+    // ---------------------------------------
+    // APPLY FORMATTING (as on the home page)
+    // ---------------------------------------
+    const applyFormattingScored = (cell, value) => {
+      if (/^[A-Z]{3}$/.test(value)) {
+        const driver = drivers.find(driver => driver.abbreviation === value);
+        if (driver) {
+          const constructor = constructors.find(constructor => constructor.id === driver.constructor_id);
+          if (constructor) {
+            cell.style.backgroundColor = constructor.background_colour;
+            cell.style.color = constructor.text_colour;
+          }
+        }
+      } else if (/^\d+$/.test(value)) {
+        // Numeric values: no extra formatting.
+      } else if (value === 'Yes') {
+        cell.style.color = 'green';
+        cell.style.backgroundColor = 'white';
+      } else if (value === 'No') {
+        cell.style.color = 'red';
+        cell.style.backgroundColor = 'white';
+      } else {
+        const constructor = constructors.find(constructor => constructor.name === value);
+        if (constructor) {
+          cell.style.backgroundColor = constructor.background_colour;
+          cell.style.color = constructor.text_colour;
+        }
+      }
+    };
+
+    document.querySelectorAll('#player-results-table tbody td').forEach(cell => {
+      applyFormattingScored(cell, cell.textContent);
+    });
+
+    // ---------------------------------------
+    // HIGHLIGHTING FUNCTIONS (totals, etc.)
+    // ---------------------------------------
+    const highlightHighest = (selector, colors) => {
+      const cells = Array.from(document.querySelectorAll(selector));
+      const values = cells.map(cell => parseFloat(cell.textContent)).filter(value => !isNaN(value));
+      const sortedValues = [...new Set(values)].sort((a, b) => b - a);
+      cells.forEach(cell => {
+        const cellValue = parseFloat(cell.textContent);
+        const rank = sortedValues.indexOf(cellValue);
+        if (rank >= 0 && rank < colors.length) {
+          cell.style.backgroundColor = colors[rank];
+          cell.style.color = 'black';
+        }
+      });
+    };
+
+    const highlightClosestScore = (selector, color) => {
+      const cells = Array.from(document.querySelectorAll(selector));
+      cells.forEach(cell => {
+        const playerId = cell.dataset.playerId;
+        const player = players.find(player => player.player_id == playerId);
+        const playerScore = player ? player.form_id_28_score : null;
+        if (playerScore === 1) {
+          cell.style.backgroundColor = color;
+          cell.style.color = 'black';
+        } else {
+          cell.style.backgroundColor = '';
+          cell.style.color = '';
+        }
+      });
+    };
+
+    highlightHighest('td.subtotal_2_score', ['lightyellow']);
+    highlightHighest('td.subtotal_3_score', ['lightyellow']);
+    highlightHighest('td.grand_total_score', ['gold', 'silver', '#cd7f32']);
+    highlightClosestScore('td.form_id_28_score', 'lightyellow');
+
+    // ---------------------------------------
+    // SET UP THE TOGGLE FOR DETAILED SCORING
+    // ---------------------------------------
+    document.getElementById('toggleScoresPlayer').addEventListener('change', (event) => {
+      const showScores = event.target.checked;
+      document.querySelectorAll('#player-results-table tbody td').forEach(cell => {
+        const idMatch = cell.className.match(/form_id_(\d+)_score/);
+        if (idMatch) {
+          const scoreId = `form_id_${idMatch[1]}_score`;
+          const playerId = cell.dataset.playerId;
+          const player = players.find(player => player.player_id == playerId);
+          const playerScore = player ? player[scoreId] : null;
+          if (playerScore !== null) {
+            const baseText = cell.textContent.split(' ')[0];
+            cell.textContent = showScores ? `${baseText} (${playerScore})` : baseText;
+          }
+        }
+      });
+    });
+
+    // (Optional) Display lowest scores
+    const lowestScoresDiv = document.getElementById('lowestScores');
+    if (lowestScores.length > 0) {
+      const lowestScoresText = lowestScores.map(player => player.player_name).join(', ');
+      lowestScoresDiv.textContent = `Lowest Score: ${lowestScoresText}`;
+    }
+
+    // ---------------------------------------
+    // ADD PINNING COLUMNS LOGIC FOR PLAYER RESULTS TABLE
+    // ---------------------------------------
+    // Helper functions specific to the player results table:
+    function getColumnWidthPlayer(index) {
+      const headerRow = document.querySelector("#player-results-table thead tr");
+      const width = headerRow ? headerRow.children[index].offsetWidth : 0;
+      return width;
+    }
+    function pinColumnPlayer(index, offsetLeft) {
+      document.querySelectorAll("#player-results-table thead tr, #player-results-table tbody tr").forEach(row => {
+        const cell = row.children[index];
+        if (cell) {
+          cell.classList.add("pinned");
+          cell.style.left = `${offsetLeft}px`;
+        }
+      });
+    }
+    function resetPinnedStylesPlayer() {
+      document.querySelectorAll("#player-results-table .pinned").forEach(cell => {
+        cell.classList.remove("pinned");
+        cell.style.left = "";
+      });
+    }
+    function updatePinnedColumnsPlayer() {
+      resetPinnedStylesPlayer();
+      const pinQuestionCheckbox = document.getElementById("pinQuestionColumn");
+      const pinBothCheckbox = document.getElementById("pinBothColumns");
+      if (pinQuestionCheckbox && pinBothCheckbox) {
+        if (pinQuestionCheckbox.checked) {
+          pinBothCheckbox.checked = false;
+          pinColumnPlayer(0, 0);
+        } else if (pinBothCheckbox.checked) {
+          pinQuestionCheckbox.checked = false;
+          pinColumnPlayer(0, 0);
+          pinColumnPlayer(1, getColumnWidthPlayer(0) - 1);
+        }
+      }
+    }
+    // Set up event listeners for pinning checkboxes
+    const pinQuestionCheckbox = document.getElementById("pinQuestionColumn");
+    if (pinQuestionCheckbox && pinBothCheckbox) {
+      pinQuestionCheckbox.checked = true; // Default: pin the question column
+      pinQuestionCheckbox.addEventListener("change", () => {
+        pinBothCheckbox.checked = false;
+        updatePinnedColumnsPlayer();
+      });
+      pinBothCheckbox.addEventListener("change", () => {
+        pinQuestionCheckbox.checked = false;
+        updatePinnedColumnsPlayer();
+      });
+      // Apply initial pinning
+      updatePinnedColumnsPlayer();
+    }
+
+    // ---------------------------------------
+    // APPLY DYNAMIC HEADER COLORING FOR THE LOGGED-IN PLAYER
+    // ---------------------------------------
+    // Helper functions for header coloring:
+    function getColorForLetter(letter) {
+      const colors = [
+        '#fb9605', '#fc3d11', '#A7FC00', '#20e1d1',
+        '#9c1ae7', '#0B6623', '#f5ed16', '#178bd5',
+        '#fb5cab', '#52c1fa'
+      ];
+      let index;
+      if (letter >= 'A' && letter <= 'Z') {
+        index = (letter.charCodeAt(0) - 65) % colors.length;
+      } else {
+        index = colors.length - 1;
+      }
+      return colors[index];
+    }
+    function hexToRgb(hex) {
+      hex = hex.replace(/^#/, '');
+      if (hex.length === 3) {
+        hex = hex.split('').map(x => x + x).join('');
+      }
+      const bigint = parseInt(hex, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return { r, g, b };
+    }
+    function getContrastTextColor(backgroundColor) {
+      const { r, g, b } = hexToRgb(backgroundColor);
+      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+      return brightness > 128 ? '#000' : '#fff';
+    }
+    function getUserBackgroundColor(username, avatar_settings) {
+      if (avatar_settings && avatar_settings.backgroundColor) {
+        return avatar_settings.backgroundColor;
+      }
+      return getColorForLetter(username.charAt(0).toUpperCase());
+    }
+    function applyHeaderColor(username, avatar_settings) {
+      const headerElement = document.querySelector("th.your-results-header");
+      if (headerElement) {
+        const bgColor = getUserBackgroundColor(username, avatar_settings);
+        const textColor = getContrastTextColor(bgColor);
+        headerElement.style.backgroundColor = bgColor;
+        headerElement.style.color = textColor;
+        console.log("Applied header color:", bgColor, textColor);
+      }
+    }
+    // Retrieve current user from cookie and fetch details from 'players'
+    async function getCurrentUser() {
+      const playerId = getCookie("playerId");
+      if (!playerId) return null;
+      const { data, error } = await supabase
+        .from('players')
+        .select('*')
+        .eq('id', playerId)
+        .single();
+      if (error) {
+        console.error("Error fetching current user:", error.message);
+        return null;
+      }
+      return data;
+    }
+    const user = await getCurrentUser();
+    if (user) {
+      applyHeaderColor(user.username, user.avatar_settings);
+    } else {
+      console.warn("No current user found for header coloring.");
+    }
+
+    // ---------------------------------------
+    // FINALLY, HIDE THE LOADING INDICATOR
+    // ---------------------------------------
+    document.getElementById('playerLoading').style.display = 'none';
+  } catch (err) {
+    console.error("loadRaceResultsPlayer error:", err);
+    document.getElementById('playerLoading').style.display = 'none';
+  }
+}
+
 
 
 
@@ -1250,6 +1402,10 @@
     document.addEventListener("DOMContentLoaded", () => {
       loadRaceOptionsResults();
     });
+
+    document.addEventListener("loginStateChanged", async (event) => {
+  loadRaceResultsPlayer();
+});
     </script>
     <!-- Bootstrap JS Bundle (Local) -->
     <script src="/js/bootstrap.bundle.min.js"></script>

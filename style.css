@@ -126,12 +126,6 @@ footer {
   animation: loading 1s linear infinite;
 }
 
-th.your-results-header {
-  background-color: #000 !important; /* Black background */
-  color: #fff !important; /* White text */
-  font-weight: bold !important;
-}
-
 #mainResultsTable {
   border-collapse: collapse;
   border-spacing: 0;
