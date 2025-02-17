@@ -723,7 +723,7 @@ unscoredBody.innerHTML = '';
         const player = playersTable.find(p => p.id === response.player_id);
         const th = document.createElement('th');
         if (currentUserId && response.player_id == currentUserId) {
-            th.textContent = (player?.name || response.player_name || 'Unknown') + " (Your Predictions)";
+            th.textContent = (player?.name || response.player_name || 'Unknown') + "";
             th.classList.add("your-results-header"); // Add CSS styling as desired
         } else {
             th.textContent = player?.name || response.player_name || 'Unknown';
