@@ -239,6 +239,12 @@
                     <label class="form-check-label" for="toggleScores">Show Detailed Scoring</label>
                     <input class="form-check-input form-switch-input" type="checkbox" id="toggleScores">
                 </div>
+                <label>
+                  <input type="checkbox" id="pinQuestionColumn"> Pin Question Column
+              </label>
+              <label>
+                  <input type="checkbox" id="pinBothColumns"> Pin Question & My Results
+              </label>
                 <div id="lowestScores" class="mt-3">
                     <!-- Lowest scores will be displayed here -->
                 </div>
@@ -377,7 +383,8 @@
     <!-- Bootstrap JS Bundle (Local) -->
     <script src="/js/bootstrap.bundle.min.js"></script>
 
-    <script>
+    <script type="module">
+      import { getCookie } from '/script.js';
         // Fetch the race details from form_details and calendar tables
         async function fetchRaceDetails() {
             try {
@@ -573,7 +580,8 @@
 
 
 // RESULTS DISPLAY CODE
-        document.addEventListener("DOMContentLoaded", async () => {
+async function loadResultsPredictions() {
+        
             document.getElementById('loadingPlaceholderBar').style.display = 'block';
             // ----- INITIAL DATA FETCHING -----
 
@@ -643,331 +651,465 @@
 
             // ----- UNORSCED PREDICTIONS SECTION -----
             if (results_display_type === 'Unscored Predictions') {
-                // Show/hide appropriate sections
-                document.getElementById('unscoredPredictions').style.display = 'block';
-                document.getElementById('scoredResults').style.display = 'none';
-                document.getElementById('noDisplay').style.display = 'none';
+    // Show/hide appropriate sections
+    document.getElementById('unscoredPredictions').style.display = 'block';
+    document.getElementById('scoredResults').style.display = 'none';
+    document.getElementById('noDisplay').style.display = 'none';
 
-                // Set race title
-                document.getElementById('unscoredRaceTitle').textContent = `${raceName} ${current_year} - Predictions`;
+    const unscoredHeader = document.getElementById('unscoredTableHeader');
+const unscoredBody = document.getElementById('unscoredTableBody');
+unscoredHeader.innerHTML = '';
+unscoredBody.innerHTML = '';
 
-                // Show loading indicator for Unscored Predictions
-                document.getElementById('loadingPlaceholderBar').style.display = 'none'; // Hide Placeholder Bar
-                document.getElementById('unscoredLoading').style.display = 'block';
+    // Set race title
+    document.getElementById('unscoredRaceTitle').textContent = `${raceName} ${current_year} - Predictions`;
 
-                // Fetch form responses from form_raw for the current race
-                const { data: formResponses, error: formResponsesError } = await supabase
-                    .from('form_raw')
-                    .select('*')
-                    .eq('race_number', results_display_race_number);
-                if (formResponsesError) {
-                    console.error('Error fetching form responses:', formResponsesError.message);
-                    return;
+    // Show loading indicator for Unscored Predictions
+    document.getElementById('loadingPlaceholderBar').style.display = 'none'; // Hide Placeholder Bar
+    document.getElementById('unscoredLoading').style.display = 'block';
+
+    // Fetch form responses from form_raw for the current race
+    const { data: formResponses, error: formResponsesError } = await supabase
+        .from('form_raw')
+        .select('*')
+        .eq('race_number', results_display_race_number);
+    if (formResponsesError) {
+        console.error('Error fetching form responses:', formResponsesError.message);
+        return;
+    }
+
+    // Filter out responses with player_id = 0 (only valid responses)
+    const formResponsePlayers = formResponses.filter(response => response.player_id !== 0);
+
+    // --- Reorder responses so that the logged-in user's response is first ---
+    const currentUserId = getCookie("playerId");
+    let responsesOrdered = [...formResponsePlayers];
+    if (currentUserId) {
+        const userIndex = responsesOrdered.findIndex(response => response.player_id == currentUserId);
+        if (userIndex !== -1) {
+            const [userResponse] = responsesOrdered.splice(userIndex, 1);
+            responsesOrdered.unshift(userResponse);
+        }
+    }
+
+    // --- Define the Conversion Function ---
+    function convertResponseToText(response, responseType) {
+        if (response === null || response === undefined) return '';
+        switch (responseType) {
+            case 'Select - Name List':
+                return playersTable.find(player => player.id === parseInt(response))?.name || response;
+            case 'Select - Driver List':
+            case 'Select - Driver List + DNF':
+                if (response === 'no-dnf') {
+                    return 'No DNFs';
                 }
+                return drivers.find(driver => driver.id === parseInt(response))?.abbreviation || response;
+            case 'Select - Team List':
+                return constructors.find(constructor => constructor.id === parseInt(response))?.name || response;
+            case 'Radio - Yes/No':
+                return response.toLowerCase() === 'yes' ? 'Yes' : 'No';
+            case 'Radio - Heads/Tails':
+                return response.toLowerCase() === 'heads' ? 'Heads' : 'Tails';
+            default:
+                return response;
+        }
+    }
 
-                // Filter out responses with player_id = 0 (only valid responses)
-                const formResponsePlayers = formResponses.filter(response => response.player_id !== 0);
+    // --- Build the Table Header ---
+    const headerRow = document.createElement('tr');
+    headerRow.classList.add('header');
+    headerRow.innerHTML = '<th>Name</th>';
+    responsesOrdered.forEach(response => {
+        const player = playersTable.find(p => p.id === response.player_id);
+        const th = document.createElement('th');
+        if (currentUserId && response.player_id == currentUserId) {
+            th.textContent = (player?.name || response.player_name || 'Unknown') + " (Your Predictions)";
+            th.classList.add("your-results-header"); // Add CSS styling as desired
+        } else {
+            th.textContent = player?.name || response.player_name || 'Unknown';
+        }
+        headerRow.appendChild(th);
+    });
+    document.getElementById('unscoredTableHeader').appendChild(headerRow);
 
-                // --- Define the Conversion Function ---
-                function convertResponseToText(response, responseType) {
-                    if (response === null || response === undefined) return '';
-                    switch (responseType) {
-                        case 'Select - Name List':
-                            return playersTable.find(player => player.id === parseInt(response))?.name || response;
-                        case 'Select - Driver List':
-                        case 'Select - Driver List + DNF':
-                            if (response === 'no-dnf') {
-                                return 'No DNFs';
-                            }
-                            return drivers.find(driver => driver.id === parseInt(response))?.abbreviation || response;
-                        case 'Select - Team List':
-                            return constructors.find(constructor => constructor.id === parseInt(response))?.name || response;
-                        case 'Radio - Yes/No':
-                            return response.toLowerCase() === 'yes' ? 'Yes' : 'No';
-                        case 'Radio - Heads/Tails':
-                            return response.toLowerCase() === 'heads' ? 'Heads' : 'Tails';
-                        default:
-                            return response;
-                    }
+    // --- Build the Table Body ---
+    const tableBody = document.getElementById('unscoredTableBody');
+    formConfiguration.forEach(question => {
+        // Only process enabled questions.
+        if (!question.enabled) return;
+        // Skip the question used for the "Name" column (assumed to be id === 1)
+        if (question.id === 1) return;
+
+        const row = document.createElement('tr');
+        // First cell: the question text
+        row.innerHTML = `<td>${question.text}</td>`;
+        // For each response in the reordered array, add a cell.
+        responsesOrdered.forEach(response => {
+            const td = document.createElement('td');
+            const rawResponse = response[`form_id_${question.id}`];
+            td.textContent = convertResponseToText(rawResponse, question.response_type);
+            row.appendChild(td);
+        });
+        tableBody.appendChild(row);
+    });
+
+    // --- Apply Formatting ---
+    const applyFormatting = (cell, value) => {
+        if (/^[A-Z]{3}$/.test(value)) {
+            const driver = drivers.find(driver => driver.abbreviation === value);
+            if (driver) {
+                const constructor = constructors.find(constructor => constructor.id === driver.constructor_id);
+                if (constructor) {
+                    cell.style.backgroundColor = constructor.background_colour;
+                    cell.style.color = constructor.text_colour;
                 }
+            }
+        } else if (/^\d+$/.test(value)) {
+            // Numeric values: no additional formatting.
+        } else if (value === 'Yes') {
+            cell.style.color = 'green';
+            cell.style.backgroundColor = 'white';
+        } else if (value === 'No') {
+            cell.style.color = 'red';
+            cell.style.backgroundColor = 'white';
+        } else {
+            const constructor = constructors.find(constructor => constructor.name === value);
+            if (constructor) {
+                cell.style.backgroundColor = constructor.background_colour;
+                cell.style.color = constructor.text_colour;
+            }
+        }
+    };
 
-                // --- Build the Table Header ---
-                const headerRow = document.createElement('tr');
-                headerRow.classList.add('header');
-                headerRow.innerHTML = '<th>Name</th>';
-                formResponsePlayers.forEach(response => {
-                    const player = playersTable.find(p => p.id === response.player_id);
-                    const th = document.createElement('th');
-                    th.textContent = player?.name || response.player_name || 'Unknown';
-                    headerRow.appendChild(th);
-                });
-                document.getElementById('unscoredTableHeader').appendChild(headerRow);
+    document.querySelectorAll('#unscoredTableBody td').forEach(cell => {
+        applyFormatting(cell, cell.textContent);
+    });
 
-                // --- Build the Table Body ---
-                const tableBody = document.getElementById('unscoredTableBody');
-                formConfiguration.forEach(question => {
-                    // Only process enabled questions.
-                    if (!question.enabled) return;
-                    // Skip the question used for the "Name" column (assumed to be id === 1)
-                    if (question.id === 1) return;
-
-                    const row = document.createElement('tr');
-                    // First cell: the question text
-                    row.innerHTML = `<td>${question.text}</td>`;
-                    // For each player's response, add a cell.
-                    formResponsePlayers.forEach(response => {
-                        const td = document.createElement('td');
-                        const rawResponse = response[`form_id_${question.id}`];
-                        td.textContent = convertResponseToText(rawResponse, question.response_type);
-                        row.appendChild(td);
-                    });
-                    tableBody.appendChild(row);
-                });
-
-                // --- Apply Formatting ---
-                const applyFormatting = (cell, value) => {
-                    if (/^[A-Z]{3}$/.test(value)) {
-                        const driver = drivers.find(driver => driver.abbreviation === value);
-                        if (driver) {
-                            const constructor = constructors.find(constructor => constructor.id === driver.constructor_id);
-                            if (constructor) {
-                                cell.style.backgroundColor = constructor.background_colour;
-                                cell.style.color = constructor.text_colour;
-                            }
-                        }
-                    } else if (/^\d+$/.test(value)) {
-                        // Numeric values: no additional formatting.
-                    } else if (value === 'Yes') {
-                        cell.style.color = 'green';
-                        cell.style.backgroundColor = 'white';
-                    } else if (value === 'No') {
-                        cell.style.color = 'red';
-                        cell.style.backgroundColor = 'white';
-                    } else {
-                        const constructor = constructors.find(constructor => constructor.name === value);
-                        if (constructor) {
-                            cell.style.backgroundColor = constructor.background_colour;
-                            cell.style.color = constructor.text_colour;
-                        }
-                    }
-                };
-
-                document.querySelectorAll('#unscoredTableBody td').forEach(cell => {
-                    applyFormatting(cell, cell.textContent);
-                });
-
-                // Hide the loading indicator after the unscored table has been built.
-                document.getElementById('unscoredLoading').style.display = 'none';
-
+    // Hide the loading indicator after the unscored table has been built.
+    document.getElementById('unscoredLoading').style.display = 'none';
+}
             // --- Scored Results Section Begins ---
-            } else if (results_display_type === 'Scored Results') { 
-                document.getElementById('unscoredPredictions').style.display = 'none';
-                document.getElementById('scoredResults').style.display = 'block';
-                document.getElementById('noDisplay').style.display = 'none';
+            else if (results_display_type === 'Scored Results') { 
+    document.getElementById('unscoredPredictions').style.display = 'none';
+    document.getElementById('scoredResults').style.display = 'block';
+    document.getElementById('noDisplay').style.display = 'none';
 
-                // Set race title
-                document.getElementById('raceTitle').textContent = `${raceName} ${current_year} - Results`;
 
-                // Show loading indicator for Scored Results
-                document.getElementById('loadingPlaceholderBar').style.display = 'none'; // Hide Placeholder Bar
-                document.getElementById('scoredLoading').style.display = 'block';
+    const scoredHeader = document.getElementById('tableHeader');
+const scoredBody = document.getElementById('tableBody');
+scoredHeader.innerHTML = '';
+scoredBody.innerHTML = '';
 
-                // Fetch form responses from form_responses_{current_year}
-                const { data: formResponses, error: formResponsesError } = await supabase
-                    .from(`form_responses_${current_year}`)
-                    .select('*')
-                    .eq('race_number', results_display_race_number);
-                if (formResponsesError) {
-                    console.error('Error fetching form responses:', formResponsesError.message);
-                    return;
-                }
+    // Set race title
+    document.getElementById('raceTitle').textContent = `${raceName} ${current_year} - Results`;
 
-                // Process form responses
-                const questions = formResponses.find(response => response.entry_type === 'questions');
-                const results = formResponses.find(response => response.entry_type === 'results');
-                //console.log('Results object:', results);
-                const players = formResponses.filter(response => response.entry_type === 'player');
-                const lowestScores = formResponses.filter(response => response.entry_type === 'player_lowest_score');
+    // Show loading indicator for Scored Results
+    document.getElementById('loadingPlaceholderBar').style.display = 'none'; // Hide Placeholder Bar
+    document.getElementById('scoredLoading').style.display = 'block';
 
-                // Create header row for scored results
-                const headerRow = document.createElement('tr');
-                headerRow.classList.add('header');
-                headerRow.innerHTML = '<th>Name</th>';
+    // Fetch form responses from form_responses_{current_year}
+    const { data: formResponses, error: formResponsesError } = await supabase
+        .from(`form_responses_${current_year}`)
+        .select('*')
+        .eq('race_number', results_display_race_number);
+    if (formResponsesError) {
+        console.error('Error fetching form responses:', formResponsesError.message);
+        return;
+    }
+
+    // Process form responses
+    const questions = formResponses.find(response => response.entry_type === 'questions');
+    const results = formResponses.find(response => response.entry_type === 'results');
+    // Filter out the player responses.
+    let players = formResponses.filter(response => response.entry_type === 'player');
+    const lowestScores = formResponses.filter(response => response.entry_type === 'player_lowest_score');
+
+    // Reorder players so that the logged-in user's result is first.
+    const currentUserId = getCookie("playerId");
+let userResultPulled = false;
+if (currentUserId) {
+    const userIndex = players.findIndex(player => player.player_id == currentUserId);
+    if (userIndex !== -1) {
+        userResultPulled = true;
+        const [userPlayer] = players.splice(userIndex, 1);
+        players.unshift(userPlayer);
+    }
+}
+
+// Enable or disable the "pin both" checkbox based on the flag.
+const pinBothCheckbox = document.getElementById('pinBothColumns');
+if (userResultPulled) {
+    pinBothCheckbox.disabled = false;
+} else {
+    pinBothCheckbox.disabled = true;
+}
+
+    // Create header row for scored results
+    const headerRow = document.createElement('tr');
+    headerRow.classList.add('header');
+    headerRow.innerHTML = '<th>Name</th>';
+    players.forEach(player => {
+        const th = document.createElement('th');
+        // Tag the header if this is the logged-in user.
+        if (currentUserId && player.player_id == currentUserId) {
+            th.textContent = player.player_name + "";
+            th.classList.add('your-results-header'); // Optional CSS class for extra styling
+        } else {
+            th.textContent = player.player_name;
+        }
+        headerRow.appendChild(th);
+    });
+    headerRow.innerHTML += '<th style="background-color: white; border-top: none; border-bottom: none;"></th><th>Results</th>';
+    document.getElementById('tableHeader').appendChild(headerRow);
+
+    // Create data rows for scored results
+    const tableBody = document.getElementById('tableBody');
+    const createRow = (id, label) => {
+        const isTotalColumn = ['subtotal_1', 'subtotal_2', 'subtotal_3', 'subtotal_4', 'grand_total'].includes(id);
+        if (isTotalColumn) {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${label}</td>`;
+            players.forEach(player => {
+                const td = document.createElement('td');
+                td.textContent = player[id];
+                td.className = `${id}_score`;
+                td.dataset.playerId = player.player_id;
+                row.appendChild(td);
+            });
+            row.innerHTML += `<td style="background-color: white;"></td><td></td>`;
+            tableBody.appendChild(row);
+        } else {
+            if (results[`form_id_${id}`] !== null) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${label}</td>`;
                 players.forEach(player => {
-                    const th = document.createElement('th');
-                    th.textContent = player.player_name;
-                    headerRow.appendChild(th);
+                    const td = document.createElement('td');
+                    td.textContent = player[`form_id_${id}`];
+                    td.className = `form_id_${id}_score`;
+                    td.dataset.playerId = player.player_id;
+                    row.appendChild(td);
                 });
-                headerRow.innerHTML += '<th style="background-color: white; border-top: none; border-bottom: none;"></th><th>Results</th>';
-                document.getElementById('tableHeader').appendChild(headerRow);
+                row.innerHTML += `<td style="background-color: white;"></td><td>${results[`form_id_${id}`]}</td>`;
+                tableBody.appendChild(row);
+            }
+        }
+    };
 
-                // Create data rows for scored results
-                const tableBody = document.getElementById('tableBody');
-                const createRow = (id, label) => {
-                    //console.log(`Creating row for ID: ${id}, Label: ${label}`);
-                    const isTotalColumn = ['subtotal_1', 'subtotal_2', 'subtotal_3', 'subtotal_4', 'grand_total'].includes(id);
-                    if (isTotalColumn) {
-                        //console.log(`Checking total column: ${id}`);
-                        const row = document.createElement('tr');
-                        row.innerHTML = `<td>${label}</td>`;
-                        players.forEach(player => {
-                            //console.log(`Processing player: ${player.player_name}, Player ID: ${player.player_id}`);
-                            const td = document.createElement('td');
-                            td.textContent = player[id];
-                            //console.log(`Player ${player.player_name} score for ${id}: ${player[id]}`);
-                            td.className = `${id}_score`;
-                            td.dataset.playerId = player.player_id;
-                            row.appendChild(td);
-                        });
-                        row.innerHTML += `<td style="background-color: white;"></td><td></td>`;
-                        //console.log(`Appending row: ${row.innerHTML}`);
-                        tableBody.appendChild(row);
-                    } else {
-                        //console.log(`Checking form_id column: form_id_${id}`);
-                        if (results[`form_id_${id}`] !== null) {
-                            //console.log(`Results for form_id_${id}: ${results[`form_id_${id}`]}`);
-                            const row = document.createElement('tr');
-                            row.innerHTML = `<td>${label}</td>`;
-                            players.forEach(player => {
-                                //console.log(`Processing player: ${player.player_name}, Player ID: ${player.player_id}`);
-                                const td = document.createElement('td');
-                                td.textContent = player[`form_id_${id}`];
-                                //console.log(`Player ${player.player_name} score for form_id_${id}: ${player[`form_id_${id}`]}`);
-                                td.className = `form_id_${id}_score`;
-                                td.dataset.playerId = player.player_id;
-                                row.appendChild(td);
-                            });
-                            row.innerHTML += `<td style="background-color: white;"></td><td>${results[`form_id_${id}`]}</td>`;
-                            //console.log(`Appending row: ${row.innerHTML}`);
-                            tableBody.appendChild(row);
-                        } else {
-                            //console.log(`No results found for form_id_${id}`);
-                        }
-                    }
-                };
+    // Add question rows for scored results
+    for (let i = 2; i <= 7; i++) {
+        createRow(i, questions[`form_id_${i}`]);
+    }
+    createRow('subtotal_2', 'Subtotal');
+    tableBody.innerHTML += '<tr class="spacer-row"><td colspan="100%" style="background-color: white;"></td></tr>';
+    for (let i = 8; i <= 27; i++) {
+        createRow(i, questions[`form_id_${i}`]);
+    }
+    createRow('subtotal_3', 'Subtotal');
+    tableBody.innerHTML += '<tr class="spacer-row"><td colspan="100%" style="background-color: white;"></td></tr>';
+    createRow(28, questions[`form_id_28`]);
+    tableBody.innerHTML += '<tr class="spacer-row"><td colspan="100%" style="background-color: white;"></td></tr>';
+    createRow('grand_total', 'Grand Total');
 
-                // Add question rows for scored results
-                for (let i = 2; i <= 7; i++) {
-                    createRow(i, questions[`form_id_${i}`]);
+    // Apply formatting for scored results
+    const applyFormattingScored = (cell, value) => {
+        if (/^[A-Z]{3}$/.test(value)) {
+            const driver = drivers.find(driver => driver.abbreviation === value);
+            if (driver) {
+                const constructor = constructors.find(constructor => constructor.id === driver.constructor_id);
+                if (constructor) {
+                    cell.style.backgroundColor = constructor.background_colour;
+                    cell.style.color = constructor.text_colour;
                 }
-                createRow('subtotal_2', 'Subtotal');
-                tableBody.innerHTML += '<tr class="spacer-row"><td colspan="100%" style="background-color: white;"></td></tr>';
-                for (let i = 8; i <= 27; i++) {
-                    createRow(i, questions[`form_id_${i}`]);
-                }
-                createRow('subtotal_3', 'Subtotal');
-                tableBody.innerHTML += '<tr class="spacer-row"><td colspan="100%" style="background-color: white;"></td></tr>';
-                createRow(28, questions[`form_id_28`]);
-                tableBody.innerHTML += '<tr class="spacer-row"><td colspan="100%" style="background-color: white;"></td></tr>';
-                createRow('grand_total', 'Grand Total');
+            }
+        } else if (/^\d+$/.test(value)) {
+            // No additional formatting for numeric values.
+        } else if (value === 'Yes') {
+            cell.style.color = 'green';
+            cell.style.backgroundColor = 'white';
+        } else if (value === 'No') {
+            cell.style.color = 'red';
+            cell.style.backgroundColor = 'white';
+        } else {
+            const constructor = constructors.find(constructor => constructor.name === value);
+            if (constructor) {
+                cell.style.backgroundColor = constructor.background_colour;
+                cell.style.color = constructor.text_colour;
+            }
+        }
+    };
 
-                // Apply formatting for scored results
-                const applyFormattingScored = (cell, value) => {
-                    if (/^[A-Z]{3}$/.test(value)) {
-                        const driver = drivers.find(driver => driver.abbreviation === value);
-                        if (driver) {
-                            const constructor = constructors.find(constructor => constructor.id === driver.constructor_id);
-                            if (constructor) {
-                                cell.style.backgroundColor = constructor.background_colour;
-                                cell.style.color = constructor.text_colour;
-                            }
-                        }
-                    } else if (/^\d+$/.test(value)) {
-                        // No additional formatting for numeric values.
-                    } else if (value === 'Yes') {
-                        cell.style.color = 'green';
-                        cell.style.backgroundColor = 'white';
-                    } else if (value === 'No') {
-                        cell.style.color = 'red';
-                        cell.style.backgroundColor = 'white';
-                    } else {
-                        const constructor = constructors.find(constructor => constructor.name === value);
-                        if (constructor) {
-                            cell.style.backgroundColor = constructor.background_colour;
-                            cell.style.color = constructor.text_colour;
-                        }
-                    }
-                };
+    document.querySelectorAll('#mainResultsTable tbody td').forEach(cell => {
+        applyFormattingScored(cell, cell.textContent);
+    });
 
-                document.querySelectorAll('#mainResultsTable tbody td').forEach(cell => {
-                    applyFormattingScored(cell, cell.textContent);
-                });
+    // Highlight highest scores, closest scores, and display top scorers
+    const highlightHighest = (selector, colors) => {
+        const cells = Array.from(document.querySelectorAll(selector));
+        const values = cells.map(cell => parseFloat(cell.textContent)).filter(value => !isNaN(value));
+        const sortedValues = [...new Set(values)].sort((a, b) => b - a);
+        cells.forEach(cell => {
+            const cellValue = parseFloat(cell.textContent);
+            const rank = sortedValues.indexOf(cellValue);
+            if (rank >= 0 && rank < colors.length) {
+                cell.style.backgroundColor = colors[rank];
+                cell.style.color = 'black';
+            }
+        });
+    };
 
-                // Highlight highest scores, closest scores, and display top scorers
-                const highlightHighest = (selector, colors) => {
-                    const cells = Array.from(document.querySelectorAll(selector));
-                    const values = cells.map(cell => parseFloat(cell.textContent)).filter(value => !isNaN(value));
-                    const sortedValues = [...new Set(values)].sort((a, b) => b - a);
-                    cells.forEach(cell => {
-                        const cellValue = parseFloat(cell.textContent);
-                        const rank = sortedValues.indexOf(cellValue);
-                        if (rank >= 0 && rank < colors.length) {
-                            cell.style.backgroundColor = colors[rank];
-                            cell.style.color = 'black';
-                        }
-                    });
-                };
+    const highlightClosestScore = (selector, color) => {
+        const cells = Array.from(document.querySelectorAll(selector));
+        cells.forEach(cell => {
+            const playerId = cell.dataset.playerId;
+            const player = players.find(player => player.player_id == playerId);
+            const playerScore = player ? player.form_id_28_score : null;
+            if (playerScore === 1) {
+                cell.style.backgroundColor = color;
+                cell.style.color = 'black';
+            } else {
+                cell.style.backgroundColor = '';
+                cell.style.color = '';
+            }
+        });
+    };
 
-                const highlightClosestScore = (selector, color) => {
-                    const cells = Array.from(document.querySelectorAll(selector));
-                    cells.forEach(cell => {
-                        const playerId = cell.dataset.playerId;
-                        const player = players.find(player => player.player_id == playerId);
-                        const playerScore = player ? player.form_id_28_score : null;
-                        if (playerScore === 1) {
-                            cell.style.backgroundColor = color;
-                            cell.style.color = 'black';
-                        } else {
-                            cell.style.backgroundColor = '';
-                            cell.style.color = '';
-                        }
-                    });
-                };
+    highlightHighest('td.subtotal_2_score', ['lightyellow']);
+    highlightHighest('td.subtotal_3_score', ['lightyellow']);
+    highlightHighest('td.grand_total_score', ['gold', 'silver', '#cd7f32']);
+    highlightClosestScore('td.form_id_28_score', 'lightyellow');
 
-                highlightHighest('td.subtotal_2_score', ['lightyellow']);
-                highlightHighest('td.subtotal_3_score', ['lightyellow']);
-                highlightHighest('td.grand_total_score', ['gold', 'silver', '#cd7f32']);
-                highlightClosestScore('td.form_id_28_score', 'lightyellow');
+    const grandTotals = players.map(player => ({
+        name: player.player_name,
+        total: parseFloat(player.grand_total)
+    })).sort((a, b) => b.total - a.total);
+    document.getElementById('firstPlace').textContent = grandTotals[0]?.name || '';
+    document.getElementById('secondPlace').textContent = grandTotals[1]?.name || '';
+    document.getElementById('thirdPlace').textContent = grandTotals[2]?.name || '';
 
-                const grandTotals = players.map(player => ({
-                    name: player.player_name,
-                    total: parseFloat(player.grand_total)
-                })).sort((a, b) => b.total - a.total);
-                document.getElementById('firstPlace').textContent = grandTotals[0]?.name || '';
-                document.getElementById('secondPlace').textContent = grandTotals[1]?.name || '';
-                document.getElementById('thirdPlace').textContent = grandTotals[2]?.name || '';
+    document.getElementById('toggleScores').addEventListener('change', (event) => {
+    const showScores = event.target.checked;
+    
+    document.querySelectorAll('#mainResultsTable tbody td').forEach(cell => {
+        const idMatch = cell.className.match(/form_id_(\d+)_score/);
+        if (idMatch) {
+            const scoreId = `form_id_${idMatch[1]}_score`;
+            const playerId = cell.dataset.playerId;
+            const player = players.find(player => player.player_id == playerId);
+            const playerScore = player ? player[scoreId] : null;
+            
+            if (playerScore !== null) {
+                // Ensure we only keep the player's name and avoid stacking scores
+                const baseText = cell.dataset.baseText || cell.textContent.split(' (')[0];
+                cell.dataset.baseText = baseText; // Store the clean name once
+                
+                cell.textContent = showScores ? `${baseText} (${playerScore})` : baseText;
+            }
+        }
+    });
+});
 
-                document.getElementById('toggleScores').addEventListener('change', (event) => {
-                    const showScores = event.target.checked;
-                    document.querySelectorAll('#mainResultsTable tbody td').forEach(cell => {
-                        const idMatch = cell.className.match(/form_id_(\d+)_score/);
-                        if (idMatch) {
-                            const scoreId = `form_id_${idMatch[1]}_score`;
-                            const playerId = cell.dataset.playerId;
-                            const player = players.find(player => player.player_id == playerId);
-                            const playerScore = player ? player[scoreId] : null;
-                            if (playerScore !== null) {
-                                cell.textContent = showScores ? `${cell.textContent} (${playerScore})` : cell.textContent.split(' ')[0];
-                            }
-                        }
-                    });
-                });
 
-                const lowestScoresDiv = document.getElementById('lowestScores');
-                if (lowestScores.length > 0) {
-                    const lowestScoresText = lowestScores.map(player => player.player_name).join(', ');
-                    lowestScoresDiv.textContent = `Lowest Score: ${lowestScoresText}`;
-                }
+    const lowestScoresDiv = document.getElementById('lowestScores');
+    if (lowestScores.length > 0) {
+        const lowestScoresText = lowestScores.map(player => player.player_name).join(', ');
+        lowestScoresDiv.textContent = `Lowest Score: ${lowestScoresText}`;
+    }
 
-                // Hide the loading indicator after the scored results table is built.
-                document.getElementById('scoredLoading').style.display = 'none';
-            } else if (results_display_type === 'No Display') {
+    // Hide the loading indicator after the scored results table is built.
+    document.getElementById('scoredLoading').style.display = 'none';
+
+  markTableAsReady();
+}
+ else if (results_display_type === 'No Display') {
                 document.getElementById('loadingPlaceholderBar').style.display = 'none'; // Hide Placeholder Bar
                 document.getElementById('unscoredPredictions').style.display = 'none';
                 document.getElementById('scoredResults').style.display = 'none';
                 document.getElementById('noDisplay').style.display = 'block';
             }
-        });
+        }
+
+        document.addEventListener("DOMContentLoaded", loadResultsPredictions);
+
+        document.addEventListener("loginStateChanged", async (event) => {
+  // Reload results and predictions
+    await loadResultsPredictions();
+});
+
+// ========== PINNING COLUMNS ===========
+// ✅ Global flag to track when the table is ready
+let tableReady = false;
+
+// ✅ Move updatePinnedColumns OUTSIDE so it’s globally accessible
+function updatePinnedColumns() {
+  if (!tableReady) {
+    console.log("Table not ready yet, skipping pinning...");
+    return; // 🛑 Don't pin until the table is fully created
+  }
+  console.log("Pinning columns...");
+  resetPinnedStyles();
+  
+  const pinQuestionCheckbox = document.getElementById("pinQuestionColumn");
+  const pinBothCheckbox = document.getElementById("pinBothColumns");
+
+  if (pinQuestionCheckbox.checked) {
+    pinBothCheckbox.checked = false;
+    pinColumn(0, 0);
+  } else if (pinBothCheckbox.checked) {
+    pinQuestionCheckbox.checked = false;
+    pinColumn(0, 0);
+    pinColumn(1, getColumnWidth(0) - 1);
+  }
+}
+
+function pinColumn(index, offsetLeft) {
+  document.querySelectorAll("#mainResultsTable thead tr, #mainResultsTable tbody tr").forEach(row => {
+    const cell = row.children[index];
+    if (cell) {
+      cell.classList.add("pinned");
+      cell.style.left = `${offsetLeft}px`;
+    }
+  });
+}
+
+function getColumnWidth(index) {
+  const headerRow = document.querySelector("#mainResultsTable thead tr");
+  return headerRow ? headerRow.children[index].offsetWidth : 0;
+}
+
+function resetPinnedStyles() {
+  document.querySelectorAll("#mainResultsTable .pinned").forEach(cell => {
+    cell.classList.remove("pinned");
+    cell.style.left = "";
+  });
+}
+
+function markTableAsReady() {
+  console.log("Table creation complete. Pinning columns...");
+  tableReady = true; // 🚩 Set the flag
+  updatePinnedColumns(); // 🏁 Run pinning once table is created
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM Loaded, waiting for table creation...");
+
+  const pinQuestionCheckbox = document.getElementById("pinQuestionColumn");
+  const pinBothCheckbox = document.getElementById("pinBothColumns");
+
+  pinQuestionCheckbox.checked = true; // ✅ Default: Pin the question column
+
+  // Keep checkboxes mutually exclusive
+  pinQuestionCheckbox.addEventListener("change", () => {
+    pinBothCheckbox.checked = false;
+    updatePinnedColumns();
+  });
+
+  pinBothCheckbox.addEventListener("change", () => {
+    pinQuestionCheckbox.checked = false;
+    updatePinnedColumns();
+  });
+});
+
+
 
 // --- Player Standings Tables ---
         async function getTable(tableName) {
