@@ -192,6 +192,24 @@
       <input type="text" class="form-control" id="form-alert-text-input">
     </div>
   </div>
+  <!-- New row for Dashboard Background Image -->
+<div class="row mb-2">
+    <div class="col-md-6">
+      <label for="background-image-select" class="form-label">Main Page Background</label>
+      <select class="form-select" id="background-image-select">
+        <option value="background_australia.png">Australia</option>
+        <option value="background_monaco.png">Monaco</option>
+        <option value="background_spa.png">Spa</option>
+        <option value="background_ferrari.png">Ferrari</option>
+        <option value="background_redbull.png">Red Bull</option>
+        <option value="background_oscar.png">Oscar</option>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <!-- Optionally add a preview or instructions here -->
+    </div>
+  </div>
+  
   
                   <button type="submit" class="btn btn-primary" id="save-changes" disabled>Save Changes</button>
                 </form>
@@ -1980,58 +1998,56 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Fetch current form details including new alert text fields
   async function fetchFormDetails() {
-    const { data: formDetails, error: formDetailsError } = await supabase
-      .from('form_details')
-      .select(
-        `race_number,
-         form_enabled,
-         results_display_race_number,
-         results_display_type,
-         current_year,
-         form_status_text,
-         form_status_text_enabled,
-         form_alert_text,
-         form_alert_text_enabled`
-      )
-      .eq('id', 1)
-      .single();
+  const { data: formDetails, error: formDetailsError } = await supabase
+    .from('form_details')
+    .select(
+      `race_number,
+       form_enabled,
+       results_display_race_number,
+       results_display_type,
+       current_year,
+       form_status_text,
+       form_status_text_enabled,
+       form_alert_text,
+       form_alert_text_enabled,
+       background_image`
+    )
+    .eq('id', 1)
+    .single();
 
-    if (formDetailsError) {
-      console.error('Error fetching form details:', formDetailsError);
-      return;
-    }
-
-    currentRaceNumber = formDetails.race_number;
-    formEnabled = formDetails.form_enabled;
-    resultsDisplayRaceNumber = formDetails.results_display_race_number;
-    resultsDisplayType = formDetails.results_display_type;
-    currentYear = formDetails.current_year;
-    formStatusText = formDetails.form_status_text;
-    formStatusTextEnabled = formDetails.form_status_text_enabled;
-    // Set alert text values
-    formAlertText = formDetails.form_alert_text;
-    formAlertTextEnabled = formDetails.form_alert_text_enabled;
-
-    // Update form status toggle
-    formStatus.checked = formEnabled;
-    formStatusLabel.textContent = formEnabled ? 'Enabled' : 'Disabled';
-
-    // Update current year input
-    currentYearInput.value = currentYear;
-
-    // Update results display type select
-    resultsDisplayTypeSelect.value = resultsDisplayType;
-
-    // Update form status text and its enabled toggle
-    formStatusTextEnabledInput.checked = formStatusTextEnabled;
-    formStatusTextEnabledLabel.textContent = formStatusTextEnabled ? 'Enabled' : 'Disabled';
-    formStatusTextInput.value = formStatusText;
-
-    // Update form alert text and its enabled toggle
-    formAlertTextEnabledInput.checked = formAlertTextEnabled;
-    formAlertTextEnabledLabel.textContent = formAlertTextEnabled ? 'Enabled' : 'Disabled';
-    formAlertTextInput.value = formAlertText;
+  if (formDetailsError) {
+    console.error('Error fetching form details:', formDetailsError);
+    return;
   }
+
+  currentRaceNumber = formDetails.race_number;
+  formEnabled = formDetails.form_enabled;
+  resultsDisplayRaceNumber = formDetails.results_display_race_number;
+  resultsDisplayType = formDetails.results_display_type;
+  currentYear = formDetails.current_year;
+  formStatusText = formDetails.form_status_text;
+  formStatusTextEnabled = formDetails.form_status_text_enabled;
+  formAlertText = formDetails.form_alert_text;
+  formAlertTextEnabled = formDetails.form_alert_text_enabled;
+
+  // New: Update background image select
+  const backgroundImageSelect = document.getElementById('background-image-select');
+  if (formDetails.background_image) {
+    backgroundImageSelect.value = formDetails.background_image;
+  }
+
+  // Update other UI elements as before…
+  formStatus.checked = formEnabled;
+  formStatusLabel.textContent = formEnabled ? 'Enabled' : 'Disabled';
+  currentYearInput.value = currentYear;
+  resultsDisplayTypeSelect.value = resultsDisplayType;
+  formStatusTextEnabledInput.checked = formStatusTextEnabled;
+  formStatusTextEnabledLabel.textContent = formStatusTextEnabled ? 'Enabled' : 'Disabled';
+  formStatusTextInput.value = formStatusText;
+  formAlertTextEnabledInput.checked = formAlertTextEnabled;
+  formAlertTextEnabledLabel.textContent = formAlertTextEnabled ? 'Enabled' : 'Disabled';
+  formAlertTextInput.value = formAlertText;
+}
 
   await fetchFormDetails();
 
@@ -2118,65 +2134,71 @@ document.addEventListener('DOMContentLoaded', async () => {
   formAlertTextInput.addEventListener('input', () => {
     saveChangesButton.disabled = false;
   });
+  document.getElementById('background-image-select').addEventListener('change', () => {
+  saveChangesButton.disabled = false;
+});
 
   // Save changes
   document.getElementById('dashboard-form').addEventListener('submit', async event => {
-    event.preventDefault();
+  event.preventDefault();
 
-    const selectedRaceNumber = raceSelect.value;
-    const selectedFormStatus = formStatus.checked;
-    const selectedResultsDisplayRaceNumber = resultsDisplayRaceSelect.value;
-    const selectedResultsDisplayType = resultsDisplayTypeSelect.value;
-    const selectedCurrentYear = currentYearInput.value;
-    const selectedFormStatusTextEnabled = formStatusTextEnabledInput.checked;
-    const selectedFormStatusText = formStatusTextInput.value;
-    // New alert text selections
-    const selectedFormAlertTextEnabled = formAlertTextEnabledInput.checked;
-    const selectedFormAlertText = formAlertTextInput.value;
+  const selectedRaceNumber = raceSelect.value;
+  const selectedFormStatus = formStatus.checked;
+  const selectedResultsDisplayRaceNumber = resultsDisplayRaceSelect.value;
+  const selectedResultsDisplayType = resultsDisplayTypeSelect.value;
+  const selectedCurrentYear = currentYearInput.value;
+  const selectedFormStatusTextEnabled = formStatusTextEnabledInput.checked;
+  const selectedFormStatusText = formStatusTextInput.value;
+  const selectedFormAlertTextEnabled = formAlertTextEnabledInput.checked;
+  const selectedFormAlertText = formAlertTextInput.value;
 
-    // Update form details in the database
-    const { error: updateError } = await supabase
-      .from('form_details')
-      .update({
-        race_number: selectedRaceNumber,
-        form_enabled: selectedFormStatus,
-        results_display_race_number: selectedResultsDisplayRaceNumber,
-        results_display_type: selectedResultsDisplayType,
-        current_year: selectedCurrentYear,
-        form_status_text_enabled: selectedFormStatusTextEnabled,
-        form_status_text: selectedFormStatusText,
-        form_alert_text_enabled: selectedFormAlertTextEnabled,
-        form_alert_text: selectedFormAlertText
-      })
-      .eq('id', 1);
+  // New: Get selected background image from the new selector
+  const backgroundImageSelect = document.getElementById('background-image-select');
+  const selectedBackgroundImage = backgroundImageSelect.value;
 
-    if (updateError) {
-      alert('Error saving changes');
-      console.error('Error saving changes:', updateError);
-      return;
-    }
+  // Update form details in the database
+  const { error: updateError } = await supabase
+    .from('form_details')
+    .update({
+      race_number: selectedRaceNumber,
+      form_enabled: selectedFormStatus,
+      results_display_race_number: selectedResultsDisplayRaceNumber,
+      results_display_type: selectedResultsDisplayType,
+      current_year: selectedCurrentYear,
+      form_status_text_enabled: selectedFormStatusTextEnabled,
+      form_status_text: selectedFormStatusText,
+      form_alert_text_enabled: selectedFormAlertTextEnabled,
+      form_alert_text: selectedFormAlertText,
+      background_image: selectedBackgroundImage  // New update field
+    })
+    .eq('id', 1);
 
-    // Update the UI with the new values
-    currentRaceNumber = selectedRaceNumber;
-    formEnabled = selectedFormStatus;
-    resultsDisplayRaceNumber = selectedResultsDisplayRaceNumber;
-    resultsDisplayType = selectedResultsDisplayType;
-    currentYear = selectedCurrentYear;
-    formStatusTextEnabled = selectedFormStatusTextEnabled;
-    formStatusText = selectedFormStatusText;
-    formAlertTextEnabled = selectedFormAlertTextEnabled;
-    formAlertText = selectedFormAlertText;
+  if (updateError) {
+    alert('Error saving changes');
+    console.error('Error saving changes:', updateError);
+    return;
+  }
 
-    formStatusLabel.textContent = formEnabled ? 'Enabled' : 'Disabled';
-    formStatusTextEnabledLabel.textContent = formStatusTextEnabled ? 'Enabled' : 'Disabled';
-    formAlertTextEnabledLabel.textContent = formAlertTextEnabled ? 'Enabled' : 'Disabled';
-    saveChangesButton.disabled = true;
+  // Update UI with the new values
+  currentRaceNumber = selectedRaceNumber;
+  formEnabled = selectedFormStatus;
+  resultsDisplayRaceNumber = selectedResultsDisplayRaceNumber;
+  resultsDisplayType = selectedResultsDisplayType;
+  currentYear = selectedCurrentYear;
+  formStatusTextEnabled = selectedFormStatusTextEnabled;
+  formStatusText = selectedFormStatusText;
+  formAlertTextEnabled = selectedFormAlertTextEnabled;
+  formAlertText = selectedFormAlertText;
 
-    // Fetch updated form responses
-    await fetchFormResponses();
+  formStatusLabel.textContent = formEnabled ? 'Enabled' : 'Disabled';
+  formStatusTextEnabledLabel.textContent = formStatusTextEnabled ? 'Enabled' : 'Disabled';
+  formAlertTextEnabledLabel.textContent = formAlertTextEnabled ? 'Enabled' : 'Disabled';
+  saveChangesButton.disabled = true;
 
-    alert('Changes saved successfully');
-  });
+  await fetchFormResponses();
+
+  alert('Changes saved successfully');
+});
 });
 
 

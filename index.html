@@ -34,6 +34,25 @@
             height: 100%;         /* Full height of the container (200px) */
             background-color: rgba(0, 0, 0, 0.4); /* Transparent black overlay */
         }
+
+        .placeholder-glow {
+    width: 100%;
+    height: 300px; /* Adjust as needed */
+    background-color: #ccc;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+.hidden {
+    display: none;
+}
+
+
         .chart-wrapper {
     width: 100%; /* Let it fill the width */
     max-width: 900px; /* Prevent it from becoming too wide */
@@ -130,13 +149,21 @@
   
 
     <!-- Full-Width Image Section with Centered Text -->
-        <section class="full-width-image-container">
-            <img src="/media/ferrari_background.png" alt="Full Width Image" class="full-width-image">
-            <div class="overlay"></div> <!-- Transparent black layer -->
-
-            <!-- Centered Text -->
-            <h2  class="centered-text-pixel-art-heading">F1 Predictions Form</h2>
-        </section>
+    <section class="full-width-image-container">
+      <!-- Placeholder div with glow effect -->
+      <div id="image-placeholder" class="placeholder-glow"></div>
+  
+      <!-- Actual image, hidden initially -->
+      <img id="background-image" src="" alt="Full Width Image" class="full-width-image hidden" style="image-rendering: pixelated">
+      
+      <!-- Transparent overlay -->
+      <div class="overlay"></div>
+  
+      <!-- Centered Text -->
+      <h2 class="centered-text-pixel-art-heading">F1 Predictions Form</h2>
+  </section>
+  
+    
 
     <main class="container my-5">
         <div class="row g-4">
@@ -393,6 +420,69 @@
 
     <script type="module">
       import { getCookie, getColorForLetter } from '/script.js';
+      async function updateDashboardBackground() {
+  // Get the actual image element and the placeholder element
+  const imageEl = document.getElementById('background-image');
+  const placeholderEl = document.getElementById('image-placeholder');
+  if (!imageEl || !placeholderEl) {
+    console.warn("Background image or placeholder element not found.");
+    return;
+  }
+
+  // Ensure the placeholder is visible and the image is hidden while loading
+  placeholderEl.classList.remove('hidden');
+  imageEl.classList.add('hidden');
+
+  try {
+    // Fetch the background image filename from form_details table
+    const { data: formDetails, error } = await supabase
+      .from('form_details')
+      .select('background_image')
+      .eq('id', 1)
+      .single();
+
+    let bgFilename = "background_ferrari.png"; // Default
+
+    if (error) {
+      console.error("Error fetching background image:", error.message);
+    } else if (formDetails.background_image && formDetails.background_image.trim() !== "") {
+      bgFilename = formDetails.background_image;
+    }
+
+    // Preload the image using a temporary Image object
+    const tempImage = new Image();
+    tempImage.src = `/media/backgrounds/${bgFilename}`;
+
+    // When the image loads, update the src, hide the placeholder, and show the image
+    tempImage.onload = () => {
+      imageEl.src = tempImage.src;
+      placeholderEl.classList.add('hidden');
+      imageEl.classList.remove('hidden');
+      console.log("Dashboard background loaded:", imageEl.src);
+    };
+
+    // If image fails to load, fallback to default
+    tempImage.onerror = () => {
+      console.error(`Error loading ${bgFilename}, falling back to background_ferrari.png`);
+      imageEl.src = `/media/backgrounds/background_ferrari.png`;
+      placeholderEl.classList.add('hidden');
+      imageEl.classList.remove('hidden');
+    };
+
+  } catch (err) {
+    console.error("Unexpected error fetching background:", err);
+    imageEl.src = `/media/backgrounds/background_ferrari.png`;
+    placeholderEl.classList.add('hidden');
+    imageEl.classList.remove('hidden');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateDashboardBackground();
+});
+
+
+
         // Fetch the race details from form_details and calendar tables
         async function fetchRaceDetails() {
             try {
