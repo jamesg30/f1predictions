@@ -659,7 +659,7 @@
   </div>
 </main>
 
-    <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
+    <footer class="bg-dark text-white text-center py-1 pixel-art-body-smallx">
         <p>&copy; 2025 F1 Predictions Form</p>
     </footer>
 
@@ -1184,7 +1184,7 @@
                 let formattedDateTime = "";
 
                 if (event.date) {
-                    // Parse the date to ensure it's valid
+                    // Parse the stored UTC date
                     const eventDate = new Date(event.date);
                     if (!isNaN(eventDate)) {
                         // Format as 'YYYY-MM-DDTHH:mm'
@@ -1693,9 +1693,10 @@
                 let value = input.value;
 
                 if (field === "date") {
-                    const localDate = new Date(value); // Parse as local datetime
-                    if (!isNaN(localDate)) {
-                        value = localDate.toISOString(); // Convert and store in UTC
+                    // Append "Z" so the input value is treated as UTC.
+                    const utcDate = new Date(value + "Z");
+                    if (!isNaN(utcDate)) {
+                        value = utcDate.toISOString();
                     } else {
                         console.error("Invalid date value:", value);
                         return null;
@@ -1705,7 +1706,7 @@
                 return { id, [field]: value };
             });
 
-            // Filter out invalid updates
+            // Filter out any invalid updates.
             const filteredUpdates = updates.filter((update) => update !== null);
 
             const groupedUpdates = filteredUpdates.reduce((acc, update) => {
@@ -1725,6 +1726,7 @@
             alert("Calendar saved successfully!");
             await fetchCalendar();
         }
+
 
         // Delete Race Function
         async function deleteRace(id) {
@@ -1753,14 +1755,13 @@
                 return;
             }
 
-            // Convert the provided local datetime to a UTC ISO string
-            const localDate = new Date(date);
-            if (isNaN(localDate)) {
+            // Append "Z" to force the input to be treated as UTC.
+            const utcDate = new Date(date + "Z");
+            if (isNaN(utcDate)) {
                 alert("Invalid date format!");
                 return;
             }
-
-            const isoDate = localDate.toISOString(); // Ensure UTC storage
+            const isoDate = utcDate.toISOString(); // This stores the time in UTC
 
             const { error } = await supabase.from("calendar").insert([
                 { race_number, name, country, date: isoDate }
@@ -1774,6 +1775,7 @@
             await fetchCalendar();
             alert("Race added successfully!");
         }
+
 
     // ====================================
     // === COMBINED EDIT TABS FUNCTIONS ===
