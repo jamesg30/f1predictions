@@ -500,316 +500,322 @@
     <p>&copy; 2025 F1 Predictions Form</p>
   </footer>
   
-  <!-- Bootstrap JS Bundle (Local) -->
-  <script src="/js/bootstrap.bundle.min.js"></script>
-  
-  <script type="module">
-   import { fetchData, getCookie, darkenColor, getColorForLetter, renderAvatar } from '/script.js';
-
-// Existing function to autofill the password reset form.
-async function autofillLoggedInName() {
-  const playerId = getCookie("playerId");
-  const loggedInNameField = document.getElementById("logged-in-name");
-  const currentPINField = document.getElementById("current-pin");
-  const newPINField = document.getElementById("new-pin");
-  const confirmNewPINField = document.getElementById("confirm-new-pin");
-  const updateButton = document.getElementById("passwordUpdateBtn");
-  
-  if (!playerId) {
-    loggedInNameField.value = "";
-    loggedInNameField.placeholder = "Please log in to change your password.";
-    loggedInNameField.disabled = true;
-    currentPINField.disabled = true;
-    newPINField.disabled = true;
-    confirmNewPINField.disabled = true;
-    updateButton.disabled = true;
-    return;
-  }
-  
-  // Logged in: fetch player's name.
-  const { data: player, error } = await supabase
-    .from('players')
-    .select('name')
-    .eq('id', playerId)
-    .single();
-    
-  if (error || !player) {
-    console.error("Error fetching player name:", error);
-    return;
-  }
-  
-  loggedInNameField.value = player.name;
-  loggedInNameField.disabled = true;
-  currentPINField.disabled = false;
-  newPINField.disabled = false;
-  confirmNewPINField.disabled = false;
-  updateButton.disabled = false;
-}
-
-// New function to initialise (or clear) the avatar customisation UI.
-async function initializeAvatarCustomization() {
-  const currentAvatarEl = document.getElementById('current-avatar');
-  const newAvatarEl = document.getElementById('new-avatar');
-  const iconColorPicker = document.getElementById('icon-color');
-  const backgroundColorPicker = document.getElementById('background-color');
-  const saveButton = document.getElementById('save-avatar');
-  const resetButton = document.getElementById('reset-avatar');
-
-  // Always disable the Save button initially.
-  saveButton.disabled = true;
-  resetButton.disabled = false;
-
-  const playerId = getCookie('playerId');
-  if (!playerId) {
-    // User logged out: clear the form and disable fields.
-    currentAvatarEl.textContent = '';
-    newAvatarEl.textContent = '';
-    iconColorPicker.value = '#ffffff';
-    backgroundColorPicker.value = '#000000';
-    iconColorPicker.disabled = true;
-    backgroundColorPicker.disabled = true;
-    document.querySelectorAll('input[name="avatar-icon"]').forEach(radio => {
-      radio.checked = false;
-      radio.disabled = true;
-    });
-    return;
-  }
-
-  // Re-enable form fields if a user is logged in.
-  iconColorPicker.disabled = false;
-  backgroundColorPicker.disabled = false;
-  document.querySelectorAll('input[name="avatar-icon"]').forEach(radio => {
-    radio.disabled = false;
-  });
-
-  // Fetch user avatar settings from Supabase.
-  const { data: user, error } = await supabase
-    .from('players')
-    .select('avatar_settings, name')
-    .eq('id', playerId)
-    .single();
-
-  if (error) {
-    console.error('Error fetching avatar settings:', error);
-    return;
-  }
-
-  const letter = user.name.charAt(0).toUpperCase();
-  // Update the letter radio option display.
-  const letterIconEl = document.querySelector('input[name="avatar-icon"][value="letter"] + .icon-image');
-  if (letterIconEl) {
-    letterIconEl.textContent = letter;
-    letterIconEl.style.fontFamily = "'Press Start 2P', Helvetica, sans-serif";
-    letterIconEl.style.fontWeight = "bold";
-  }
-
-  // Use saved settings if available, or default to a letter avatar.
-  let savedSettings = user.avatar_settings || {
-    type: 'letter',
-    icon: 'letter',
-    iconColor: '#ffffff',
-    backgroundColor: getColorForLetter(letter)
-  };
-
-  // Render the current avatar preview.
-  renderAvatar(currentAvatarEl, savedSettings, letter);
-
-  // Populate the UI with saved settings.
-  const radio = document.querySelector(`input[name="avatar-icon"][value="${savedSettings.icon}"]`);
-  if (radio) {
-    radio.checked = true;
-    // Disable the icon colour picker for fixed icons.
-    iconColorPicker.disabled = (radio.dataset.type === 'fixed');
-  }
-  if (savedSettings.iconColor) iconColorPicker.value = savedSettings.iconColor;
-  if (savedSettings.backgroundColor) backgroundColorPicker.value = savedSettings.backgroundColor;
-
-  // Helper: read current settings from the UI.
-  function getAvatarSettingsFromUI() {
-    const selectedRadio = document.querySelector('input[name="avatar-icon"]:checked');
-    let type, icon;
-    if (selectedRadio) {
-      icon = selectedRadio.value;
-      type = selectedRadio.dataset.type;
-    } else {
-      type = 'letter';
-      icon = 'letter';
-    }
-    return {
-      type,
-      icon,
-      iconColor: (type === 'fixed') ? null : iconColorPicker.value,
-      backgroundColor: backgroundColorPicker.value
-    };
-  }
-
-  // Helper: check if the settings have changed.
-  function checkForAvatarChanges() {
-    const currentSettings = getAvatarSettingsFromUI();
-    saveButton.disabled = (JSON.stringify(currentSettings) === JSON.stringify(savedSettings));
-  }
-
-  // Helper: update the new avatar preview.
-  function updateNewAvatarPreview() {
-    const settings = getAvatarSettingsFromUI();
-    renderAvatar(newAvatarEl, settings, letter);
-  }
-
-  // Listen for changes on the radio options.
-  document.querySelectorAll('input[name="avatar-icon"]').forEach(radio => {
-    radio.addEventListener('change', () => {
-      const selected = document.querySelector('input[name="avatar-icon"]:checked');
-      iconColorPicker.disabled = (selected.dataset.type === 'fixed');
-      updateNewAvatarPreview();
-      checkForAvatarChanges();
-    });
-  });
-
-  // Listen for changes on the colour pickers.
-  iconColorPicker.addEventListener('input', () => {
-    updateNewAvatarPreview();
-    checkForAvatarChanges();
-  });
-  backgroundColorPicker.addEventListener('input', () => {
-    updateNewAvatarPreview();
-    checkForAvatarChanges();
-  });
-
-  // Update preview on initialisation.
-  updateNewAvatarPreview();
-
-  // Save new avatar settings.
-  saveButton.addEventListener('click', async () => {
-    const newSettings = getAvatarSettingsFromUI();
-    const { error } = await supabase
-      .from('players')
-      .update({ avatar_settings: newSettings })
-      .eq('id', playerId);
-    if (error) {
-      console.error('Error updating avatar settings:', error);
-      alert('Failed to update avatar.');
-    } else {
-      alert('Avatar updated!');
-      renderAvatar(currentAvatarEl, newSettings, letter);
-      savedSettings = newSettings;
-      saveButton.disabled = true;
-      // Also update the header avatar.
-      const headerAvatar = document.getElementById('user-avatar');
-      renderAvatar(headerAvatar, newSettings, letter);
-    }
-  });
-
-  // Reset to default settings.
-  resetButton.addEventListener('click', async () => {
-    if (!confirm('Are you sure you want to reset to defaults?')) return;
-    const { error } = await supabase
-      .from('players')
-      .update({ avatar_settings: null })
-      .eq('id', playerId);
-    if (error) {
-      console.error('Error resetting avatar settings:', error);
-      alert('Failed to reset avatar.');
-    } else {
-      alert('Avatar reset!');
-      location.reload()
-    }
-  });
-}
-
-// Initial setup when the DOM is ready.
-document.addEventListener('DOMContentLoaded', () => {
-  autofillLoggedInName();
-  initializeAvatarCustomization();
-});
-
-// When the login state changes, update both the password reset and avatar forms.
-document.addEventListener("loginStateChanged", async (event) => {
-  await autofillLoggedInName();
-  await initializeAvatarCustomization();
-});
-
-// Update Password Functionality for the password reset form
-document.getElementById("passwordResetForm").addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  // Get the input field values
-  const currentPINField = document.getElementById("current-pin");
-  const newPINField = document.getElementById("new-pin");
-  const confirmNewPINField = document.getElementById("confirm-new-pin");
-
-  const currentPIN = currentPINField.value.trim();
-  const newPIN = newPINField.value.trim();
-  const confirmNewPIN = confirmNewPINField.value.trim();
-
-  // Validate that all PINs are 4 digits
-  if (!/^\d{4}$/.test(currentPIN)) {
-    alert("Please enter a valid 4-digit current PIN.");
-    return;
-  }
-  if (!/^\d{4}$/.test(newPIN)) {
-    alert("Please enter a valid 4-digit new PIN.");
-    return;
-  }
-  if (newPIN !== confirmNewPIN) {
-    alert("New PIN and confirmation do not match.");
-    return;
-  }
-
-  // Get the logged in player's ID (ensure getCookie is defined and imported)
-  const playerId = getCookie("playerId");
-  if (!playerId) {
-    alert("You must be logged in to update your password.");
-    return;
-  }
-
-  try {
-    // Fetch the player's current hashed password from Supabase
-    const { data: player, error: fetchError } = await supabase
-      .from("players")
-      .select("password")
-      .eq("id", playerId)
-      .single();
+<!-- Bootstrap JS Bundle (Local) -->
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script type="module">
+    import { fetchData, getCookie, darkenColor, getColorForLetter, renderAvatar } from '/script.js';
+  // ====================================
+  // === AUTOFILL PASSWORD RESET FORM ===
+  // ====================================
+    // Existing function to autofill the password reset form.
+    async function autofillLoggedInName() {
+      const playerId = getCookie("playerId");
+      const loggedInNameField = document.getElementById("logged-in-name");
+      const currentPINField = document.getElementById("current-pin");
+      const newPINField = document.getElementById("new-pin");
+      const confirmNewPINField = document.getElementById("confirm-new-pin");
+      const updateButton = document.getElementById("passwordUpdateBtn");
       
-    if (fetchError || !player) {
-      console.error("Error fetching player data:", fetchError);
-      alert("Failed to fetch player data.");
-      return;
+      if (!playerId) {
+        loggedInNameField.value = "";
+        loggedInNameField.placeholder = "Please log in to change your password.";
+        loggedInNameField.disabled = true;
+        currentPINField.disabled = true;
+        newPINField.disabled = true;
+        confirmNewPINField.disabled = true;
+        updateButton.disabled = true;
+        return;
+      }
+      
+      // Logged in: fetch player's name.
+      const { data: player, error } = await supabase
+        .from('players')
+        .select('name')
+        .eq('id', playerId)
+        .single();
+        
+      if (error || !player) {
+        console.error("Error fetching player name:", error);
+        return;
+      }
+      
+      loggedInNameField.value = player.name;
+      loggedInNameField.disabled = true;
+      currentPINField.disabled = false;
+      newPINField.disabled = false;
+      confirmNewPINField.disabled = false;
+      updateButton.disabled = false;
     }
 
-    // Compare the entered current PIN (hashed) with the stored hash
-    const hashedCurrentPIN = CryptoJS.MD5(currentPIN).toString();
-    if (hashedCurrentPIN !== player.password) {
-      alert("Current PIN is incorrect.");
-      return;
+  // =================================
+  // === AVATAR CUSTOMISATION CODE ===
+  // =================================
+    // New function to initialise (or clear) the avatar customisation UI.
+    async function initializeAvatarCustomization() {
+      const currentAvatarEl = document.getElementById('current-avatar');
+      const newAvatarEl = document.getElementById('new-avatar');
+      const iconColorPicker = document.getElementById('icon-color');
+      const backgroundColorPicker = document.getElementById('background-color');
+      const saveButton = document.getElementById('save-avatar');
+      const resetButton = document.getElementById('reset-avatar');
+
+      // Always disable the Save button initially.
+      saveButton.disabled = true;
+      resetButton.disabled = false;
+
+      const playerId = getCookie('playerId');
+      if (!playerId) {
+        // User logged out: clear the form and disable fields.
+        currentAvatarEl.textContent = '';
+        newAvatarEl.textContent = '';
+        iconColorPicker.value = '#ffffff';
+        backgroundColorPicker.value = '#000000';
+        iconColorPicker.disabled = true;
+        backgroundColorPicker.disabled = true;
+        document.querySelectorAll('input[name="avatar-icon"]').forEach(radio => {
+          radio.checked = false;
+          radio.disabled = true;
+        });
+        return;
+      }
+
+      // Re-enable form fields if a user is logged in.
+      iconColorPicker.disabled = false;
+      backgroundColorPicker.disabled = false;
+      document.querySelectorAll('input[name="avatar-icon"]').forEach(radio => {
+        radio.disabled = false;
+      });
+
+      // Fetch user avatar settings from Supabase.
+      const { data: user, error } = await supabase
+        .from('players')
+        .select('avatar_settings, name')
+        .eq('id', playerId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching avatar settings:', error);
+        return;
+      }
+
+      const letter = user.name.charAt(0).toUpperCase();
+      // Update the letter radio option display.
+      const letterIconEl = document.querySelector('input[name="avatar-icon"][value="letter"] + .icon-image');
+      if (letterIconEl) {
+        letterIconEl.textContent = letter;
+        letterIconEl.style.fontFamily = "'Press Start 2P', Helvetica, sans-serif";
+        letterIconEl.style.fontWeight = "bold";
+      }
+
+      // Use saved settings if available, or default to a letter avatar.
+      let savedSettings = user.avatar_settings || {
+        type: 'letter',
+        icon: 'letter',
+        iconColor: '#ffffff',
+        backgroundColor: getColorForLetter(letter)
+      };
+
+      // Render the current avatar preview.
+      renderAvatar(currentAvatarEl, savedSettings, letter);
+
+      // Populate the UI with saved settings.
+      const radio = document.querySelector(`input[name="avatar-icon"][value="${savedSettings.icon}"]`);
+      if (radio) {
+        radio.checked = true;
+        // Disable the icon colour picker for fixed icons.
+        iconColorPicker.disabled = (radio.dataset.type === 'fixed');
+      }
+      if (savedSettings.iconColor) iconColorPicker.value = savedSettings.iconColor;
+      if (savedSettings.backgroundColor) backgroundColorPicker.value = savedSettings.backgroundColor;
+
+      // Helper: read current settings from the UI.
+      function getAvatarSettingsFromUI() {
+        const selectedRadio = document.querySelector('input[name="avatar-icon"]:checked');
+        let type, icon;
+        if (selectedRadio) {
+          icon = selectedRadio.value;
+          type = selectedRadio.dataset.type;
+        } else {
+          type = 'letter';
+          icon = 'letter';
+        }
+        return {
+          type,
+          icon,
+          iconColor: (type === 'fixed') ? null : iconColorPicker.value,
+          backgroundColor: backgroundColorPicker.value
+        };
+      }
+
+      // Helper: check if the settings have changed.
+      function checkForAvatarChanges() {
+        const currentSettings = getAvatarSettingsFromUI();
+        saveButton.disabled = (JSON.stringify(currentSettings) === JSON.stringify(savedSettings));
+      }
+
+      // Helper: update the new avatar preview.
+      function updateNewAvatarPreview() {
+        const settings = getAvatarSettingsFromUI();
+        renderAvatar(newAvatarEl, settings, letter);
+      }
+
+      // Listen for changes on the radio options.
+      document.querySelectorAll('input[name="avatar-icon"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+          const selected = document.querySelector('input[name="avatar-icon"]:checked');
+          iconColorPicker.disabled = (selected.dataset.type === 'fixed');
+          updateNewAvatarPreview();
+          checkForAvatarChanges();
+        });
+      });
+
+      // Listen for changes on the colour pickers.
+      iconColorPicker.addEventListener('input', () => {
+        updateNewAvatarPreview();
+        checkForAvatarChanges();
+      });
+      backgroundColorPicker.addEventListener('input', () => {
+        updateNewAvatarPreview();
+        checkForAvatarChanges();
+      });
+
+      // Update preview on initialisation.
+      updateNewAvatarPreview();
+
+      // Save new avatar settings.
+      saveButton.addEventListener('click', async () => {
+        const newSettings = getAvatarSettingsFromUI();
+        const { error } = await supabase
+          .from('players')
+          .update({ avatar_settings: newSettings })
+          .eq('id', playerId);
+        if (error) {
+          console.error('Error updating avatar settings:', error);
+          alert('Failed to update avatar.');
+        } else {
+          alert('Avatar updated!');
+          renderAvatar(currentAvatarEl, newSettings, letter);
+          savedSettings = newSettings;
+          saveButton.disabled = true;
+          // Also update the header avatar.
+          const headerAvatar = document.getElementById('user-avatar');
+          renderAvatar(headerAvatar, newSettings, letter);
+        }
+      });
+
+      // Reset to default settings.
+      resetButton.addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to reset to defaults?')) return;
+        const { error } = await supabase
+          .from('players')
+          .update({ avatar_settings: null })
+          .eq('id', playerId);
+        if (error) {
+          console.error('Error resetting avatar settings:', error);
+          alert('Failed to reset avatar.');
+        } else {
+          alert('Avatar reset!');
+          location.reload()
+        }
+      });
     }
 
-    // Hash the new PIN
-    const hashedNewPIN = CryptoJS.MD5(newPIN).toString();
+    // Initial setup when the DOM is ready.
+    document.addEventListener('DOMContentLoaded', () => {
+      autofillLoggedInName();
+      initializeAvatarCustomization();
+    });
 
-    // Update the player's password in Supabase
-    const { error: updateError } = await supabase
-      .from("players")
-      .update({ password: hashedNewPIN })
-      .eq("id", playerId);
+    // When the login state changes, update both the password reset and avatar forms.
+    document.addEventListener("loginStateChanged", async (event) => {
+      await autofillLoggedInName();
+      await initializeAvatarCustomization();
+    });
 
-    if (updateError) {
-      console.error("Error updating password:", updateError);
-      alert("Failed to update password.");
-      return;
-    }
+  // ================================
+  // === PASSWORD RESET FUNCTIONS ===
+  // ================================
+    // Update Password Functionality for the password reset form
+    document.getElementById("passwordResetForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
 
-    alert("Password updated successfully!");
+      // Get the input field values
+      const currentPINField = document.getElementById("current-pin");
+      const newPINField = document.getElementById("new-pin");
+      const confirmNewPINField = document.getElementById("confirm-new-pin");
 
-    // Clear the form fields
-    currentPINField.value = "";
-    newPINField.value = "";
-    confirmNewPINField.value = "";
-  } catch (err) {
-    console.error("Unexpected error:", err);
-    alert("An unexpected error occurred while updating your password.");
-  }
-});
+      const currentPIN = currentPINField.value.trim();
+      const newPIN = newPINField.value.trim();
+      const confirmNewPIN = confirmNewPINField.value.trim();
 
-  </script>
+      // Validate that all PINs are 4 digits
+      if (!/^\d{4}$/.test(currentPIN)) {
+        alert("Please enter a valid 4-digit current PIN.");
+        return;
+      }
+      if (!/^\d{4}$/.test(newPIN)) {
+        alert("Please enter a valid 4-digit new PIN.");
+        return;
+      }
+      if (newPIN !== confirmNewPIN) {
+        alert("New PIN and confirmation do not match.");
+        return;
+      }
+
+      // Get the logged in player's ID (ensure getCookie is defined and imported)
+      const playerId = getCookie("playerId");
+      if (!playerId) {
+        alert("You must be logged in to update your password.");
+        return;
+      }
+
+      try {
+        // Fetch the player's current hashed password from Supabase
+        const { data: player, error: fetchError } = await supabase
+          .from("players")
+          .select("password")
+          .eq("id", playerId)
+          .single();
+          
+        if (fetchError || !player) {
+          console.error("Error fetching player data:", fetchError);
+          alert("Failed to fetch player data.");
+          return;
+        }
+
+        // Compare the entered current PIN (hashed) with the stored hash
+        const hashedCurrentPIN = CryptoJS.MD5(currentPIN).toString();
+        if (hashedCurrentPIN !== player.password) {
+          alert("Current PIN is incorrect.");
+          return;
+        }
+
+        // Hash the new PIN
+        const hashedNewPIN = CryptoJS.MD5(newPIN).toString();
+
+        // Update the player's password in Supabase
+        const { error: updateError } = await supabase
+          .from("players")
+          .update({ password: hashedNewPIN })
+          .eq("id", playerId);
+
+        if (updateError) {
+          console.error("Error updating password:", updateError);
+          alert("Failed to update password.");
+          return;
+        }
+
+        alert("Password updated successfully!");
+
+        // Clear the form fields
+        currentPINField.value = "";
+        newPINField.value = "";
+        confirmNewPINField.value = "";
+      } catch (err) {
+        console.error("Unexpected error:", err);
+        alert("An unexpected error occurred while updating your password.");
+      }
+    });
+</script>
 </body>
 </html>

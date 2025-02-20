@@ -144,10 +144,11 @@
     <p>&copy; 2025 F1 Predictions Form</p>
   </footer>
     
-  <!-- Confirmation Page Script -->
-  <script type="module">
+<script type="module">
     import { getCookie } from '/script.js';
-    
+  // ============================
+  // === CONVERTING RESPONSES ===
+  // ============================
     // Helper: Convert a timestamptz string into a readable AEST format.
     function formatTimestampAEST(timestamp) {
       const options = {
@@ -172,6 +173,9 @@
       return str;
     }
     
+  // =================================
+  // === LOAD CONFIRMATION CONTENT ===
+  // =================================
     // Main function to load and refresh confirmation content.
     async function loadConfirmationContent() {
       const confirmationDetails = document.getElementById('confirmation-details');
@@ -323,9 +327,8 @@
     document.addEventListener("loginStateChanged", async (event) => {
       await loadConfirmationContent();
     });
-  </script>
-    
-  <!-- Bootstrap JS Bundle -->
-  <script src="/js/bootstrap.bundle.min.js"></script>
+</script>
+<!-- Bootstrap JS Bundle -->
+<script src="/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

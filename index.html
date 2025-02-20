@@ -415,141 +415,146 @@
         <p>&copy; 2025 F1 Predictions Form</p>
     </footer>
 
-    <!-- Bootstrap JS Bundle (Local) -->
-    <script src="/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap JS Bundle (Local) -->
+<script src="/js/bootstrap.bundle.min.js"></script>
 
-    <script type="module">
-      import { getCookie, getColorForLetter } from '/script.js';
-      async function updateDashboardBackground() {
-  // Get the actual image element and the placeholder element
-  const imageEl = document.getElementById('background-image');
-  const placeholderEl = document.getElementById('image-placeholder');
-  if (!imageEl || !placeholderEl) {
-    console.warn("Background image or placeholder element not found.");
-    return;
-  }
-
-  // Ensure the placeholder is visible and the image is hidden while loading
-  placeholderEl.classList.remove('hidden');
-  imageEl.classList.add('hidden');
-
-  try {
-    // Fetch the background image filename from form_details table
-    const { data: formDetails, error } = await supabase
-      .from('form_details')
-      .select('background_image')
-      .eq('id', 1)
-      .single();
-
-    let bgFilename = "background_ferrari.png"; // Default
-
-    if (error) {
-      console.error("Error fetching background image:", error.message);
-    } else if (formDetails.background_image && formDetails.background_image.trim() !== "") {
-      bgFilename = formDetails.background_image;
+<script type="module">
+  import { getCookie, getColorForLetter } from '/script.js';
+  // =========================
+  // === HEADER IMAGE CODE ===
+  // =========================
+    async function updateDashboardBackground() {
+    // Get the actual image element and the placeholder element
+    const imageEl = document.getElementById('background-image');
+    const placeholderEl = document.getElementById('image-placeholder');
+    if (!imageEl || !placeholderEl) {
+      console.warn("Background image or placeholder element not found.");
+      return;
     }
 
-    // Preload the image using a temporary Image object
-    const tempImage = new Image();
-    tempImage.src = `/media/backgrounds/${bgFilename}`;
+    // Ensure the placeholder is visible and the image is hidden while loading
+    placeholderEl.classList.remove('hidden');
+    imageEl.classList.add('hidden');
 
-    // When the image loads, update the src, hide the placeholder, and show the image
-    tempImage.onload = () => {
-      imageEl.src = tempImage.src;
-      placeholderEl.classList.add('hidden');
-      imageEl.classList.remove('hidden');
-      console.log("Dashboard background loaded:", imageEl.src);
-    };
+    try {
+      // Fetch the background image filename from form_details table
+      const { data: formDetails, error } = await supabase
+        .from('form_details')
+        .select('background_image')
+        .eq('id', 1)
+        .single();
 
-    // If image fails to load, fallback to default
-    tempImage.onerror = () => {
-      console.error(`Error loading ${bgFilename}, falling back to background_ferrari.png`);
-      imageEl.src = `/media/backgrounds/background_ferrari.png`;
-      placeholderEl.classList.add('hidden');
-      imageEl.classList.remove('hidden');
-    };
+      let bgFilename = "background_ferrari.png"; // Default
 
-  } catch (err) {
-    console.error("Unexpected error fetching background:", err);
-    imageEl.src = `/media/backgrounds/background_ferrari.png`;
-    placeholderEl.classList.add('hidden');
-    imageEl.classList.remove('hidden');
-  }
-}
+      if (error) {
+        console.error("Error fetching background image:", error.message);
+      } else if (formDetails.background_image && formDetails.background_image.trim() !== "") {
+        bgFilename = formDetails.background_image;
+      }
 
-document.addEventListener('DOMContentLoaded', () => {
-  updateDashboardBackground();
-});
+      // Preload the image using a temporary Image object
+      const tempImage = new Image();
+      tempImage.src = `/media/backgrounds/${bgFilename}`;
 
+      // When the image loads, update the src, hide the placeholder, and show the image
+      tempImage.onload = () => {
+        imageEl.src = tempImage.src;
+        placeholderEl.classList.add('hidden');
+        imageEl.classList.remove('hidden');
+        console.log("Dashboard background loaded:", imageEl.src);
+      };
 
+      // If image fails to load, fallback to default
+      tempImage.onerror = () => {
+        console.error(`Error loading ${bgFilename}, falling back to background_ferrari.png`);
+        imageEl.src = `/media/backgrounds/background_ferrari.png`;
+        placeholderEl.classList.add('hidden');
+        imageEl.classList.remove('hidden');
+      };
 
-        // Fetch the race details from form_details and calendar tables
-        async function fetchRaceDetails() {
-            try {
-                // Fetch the race number from form_details
-                const { data: formDetails, error: formDetailsError } = await supabase
-                    .from('form_details')
-                    .select('race_number')
-                    .eq('id', 1)
-                    .single();
-    
-                if (formDetailsError) {
-                    console.error('Error fetching form details:', formDetailsError);
-                    return null;
-                }
-    
-                const raceNumber = formDetails.race_number;
-    
-                // Fetch the race details from the calendar table
-                const { data: raceDetails, error: raceDetailsError } = await supabase
-                    .from('calendar')
-                    .select('*')
-                    .eq('race_number', raceNumber)
-                    .single();
-    
-                if (raceDetailsError) {
-                    console.error('Error fetching race details:', raceDetailsError);
-                    return null;
-                }
-    
-                return raceDetails;
-            } catch (error) {
-                console.error('Error fetching race details:', error);
-                return null;
-            }
-        }
-    
-        // Update the latest form button with the current race name
-        async function updateLatestFormButton(raceDetails) {
-            if (raceDetails) {
-                document.getElementById("latest-form-button").textContent = `${raceDetails.name} GP Form`;
-            } else {
-                document.getElementById("latest-form-button").textContent = "Error loading form";
-            }
-        }
-    
-        async function updateNextRaceInfo(raceDetails) {
-        if (!raceDetails) {
-            document.getElementById("next-race-info").innerHTML = "<p>Error loading next race.</p>";
-            return;
+      } catch (err) {
+        console.error("Unexpected error fetching background:", err);
+        imageEl.src = `/media/backgrounds/background_ferrari.png`;
+        placeholderEl.classList.add('hidden');
+        imageEl.classList.remove('hidden');
+      }
+    }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    updateDashboardBackground();
+  });
+
+  // ==========================
+  // === FETCH RACE DETAILS ===
+  // ==========================
+
+    // Fetch the race details from form_details and calendar tables
+    async function fetchRaceDetails() {
+      try {
+        // Fetch the race number from form_details
+        const { data: formDetails, error: formDetailsError } = await supabase
+            .from('form_details')
+            .select('race_number')
+            .eq('id', 1)
+            .single();
+
+        if (formDetailsError) {
+            console.error('Error fetching form details:', formDetailsError);
+            return null;
         }
 
-        const raceDate = new Date(raceDetails.date);
-        if (isNaN(raceDate)) {
-            console.error("Invalid date format for next race:", raceDetails.date);
-            document.getElementById("next-race-info").innerHTML = "<p>Invalid race date.</p>";
-            return;
+        const raceNumber = formDetails.race_number;
+
+        // Fetch the race details from the calendar table
+        const { data: raceDetails, error: raceDetailsError } = await supabase
+            .from('calendar')
+            .select('*')
+            .eq('race_number', raceNumber)
+            .single();
+
+        if (raceDetailsError) {
+            console.error('Error fetching race details:', raceDetailsError);
+            return null;
         }
 
-        const flagUrl = `/media/flags/${raceDetails.country.toLowerCase()}.png`;
+        return raceDetails;
+      } catch (error) {
+          console.error('Error fetching race details:', error);
+          return null;
+      }
+    }
+
+    // Update the latest form button with the current race name
+    async function updateLatestFormButton(raceDetails) {
+      if (raceDetails) {
+        document.getElementById("latest-form-button").textContent = `${raceDetails.name} GP Form`;
+      } else {
+        document.getElementById("latest-form-button").textContent = "Error loading form";
+      }
+    }
+
+    async function updateNextRaceInfo(raceDetails) {
+    if (!raceDetails) {
+        document.getElementById("next-race-info").innerHTML = "<p>Error loading next race.</p>";
+        return;
+    }
+
+    const raceDate = new Date(raceDetails.date);
+    if (isNaN(raceDate)) {
+        console.error("Invalid date format for next race:", raceDetails.date);
+        document.getElementById("next-race-info").innerHTML = "<p>Invalid race date.</p>";
+        return;
+    }
+
+    const flagUrl = `/media/flags/${raceDetails.country.toLowerCase()}.png`;
 
         document.getElementById("next-race-info").innerHTML = `
-  <img src="${flagUrl}" alt="${raceDetails.country} Flag" class="flag-img">
-  <h6 class="mt-2 pixel-art-body-small">${raceDetails.name} GP</h6>
-  <div id="countdown-timer" class="mt-2" style="font-size: 0.8rem; text-align: center; display: inline-block;">
-      <strong>Time left:</strong> <span id="countdown"></span>
-  </div>
-`;
+    <img src="${flagUrl}" alt="${raceDetails.country} Flag" class="flag-img">
+    <h6 class="mt-2 pixel-art-body-small">${raceDetails.name} GP</h6>
+    <div id="countdown-timer" class="mt-2" style="font-size: 0.8rem; text-align: center; display: inline-block;">
+        <strong>Time left:</strong> <span id="countdown"></span>
+    </div>
+  `;
 
 
         // Show the countdown container (it should now size to its content)
@@ -562,202 +567,199 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         }
     
-        /**
- * startGenericCountdown:
- * Starts a countdown that updates every second.
- * @param {Date} targetDate - The date/time to count down to.
- * @param {string} countdownElementId - The id of the element where the countdown text will be displayed.
- * @param {function} [onEnd] - Optional callback to execute when countdown ends.
- */
-        function startGenericCountdown(targetDate, countdownElementId, onEnd) {
-        const countdownElement = document.getElementById(countdownElementId);
-        if (!countdownElement) {
-            console.error(`Element with id "${countdownElementId}" not found.`);
-            return;
-        }
-        
-        let timer;
-        
-        function updateCountdown() {
-            const now = new Date();
-            const timeLeft = targetDate - now;
-            
-            if (timeLeft <= 0) {
-            clearInterval(timer);
-            countdownElement.textContent = "Race started!";
-            if (typeof onEnd === "function") {
-                onEnd();
-            }
-            return;
-            }
-            
-            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-            
-            let countdownStr = "";
-            if (days > 0) {
-            countdownStr += `${days}d `;
-            }
-            countdownStr += `${hours}h ${minutes}m ${seconds}s`;
-            
-            countdownElement.textContent = countdownStr;
-        }
-        
-        updateCountdown();
-        timer = setInterval(updateCountdown, 1000);
-        }
+    // Start countdown
+      function startGenericCountdown(targetDate, countdownElementId, onEnd) {
+      const countdownElement = document.getElementById(countdownElementId);
+      if (!countdownElement) {
+          console.error(`Element with id "${countdownElementId}" not found.`);
+          return;
+      }
+      
+      let timer;
+      
+      function updateCountdown() {
+          const now = new Date();
+          const timeLeft = targetDate - now;
+          
+          if (timeLeft <= 0) {
+          clearInterval(timer);
+          countdownElement.textContent = "Race started!";
+          if (typeof onEnd === "function") {
+              onEnd();
+          }
+          return;
+          }
+          
+          const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+          
+          let countdownStr = "";
+          if (days > 0) {
+          countdownStr += `${days}d `;
+          }
+          countdownStr += `${hours}h ${minutes}m ${seconds}s`;
+          
+          countdownElement.textContent = countdownStr;
+      }
+      
+      updateCountdown();
+      timer = setInterval(updateCountdown, 1000);
+      }
 
                 
-                // Fetch the form status from form_details table
-        async function fetchFormStatus() {
-            try {
-                const { data: formDetails, error: formDetailsError } = await supabase
-                    .from('form_details')
-                    .select('form_enabled')
-                    .eq('id', 1)
-                    .single();
+      // Fetch the form status from form_details table
+      async function fetchFormStatus() {
+          try {
+              const { data: formDetails, error: formDetailsError } = await supabase
+                  .from('form_details')
+                  .select('form_enabled')
+                  .eq('id', 1)
+                  .single();
 
-                if (formDetailsError) {
-                    console.error('Error fetching form status:', formDetailsError);
-                    return false;
-                }
+              if (formDetailsError) {
+                  console.error('Error fetching form status:', formDetailsError);
+                  return false;
+              }
 
-                return formDetails.form_enabled;
-            } catch (error) {
-                console.error('Error fetching form status:', error);
-                return false;
-            }
-        }
+              return formDetails.form_enabled;
+          } catch (error) {
+              console.error('Error fetching form status:', error);
+              return false;
+          }
+      }
 
-        // Update the latest form button based on form status and race start time
-        async function updateFormButtonStatus(raceDetails) {
-        const formEnabled = await fetchFormStatus();
-        const formButton = document.getElementById('latest-form-button');
+      // Update the latest form button based on form status and race start time
+      async function updateFormButtonStatus(raceDetails) {
+      const formEnabled = await fetchFormStatus();
+      const formButton = document.getElementById('latest-form-button');
 
-        // If raceDetails is available, determine if the race has started.
-        if (raceDetails) {
-            const raceStart = new Date(raceDetails.date);
-            const raceHasStarted = new Date() >= raceStart;
-            // Disable the button if the form is not enabled or if the race has started.
-            if (!formEnabled || raceHasStarted) {
-            formButton.disabled = true;
-            return;
-            }
-        }
-        // Otherwise, enable the button (if formEnabled is true).
-        formButton.disabled = !formEnabled;
-        }
+      // If raceDetails is available, determine if the race has started.
+      if (raceDetails) {
+          const raceStart = new Date(raceDetails.date);
+          const raceHasStarted = new Date() >= raceStart;
+          // Disable the button if the form is not enabled or if the race has started.
+          if (!formEnabled || raceHasStarted) {
+          formButton.disabled = true;
+          return;
+          }
+      }
+      // Otherwise, enable the button (if formEnabled is true).
+      formButton.disabled = !formEnabled;
+      }
 
-        document.addEventListener('DOMContentLoaded', async () => {
-        // Fetch race details
-        const raceDetails = await fetchRaceDetails();
+      document.addEventListener('DOMContentLoaded', async () => {
+      // Fetch race details
+      const raceDetails = await fetchRaceDetails();
 
-        // Update the latest form button with the current race name
-        await updateLatestFormButton(raceDetails);
+      // Update the latest form button with the current race name
+      await updateLatestFormButton(raceDetails);
 
-        // Update the next race info and initialize the countdown
-        await updateNextRaceInfo(raceDetails);
+      // Update the next race info and initialize the countdown
+      await updateNextRaceInfo(raceDetails);
 
-        // Update the form button status based on form_enabled and race start
-        await updateFormButtonStatus(raceDetails);
+      // Update the form button status based on form_enabled and race start
+      await updateFormButtonStatus(raceDetails);
 
-        // Add event listener to the form button
-        const formButton = document.getElementById('latest-form-button');
-        const formLink = document.getElementById('latest-form-link');
+      // Add event listener to the form button
+      const formButton = document.getElementById('latest-form-button');
+      const formLink = document.getElementById('latest-form-link');
 
-        formButton.addEventListener('click', (event) => {
-            if (formButton.disabled) {
-            event.preventDefault();
-            } else {
-            formLink.href = '/form';
-            }
-        });
-        });
+      formButton.addEventListener('click', (event) => {
+          if (formButton.disabled) {
+          event.preventDefault();
+          } else {
+          formLink.href = '/form';
+          }
+      });
+      });
 
 
-// RESULTS DISPLAY CODE
-async function loadResultsPredictions() {
-        
-            document.getElementById('loadingPlaceholderBar').style.display = 'block';
-            // ----- INITIAL DATA FETCHING -----
+  // ============================
+  // === RESULTS DISPLAY CODE ===
+  // ============================
+    async function loadResultsPredictions() {
+      document.getElementById('loadingPlaceholderBar').style.display = 'block';
+      // ----- INITIAL DATA FETCHING -----
 
-            // Fetch initial form details
-            const { data: formDetails, error: formDetailsError } = await supabase
-                .from('form_details')
-                .select('*')
-                .eq('id', 1)
-                .single();
+      // Fetch initial form details
+      const { data: formDetails, error: formDetailsError } = await supabase
+          .from('form_details')
+          .select('*')
+          .eq('id', 1)
+          .single();
 
-            if (formDetailsError) {
-                console.error('Error fetching form details:', formDetailsError.message);
-                return;
-            }
+      if (formDetailsError) {
+          console.error('Error fetching form details:', formDetailsError.message);
+          return;
+      }
 
-            const { results_display_race_number, results_display_type, current_year } = formDetails;
+      const { results_display_race_number, results_display_type, current_year } = formDetails;
 
-            // Fetch the entire form configuration.
-            // Each row represents one question. (e.g., id, text, response_type, enabled, etc.)
-            const { data: formConfiguration, error: formConfigurationError } = await supabase
-                .from('form_configuration')
-                .select('*');
-            if (formConfigurationError) {
-                console.error('Error fetching form configuration:', formConfigurationError.message);
-                return;
-            }
+      // Fetch the entire form configuration.
+      // Each row represents one question. (e.g., id, text, response_type, enabled, etc.)
+      const { data: formConfiguration, error: formConfigurationError } = await supabase
+          .from('form_configuration')
+          .select('*');
+      if (formConfigurationError) {
+          console.error('Error fetching form configuration:', formConfigurationError.message);
+          return;
+      }
 
-            // Fetch race details
-            const { data: raceDetails, error: raceDetailsError } = await supabase
-                .from('calendar')
-                .select('*')
-                .eq('race_number', results_display_race_number)
-                .single();
+      // Fetch race details
+      const { data: raceDetails, error: raceDetailsError } = await supabase
+          .from('calendar')
+          .select('*')
+          .eq('race_number', results_display_race_number)
+          .single();
 
-            if (raceDetailsError) {
-                console.error('Error fetching race details:', raceDetailsError.message);
-                return;
-            }
-            const raceName = `${raceDetails.name} GP`;
+      if (raceDetailsError) {
+          console.error('Error fetching race details:', raceDetailsError.message);
+          return;
+      }
+      const raceName = `${raceDetails.name} GP`;
 
-            // Fetch drivers and constructors
-            const { data: drivers, error: driversError } = await supabase
-                .from('drivers')
-                .select('*');
-            if (driversError) {
-                console.error('Error fetching drivers:', driversError.message);
-                return;
-            }
+      // Fetch drivers and constructors
+      const { data: drivers, error: driversError } = await supabase
+          .from('drivers')
+          .select('*');
+      if (driversError) {
+          console.error('Error fetching drivers:', driversError.message);
+          return;
+      }
 
-            const { data: constructors, error: constructorsError } = await supabase
-                .from('constructors')
-                .select('*');
-            if (constructorsError) {
-                console.error('Error fetching constructors:', constructorsError.message);
-                return;
-            }
+      const { data: constructors, error: constructorsError } = await supabase
+          .from('constructors')
+          .select('*');
+      if (constructorsError) {
+          console.error('Error fetching constructors:', constructorsError.message);
+          return;
+      }
 
-            // ----- ADDITIONAL TABLE FETCHES -----
-            // Download the full players table (used for lookups in the conversion function)
-            const { data: playersTable, error: playersTableError } = await supabase
-                .from('players')
-                .select('*');
-            if (playersTableError) {
-                console.error('Error fetching players table:', playersTableError.message);
-                return;
-            }
+      // ----- ADDITIONAL TABLE FETCHES -----
+      // Download the full players table (used for lookups in the conversion function)
+      const { data: playersTable, error: playersTableError } = await supabase
+          .from('players')
+          .select('*');
+      if (playersTableError) {
+          console.error('Error fetching players table:', playersTableError.message);
+          return;
+      }
 
-            // ----- UNORSCED PREDICTIONS SECTION -----
-            if (results_display_type === 'Unscored Predictions') {
+  // ==============================================
+  // === RESULTS DISPLAY - UNSCORED PREDICTIONS ===
+  // ==============================================
+    if (results_display_type === 'Unscored Predictions') {
     // Show/hide appropriate sections
     document.getElementById('unscoredPredictions').style.display = 'block';
     document.getElementById('scoredResults').style.display = 'none';
     document.getElementById('noDisplay').style.display = 'none';
 
     const unscoredHeader = document.getElementById('unscoredTableHeader');
-const unscoredBody = document.getElementById('unscoredTableBody');
-unscoredHeader.innerHTML = '';
-unscoredBody.innerHTML = '';
+    const unscoredBody = document.getElementById('unscoredTableBody');
+    unscoredHeader.innerHTML = '';
+    unscoredBody.innerHTML = '';
 
     // Set race title
     document.getElementById('unscoredRaceTitle').textContent = `${raceName} ${current_year} - Predictions`;
@@ -879,32 +881,34 @@ unscoredBody.innerHTML = '';
         }
     };
 
-    document.querySelectorAll('#unscoredTableBody td').forEach(cell => {
-        applyFormatting(cell, cell.textContent);
-    });
+        document.querySelectorAll('#unscoredTableBody td').forEach(cell => {
+            applyFormatting(cell, cell.textContent);
+        });
 
-    // Hide the loading indicator after the unscored table has been built.
-    document.getElementById('unscoredLoading').style.display = 'none';
+        // Hide the loading indicator after the unscored table has been built.
+        document.getElementById('unscoredLoading').style.display = 'none';
 
-    // Apply header color for the logged-in user's column after table is built.
-  const user = await getCurrentUser();
-  if (user) {
-    applyHeaderColor(user.name, user.avatar_settings);
-  } else {
-    console.warn("loadResultsPredictions: No user data available to apply header color.");
-}
-}
-            // --- Scored Results Section Begins ---
-            else if (results_display_type === 'Scored Results') { 
+        // Apply header color for the logged-in user's column after table is built.
+      const user = await getCurrentUser();
+      if (user) {
+        applyHeaderColor(user.name, user.avatar_settings);
+      } else {
+        console.warn("loadResultsPredictions: No user data available to apply header color.");
+    }
+  }
+  // ========================================
+  // === RESULTS DISPLAY - SCORED RESULTS ===
+  // ========================================
+  else if (results_display_type === 'Scored Results') { 
     document.getElementById('unscoredPredictions').style.display = 'none';
     document.getElementById('scoredResults').style.display = 'block';
     document.getElementById('noDisplay').style.display = 'none';
 
 
     const scoredHeader = document.getElementById('tableHeader');
-const scoredBody = document.getElementById('tableBody');
-scoredHeader.innerHTML = '';
-scoredBody.innerHTML = '';
+    const scoredBody = document.getElementById('tableBody');
+    scoredHeader.innerHTML = '';
+    scoredBody.innerHTML = '';
 
     // Set race title
     document.getElementById('raceTitle').textContent = `${raceName} ${current_year} - Results`;
@@ -932,23 +936,23 @@ scoredBody.innerHTML = '';
 
     // Reorder players so that the logged-in user's result is first.
     const currentUserId = getCookie("playerId");
-let userResultPulled = false;
-if (currentUserId) {
-    const userIndex = players.findIndex(player => player.player_id == currentUserId);
-    if (userIndex !== -1) {
-        userResultPulled = true;
-        const [userPlayer] = players.splice(userIndex, 1);
-        players.unshift(userPlayer);
+    let userResultPulled = false;
+    if (currentUserId) {
+        const userIndex = players.findIndex(player => player.player_id == currentUserId);
+        if (userIndex !== -1) {
+            userResultPulled = true;
+            const [userPlayer] = players.splice(userIndex, 1);
+            players.unshift(userPlayer);
+        }
     }
-}
 
-// Enable or disable the "pin both" checkbox based on the flag.
-const pinBothCheckbox = document.getElementById('pinBothColumns');
-if (userResultPulled) {
-    pinBothCheckbox.disabled = false;
-} else {
-    pinBothCheckbox.disabled = true;
-}
+    // Enable or disable the "pin both" checkbox based on the flag.
+    const pinBothCheckbox = document.getElementById('pinBothColumns');
+    if (userResultPulled) {
+        pinBothCheckbox.disabled = false;
+    } else {
+        pinBothCheckbox.disabled = true;
+    }
 
     // Create header row for scored results
     const headerRow = document.createElement('tr');
@@ -1112,8 +1116,7 @@ if (userResultPulled) {
             }
         }
     });
-});
-
+  });
 
     const lowestScoresDiv = document.getElementById('lowestScores');
     if (lowestScores.length > 0) {
@@ -1134,109 +1137,114 @@ if (userResultPulled) {
     console.warn("loadResultsPredictions: No user data available to apply header color.");
 }
 }
- else if (results_display_type === 'No Display') {
-                document.getElementById('loadingPlaceholderBar').style.display = 'none'; // Hide Placeholder Bar
-                document.getElementById('unscoredPredictions').style.display = 'none';
-                document.getElementById('scoredResults').style.display = 'none';
-                document.getElementById('noDisplay').style.display = 'block';
-            }
-        }
+  // ====================================
+  // === RESULTS DISPLAY - NO RESULTS ===
+  // ====================================
+  else if (results_display_type === 'No Display') {
+        document.getElementById('loadingPlaceholderBar').style.display = 'none'; // Hide Placeholder Bar
+        document.getElementById('unscoredPredictions').style.display = 'none';
+        document.getElementById('scoredResults').style.display = 'none';
+        document.getElementById('noDisplay').style.display = 'block';
+      }
+    }
 
-        document.addEventListener("DOMContentLoaded", loadResultsPredictions);
+    document.addEventListener("DOMContentLoaded", loadResultsPredictions);
 
-        document.addEventListener("loginStateChanged", async (event) => {
+    document.addEventListener("loginStateChanged", async (event) => {
   // Reload results and predictions
     await loadResultsPredictions();
-});
+  });
 
-// ========== PINNING COLUMNS ===========
-// ✅ Global flag to track when the table is ready
-let tableReady = false;
+  // ===========================================
+  // === PINNING COLUMNS & COLOURING HEADERS ===
+  // ===========================================
+    // ✅ Global flag to track when the table is ready
+    let tableReady = false;
 
-// ✅ Move updatePinnedColumns OUTSIDE so it’s globally accessible
-function updatePinnedColumns() {
-  if (!tableReady) {
-    console.log("Table not ready yet, skipping pinning...");
-    return; // 🛑 Don't pin until the table is fully created
-  }
-  console.log("Pinning columns...");
-  resetPinnedStyles();
-  
-  const pinQuestionCheckbox = document.getElementById("pinQuestionColumn");
-  const pinBothCheckbox = document.getElementById("pinBothColumns");
+    // ✅ Move updatePinnedColumns OUTSIDE so it’s globally accessible
+    function updatePinnedColumns() {
+      if (!tableReady) {
+        console.log("Table not ready yet, skipping pinning...");
+        return; // 🛑 Don't pin until the table is fully created
+      }
+      console.log("Pinning columns...");
+      resetPinnedStyles();
+      
+      const pinQuestionCheckbox = document.getElementById("pinQuestionColumn");
+      const pinBothCheckbox = document.getElementById("pinBothColumns");
 
-  if (pinQuestionCheckbox.checked) {
-    pinBothCheckbox.checked = false;
-    pinColumn(0, 0);
-  } else if (pinBothCheckbox.checked) {
-    pinQuestionCheckbox.checked = false;
-    pinColumn(0, 0);
-    pinColumn(1, getColumnWidth(0) - 1);
-  }
-}
-
-function pinColumn(index, offsetLeft) {
-  document.querySelectorAll("#mainResultsTable thead tr, #mainResultsTable tbody tr").forEach(row => {
-    const cell = row.children[index];
-    if (cell) {
-      cell.classList.add("pinned");
-      cell.style.left = `${offsetLeft}px`;
+      if (pinQuestionCheckbox.checked) {
+        pinBothCheckbox.checked = false;
+        pinColumn(0, 0);
+      } else if (pinBothCheckbox.checked) {
+        pinQuestionCheckbox.checked = false;
+        pinColumn(0, 0);
+        pinColumn(1, getColumnWidth(0) - 1);
+      }
     }
-  });
-}
 
-function getColumnWidth(index) {
-  const headerRow = document.querySelector("#mainResultsTable thead tr");
-  return headerRow ? headerRow.children[index].offsetWidth : 0;
-}
+    function pinColumn(index, offsetLeft) {
+      document.querySelectorAll("#mainResultsTable thead tr, #mainResultsTable tbody tr").forEach(row => {
+        const cell = row.children[index];
+        if (cell) {
+          cell.classList.add("pinned");
+          cell.style.left = `${offsetLeft}px`;
+        }
+      });
+    }
 
-function resetPinnedStyles() {
-  document.querySelectorAll("#mainResultsTable .pinned").forEach(cell => {
-    cell.classList.remove("pinned");
-    cell.style.left = "";
-  });
-}
+    function getColumnWidth(index) {
+      const headerRow = document.querySelector("#mainResultsTable thead tr");
+      return headerRow ? headerRow.children[index].offsetWidth : 0;
+    }
 
-function markTableAsReady() {
-  console.log("Table creation complete. Pinning columns...");
-  tableReady = true; // 🚩 Set the flag
-  updatePinnedColumns(); // 🏁 Run pinning once table is created
-}
+    function resetPinnedStyles() {
+      document.querySelectorAll("#mainResultsTable .pinned").forEach(cell => {
+        cell.classList.remove("pinned");
+        cell.style.left = "";
+      });
+    }
 
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM Loaded, waiting for table creation...");
+    function markTableAsReady() {
+      console.log("Table creation complete. Pinning columns...");
+      tableReady = true; // 🚩 Set the flag
+      updatePinnedColumns(); // 🏁 Run pinning once table is created
+    }
 
-  const pinQuestionCheckbox = document.getElementById("pinQuestionColumn");
-  const pinBothCheckbox = document.getElementById("pinBothColumns");
+    document.addEventListener("DOMContentLoaded", () => {
+      console.log("DOM Loaded, waiting for table creation...");
 
-  pinQuestionCheckbox.checked = true; // ✅ Default: Pin the question column
+      const pinQuestionCheckbox = document.getElementById("pinQuestionColumn");
+      const pinBothCheckbox = document.getElementById("pinBothColumns");
 
-  // Keep checkboxes mutually exclusive
-  pinQuestionCheckbox.addEventListener("change", () => {
-    pinBothCheckbox.checked = false;
-    updatePinnedColumns();
-  });
+      pinQuestionCheckbox.checked = true; // ✅ Default: Pin the question column
 
-  pinBothCheckbox.addEventListener("change", () => {
-    pinQuestionCheckbox.checked = false;
-    updatePinnedColumns();
-  });
-});
+      // Keep checkboxes mutually exclusive
+      pinQuestionCheckbox.addEventListener("change", () => {
+        pinBothCheckbox.checked = false;
+        updatePinnedColumns();
+      });
 
-// Colouring Column Header
+      pinBothCheckbox.addEventListener("change", () => {
+        pinQuestionCheckbox.checked = false;
+        updatePinnedColumns();
+      });
+    });
 
-// Converts a hex color string to an RGB object.
-function hexToRgb(hex) {
-  hex = hex.replace(/^#/, '');
-  if (hex.length === 3) {
-    hex = hex.split('').map(x => x + x).join('');
-  }
-  const bigint = parseInt(hex, 16);
-  const r = (bigint >> 16) & 255;
-  const g = (bigint >> 8) & 255;
-  const b = bigint & 255;
-  return { r, g, b };
-}
+    // Colouring Column Header
+
+    // Converts a hex color string to an RGB object.
+    function hexToRgb(hex) {
+      hex = hex.replace(/^#/, '');
+      if (hex.length === 3) {
+        hex = hex.split('').map(x => x + x).join('');
+      }
+      const bigint = parseInt(hex, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return { r, g, b };
+    }
 
 // Given a background color, returns either black or white for optimal contrast.
 function getContrastTextColor(backgroundColor) {
@@ -1296,782 +1304,787 @@ async function getCurrentUser() {
   return data;
 }
 
+  // ===============================
+  // === PLAYER STANDINGS TABLES ===
+  // ===============================
+    async function getTable(tableName) {
+    const { data, error } = await supabase.from(tableName).select('*');
+    if (error) {
+        console.error(`Error fetching ${tableName}:`, error);
+        throw error;
+    }
+    return data;
+    }
 
-// --- Player Standings Tables ---
-        async function getTable(tableName) {
-        const { data, error } = await supabase.from(tableName).select('*');
-        if (error) {
-            console.error(`Error fetching ${tableName}:`, error);
-            throw error;
+    async function loadHomeStandings() {
+    try {
+        // 1. Retrieve the current year from form_details.
+        const formDetails = await getTable('form_details');
+        if (!formDetails || formDetails.length === 0) {
+        console.error("No form_details found.");
+        return;
         }
-        return data;
-        }
+        const currentYear = formDetails[0].current_year;
+        //console.log("Current Year:", currentYear);
 
-        async function loadHomeStandings() {
-        try {
-            // 1. Retrieve the current year from form_details.
-            const formDetails = await getTable('form_details');
-            if (!formDetails || formDetails.length === 0) {
-            console.error("No form_details found.");
-            return;
-            }
-            const currentYear = formDetails[0].current_year;
-            //console.log("Current Year:", currentYear);
+        // 2. Retrieve the full season_player_{year} table.
+        const seasonTableName = `season_player_${currentYear}`;
+        const seasonData = await getTable(seasonTableName);
+        //console.log("Season Data:", seasonData);
 
-            // 2. Retrieve the full season_player_{year} table.
-            const seasonTableName = `season_player_${currentYear}`;
-            const seasonData = await getTable(seasonTableName);
-            //console.log("Season Data:", seasonData);
-
-            if (!seasonData || seasonData.length === 0) {
-            document.querySelector("#standings-table tbody").innerHTML =
-                "<tr><td colspan='3'>No season data available.</td></tr>";
-            return;
-            }
-
-            // 3. Exclude the special "Race Names" row (player_id === 0).
-            const playerRows = seasonData.filter(row => row.player_id !== 0);
-            if (playerRows.length === 0) {
-            document.querySelector("#standings-table tbody").innerHTML =
-                "<tr><td colspan='3'>No player data available.</td></tr>";
-            return;
-            }
-
-            // 4. Determine the last race that has been scored.
-            let lastRace = 0;
-            const raceNamesRow = seasonData.find(row => row.player_id === 0);
-            if (raceNamesRow) {
-            // Assume columns are named race_1, race_2, ..., race_32.
-            for (let i = 1; i <= 32; i++) {
-                const col = `race_${i}`;
-                if (raceNamesRow[col] !== null && raceNamesRow[col] !== "") {
-                lastRace = i;
-                } else {
-                break;
-                }
-            }
-            }
-            //console.log("Last race with data:", lastRace);
-            if (lastRace === 0) {
-            document.querySelector("#standings-table tbody").innerHTML =
-                "<tr><td colspan='3'>No race scores available yet.</td></tr>";
-            return;
-            }
-
-            // 5. Compute current total scores (summing races 1 to lastRace) for each player.
-            const standings = playerRows.map(row => {
-            let total = 0;
-            let prevTotal = 0;
-            for (let i = 1; i <= lastRace; i++) {
-                const col = `race_${i}`;
-                const rawVal = row[col];
-                if (rawVal !== null && rawVal !== "") {
-                // Remove any "(LS)" suffix and trim.
-                const numStr = rawVal.replace(/\(LS\)/, "").trim();
-                const num = parseFloat(numStr);
-                if (!isNaN(num)) {
-                    total += num;
-                    if (i < lastRace) {
-                    prevTotal += num;
-                    }
-                }
-                }
-            }
-            return {
-                player_id: row.player_id,
-                player_name: row.player_name,
-                total: total,
-                prevTotal: prevTotal
-            };
-            });
-
-            // 6. Sort standings descending by current total score.
-            standings.sort((a, b) => b.total - a.total);
-
-            // 7. Assign current ranks with ties receiving the same rank.
-            let currentRank = 1;
-            let prevScore = null;
-            const currentRankMap = {};
-            standings.forEach((player, index) => {
-            if (prevScore === null || player.total !== prevScore) {
-                currentRank = index + 1;
-            }
-            currentRankMap[player.player_id] = currentRank;
-            prevScore = player.total;
-            });
-
-            // 8. Compute previous standings if lastRace > 1.
-            const prevRankMap = {};
-            if (lastRace > 1) {
-            const prevStandings = [...standings].sort((a, b) => b.prevTotal - a.prevTotal);
-            let prevRank = 1;
-            let prevPrevScore = null;
-            prevStandings.forEach((player, index) => {
-                if (prevPrevScore === null || player.prevTotal !== prevPrevScore) {
-                prevRank = index + 1;
-                }
-                prevRankMap[player.player_id] = prevRank;
-                prevPrevScore = player.prevTotal;
-            });
-            }
-
-            // 9. Build HTML rows.
-            let html = "";
-            standings.forEach(player => {
-            const currRank = currentRankMap[player.player_id];
-            let movement = "";
-            if (lastRace > 1 && prevRankMap[player.player_id] !== undefined) {
-                const diff = prevRankMap[player.player_id] - currRank;
-                if (diff > 0) {
-                movement = `(+${diff})`;
-                } else if (diff < 0) {
-                movement = `(${diff})`;
-                } else {
-                movement = "(=)";
-                }
-            }
-            html += `<tr>
-                        <td>${currRank} ${movement}</td>
-                        <td>${player.player_name}</td>
-                        <td>${player.total}</td>
-                    </tr>`;
-            });
-            document.querySelector("#standings-table tbody").innerHTML = html;
-        } catch (err) {
-            console.error("loadHomeStandings error:", err);
-            document.querySelector("#standings-table tbody").innerHTML =
-            `<tr><td colspan="3">Error loading standings: ${err.message}</td></tr>`;
-        }
+        if (!seasonData || seasonData.length === 0) {
+        document.querySelector("#standings-table tbody").innerHTML =
+            "<tr><td colspan='3'>No season data available.</td></tr>";
+        return;
         }
 
-        document.addEventListener("DOMContentLoaded", () => {
-        loadHomeStandings();
+        // 3. Exclude the special "Race Names" row (player_id === 0).
+        const playerRows = seasonData.filter(row => row.player_id !== 0);
+        if (playerRows.length === 0) {
+        document.querySelector("#standings-table tbody").innerHTML =
+            "<tr><td colspan='3'>No player data available.</td></tr>";
+        return;
+        }
+
+        // 4. Determine the last race that has been scored.
+        let lastRace = 0;
+        const raceNamesRow = seasonData.find(row => row.player_id === 0);
+        if (raceNamesRow) {
+        // Assume columns are named race_1, race_2, ..., race_32.
+        for (let i = 1; i <= 32; i++) {
+            const col = `race_${i}`;
+            if (raceNamesRow[col] !== null && raceNamesRow[col] !== "") {
+            lastRace = i;
+            } else {
+            break;
+            }
+        }
+        }
+        //console.log("Last race with data:", lastRace);
+        if (lastRace === 0) {
+        document.querySelector("#standings-table tbody").innerHTML =
+            "<tr><td colspan='3'>No race scores available yet.</td></tr>";
+        return;
+        }
+
+        // 5. Compute current total scores (summing races 1 to lastRace) for each player.
+        const standings = playerRows.map(row => {
+        let total = 0;
+        let prevTotal = 0;
+        for (let i = 1; i <= lastRace; i++) {
+            const col = `race_${i}`;
+            const rawVal = row[col];
+            if (rawVal !== null && rawVal !== "") {
+            // Remove any "(LS)" suffix and trim.
+            const numStr = rawVal.replace(/\(LS\)/, "").trim();
+            const num = parseFloat(numStr);
+            if (!isNaN(num)) {
+                total += num;
+                if (i < lastRace) {
+                prevTotal += num;
+                }
+            }
+            }
+        }
+        return {
+            player_id: row.player_id,
+            player_name: row.player_name,
+            total: total,
+            prevTotal: prevTotal
+        };
         });
 
-// --- Season Team Standings ---
-// --- Team Standings for Home Page ---
-        async function loadHomeTeamStandings() {
-        try {
-            // 1. Retrieve the current year from form_details.
-            const formDetails = await getTable('form_details');
-            if (!formDetails || formDetails.length === 0) {
-            console.error("No form_details found.");
-            return;
-            }
-            const currentYear = formDetails[0].current_year;
-            //console.log("Current Year:", currentYear);
+        // 6. Sort standings descending by current total score.
+        standings.sort((a, b) => b.total - a.total);
 
-            // 2. Retrieve the full season_team_{year} table.
-            const seasonTeamTable = `season_team_${currentYear}`;
-            const seasonTeamData = await getTable(seasonTeamTable);
-            //console.log("Season Team Data:", seasonTeamData);
-
-            if (!seasonTeamData || seasonTeamData.length === 0) {
-            document.querySelector("#standings-team-table tbody").innerHTML =
-                "<tr><td colspan='3'>No season team data available.</td></tr>";
-            return;
-            }
-
-            // 3. Exclude the special "Race Names" row (team_id === 0).
-            const teamRows = seasonTeamData.filter(row => row.team_id !== 0);
-            if (teamRows.length === 0) {
-            document.querySelector("#standings-team-table tbody").innerHTML =
-                "<tr><td colspan='3'>No team data available.</td></tr>";
-            return;
-            }
-
-            // 4. Determine the last race that has been scored using the Race Names row.
-            let lastRace = 0;
-            const raceNamesRow = seasonTeamData.find(row => row.team_id === 0);
-            if (raceNamesRow) {
-            // Assume race columns are named race_1, race_2, ..., race_32.
-            for (let i = 1; i <= 32; i++) {
-                const col = `race_${i}`;
-                if (raceNamesRow[col] !== null && raceNamesRow[col] !== "") {
-                lastRace = i;
-                } else {
-                break;
-                }
-            }
-            }
-            //console.log("Last race with data:", lastRace);
-            if (lastRace === 0) {
-            document.querySelector("#standings-team-table tbody").innerHTML =
-                "<tr><td colspan='3'>No race scores available yet.</td></tr>";
-            return;
-            }
-
-            // 5. Compute current total scores (summing races 1 to lastRace) for each team.
-            //    We strip any extra tags (e.g. "(double)") using a regex that removes text within parentheses.
-            const standings = teamRows.map(row => {
-            let total = 0;
-            let prevTotal = 0;
-            for (let i = 1; i <= lastRace; i++) {
-                const col = `race_${i}`;
-                const rawVal = row[col];
-                if (rawVal !== null && rawVal !== "") {
-                // Remove any tags such as "(double)" or "(aero)".
-                const numStr = rawVal.replace(/\(.*?\)/g, "").trim();
-                const num = parseFloat(numStr);
-                if (!isNaN(num)) {
-                    total += num;
-                    if (i < lastRace) {
-                    prevTotal += num;
-                    }
-                }
-                }
-            }
-            return {
-                team_id: row.team_id,
-                team_name: row.team_name,
-                total: total,
-                prevTotal: prevTotal
-            };
-            });
-
-            // 6. Sort standings descending by current total score.
-            standings.sort((a, b) => b.total - a.total);
-
-            // 7. Assign current ranks with ties receiving the same rank.
-            let currentRank = 1;
-            let prevScore = null;
-            const currentRankMap = {};
-            standings.forEach((team, index) => {
-            if (prevScore === null || team.total !== prevScore) {
-                currentRank = index + 1;
-            }
-            currentRankMap[team.team_id] = currentRank;
-            prevScore = team.total;
-            });
-
-            // 8. Compute previous standings if lastRace > 1.
-            const prevRankMap = {};
-            if (lastRace > 1) {
-            // Create a copy and sort by the total up to race lastRace-1.
-            const prevStandings = [...standings].sort((a, b) => b.prevTotal - a.prevTotal);
-            let prevRank = 1;
-            let prevPrevScore = null;
-            prevStandings.forEach((team, index) => {
-                if (prevPrevScore === null || team.prevTotal !== prevPrevScore) {
-                prevRank = index + 1;
-                }
-                prevRankMap[team.team_id] = prevRank;
-                prevPrevScore = team.prevTotal;
-            });
-            }
-
-            // 9. Build HTML rows for each team.
-            let html = "";
-            standings.forEach(team => {
-            const currRank = currentRankMap[team.team_id];
-            let movement = "";
-            if (lastRace > 1 && prevRankMap[team.team_id] !== undefined) {
-                const diff = prevRankMap[team.team_id] - currRank;
-                if (diff > 0) {
-                movement = `(+${diff})`;
-                } else if (diff < 0) {
-                movement = `(${diff})`;
-                } else {
-                movement = "(=)";
-                }
-            }
-            html += `<tr>
-                        <td>${currRank} ${movement}</td>
-                        <td>${team.team_name}</td>
-                        <td>${team.total}</td>
-                    </tr>`;
-            });
-            document.querySelector("#standings-team-table tbody").innerHTML = html;
-        } catch (err) {
-            console.error("loadHomeTeamStandings error:", err);
-            document.querySelector("#standings-team-table tbody").innerHTML =
-            `<tr><td colspan="3">Error loading team standings: ${err.message}</td></tr>`;
+        // 7. Assign current ranks with ties receiving the same rank.
+        let currentRank = 1;
+        let prevScore = null;
+        const currentRankMap = {};
+        standings.forEach((player, index) => {
+        if (prevScore === null || player.total !== prevScore) {
+            currentRank = index + 1;
         }
-        }
-
-        // --- Initialize Team Standings on DOMContentLoaded ---
-        document.addEventListener("DOMContentLoaded", () => {
-        loadHomeTeamStandings();
+        currentRankMap[player.player_id] = currentRank;
+        prevScore = player.total;
         });
 
-        async function updateFormStatusText() {
-  // Fetch the form details for id = 1 from Supabase
-  const { data, error } = await supabase
-    .from('form_details')
-    .select('form_status_text, form_status_text_enabled')
-    .eq('id', 1)
-    .single();
+        // 8. Compute previous standings if lastRace > 1.
+        const prevRankMap = {};
+        if (lastRace > 1) {
+        const prevStandings = [...standings].sort((a, b) => b.prevTotal - a.prevTotal);
+        let prevRank = 1;
+        let prevPrevScore = null;
+        prevStandings.forEach((player, index) => {
+            if (prevPrevScore === null || player.prevTotal !== prevPrevScore) {
+            prevRank = index + 1;
+            }
+            prevRankMap[player.player_id] = prevRank;
+            prevPrevScore = player.prevTotal;
+        });
+        }
 
-  if (error) {
-    console.error('Error fetching form details:', error);
-    return;
-  }
-
-  // Select the HTML elements by their IDs
-  const container = document.getElementById('formStatusContainer');
-  const textElement = document.getElementById('formStatusText');
-
-  // If enabled, update the text and show the container
-  if (data.form_status_text_enabled) {
-    textElement.textContent = data.form_status_text;
-    container.style.display = 'block';
-  } else {
-    // Otherwise, ensure the container is hidden
-    container.style.display = 'none';
-  }
-}
-
-// Run the function when the DOM is fully loaded
-document.addEventListener('DOMContentLoaded', updateFormStatusText);
-
-// --- CHART ---
-async function renderStandingsLineChart() {
-  try {
-    // 1. Retrieve current year from form_details.
-    const { data: formDetails, error: formDetailsError } = await supabase
-      .from('form_details')
-      .select('current_year')
-      .eq('id', 1)
-      .single();
-    if (formDetailsError) {
-      console.error('Error fetching form details:', formDetailsError);
-      return;
+        // 9. Build HTML rows.
+        let html = "";
+        standings.forEach(player => {
+        const currRank = currentRankMap[player.player_id];
+        let movement = "";
+        if (lastRace > 1 && prevRankMap[player.player_id] !== undefined) {
+            const diff = prevRankMap[player.player_id] - currRank;
+            if (diff > 0) {
+            movement = `(+${diff})`;
+            } else if (diff < 0) {
+            movement = `(${diff})`;
+            } else {
+            movement = "(=)";
+            }
+        }
+        html += `<tr>
+                    <td>${currRank} ${movement}</td>
+                    <td>${player.player_name}</td>
+                    <td>${player.total}</td>
+                </tr>`;
+        });
+        document.querySelector("#standings-table tbody").innerHTML = html;
+    } catch (err) {
+        console.error("loadHomeStandings error:", err);
+        document.querySelector("#standings-table tbody").innerHTML =
+        `<tr><td colspan="3">Error loading standings: ${err.message}</td></tr>`;
     }
-    const currentYear = formDetails.current_year;
-
-    // 2. Retrieve season data.
-    const seasonTableName = `season_player_${currentYear}`;
-    const seasonData = await getTable(seasonTableName);
-    if (!seasonData || seasonData.length === 0) {
-      console.error("No season data available.");
-      return;
     }
 
-    // 3. Get race names from the row where player_id === 0.
-    const raceNamesRow = seasonData.find(row => row.player_id === 0);
-    if (!raceNamesRow) {
-      console.error("No race names row found.");
-      return;
+    document.addEventListener("DOMContentLoaded", () => {
+    loadHomeStandings();
+    });
+
+  // =============================
+  // === TEAM STANDINGS TABLES ===
+  // =============================
+    async function loadHomeTeamStandings() {
+    try {
+        // 1. Retrieve the current year from form_details.
+        const formDetails = await getTable('form_details');
+        if (!formDetails || formDetails.length === 0) {
+        console.error("No form_details found.");
+        return;
+        }
+        const currentYear = formDetails[0].current_year;
+        //console.log("Current Year:", currentYear);
+
+        // 2. Retrieve the full season_team_{year} table.
+        const seasonTeamTable = `season_team_${currentYear}`;
+        const seasonTeamData = await getTable(seasonTeamTable);
+        //console.log("Season Team Data:", seasonTeamData);
+
+        if (!seasonTeamData || seasonTeamData.length === 0) {
+        document.querySelector("#standings-team-table tbody").innerHTML =
+            "<tr><td colspan='3'>No season team data available.</td></tr>";
+        return;
+        }
+
+        // 3. Exclude the special "Race Names" row (team_id === 0).
+        const teamRows = seasonTeamData.filter(row => row.team_id !== 0);
+        if (teamRows.length === 0) {
+        document.querySelector("#standings-team-table tbody").innerHTML =
+            "<tr><td colspan='3'>No team data available.</td></tr>";
+        return;
+        }
+
+        // 4. Determine the last race that has been scored using the Race Names row.
+        let lastRace = 0;
+        const raceNamesRow = seasonTeamData.find(row => row.team_id === 0);
+        if (raceNamesRow) {
+        // Assume race columns are named race_1, race_2, ..., race_32.
+        for (let i = 1; i <= 32; i++) {
+            const col = `race_${i}`;
+            if (raceNamesRow[col] !== null && raceNamesRow[col] !== "") {
+            lastRace = i;
+            } else {
+            break;
+            }
+        }
+        }
+        //console.log("Last race with data:", lastRace);
+        if (lastRace === 0) {
+        document.querySelector("#standings-team-table tbody").innerHTML =
+            "<tr><td colspan='3'>No race scores available yet.</td></tr>";
+        return;
+        }
+
+        // 5. Compute current total scores (summing races 1 to lastRace) for each team.
+        //    We strip any extra tags (e.g. "(double)") using a regex that removes text within parentheses.
+        const standings = teamRows.map(row => {
+        let total = 0;
+        let prevTotal = 0;
+        for (let i = 1; i <= lastRace; i++) {
+            const col = `race_${i}`;
+            const rawVal = row[col];
+            if (rawVal !== null && rawVal !== "") {
+            // Remove any tags such as "(double)" or "(aero)".
+            const numStr = rawVal.replace(/\(.*?\)/g, "").trim();
+            const num = parseFloat(numStr);
+            if (!isNaN(num)) {
+                total += num;
+                if (i < lastRace) {
+                prevTotal += num;
+                }
+            }
+            }
+        }
+        return {
+            team_id: row.team_id,
+            team_name: row.team_name,
+            total: total,
+            prevTotal: prevTotal
+        };
+        });
+
+        // 6. Sort standings descending by current total score.
+        standings.sort((a, b) => b.total - a.total);
+
+        // 7. Assign current ranks with ties receiving the same rank.
+        let currentRank = 1;
+        let prevScore = null;
+        const currentRankMap = {};
+        standings.forEach((team, index) => {
+        if (prevScore === null || team.total !== prevScore) {
+            currentRank = index + 1;
+        }
+        currentRankMap[team.team_id] = currentRank;
+        prevScore = team.total;
+        });
+
+        // 8. Compute previous standings if lastRace > 1.
+        const prevRankMap = {};
+        if (lastRace > 1) {
+        // Create a copy and sort by the total up to race lastRace-1.
+        const prevStandings = [...standings].sort((a, b) => b.prevTotal - a.prevTotal);
+        let prevRank = 1;
+        let prevPrevScore = null;
+        prevStandings.forEach((team, index) => {
+            if (prevPrevScore === null || team.prevTotal !== prevPrevScore) {
+            prevRank = index + 1;
+            }
+            prevRankMap[team.team_id] = prevRank;
+            prevPrevScore = team.prevTotal;
+        });
+        }
+
+        // 9. Build HTML rows for each team.
+        let html = "";
+        standings.forEach(team => {
+        const currRank = currentRankMap[team.team_id];
+        let movement = "";
+        if (lastRace > 1 && prevRankMap[team.team_id] !== undefined) {
+            const diff = prevRankMap[team.team_id] - currRank;
+            if (diff > 0) {
+            movement = `(+${diff})`;
+            } else if (diff < 0) {
+            movement = `(${diff})`;
+            } else {
+            movement = "(=)";
+            }
+        }
+        html += `<tr>
+                    <td>${currRank} ${movement}</td>
+                    <td>${team.team_name}</td>
+                    <td>${team.total}</td>
+                </tr>`;
+        });
+        document.querySelector("#standings-team-table tbody").innerHTML = html;
+    } catch (err) {
+        console.error("loadHomeTeamStandings error:", err);
+        document.querySelector("#standings-team-table tbody").innerHTML =
+        `<tr><td colspan="3">Error loading team standings: ${err.message}</td></tr>`;
     }
-    let lastRace = 0;
-    const raceLabels = [];
-    for (let i = 1; i <= 32; i++) {
-      const col = `race_${i}`;
-      let raceName = raceNamesRow[col];
-      if (raceName !== null && raceName !== "") {
-        // Strip any "(LS)" suffix and trim.
-        raceName = raceName.replace(/\(LS\)/g, "").trim();
-        raceLabels.push(raceName);
-        lastRace = i;
+    }
+
+    // --- Initialize Team Standings on DOMContentLoaded ---
+    document.addEventListener("DOMContentLoaded", () => {
+    loadHomeTeamStandings();
+    });
+
+      async function updateFormStatusText() {
+      // Fetch the form details for id = 1 from Supabase
+      const { data, error } = await supabase
+        .from('form_details')
+        .select('form_status_text, form_status_text_enabled')
+        .eq('id', 1)
+        .single();
+
+      if (error) {
+        console.error('Error fetching form details:', error);
+        return;
+      }
+
+      // Select the HTML elements by their IDs
+      const container = document.getElementById('formStatusContainer');
+      const textElement = document.getElementById('formStatusText');
+
+      // If enabled, update the text and show the container
+      if (data.form_status_text_enabled) {
+        textElement.textContent = data.form_status_text;
+        container.style.display = 'block';
       } else {
-        break;
+        // Otherwise, ensure the container is hidden
+        container.style.display = 'none';
       }
     }
-    if (lastRace === 0) {
-      console.error("No race names available.");
-      return;
-    }
 
-    // 4. Filter out player rows (player_id !== 0).
-    const playerRows = seasonData.filter(row => row.player_id !== 0);
-    if (!playerRows.length) {
-      console.error("No player data found.");
-      return;
-    }
+  // Run the function when the DOM is fully loaded
+  document.addEventListener('DOMContentLoaded', updateFormStatusText);
 
-    // 5. Compute cumulative scores for each player.
-    const playerCumulativeScores = {};
-    playerRows.forEach(player => {
-      let cumulative = [];
-      let sum = 0;
-      for (let i = 1; i <= lastRace; i++) {
-        const col = `race_${i}`;
-        let scoreStr = player[col];
-        if (scoreStr !== null && scoreStr !== "") {
-          scoreStr = scoreStr.replace(/\(LS\)/g, "").trim();
-          const score = parseFloat(scoreStr);
-          if (!isNaN(score)) {
-            sum += score;
+  // =========================
+  // === PLAYER LINE CHART ===
+  // =========================
+    async function renderStandingsLineChart() {
+      try {
+        // 1. Retrieve current year from form_details.
+        const { data: formDetails, error: formDetailsError } = await supabase
+          .from('form_details')
+          .select('current_year')
+          .eq('id', 1)
+          .single();
+        if (formDetailsError) {
+          console.error('Error fetching form details:', formDetailsError);
+          return;
+        }
+        const currentYear = formDetails.current_year;
+
+        // 2. Retrieve season data.
+        const seasonTableName = `season_player_${currentYear}`;
+        const seasonData = await getTable(seasonTableName);
+        if (!seasonData || seasonData.length === 0) {
+          console.error("No season data available.");
+          return;
+        }
+
+        // 3. Get race names from the row where player_id === 0.
+        const raceNamesRow = seasonData.find(row => row.player_id === 0);
+        if (!raceNamesRow) {
+          console.error("No race names row found.");
+          return;
+        }
+        let lastRace = 0;
+        const raceLabels = [];
+        for (let i = 1; i <= 32; i++) {
+          const col = `race_${i}`;
+          let raceName = raceNamesRow[col];
+          if (raceName !== null && raceName !== "") {
+            // Strip any "(LS)" suffix and trim.
+            raceName = raceName.replace(/\(LS\)/g, "").trim();
+            raceLabels.push(raceName);
+            lastRace = i;
+          } else {
+            break;
           }
         }
-        cumulative.push(sum);
-      }
-      playerCumulativeScores[player.player_id] = {
-        player_name: player.player_name,
-        cumulative: cumulative
-      };
-    });
-
-    // 6. Compute rankings for each race.
-    const playerRankings = {};
-    playerRows.forEach(player => {
-      playerRankings[player.player_id] = [];
-    });
-    for (let raceIndex = 0; raceIndex < lastRace; raceIndex++) {
-      const scores = playerRows.map(player => ({
-        player_id: player.player_id,
-        score: playerCumulativeScores[player.player_id].cumulative[raceIndex]
-      }));
-      scores.sort((a, b) => b.score - a.score);
-      let rank = 1;
-      let prevScore = null;
-      scores.forEach((item, index) => {
-        if (prevScore === null || item.score !== prevScore) {
-          rank = index + 1;
+        if (lastRace === 0) {
+          console.error("No race names available.");
+          return;
         }
-        playerRankings[item.player_id].push(rank);
-        prevScore = item.score;
-      });
-    }
 
-    // 7. Build Chart.js datasets for each player.
-    const datasets = [];
-    const colors = [
-      '#e6194b', '#3cb44b', '#ffe119', '#4363d8',
-      '#f58231', '#911eb4', '#46f0f0', '#f032e6',
-      '#bcf60c', '#fabebe', '#008080', '#e6beff',
-      '#9a6324', '#fffac8', '#800000', '#aaffc3',
-      '#808000', '#ffd8b1', '#000075', '#808080'
-    ];
-    let colorIndex = 0;
-    playerRows.forEach(player => {
-      datasets.push({
-        label: player.player_name,
-        data: playerRankings[player.player_id],
-        fill: false,
-        borderColor: colors[colorIndex % colors.length],
-        backgroundColor: colors[colorIndex % colors.length],
-        borderWidth: 4,              // Thick lines for pixel-art feel.
-        tension: 0,                  // No smoothing.
-        pointStyle: 'rect',          // Square markers.
-        pointRadius: 5,
-        pointHoverRadius: 7
-      });
-      colorIndex++;
-    });
-    
-    // Sort datasets alphabetically by player name.
-    datasets.sort((a, b) => a.label.localeCompare(b.label));
-    
-    // 8. Determine max rank (number of players) for y-axis.
-    const maxRank = playerRows.length;
+        // 4. Filter out player rows (player_id !== 0).
+        const playerRows = seasonData.filter(row => row.player_id !== 0);
+        if (!playerRows.length) {
+          console.error("No player data found.");
+          return;
+        }
 
-    // 9. Create the chart.
-    const ctx = document.getElementById('standings-line-chart').getContext('2d');
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: raceLabels,
-        datasets: datasets
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false, // Stops forced aspect ratio
-        layout: {
-            padding: 10,
-        },
-        onClick: (evt, activeEls) => {
-          if (activeEls.length > 0) {
-            const element = activeEls[0];
-            const datasetIndex = element.datasetIndex;
-            const playerName = datasets[datasetIndex].label;
-          }
-        },
-        plugins: {
-          title: {
-            display: true,
-            text: `Player Standings ${currentYear}`,
-            color: 'black',
-            font: {
-              family: 'Pixeloid Sans Bold',
-              size: 20,
+        // 5. Compute cumulative scores for each player.
+        const playerCumulativeScores = {};
+        playerRows.forEach(player => {
+          let cumulative = [];
+          let sum = 0;
+          for (let i = 1; i <= lastRace; i++) {
+            const col = `race_${i}`;
+            let scoreStr = player[col];
+            if (scoreStr !== null && scoreStr !== "") {
+              scoreStr = scoreStr.replace(/\(LS\)/g, "").trim();
+              const score = parseFloat(scoreStr);
+              if (!isNaN(score)) {
+                sum += score;
+              }
             }
+            cumulative.push(sum);
+          }
+          playerCumulativeScores[player.player_id] = {
+            player_name: player.player_name,
+            cumulative: cumulative
+          };
+        });
+
+        // 6. Compute rankings for each race.
+        const playerRankings = {};
+        playerRows.forEach(player => {
+          playerRankings[player.player_id] = [];
+        });
+        for (let raceIndex = 0; raceIndex < lastRace; raceIndex++) {
+          const scores = playerRows.map(player => ({
+            player_id: player.player_id,
+            score: playerCumulativeScores[player.player_id].cumulative[raceIndex]
+          }));
+          scores.sort((a, b) => b.score - a.score);
+          let rank = 1;
+          let prevScore = null;
+          scores.forEach((item, index) => {
+            if (prevScore === null || item.score !== prevScore) {
+              rank = index + 1;
+            }
+            playerRankings[item.player_id].push(rank);
+            prevScore = item.score;
+          });
+        }
+
+        // 7. Build Chart.js datasets for each player.
+        const datasets = [];
+        const colors = [
+          '#e6194b', '#3cb44b', '#ffe119', '#4363d8',
+          '#f58231', '#911eb4', '#46f0f0', '#f032e6',
+          '#bcf60c', '#fabebe', '#008080', '#e6beff',
+          '#9a6324', '#fffac8', '#800000', '#aaffc3',
+          '#808000', '#ffd8b1', '#000075', '#808080'
+        ];
+        let colorIndex = 0;
+        playerRows.forEach(player => {
+          datasets.push({
+            label: player.player_name,
+            data: playerRankings[player.player_id],
+            fill: false,
+            borderColor: colors[colorIndex % colors.length],
+            backgroundColor: colors[colorIndex % colors.length],
+            borderWidth: 4,              // Thick lines for pixel-art feel.
+            tension: 0,                  // No smoothing.
+            pointStyle: 'rect',          // Square markers.
+            pointRadius: 5,
+            pointHoverRadius: 7
+          });
+          colorIndex++;
+        });
+        
+        // Sort datasets alphabetically by player name.
+        datasets.sort((a, b) => a.label.localeCompare(b.label));
+        
+        // 8. Determine max rank (number of players) for y-axis.
+        const maxRank = playerRows.length;
+
+        // 9. Create the chart.
+        const ctx = document.getElementById('standings-line-chart').getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: raceLabels,
+            datasets: datasets
           },
-          legend: {
-            position: 'bottom',
-            labels: {
-              font: {
-                family: 'Pixeloid Sans'
+          options: {
+            responsive: true,
+            maintainAspectRatio: false, // Stops forced aspect ratio
+            layout: {
+                padding: 10,
+            },
+            onClick: (evt, activeEls) => {
+              if (activeEls.length > 0) {
+                const element = activeEls[0];
+                const datasetIndex = element.datasetIndex;
+                const playerName = datasets[datasetIndex].label;
+              }
+            },
+            plugins: {
+              title: {
+                display: true,
+                text: `Player Standings ${currentYear}`,
+                color: 'black',
+                font: {
+                  family: 'Pixeloid Sans Bold',
+                  size: 20,
+                }
               },
-              color: 'black'
+              legend: {
+                position: 'bottom',
+                labels: {
+                  font: {
+                    family: 'Pixeloid Sans'
+                  },
+                  color: 'black'
+                }
+              }
+            },
+            scales: {
+              y: {
+                reverse: true,    // So that rank 1 is at the top.
+                min: 1,
+                max: maxRank,
+                offset: true,     // Extra space so the top line isn’t cut off.
+                ticks: {
+                  stepSize: 1,
+                  padding: 10,
+                  font: {
+                    family: 'Pixeloid Sans'
+                  },
+                  color: 'black'
+                },
+                title: {
+                  display: true,
+                  text: 'Rank',
+                  font: {
+                    family: 'Pixeloid Sans'
+                  },
+                  color: 'black'
+                }
+              },
+              x: {
+                ticks: {
+                  font: {
+                    family: 'Pixeloid Sans'
+                  },
+                  color: 'black'
+                },
+                title: {
+                  display: false  // No x-axis label.
+                }
+              }
+            },
+            layout: {
+              padding: {
+                top: 20,
+                bottom: 20,
+                left: 10,
+                right: 10
+              }
             }
           }
-        },
-        scales: {
-          y: {
-            reverse: true,    // So that rank 1 is at the top.
-            min: 1,
-            max: maxRank,
-            offset: true,     // Extra space so the top line isn’t cut off.
-            ticks: {
-              stepSize: 1,
+        });
+      } catch (err) {
+        console.error("Error rendering the standings chart:", err);
+      }
+    }
+
+  // =======================
+  // === TEAM LINE CHART ===
+  // =======================
+    async function renderTeamStandingsLineChart() {
+      try {
+        // 1. Retrieve current year from form_details.
+        const { data: formDetails, error: formDetailsError } = await supabase
+          .from('form_details')
+          .select('current_year')
+          .eq('id', 1)
+          .single();
+        if (formDetailsError) {
+          console.error('Error fetching form details:', formDetailsError);
+          return;
+        }
+        const currentYear = formDetails.current_year;
+
+        // 2. Retrieve season team data.
+        const seasonTeamTableName = `season_team_${currentYear}`;
+        const seasonTeamData = await getTable(seasonTeamTableName);
+        if (!seasonTeamData || seasonTeamData.length === 0) {
+          console.error("No season team data available.");
+          return;
+        }
+
+        // 3. Get race names from the row where team_id === 0.
+        const raceNamesRow = seasonTeamData.find(row => row.team_id === 0);
+        if (!raceNamesRow) {
+          console.error("No race names row found for teams.");
+          return;
+        }
+        let lastRace = 0;
+        const raceLabels = [];
+        for (let i = 1; i <= 32; i++) {
+          const col = `race_${i}`;
+          let raceName = raceNamesRow[col];
+          if (raceName !== null && raceName !== "") {
+            // Remove any tags (e.g. "(double)" or similar) and trim.
+            raceName = raceName.replace(/\(.*?\)/g, "").trim();
+            raceLabels.push(raceName);
+            lastRace = i;
+          } else {
+            break;
+          }
+        }
+        if (lastRace === 0) {
+          console.error("No race names available for teams.");
+          return;
+        }
+
+        // 4. Filter out the team rows (team_id !== 0).
+        const teamRows = seasonTeamData.filter(row => row.team_id !== 0);
+        if (!teamRows.length) {
+          console.error("No team data found.");
+          return;
+        }
+
+        // 5. Compute cumulative scores for each team.
+        const teamCumulativeScores = {};
+        teamRows.forEach(team => {
+          let cumulative = [];
+          let sum = 0;
+          for (let i = 1; i <= lastRace; i++) {
+            const col = `race_${i}`;
+            let scoreStr = team[col];
+            if (scoreStr !== null && scoreStr !== "") {
+              // Remove any tags such as "(double)".
+              scoreStr = scoreStr.replace(/\(.*?\)/g, "").trim();
+              const score = parseFloat(scoreStr);
+              if (!isNaN(score)) {
+                sum += score;
+              }
+            }
+            cumulative.push(sum);
+          }
+          teamCumulativeScores[team.team_id] = {
+            team_name: team.team_name,
+            cumulative: cumulative
+          };
+        });
+
+        // 6. Compute rankings for each race.
+        const teamRankings = {};
+        teamRows.forEach(team => {
+          teamRankings[team.team_id] = [];
+        });
+        for (let raceIndex = 0; raceIndex < lastRace; raceIndex++) {
+          const scores = teamRows.map(team => ({
+            team_id: team.team_id,
+            score: teamCumulativeScores[team.team_id].cumulative[raceIndex]
+          }));
+          scores.sort((a, b) => b.score - a.score);
+          let rank = 1;
+          let prevScore = null;
+          scores.forEach((item, index) => {
+            if (prevScore === null || item.score !== prevScore) {
+              rank = index + 1;
+            }
+            teamRankings[item.team_id].push(rank);
+            prevScore = item.score;
+          });
+        }
+
+        // 7. Build Chart.js datasets for each team.
+        const datasets = [];
+        const colors = [
+          '#e6194b', '#3cb44b', '#ffe119', '#4363d8',
+          '#f58231', '#911eb4', '#46f0f0', '#f032e6',
+          '#bcf60c', '#fabebe', '#008080', '#e6beff',
+          '#9a6324', '#fffac8', '#800000', '#aaffc3',
+          '#808000', '#ffd8b1', '#000075', '#808080'
+        ];
+        let colorIndex = 0;
+        teamRows.forEach(team => {
+          datasets.push({
+            label: team.team_name,
+            data: teamRankings[team.team_id],
+            fill: false,
+            borderColor: colors[colorIndex % colors.length],
+            backgroundColor: colors[colorIndex % colors.length],
+            borderWidth: 4,              // Thick lines for a pixel-art feel.
+            tension: 0,                  // No smoothing.
+            pointStyle: 'rect',          // Square markers.
+            pointRadius: 5,
+            pointHoverRadius: 7
+          });
+          colorIndex++;
+        });
+        
+        // Sort datasets alphabetically by team name.
+        datasets.sort((a, b) => a.label.localeCompare(b.label));
+        
+        // 8. Determine max rank (number of teams) for y-axis.
+        const maxRank = teamRows.length;
+
+        // 9. Create the chart.
+        const ctx = document.getElementById('standings-team-line-chart').getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: raceLabels,
+            datasets: datasets
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false, // Allow flexible sizing.
+            layout: {
               padding: 10,
-              font: {
-                family: 'Pixeloid Sans'
-              },
-              color: 'black'
             },
-            title: {
-              display: true,
-              text: 'Rank',
-              font: {
-                family: 'Pixeloid Sans'
+            plugins: {
+              title: {
+                display: true,
+                text: `Team Standings ${currentYear}`,
+                color: 'black',
+                font: {
+                    family: 'Pixeloid Sans Bold',
+                    size: 20,
+                }
               },
-              color: 'black'
-            }
-          },
-          x: {
-            ticks: {
-              font: {
-                family: 'Pixeloid Sans'
-              },
-              color: 'black'
+              legend: {
+                position: 'bottom',
+                labels: {
+                  font: {
+                    family: 'Pixeloid Sans'
+                  },
+                  color: 'black'
+                }
+              }
             },
-            title: {
-              display: false  // No x-axis label.
+            scales: {
+              y: {
+                reverse: true,    // Rank 1 at the top.
+                min: 1,
+                max: maxRank,
+                offset: true,     // Extra space so the top line isn’t cut off.
+                ticks: {
+                  stepSize: 1,
+                  padding: 10,
+                  font: {
+                    family: 'Pixeloid Sans'
+                  },
+                  color: 'black'
+                },
+                title: {
+                  display: true,
+                  text: 'Rank',
+                  font: {
+                    family: 'Pixeloid Sans'
+                  },
+                  color: 'black'
+                }
+              },
+              x: {
+                ticks: {
+                  font: {
+                    family: 'Pixeloid Sans'
+                  },
+                  color: 'black'
+                },
+                title: {
+                  display: false  // No x-axis label.
+                }
+              }
+            },
+            layout: {
+              padding: {
+                top: 20,
+                bottom: 20,
+                left: 10,
+                right: 10
+              }
             }
           }
-        },
-        layout: {
-          padding: {
-            top: 20,
-            bottom: 20,
-            left: 10,
-            right: 10
-          }
-        }
-      }
-    });
-  } catch (err) {
-    console.error("Error rendering the standings chart:", err);
-  }
-}
-
-
-
-// --- TEAM STANDINGS CHART ---
-async function renderTeamStandingsLineChart() {
-  try {
-    // 1. Retrieve current year from form_details.
-    const { data: formDetails, error: formDetailsError } = await supabase
-      .from('form_details')
-      .select('current_year')
-      .eq('id', 1)
-      .single();
-    if (formDetailsError) {
-      console.error('Error fetching form details:', formDetailsError);
-      return;
-    }
-    const currentYear = formDetails.current_year;
-
-    // 2. Retrieve season team data.
-    const seasonTeamTableName = `season_team_${currentYear}`;
-    const seasonTeamData = await getTable(seasonTeamTableName);
-    if (!seasonTeamData || seasonTeamData.length === 0) {
-      console.error("No season team data available.");
-      return;
-    }
-
-    // 3. Get race names from the row where team_id === 0.
-    const raceNamesRow = seasonTeamData.find(row => row.team_id === 0);
-    if (!raceNamesRow) {
-      console.error("No race names row found for teams.");
-      return;
-    }
-    let lastRace = 0;
-    const raceLabels = [];
-    for (let i = 1; i <= 32; i++) {
-      const col = `race_${i}`;
-      let raceName = raceNamesRow[col];
-      if (raceName !== null && raceName !== "") {
-        // Remove any tags (e.g. "(double)" or similar) and trim.
-        raceName = raceName.replace(/\(.*?\)/g, "").trim();
-        raceLabels.push(raceName);
-        lastRace = i;
-      } else {
-        break;
+        });
+      } catch (err) {
+        console.error("Error rendering the team standings chart:", err);
       }
     }
-    if (lastRace === 0) {
-      console.error("No race names available for teams.");
-      return;
-    }
 
-    // 4. Filter out the team rows (team_id !== 0).
-    const teamRows = seasonTeamData.filter(row => row.team_id !== 0);
-    if (!teamRows.length) {
-      console.error("No team data found.");
-      return;
-    }
-
-    // 5. Compute cumulative scores for each team.
-    const teamCumulativeScores = {};
-    teamRows.forEach(team => {
-      let cumulative = [];
-      let sum = 0;
-      for (let i = 1; i <= lastRace; i++) {
-        const col = `race_${i}`;
-        let scoreStr = team[col];
-        if (scoreStr !== null && scoreStr !== "") {
-          // Remove any tags such as "(double)".
-          scoreStr = scoreStr.replace(/\(.*?\)/g, "").trim();
-          const score = parseFloat(scoreStr);
-          if (!isNaN(score)) {
-            sum += score;
-          }
-        }
-        cumulative.push(sum);
-      }
-      teamCumulativeScores[team.team_id] = {
-        team_name: team.team_name,
-        cumulative: cumulative
-      };
+  // ===============================
+  // === STANDINGS CHART LOADING ===
+  // ===============================
+    document.addEventListener("DOMContentLoaded", () => {
+        renderStandingsLineChart();
+      renderTeamStandingsLineChart();
     });
-
-    // 6. Compute rankings for each race.
-    const teamRankings = {};
-    teamRows.forEach(team => {
-      teamRankings[team.team_id] = [];
-    });
-    for (let raceIndex = 0; raceIndex < lastRace; raceIndex++) {
-      const scores = teamRows.map(team => ({
-        team_id: team.team_id,
-        score: teamCumulativeScores[team.team_id].cumulative[raceIndex]
-      }));
-      scores.sort((a, b) => b.score - a.score);
-      let rank = 1;
-      let prevScore = null;
-      scores.forEach((item, index) => {
-        if (prevScore === null || item.score !== prevScore) {
-          rank = index + 1;
-        }
-        teamRankings[item.team_id].push(rank);
-        prevScore = item.score;
-      });
-    }
-
-    // 7. Build Chart.js datasets for each team.
-    const datasets = [];
-    const colors = [
-      '#e6194b', '#3cb44b', '#ffe119', '#4363d8',
-      '#f58231', '#911eb4', '#46f0f0', '#f032e6',
-      '#bcf60c', '#fabebe', '#008080', '#e6beff',
-      '#9a6324', '#fffac8', '#800000', '#aaffc3',
-      '#808000', '#ffd8b1', '#000075', '#808080'
-    ];
-    let colorIndex = 0;
-    teamRows.forEach(team => {
-      datasets.push({
-        label: team.team_name,
-        data: teamRankings[team.team_id],
-        fill: false,
-        borderColor: colors[colorIndex % colors.length],
-        backgroundColor: colors[colorIndex % colors.length],
-        borderWidth: 4,              // Thick lines for a pixel-art feel.
-        tension: 0,                  // No smoothing.
-        pointStyle: 'rect',          // Square markers.
-        pointRadius: 5,
-        pointHoverRadius: 7
-      });
-      colorIndex++;
-    });
-    
-    // Sort datasets alphabetically by team name.
-    datasets.sort((a, b) => a.label.localeCompare(b.label));
-    
-    // 8. Determine max rank (number of teams) for y-axis.
-    const maxRank = teamRows.length;
-
-    // 9. Create the chart.
-    const ctx = document.getElementById('standings-team-line-chart').getContext('2d');
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: raceLabels,
-        datasets: datasets
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false, // Allow flexible sizing.
-        layout: {
-          padding: 10,
-        },
-        plugins: {
-          title: {
-            display: true,
-            text: `Team Standings ${currentYear}`,
-            color: 'black',
-            font: {
-                family: 'Pixeloid Sans Bold',
-                size: 20,
-            }
-          },
-          legend: {
-            position: 'bottom',
-            labels: {
-              font: {
-                family: 'Pixeloid Sans'
-              },
-              color: 'black'
-            }
-          }
-        },
-        scales: {
-          y: {
-            reverse: true,    // Rank 1 at the top.
-            min: 1,
-            max: maxRank,
-            offset: true,     // Extra space so the top line isn’t cut off.
-            ticks: {
-              stepSize: 1,
-              padding: 10,
-              font: {
-                family: 'Pixeloid Sans'
-              },
-              color: 'black'
-            },
-            title: {
-              display: true,
-              text: 'Rank',
-              font: {
-                family: 'Pixeloid Sans'
-              },
-              color: 'black'
-            }
-          },
-          x: {
-            ticks: {
-              font: {
-                family: 'Pixeloid Sans'
-              },
-              color: 'black'
-            },
-            title: {
-              display: false  // No x-axis label.
-            }
-          }
-        },
-        layout: {
-          padding: {
-            top: 20,
-            bottom: 20,
-            left: 10,
-            right: 10
-          }
-        }
-      }
-    });
-  } catch (err) {
-    console.error("Error rendering the team standings chart:", err);
-  }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    renderStandingsLineChart();
-  renderTeamStandingsLineChart();
-});
-
-    </script>
-
+</script>
 </body>
 </html>

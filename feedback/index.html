@@ -164,46 +164,46 @@
   <!-- Bootstrap JS Bundle (Local) -->
   <script src="/js/bootstrap.bundle.min.js"></script>
   
-  <script type="module">
+<script type="module">
     import { fetchData, getCookie} from '/script.js';
     
     // Autofill the feedback name field and disable it.
     async function autofillFeedbackName() {
-  const playerId = getCookie("playerId");
-  const nameField = document.getElementById("feedback-name");
-  const anonCheckbox = document.getElementById("anonymousCheckbox");
-  const messageField = document.getElementById("exampleFormControlTextarea1");
-  const submitButton = document.getElementById("feedbackSubmitBtn");
+      const playerId = getCookie("playerId");
+      const nameField = document.getElementById("feedback-name");
+      const anonCheckbox = document.getElementById("anonymousCheckbox");
+      const messageField = document.getElementById("exampleFormControlTextarea1");
+      const submitButton = document.getElementById("feedbackSubmitBtn");
 
-  if (!playerId) {
-    // Not logged in: disable all fields, change placeholder and disable the submit button.
-    nameField.value = "";
-    nameField.placeholder = "Please log in to submit feedback.";
-    nameField.disabled = true;
-    anonCheckbox.disabled = true;
-    messageField.disabled = true;
-    submitButton.disabled = true;
-    return;
-  }
-  
-  // If logged in, fetch player's name.
-  const { data: player, error } = await supabase
-    .from('players')
-    .select('name')
-    .eq('id', playerId)
-    .single();
+      if (!playerId) {
+        // Not logged in: disable all fields, change placeholder and disable the submit button.
+        nameField.value = "";
+        nameField.placeholder = "Please log in to submit feedback.";
+        nameField.disabled = true;
+        anonCheckbox.disabled = true;
+        messageField.disabled = true;
+        submitButton.disabled = true;
+        return;
+      }
     
-  if (error || !player) {
-    console.error("Error fetching player name:", error);
-    return;
-  }
-  
-  nameField.value = player.name;
-  nameField.disabled = true; // keep it read-only
-  anonCheckbox.disabled = false;
-  messageField.disabled = false;
-  submitButton.disabled = false;
-}
+      // If logged in, fetch player's name.
+      const { data: player, error } = await supabase
+        .from('players')
+        .select('name')
+        .eq('id', playerId)
+        .single();
+        
+      if (error || !player) {
+        console.error("Error fetching player name:", error);
+        return;
+      }
+      
+      nameField.value = player.name;
+      nameField.disabled = true; // keep it read-only
+      anonCheckbox.disabled = false;
+      messageField.disabled = false;
+      submitButton.disabled = false;
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
       autofillFeedbackName();
@@ -257,9 +257,8 @@
     });
 
     document.addEventListener("loginStateChanged", async (event) => {
-  await autofillFeedbackName();
-});
-
-  </script>
+      await autofillFeedbackName();
+    });
+</script>
 </body>
 </html>

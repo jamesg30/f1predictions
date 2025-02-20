@@ -661,64 +661,70 @@
         <p>&copy; 2025 F1 Predictions Form</p>
     </footer>
 
-    <script src="/js/bootstrap.bundle.min.js"></script>
-    <script type="module">
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script type="module">
+    // ==================================
+    // === AUTOMATIC LOG IN FUNCTIONS ===
+    // ==================================
         import { getCookie } from '/script.js'; // Adjust the path as needed
 
-// Polling function to check for the admin cookie.
-function checkAdminCookie(retries = 10, delay = 500) {
-  if (getCookie("playerId") === "1") {
-    console.log("Admin detected via cookie; unlocking admin page.");
-    const passwordSection = document.getElementById("password-input-section");
-    const adminContent = document.getElementById("admin-content");
-    // Hide the password section
-    passwordSection.style.display = "none";
-    // Show the admin content
-    adminContent.style.display = "block";
-  } else if (retries > 0) {
-    console.log(`Admin cookie not found. Retrying... (${retries} attempts left)`);
-    setTimeout(() => {
-      checkAdminCookie(retries - 1, delay);
-    }, delay);
-  } else {
-    console.log("Admin cookie not detected after multiple checks.");
-  }
-}
+        // Polling function to check for the admin cookie.
+        function checkAdminCookie(retries = 10, delay = 500) {
+        if (getCookie("playerId") === "1") {
+            console.log("Admin detected via cookie; unlocking admin page.");
+            const passwordSection = document.getElementById("password-input-section");
+            const adminContent = document.getElementById("admin-content");
+            // Hide the password section
+            passwordSection.style.display = "none";
+            // Show the admin content
+            adminContent.style.display = "block";
+        } else if (retries > 0) {
+            console.log(`Admin cookie not found. Retrying... (${retries} attempts left)`);
+            setTimeout(() => {
+            checkAdminCookie(retries - 1, delay);
+            }, delay);
+        } else {
+            console.log("Admin cookie not detected after multiple checks.");
+        }
+        }
 
+        // Start checking immediately when the script runs
+        checkAdminCookie();
 
-// Start checking immediately when the script runs
-checkAdminCookie();
+        // Also retry once DOM is fully loaded (ensures it runs even if script executes too early)
+        window.addEventListener("DOMContentLoaded", () => {
+        checkAdminCookie();
+        });
 
-// Also retry once DOM is fully loaded (ensures it runs even if script executes too early)
-window.addEventListener("DOMContentLoaded", () => {
-  checkAdminCookie();
-});
+    // ==========================
+    // === PASSWORD PAGE CODE ===
+    // ==========================
+        // Stored Password
+        const hashedPassword = "4e668929edb3bf915e1a3a9d96c3c97e";
 
-// --- PASSWORD CODE ---
-const hashedPassword = "4e668929edb3bf915e1a3a9d96c3c97e";
+        // Validate the Password
+        function validatePassword() {
+        const inputPassword = document.getElementById("password-input").value.trim(); // Trim whitespace
+        const hashedInputPassword = CryptoJS.MD5(inputPassword).toString();
 
-// Validate the Password
-function validatePassword() {
-  const inputPassword = document.getElementById("password-input").value.trim(); // Trim whitespace
-  const hashedInputPassword = CryptoJS.MD5(inputPassword).toString();
+        if (hashedInputPassword === hashedPassword) {
+            document.getElementById("password-input-section").style.display = "none";
+            document.getElementById("admin-content").style.display = "block";
+        } else {
+            const errorElement = document.getElementById("password-error");
+            errorElement.style.display = "block";
+            setTimeout(() => {
+            errorElement.style.display = "none";
+            }, 3000);
+        }
+        }
 
-  if (hashedInputPassword === hashedPassword) {
-    document.getElementById("password-input-section").style.display = "none";
-    document.getElementById("admin-content").style.display = "block";
-  } else {
-    const errorElement = document.getElementById("password-error");
-    errorElement.style.display = "block";
-    setTimeout(() => {
-      errorElement.style.display = "none";
-    }, 3000);
-  }
-}
+        // Ensure the function is available globally
+        window.validatePassword = validatePassword;
 
-// Ensure the function is available globally
-window.validatePassword = validatePassword;
-
-
-// --- FORM CONFIGURATION CODE ---
+    // ===============================
+    // === FORM CONFIGURATION CODE ===
+    // ===============================
         // Fetch and render the table
         async function fetchAndRenderFormConfiguration() {
             const { data, error } = await supabase
@@ -858,7 +864,9 @@ window.validatePassword = validatePassword;
 
         initializeSaveChangesButton();
 
-// --- GRID UPLOAD TAB CODE ---
+    // ========================
+    // === GRID UPLOAD CODE ===
+    // ========================
         // Loading Starting Grid/Upload Handling
         document.addEventListener("DOMContentLoaded", async () => {
             const gridImageInput = document.getElementById("gridImageInput");
@@ -946,7 +954,9 @@ window.validatePassword = validatePassword;
             await loadGridImage();
         });
 
-// --- UTILITY FUNCTIONS ---
+    // =================================
+    // === GENERAL UTILITY FUNCTIONS ===
+    // =================================
         // Fetch data from Supabase
         async function fetchData(table) {
             const { data, error } = await supabase.from(table).select('*').order('id', { ascending: true });
@@ -956,6 +966,18 @@ window.validatePassword = validatePassword;
             }
             return data;
         }
+
+        // Get table function
+        async function getTable(tableName) {
+                const { data, error } = await supabase
+                    .from(tableName)
+                    .select('*');
+                if (error) {
+                    console.error(`Error retrieving data from ${tableName}:`, error.message);
+                    return [];
+                }
+                return data;
+            }
 
         // Update a record in Supabase
         async function updateData(table, id, updates) {
@@ -998,76 +1020,79 @@ window.validatePassword = validatePassword;
             return true;
         }
 
-// --- POPULATE TABLES ---
+    // ========================
+    // === EDIT PLAYERS TAB ===
+    // ========================
         // Populate Players Table
-        // Populate Players Table with extra Password column
-async function populatePlayers() {
-    const players = await fetchData('players');
-    const teams = await fetchData('teams');
-    const table = document.getElementById('players-table');
+        async function populatePlayers() {
+            const players = await fetchData('players');
+            const teams = await fetchData('teams');
+            const table = document.getElementById('players-table');
 
-    table.innerHTML = players.map(player => `
-        <tr>
-            <td>${player.id}</td>
-            <td>
-              <input type="text" class="form-control" id="player-name-${player.id}" value="${player.name}">
-            </td>
-            <td>${teams.find(team => team.id === player.participant_team_id)?.name || 'Unassigned'}</td>
-            <td>
-              <input type="text" class="form-control" id="player-password-${player.id}" placeholder="New 4-digit PIN" maxlength="4" style="width: 100px; display: inline-block;">
-            </td>
-            <td>
-              <button class="btn btn-primary btn-sm" id="update-player-${player.id}" onclick="updatePlayer(${player.id})" disabled>Update</button>
-              <button class="btn btn-danger btn-sm" onclick="deletePlayer(${player.id})">Delete</button>
-              <br><br>
-              <button class="btn btn-secondary btn-sm" id="update-password-${player.id}" onclick="updatePlayerPassword(${player.id})">Update Password</button>
-            </td>
-        </tr>
-    `).join('');
+            table.innerHTML = players.map(player => `
+                <tr>
+                    <td>${player.id}</td>
+                    <td>
+                    <input type="text" class="form-control" id="player-name-${player.id}" value="${player.name}">
+                    </td>
+                    <td>${teams.find(team => team.id === player.participant_team_id)?.name || 'Unassigned'}</td>
+                    <td>
+                    <input type="text" class="form-control" id="player-password-${player.id}" placeholder="New 4-digit PIN" maxlength="4" style="width: 100px; display: inline-block;">
+                    </td>
+                    <td>
+                    <button class="btn btn-primary btn-sm" id="update-player-${player.id}" onclick="updatePlayer(${player.id})" disabled>Update</button>
+                    <button class="btn btn-danger btn-sm" onclick="deletePlayer(${player.id})">Delete</button>
+                    <br><br>
+                    <button class="btn btn-secondary btn-sm" id="update-password-${player.id}" onclick="updatePlayerPassword(${player.id})">Update Password</button>
+                    </td>
+                </tr>
+            `).join('');
 
-    // Add change detection to enable "Update" buttons for name changes
-    players.forEach(player => {
-        enableUpdateButton(`player-name-${player.id}`, `update-player-${player.id}`, player.name);
-    });
-}
-
-// Function to update the player's password (using MD5)
-async function updatePlayerPassword(id) {
-    const passwordInput = document.getElementById(`player-password-${id}`);
-    const newPin = passwordInput.value.trim();
-
-    // Validate that the PIN is exactly 4 digits
-    if (!/^\d{4}$/.test(newPin)) {
-        alert('Please enter a valid 4-digit PIN.');
-        return;
-    }
-
-    // Hash the PIN using MD5 (as a hexadecimal string)
-    const hashedPin = CryptoJS.MD5(newPin).toString();
-
-    try {
-        // Update the player's password in the 'players' table
-        const { error } = await supabase
-            .from('players')
-            .update({ password: hashedPin })
-            .eq('id', id);
-            
-        if (error) {
-            console.error('Error updating password:', error);
-            alert('Failed to update password.');
-            return;
+            // Add change detection to enable "Update" buttons for name changes
+            players.forEach(player => {
+                enableUpdateButton(`player-name-${player.id}`, `update-player-${player.id}`, player.name);
+            });
         }
 
-        alert('Password updated successfully!');
-        // Optionally clear the input field after a successful update:
-        passwordInput.value = '';
-    } catch (err) {
-        console.error('Unexpected error:', err);
-        alert('An unexpected error occurred while updating password.');
-    }
-}
+        // Function to update the player's password (using MD5)
+        async function updatePlayerPassword(id) {
+            const passwordInput = document.getElementById(`player-password-${id}`);
+            const newPin = passwordInput.value.trim();
 
+            // Validate that the PIN is exactly 4 digits
+            if (!/^\d{4}$/.test(newPin)) {
+                alert('Please enter a valid 4-digit PIN.');
+                return;
+            }
 
+            // Hash the PIN using MD5 (as a hexadecimal string)
+            const hashedPin = CryptoJS.MD5(newPin).toString();
+
+            try {
+                // Update the player's password in the 'players' table
+                const { error } = await supabase
+                    .from('players')
+                    .update({ password: hashedPin })
+                    .eq('id', id);
+                    
+                if (error) {
+                    console.error('Error updating password:', error);
+                    alert('Failed to update password.');
+                    return;
+                }
+
+                alert('Password updated successfully!');
+                // Optionally clear the input field after a successful update:
+                passwordInput.value = '';
+            } catch (err) {
+                console.error('Unexpected error:', err);
+                alert('An unexpected error occurred while updating password.');
+            }
+        }
+
+    // ======================
+    // === EDIT TEAMS TAB ===
+    // ======================
         // Populate Teams Table
         async function populateTeams() {
             const teams = await fetchData('teams');
@@ -1090,6 +1115,9 @@ async function updatePlayerPassword(id) {
             });
         }
 
+    // ===========================
+    // === EDIT DRIVERS TAB #1 ===
+    // ===========================
         // Populate Drivers Table
         async function populateDrivers() {
             const drivers = await fetchData('drivers');
@@ -1112,6 +1140,9 @@ async function updatePlayerPassword(id) {
             `).join('');
         }
 
+    // ================================
+    // === EDIT CONSTRUCTORS TAB #1 ===
+    // ================================
         // Populate Constructors Table
         async function populateConstructors() {
             const constructors = await fetchData('constructors');
@@ -1129,6 +1160,9 @@ async function updatePlayerPassword(id) {
             `).join('');
         }
 
+    // ============================
+    // === EDIT CALENDAR TAB #1 ===
+    // ============================
         // Populate Calendar Table
         async function populateCalendar() {
             const { data, error } = await supabase
@@ -1185,6 +1219,9 @@ async function updatePlayerPassword(id) {
             });
         }
 
+    // ======================================
+    // === GENERAL SAVE CHANGES FUNCTIONS ===
+    // ======================================
         // Save Changes
         async function saveChanges(table) {
             const inputs = document.querySelectorAll(`#${table}-table input, #${table}-table select`);
@@ -1199,7 +1236,10 @@ async function updatePlayerPassword(id) {
             // alert(`${table} updated successfully!`); commented out for now
         }
 
-// --- PLAYERS AND TEAMS UPDATE AND DELETE FUNCTIONS ---
+    // ============================================
+    // === COMBINED PLAYERS AND TEAMS FUNCTIONS ===
+    // ============================================
+        // Players and teams update and delete functions
         async function updatePlayer(id) {
             const nameInput = document.getElementById(`player-name-${id}`);
             const name = nameInput.value.trim();
@@ -1216,12 +1256,13 @@ async function updatePlayerPassword(id) {
         }
 
         async function deletePlayer(id) {
-    if (confirm("Are you sure you want to delete this player?")) {
-        if (await deleteData('players', id)) {
-            populatePlayers();
+            if (confirm("Are you sure you want to delete this player?")) {
+                if (await deleteData('players', id)) {
+                    populatePlayers();
+                }
+            }
         }
-    }
-}
+
         async function updateTeam(id) {
             const nameInput = document.getElementById(`team-name-${id}`);
             const name = nameInput.value.trim();
@@ -1238,13 +1279,16 @@ async function updatePlayerPassword(id) {
         }
 
         async function deleteTeam(id) {
-    if (confirm("Are you sure you want to delete this team?")) {
-        if (await deleteData('teams', id)) {
-            populateTeams();
+            if (confirm("Are you sure you want to delete this team?")) {
+                if (await deleteData('teams', id)) {
+                    populateTeams();
+                }
+            }
         }
-    }
-}
 
+    // ========================================================
+    // === COMBINED DRIVER, CONSTRUCTOR, CALENDAR FUNCTIONS ===
+    // ========================================================
         document.addEventListener("DOMContentLoaded", async () => {
             // Fetch and render data
             await fetchDrivers();
@@ -1286,7 +1330,9 @@ async function updatePlayerPassword(id) {
             saveCalendarButton.addEventListener("click", saveCalendar);
         });
 
-// --- DRIVERS ---
+    // ===========================
+    // === EDIT DRIVERS TAB #2 ===
+    // ===========================
         // Populate Constructor Dropdown for the "Add Driver" form.
         async function populateConstructorDropdown() {
         const { data, error } = await supabase
@@ -1458,7 +1504,9 @@ async function updatePlayerPassword(id) {
 
 
 
-        // --- CONSTRUCTORS ---
+    // ================================
+    // === EDIT CONSTRUCTORS TAB #2 ===
+    // ================================
         // Fetch and display all constructors in the table.
         async function fetchConstructors() {
         const { data, error } = await supabase.from("constructors").select("*").order("id", { ascending: true });
@@ -1578,7 +1626,9 @@ async function updatePlayerPassword(id) {
         await fetchConstructors();
         }
 
-        // --- CALENDAR ---
+    // ============================
+    // === EDIT CALENDAR TAB #2 ===
+    // ============================
         async function fetchCalendar() {
             const { data, error } = await supabase
                 .from("calendar")
@@ -1723,7 +1773,9 @@ async function updatePlayerPassword(id) {
             alert("Race added successfully!");
         }
 
-// --- INITIALISATION ---
+    // ====================================
+    // === COMBINED EDIT TABS FUNCTIONS ===
+    // ====================================
         document.addEventListener('DOMContentLoaded', async () => {
             await populatePlayers();
             await populateTeams();
@@ -1739,7 +1791,9 @@ async function updatePlayerPassword(id) {
             document.getElementById('add-race').addEventListener('click', addRace);
         });
 
-// --- RESULTS ENTRY CODE ---
+    // ==========================
+    // === RESULTS ENTRY CODE ===
+    // ==========================
         import { generateFormBlocks } from '/script.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -1881,18 +1935,7 @@ async function updatePlayerPassword(id) {
             // Show confirmation modal
             const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
             confirmationModal.show();
-
-            // Function to retrieve data from a table
-            async function getTable(tableName) {
-                const { data, error } = await supabase
-                    .from(tableName)
-                    .select('*');
-                if (error) {
-                    console.error(`Error retrieving data from ${tableName}:`, error.message);
-                    return [];
-                }
-                return data;
-            }
+            
             const calendar = await getTable('calendar');
             const formRaw = await getTable('form_raw');
             const relevantRaceNumber = raceNumber;
@@ -1920,8 +1963,8 @@ async function updatePlayerPassword(id) {
 
             // Call the function to check race information and results submission status
             checkRaceInfo();
+            });
         });
-    });
 
     async function updateResultsEntryTitle() {
         try {
@@ -1961,262 +2004,250 @@ async function updatePlayerPassword(id) {
         }
     }
 
+    // =============================
+    // === INFORMATION DASHBOARD ===
+    // =============================
+        document.addEventListener('DOMContentLoaded', async () => {
+        const raceSelect = document.getElementById('race-select');
+        const resultsDisplayRaceSelect = document.getElementById('results-display-race-select');
+        const resultsDisplayTypeSelect = document.getElementById('results-display-type-select');
+        const formResponses = document.getElementById('form-responses');
+        const formStatus = document.getElementById('form-status');
+        const formStatusLabel = document.getElementById('form-status-label');
+        const currentYearInput = document.getElementById('current-year');
 
-// --- INFORMATION DASHBOARD ---
-        // --- INFORMATION DASHBOARD ---
-document.addEventListener('DOMContentLoaded', async () => {
-  const raceSelect = document.getElementById('race-select');
-  const resultsDisplayRaceSelect = document.getElementById('results-display-race-select');
-  const resultsDisplayTypeSelect = document.getElementById('results-display-type-select');
-  const formResponses = document.getElementById('form-responses');
-  const formStatus = document.getElementById('form-status');
-  const formStatusLabel = document.getElementById('form-status-label');
-  const currentYearInput = document.getElementById('current-year');
+        // Existing Form Status Text fields
+        const formStatusTextEnabledInput = document.getElementById('form-status-text-enabled');
+        const formStatusTextEnabledLabel = document.getElementById('form-status-text-enabled-label');
+        const formStatusTextInput = document.getElementById('form-status-text');
 
-  // Existing Form Status Text fields
-  const formStatusTextEnabledInput = document.getElementById('form-status-text-enabled');
-  const formStatusTextEnabledLabel = document.getElementById('form-status-text-enabled-label');
-  const formStatusTextInput = document.getElementById('form-status-text');
+        // New Form Alert Text fields
+        const formAlertTextEnabledInput = document.getElementById('form-alert-text-enabled');
+        const formAlertTextEnabledLabel = document.getElementById('form-alert-text-enabled-label');
+        const formAlertTextInput = document.getElementById('form-alert-text-input');
 
-  // New Form Alert Text fields
-  const formAlertTextEnabledInput = document.getElementById('form-alert-text-enabled');
-  const formAlertTextEnabledLabel = document.getElementById('form-alert-text-enabled-label');
-  const formAlertTextInput = document.getElementById('form-alert-text-input');
+        const saveChangesButton = document.getElementById('save-changes');
 
-  const saveChangesButton = document.getElementById('save-changes');
+        let currentRaceNumber;
+        let formEnabled;
+        let resultsDisplayRaceNumber;
+        let resultsDisplayType;
+        let currentYear;
+        let formStatusText;
+        let formStatusTextEnabled;
+        // New variables for alert text
+        let formAlertText;
+        let formAlertTextEnabled;
 
-  let currentRaceNumber;
-  let formEnabled;
-  let resultsDisplayRaceNumber;
-  let resultsDisplayType;
-  let currentYear;
-  let formStatusText;
-  let formStatusTextEnabled;
-  // New variables for alert text
-  let formAlertText;
-  let formAlertTextEnabled;
+        // Fetch current form details including new alert text fields
+        async function fetchFormDetails() {
+        const { data: formDetails, error: formDetailsError } = await supabase
+            .from('form_details')
+            .select(
+            `race_number,
+            form_enabled,
+            results_display_race_number,
+            results_display_type,
+            current_year,
+            form_status_text,
+            form_status_text_enabled,
+            form_alert_text,
+            form_alert_text_enabled,
+            background_image`
+            )
+            .eq('id', 1)
+            .single();
 
-  // Fetch current form details including new alert text fields
-  async function fetchFormDetails() {
-  const { data: formDetails, error: formDetailsError } = await supabase
-    .from('form_details')
-    .select(
-      `race_number,
-       form_enabled,
-       results_display_race_number,
-       results_display_type,
-       current_year,
-       form_status_text,
-       form_status_text_enabled,
-       form_alert_text,
-       form_alert_text_enabled,
-       background_image`
-    )
-    .eq('id', 1)
-    .single();
+        if (formDetailsError) {
+            console.error('Error fetching form details:', formDetailsError);
+            return;
+        }
 
-  if (formDetailsError) {
-    console.error('Error fetching form details:', formDetailsError);
-    return;
-  }
+        currentRaceNumber = formDetails.race_number;
+        formEnabled = formDetails.form_enabled;
+        resultsDisplayRaceNumber = formDetails.results_display_race_number;
+        resultsDisplayType = formDetails.results_display_type;
+        currentYear = formDetails.current_year;
+        formStatusText = formDetails.form_status_text;
+        formStatusTextEnabled = formDetails.form_status_text_enabled;
+        formAlertText = formDetails.form_alert_text;
+        formAlertTextEnabled = formDetails.form_alert_text_enabled;
 
-  currentRaceNumber = formDetails.race_number;
-  formEnabled = formDetails.form_enabled;
-  resultsDisplayRaceNumber = formDetails.results_display_race_number;
-  resultsDisplayType = formDetails.results_display_type;
-  currentYear = formDetails.current_year;
-  formStatusText = formDetails.form_status_text;
-  formStatusTextEnabled = formDetails.form_status_text_enabled;
-  formAlertText = formDetails.form_alert_text;
-  formAlertTextEnabled = formDetails.form_alert_text_enabled;
+        // New: Update background image select
+        const backgroundImageSelect = document.getElementById('background-image-select');
+        if (formDetails.background_image) {
+            backgroundImageSelect.value = formDetails.background_image;
+        }
 
-  // New: Update background image select
-  const backgroundImageSelect = document.getElementById('background-image-select');
-  if (formDetails.background_image) {
-    backgroundImageSelect.value = formDetails.background_image;
-  }
+        // Update other UI elements as before…
+        formStatus.checked = formEnabled;
+        formStatusLabel.textContent = formEnabled ? 'Enabled' : 'Disabled';
+        currentYearInput.value = currentYear;
+        resultsDisplayTypeSelect.value = resultsDisplayType;
+        formStatusTextEnabledInput.checked = formStatusTextEnabled;
+        formStatusTextEnabledLabel.textContent = formStatusTextEnabled ? 'Enabled' : 'Disabled';
+        formStatusTextInput.value = formStatusText;
+        formAlertTextEnabledInput.checked = formAlertTextEnabled;
+        formAlertTextEnabledLabel.textContent = formAlertTextEnabled ? 'Enabled' : 'Disabled';
+        formAlertTextInput.value = formAlertText;
+        }
 
-  // Update other UI elements as before…
-  formStatus.checked = formEnabled;
-  formStatusLabel.textContent = formEnabled ? 'Enabled' : 'Disabled';
-  currentYearInput.value = currentYear;
-  resultsDisplayTypeSelect.value = resultsDisplayType;
-  formStatusTextEnabledInput.checked = formStatusTextEnabled;
-  formStatusTextEnabledLabel.textContent = formStatusTextEnabled ? 'Enabled' : 'Disabled';
-  formStatusTextInput.value = formStatusText;
-  formAlertTextEnabledInput.checked = formAlertTextEnabled;
-  formAlertTextEnabledLabel.textContent = formAlertTextEnabled ? 'Enabled' : 'Disabled';
-  formAlertTextInput.value = formAlertText;
-}
+        await fetchFormDetails();
 
-  await fetchFormDetails();
+        // Fetch race options and populate the select lists
+        async function fetchRaceOptions() {
+            const { data: races, error: racesError } = await supabase
+            .from('calendar')
+            .select('race_number, name')
+            .order('race_number', { ascending: true }); // Order by race_number in ascending order
 
-  // Fetch race options and populate the select lists
-  async function fetchRaceOptions() {
-    const { data: races, error: racesError } = await supabase
-      .from('calendar')
-      .select('race_number, name')
-      .order('race_number', { ascending: true }); // Order by race_number in ascending order
-
-    if (racesError) {
-      console.error('Error fetching race options:', racesError);
-      return;
-    }
-
-    races.forEach(race => {
-      const option = document.createElement('option');
-      option.value = race.race_number;
-      option.textContent = `Race ${race.race_number}: ${race.name} GP`;
-      if (race.race_number === currentRaceNumber) {
-        option.selected = true;
-      }
-      raceSelect.appendChild(option);
-
-      const resultsOption = option.cloneNode(true);
-      if (race.race_number === resultsDisplayRaceNumber) {
-        resultsOption.selected = true;
-      }
-      resultsDisplayRaceSelect.appendChild(resultsOption);
-    });
-  }
-
-  await fetchRaceOptions();
-
-  // Fetch number of form responses
-  async function fetchFormResponses() {
-    const { data: responses, error: responsesError } = await supabase
-      .from('form_raw')
-      .select('id')
-      .eq('race_number', currentRaceNumber);
-
-    if (responsesError) {
-      console.error('Error fetching form responses:', responsesError);
-      return;
-    }
-
-    formResponses.textContent = responses.length;
-  }
-
-  await fetchFormResponses();
-
-  // Enable save button when changes are made
-  raceSelect.addEventListener('change', () => {
-    saveChangesButton.disabled = false;
-  });
-  resultsDisplayRaceSelect.addEventListener('change', () => {
-    saveChangesButton.disabled = false;
-  });
-  resultsDisplayTypeSelect.addEventListener('change', () => {
-    saveChangesButton.disabled = false;
-  });
-  formStatus.addEventListener('change', () => {
-    saveChangesButton.disabled = false;
-    formStatusLabel.textContent = formStatus.checked ? 'Enabled' : 'Disabled';
-  });
-  currentYearInput.addEventListener('input', () => {
-    saveChangesButton.disabled = false;
-  });
-
-  // New event listeners for form status text fields
-  formStatusTextEnabledInput.addEventListener('change', () => {
-    saveChangesButton.disabled = false;
-    formStatusTextEnabledLabel.textContent = formStatusTextEnabledInput.checked ? 'Enabled' : 'Disabled';
-  });
-  formStatusTextInput.addEventListener('input', () => {
-    saveChangesButton.disabled = false;
-  });
-
-  // New event listeners for form alert text fields
-  formAlertTextEnabledInput.addEventListener('change', () => {
-    saveChangesButton.disabled = false;
-    formAlertTextEnabledLabel.textContent = formAlertTextEnabledInput.checked ? 'Enabled' : 'Disabled';
-  });
-  formAlertTextInput.addEventListener('input', () => {
-    saveChangesButton.disabled = false;
-  });
-  document.getElementById('background-image-select').addEventListener('change', () => {
-  saveChangesButton.disabled = false;
-});
-
-  // Save changes
-  document.getElementById('dashboard-form').addEventListener('submit', async event => {
-  event.preventDefault();
-
-  const selectedRaceNumber = raceSelect.value;
-  const selectedFormStatus = formStatus.checked;
-  const selectedResultsDisplayRaceNumber = resultsDisplayRaceSelect.value;
-  const selectedResultsDisplayType = resultsDisplayTypeSelect.value;
-  const selectedCurrentYear = currentYearInput.value;
-  const selectedFormStatusTextEnabled = formStatusTextEnabledInput.checked;
-  const selectedFormStatusText = formStatusTextInput.value;
-  const selectedFormAlertTextEnabled = formAlertTextEnabledInput.checked;
-  const selectedFormAlertText = formAlertTextInput.value;
-
-  // New: Get selected background image from the new selector
-  const backgroundImageSelect = document.getElementById('background-image-select');
-  const selectedBackgroundImage = backgroundImageSelect.value;
-
-  // Update form details in the database
-  const { error: updateError } = await supabase
-    .from('form_details')
-    .update({
-      race_number: selectedRaceNumber,
-      form_enabled: selectedFormStatus,
-      results_display_race_number: selectedResultsDisplayRaceNumber,
-      results_display_type: selectedResultsDisplayType,
-      current_year: selectedCurrentYear,
-      form_status_text_enabled: selectedFormStatusTextEnabled,
-      form_status_text: selectedFormStatusText,
-      form_alert_text_enabled: selectedFormAlertTextEnabled,
-      form_alert_text: selectedFormAlertText,
-      background_image: selectedBackgroundImage  // New update field
-    })
-    .eq('id', 1);
-
-  if (updateError) {
-    alert('Error saving changes');
-    console.error('Error saving changes:', updateError);
-    return;
-  }
-
-  // Update UI with the new values
-  currentRaceNumber = selectedRaceNumber;
-  formEnabled = selectedFormStatus;
-  resultsDisplayRaceNumber = selectedResultsDisplayRaceNumber;
-  resultsDisplayType = selectedResultsDisplayType;
-  currentYear = selectedCurrentYear;
-  formStatusTextEnabled = selectedFormStatusTextEnabled;
-  formStatusText = selectedFormStatusText;
-  formAlertTextEnabled = selectedFormAlertTextEnabled;
-  formAlertText = selectedFormAlertText;
-
-  formStatusLabel.textContent = formEnabled ? 'Enabled' : 'Disabled';
-  formStatusTextEnabledLabel.textContent = formStatusTextEnabled ? 'Enabled' : 'Disabled';
-  formAlertTextEnabledLabel.textContent = formAlertTextEnabled ? 'Enabled' : 'Disabled';
-  saveChangesButton.disabled = true;
-
-  await fetchFormResponses();
-
-  alert('Changes saved successfully');
-});
-});
-
-
-
-// --- FORM SCORING ---
-        document.addEventListener("DOMContentLoaded", async () => {
-            // Function to retrieve data from a table
-            async function getTable(tableName) {
-                const { data, error } = await supabase
-                    .from(tableName)
-                    .select('*');
-                if (error) {
-                    console.error(`Error retrieving data from ${tableName}:`, error.message);
-                    return [];
-                }
-                return data;
+            if (racesError) {
+            console.error('Error fetching race options:', racesError);
+            return;
             }
 
+            races.forEach(race => {
+            const option = document.createElement('option');
+            option.value = race.race_number;
+            option.textContent = `Race ${race.race_number}: ${race.name} GP`;
+            if (race.race_number === currentRaceNumber) {
+                option.selected = true;
+            }
+            raceSelect.appendChild(option);
+
+            const resultsOption = option.cloneNode(true);
+            if (race.race_number === resultsDisplayRaceNumber) {
+                resultsOption.selected = true;
+            }
+            resultsDisplayRaceSelect.appendChild(resultsOption);
+            });
+        }
+
+        await fetchRaceOptions();
+
+        // Fetch number of form responses
+        async function fetchFormResponses() {
+            const { data: responses, error: responsesError } = await supabase
+            .from('form_raw')
+            .select('id')
+            .eq('race_number', currentRaceNumber);
+
+            if (responsesError) {
+            console.error('Error fetching form responses:', responsesError);
+            return;
+            }
+
+            formResponses.textContent = responses.length;
+        }
+
+        await fetchFormResponses();
+
+        // Enable save button when changes are made
+        raceSelect.addEventListener('change', () => {
+            saveChangesButton.disabled = false;
+        });
+        resultsDisplayRaceSelect.addEventListener('change', () => {
+            saveChangesButton.disabled = false;
+        });
+        resultsDisplayTypeSelect.addEventListener('change', () => {
+            saveChangesButton.disabled = false;
+        });
+        formStatus.addEventListener('change', () => {
+            saveChangesButton.disabled = false;
+            formStatusLabel.textContent = formStatus.checked ? 'Enabled' : 'Disabled';
+        });
+        currentYearInput.addEventListener('input', () => {
+            saveChangesButton.disabled = false;
+        });
+
+        // New event listeners for form status text fields
+        formStatusTextEnabledInput.addEventListener('change', () => {
+            saveChangesButton.disabled = false;
+            formStatusTextEnabledLabel.textContent = formStatusTextEnabledInput.checked ? 'Enabled' : 'Disabled';
+        });
+        formStatusTextInput.addEventListener('input', () => {
+            saveChangesButton.disabled = false;
+        });
+
+        // New event listeners for form alert text fields
+        formAlertTextEnabledInput.addEventListener('change', () => {
+            saveChangesButton.disabled = false;
+            formAlertTextEnabledLabel.textContent = formAlertTextEnabledInput.checked ? 'Enabled' : 'Disabled';
+        });
+        formAlertTextInput.addEventListener('input', () => {
+            saveChangesButton.disabled = false;
+        });
+        document.getElementById('background-image-select').addEventListener('change', () => {
+        saveChangesButton.disabled = false;
+        });
+
+        // Save changes
+        document.getElementById('dashboard-form').addEventListener('submit', async event => {
+        event.preventDefault();
+
+        const selectedRaceNumber = raceSelect.value;
+        const selectedFormStatus = formStatus.checked;
+        const selectedResultsDisplayRaceNumber = resultsDisplayRaceSelect.value;
+        const selectedResultsDisplayType = resultsDisplayTypeSelect.value;
+        const selectedCurrentYear = currentYearInput.value;
+        const selectedFormStatusTextEnabled = formStatusTextEnabledInput.checked;
+        const selectedFormStatusText = formStatusTextInput.value;
+        const selectedFormAlertTextEnabled = formAlertTextEnabledInput.checked;
+        const selectedFormAlertText = formAlertTextInput.value;
+
+        // New: Get selected background image from the new selector
+        const backgroundImageSelect = document.getElementById('background-image-select');
+        const selectedBackgroundImage = backgroundImageSelect.value;
+
+        // Update form details in the database
+        const { error: updateError } = await supabase
+            .from('form_details')
+            .update({
+            race_number: selectedRaceNumber,
+            form_enabled: selectedFormStatus,
+            results_display_race_number: selectedResultsDisplayRaceNumber,
+            results_display_type: selectedResultsDisplayType,
+            current_year: selectedCurrentYear,
+            form_status_text_enabled: selectedFormStatusTextEnabled,
+            form_status_text: selectedFormStatusText,
+            form_alert_text_enabled: selectedFormAlertTextEnabled,
+            form_alert_text: selectedFormAlertText,
+            background_image: selectedBackgroundImage  // New update field
+            })
+            .eq('id', 1);
+
+        if (updateError) {
+            alert('Error saving changes');
+            console.error('Error saving changes:', updateError);
+            return;
+        }
+
+        // Update UI with the new values
+        currentRaceNumber = selectedRaceNumber;
+        formEnabled = selectedFormStatus;
+        resultsDisplayRaceNumber = selectedResultsDisplayRaceNumber;
+        resultsDisplayType = selectedResultsDisplayType;
+        currentYear = selectedCurrentYear;
+        formStatusTextEnabled = selectedFormStatusTextEnabled;
+        formStatusText = selectedFormStatusText;
+        formAlertTextEnabled = selectedFormAlertTextEnabled;
+        formAlertText = selectedFormAlertText;
+
+        formStatusLabel.textContent = formEnabled ? 'Enabled' : 'Disabled';
+        formStatusTextEnabledLabel.textContent = formStatusTextEnabled ? 'Enabled' : 'Disabled';
+        formAlertTextEnabledLabel.textContent = formAlertTextEnabled ? 'Enabled' : 'Disabled';
+        saveChangesButton.disabled = true;
+
+        await fetchFormResponses();
+
+        alert('Changes saved successfully');
+        });
+        });
+
+    // ==============================
+    // === FORM SCORING FUNCTIONS ===
+    // ==============================
+        document.addEventListener("DOMContentLoaded", async () => {
             // Step 1: Retrieve All Necessary Tables
             const formRaw = await getTable('form_raw');
             const formConfig = await getTable('form_configuration');
@@ -2728,37 +2759,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-// --- SEASON PLAYER PAGE ---
-        async function getTable(tableName) {
-        const { data, error } = await supabase.from(tableName).select('*');
-        if (error) {
-            console.error(`Error fetching ${tableName}:`, error);
-            throw error;
-        }
-        return data;
-        }
-
-
+    // =========================
+    // === SEASON PLAYER TAB ===
+    // =========================
          // Helper function: Returns the lowest numeric score for a given round.
-// It ignores rows with player_id 0 (the Race Names row).
-function getLowestScoreForRound(roundNumber, seasonPlayers) {
-  const column = `race_${roundNumber}`;
-  let lowest = null;
-  seasonPlayers.forEach(row => {
-    if (row.player_id === 0) return; // skip the Race Names row
-    const scoreStr = row[column];
-    if (scoreStr) {
-      // Remove any "(LS)" suffix and parse the numeric part.
-      const numericPart = parseFloat(scoreStr.replace(/\(LS\)/, ''));
-      if (!isNaN(numericPart)) {
-        if (lowest === null || numericPart < lowest) {
-          lowest = numericPart;
+        // It ignores rows with player_id 0 (the Race Names row).
+        function getLowestScoreForRound(roundNumber, seasonPlayers) {
+        const column = `race_${roundNumber}`;
+        let lowest = null;
+        seasonPlayers.forEach(row => {
+            if (row.player_id === 0) return; // skip the Race Names row
+            const scoreStr = row[column];
+            if (scoreStr) {
+            // Remove any "(LS)" suffix and parse the numeric part.
+            const numericPart = parseFloat(scoreStr.replace(/\(LS\)/, ''));
+            if (!isNaN(numericPart)) {
+                if (lowest === null || numericPart < lowest) {
+                lowest = numericPart;
+                }
+            }
+            }
+        });
+        return lowest;
         }
-      }
-    }
-  });
-  return lowest;
-}
 
 
         // Helper: Append message to progress area and log to console.
@@ -2988,67 +3011,64 @@ function getLowestScoreForRound(roundNumber, seasonPlayers) {
         updateProgress("Race Names row updated.");
 
         // Process each player response.
-        // Process each player response.
-for (const resp of playerResponses) {
-  let score = resp.grand_total;
-  if (resp.entry_type === 'player_lowest_score') {
-    score = `${score}(LS)`;
-  }
-  updateProgress(`Processing player ${resp.player_name} (ID: ${resp.player_id}) with score: ${score}`);
+        for (const resp of playerResponses) {
+        let score = resp.grand_total;
+        if (resp.entry_type === 'player_lowest_score') {
+            score = `${score}(LS)`;
+        }
+        updateProgress(`Processing player ${resp.player_name} (ID: ${resp.player_id}) with score: ${score}`);
 
-  let playerRow = seasonPlayers.find(row => row.player_id === resp.player_id);
-  if (!playerRow) {
-    updateProgress(`Creating new entry for player ${resp.player_name} (ID: ${resp.player_id}).`);
-    
-    // Create a new row with the player details.
-    let newRow = { 
-      player_id: resp.player_id, 
-      player_name: resp.player_name 
-    };
+        let playerRow = seasonPlayers.find(row => row.player_id === resp.player_id);
+        if (!playerRow) {
+            updateProgress(`Creating new entry for player ${resp.player_name} (ID: ${resp.player_id}).`);
+            
+            // Create a new row with the player details.
+            let newRow = { 
+            player_id: resp.player_id, 
+            player_name: resp.player_name 
+            };
 
-    // Backfill previous rounds with the lowest score (appended with (LS)).
-    // Loop from round 1 to the round before the current race.
-    for (let i = 1; i < raceNumber; i++) {
-      const lowestScore = getLowestScoreForRound(i, seasonPlayers);
-      if (lowestScore !== null) {
-        newRow[`race_${i}`] = `${lowestScore}(LS)`;
-      } else {
-        // If no score exists yet for this round, you can leave it null or set to an empty string.
-        newRow[`race_${i}`] = null;
-      }
-    }
-    
-    // Set the current race's column.
-    newRow[raceColumn] = score;
+            // Backfill previous rounds with the lowest score (appended with (LS)).
+            // Loop from round 1 to the round before the current race.
+            for (let i = 1; i < raceNumber; i++) {
+            const lowestScore = getLowestScoreForRound(i, seasonPlayers);
+            if (lowestScore !== null) {
+                newRow[`race_${i}`] = `${lowestScore}(LS)`;
+            } else {
+                // If no score exists yet for this round, you can leave it null or set to an empty string.
+                newRow[`race_${i}`] = null;
+            }
+            }
+            
+            // Set the current race's column.
+            newRow[raceColumn] = score;
 
-    // Insert the new player row.
-    const { error: insertPlayerError } = await supabase
-      .from(seasonPlayerTable)
-      .insert([newRow]);
-    if (insertPlayerError) {
-      updateProgress(`Error inserting player ${resp.player_name}: ${insertPlayerError.message}`);
-    } else {
-      updateProgress(`Player ${resp.player_name} inserted successfully.`);
-    }
-  } else {
-    updateProgress(`Updating player ${resp.player_name} in column ${raceColumn}.`);
-    let { error: updatePlayerError } = await supabase
-      .from(seasonPlayerTable)
-      .update({ [raceColumn]: score })
-      .eq('player_id', resp.player_id);
-    if (updatePlayerError) {
-      updateProgress(`Error updating player ${resp.player_name}: ${updatePlayerError.message}`);
-    } else {
-      updateProgress(`Player ${resp.player_name} updated successfully.`);
-    }
-  }
-}
-
+            // Insert the new player row.
+            const { error: insertPlayerError } = await supabase
+            .from(seasonPlayerTable)
+            .insert([newRow]);
+            if (insertPlayerError) {
+            updateProgress(`Error inserting player ${resp.player_name}: ${insertPlayerError.message}`);
+            } else {
+            updateProgress(`Player ${resp.player_name} inserted successfully.`);
+            }
+        } else {
+            updateProgress(`Updating player ${resp.player_name} in column ${raceColumn}.`);
+            let { error: updatePlayerError } = await supabase
+            .from(seasonPlayerTable)
+            .update({ [raceColumn]: score })
+            .eq('player_id', resp.player_id);
+            if (updatePlayerError) {
+            updateProgress(`Error updating player ${resp.player_name}: ${updatePlayerError.message}`);
+            } else {
+            updateProgress(`Player ${resp.player_name} updated successfully.`);
+            }
+        }
+        }
 
         updateProgress("Season totals update complete.");
         alert("Season Totals update complete.");
         }
-
 
         // On DOMContentLoaded, load initial options.
         document.addEventListener("DOMContentLoaded", async () => {
@@ -3065,15 +3085,9 @@ for (const resp of playerResponses) {
         });
 
 
-// =============================
-// === TEAM SCORING FUNCTION ===
-// =============================
-
-        /**
-         * Logs progress messages to the console and a progress div.
-         * @param {string} message - The message to log.
-         */
-
+    // =============================
+    // === TEAM SCORING FUNCTION ===
+    // =============================
         function updateProgressSeasonTeam(message) {
         console.log("[Season Team] " + message);
         const progressDiv = document.getElementById("update-progress-season-team");
@@ -3083,9 +3097,7 @@ for (const resp of playerResponses) {
         }
         }
 
-        /**
-         * Clears the progress display.
-         */
+        // Clears the progress display.
         function clearProgressSeasonTeam() {
         const progressDiv = document.getElementById("update-progress-season-team");
         if (progressDiv) {
@@ -3094,10 +3106,8 @@ for (const resp of playerResponses) {
         }
         }
 
-        /**
-         * Loads race options from the season_player table for the current year,
-         * populates the race dropdown, and preselects the latest race.
-         */
+        // Loads race options from the season_player table for the current year,
+        // Populates the race dropdown, and preselects the latest race.
         async function loadRaceOptionsSeasonTeam() {
             updateProgressSeasonTeam("Loading race options for Season Team...");
         
@@ -3178,9 +3188,7 @@ for (const resp of playerResponses) {
         await updateRaceInfoSeasonTeam();
         }
 
-        /**
-         * Updates the race info display panel with the selected race.
-         */
+        // Updates the race info display panel with the selected race.
         async function updateRaceInfoSeasonTeam() {
         try {
             const raceSelect = document.getElementById("race-select-season-team");
@@ -3194,11 +3202,9 @@ for (const resp of playerResponses) {
         }
         }
 
-        /**
-         * Updates team scoring for Card Races (includes card adjustments and swap logic).
-         */
+        // Updates team scoring for Card Races (includes card adjustments and swap logic).
         async function updateCardTeamScoring() {
-        // INITIAL SETUP & FETCHING DATA
+        // Initial setup and fetching data
         clearProgressSeasonTeam();
         updateProgressSeasonTeam("Starting update of Season Team Totals...");
 
@@ -3270,11 +3276,8 @@ for (const resp of playerResponses) {
             }
         }
 
-        // =====================================================
         // Part 1: Get player/team scores and handle the cards 
-        //         (aero, double, and halo) and calculate a 
-        //         temporary total.
-        // =====================================================
+        //         (aero, double, and halo) and calculate a temporary total. 
         for (let team of teams) {
             const teamId = team.id;
             const teamName = team.name;
@@ -3361,9 +3364,7 @@ for (const resp of playerResponses) {
             }
         }
 
-        // =====================================================
         // Part 2: Apply the report card and update the total.
-        // =====================================================
         for (let teamData of teamScoringData) {
             // Find any report requests where this team is the target (reported team)
             const reportsForTeam = reportRequests.filter(r => r.reportedTeamId === teamData.teamId);
@@ -3405,9 +3406,7 @@ for (const resp of playerResponses) {
             }
         }
 
-        // =====================================================
         // Part 3: Apply the swap card and update the total.
-        // =====================================================
         // Sort swap requests by swap time.
         swapRequests.sort((a, b) => a.swapTime - b.swapTime);
         let swapCount = 1;
@@ -3442,9 +3441,7 @@ for (const resp of playerResponses) {
             }
         }
 
-        // =====================================================
         // Part 4: Upload the results to the database.
-        // =====================================================
         for (let teamData of teamScoringData) {
             // Recalculate the card bonus as the difference between the final total and the subtotal.
             teamData.cardPointsDelta = teamData.grandTotal - teamData.subtotal;
@@ -3550,8 +3547,6 @@ for (const resp of playerResponses) {
         }
         }
 
-
-
         // Reset the played cards in the teams table using Supabase
         async function resetTeamCardsSupabase(teamId) {
         const { data, error } = await supabase
@@ -3575,9 +3570,7 @@ for (const resp of playerResponses) {
         }
         }
 
-        /**
-         * Deletes all rows from the casino table where team_id > 0 (i.e. actual betting rows).
-         */
+        // Deletes all rows from the casino table where team_id > 0 (i.e. actual betting rows).
         async function deleteCasinoBets() {
         const { error } = await supabase.from("casino").delete().gt("team_id", 0);
         if (error) {
@@ -3608,9 +3601,7 @@ for (const resp of playerResponses) {
         const teamScoringTable = `team_scoring_${currentYear}`;
         const casinoTable = "casino";
 
-        // ---------------------------
         // Fetch necessary data.
-        // ---------------------------
         updateProgressSeasonTeam("Fetching teams data...");
         let teams;
         try {
@@ -3648,9 +3639,7 @@ for (const resp of playerResponses) {
             return;
         }
 
-        // ---------------------------
         // Extract meta rows from the casino table.
-        // ---------------------------
         const oddsRow = casinoBets.find(row => row.team_id === 0);
         const questionRow = casinoBets.find(row => row.team_id === -2);
         const willPayOutRow = casinoBets.find(row => row.team_id === -4);
@@ -3660,10 +3649,8 @@ for (const resp of playerResponses) {
             return;
         }
 
-        // ---------------------------
         // Process each team for casino scoring.
         // Only process teams with team_id > 0.
-        // ---------------------------
         let teamScoringData = [];
         for (let team of teams) {
             const teamId = team.id;
@@ -3778,9 +3765,7 @@ for (const resp of playerResponses) {
             teamScoringData.push(teamScoreRecord);
         }
 
-        // ---------------------------
         // Upload the team scoring data.
-        // ---------------------------
         for (let teamRecord of teamScoringData) {
             try {
             await upsertTeamScoringData([teamRecord], teamScoringTable);
@@ -3790,9 +3775,7 @@ for (const resp of playerResponses) {
             }
         }
 
-        // ---------------------------
         // Reset the casino bets by deleting rows with team_id > 0.
-        // ---------------------------
         try {
             await deleteCasinoBets();
             updateProgressSeasonTeam("Casino bets reset successfully.");
@@ -3803,11 +3786,9 @@ for (const resp of playerResponses) {
         updateProgressSeasonTeam("Finished updating casino team scores.");
         }
 
-        /**
-         * Helper function to insert team scoring data into the database.
-         * @param {Array} data - Array of team scoring data to insert.
-         * @param {string} table - Name of the table to insert into.
-         */
+        // Helper function to insert team scoring data into the database.
+        // @param {Array} data - Array of team scoring data to insert.
+        // @param {string} table - Name of the table to insert into.
         async function insertTeamScoringData(data, table) {
         const { data: inserted, error } = await supabase.from(table).upsert(data);
         if (error) {
@@ -3830,30 +3811,29 @@ for (const resp of playerResponses) {
         await updateTeamScoring();
         });
 
-        // =============================
-        // === SEASON TEAM FUNCTION ===
-        // ============================= 
-
-// Helper function for Season Team: Get the lowest team score for a given round.
-function getLowestTeamScoreForRound(roundNumber, seasonTeamData) {
-  const column = `race_${roundNumber}`;
-  let lowest = null;
-  seasonTeamData.forEach(row => {
-    if (row.team_id === 0) return; // Skip the Race Names row.
-    const scoreStr = row[column];
-    if (scoreStr) {
-      // Extract the numeric portion at the start of the string.
-      const match = scoreStr.match(/^(\d+(\.\d+)?)/);
-      if (match) {
-        let num = parseFloat(match[1]);
-        if (lowest === null || num < lowest) {
-          lowest = num;
+    // ============================
+    // === SEASON TEAM FUNCTION ===
+    // ============================
+        // Helper function for Season Team: Get the lowest team score for a given round.
+        function getLowestTeamScoreForRound(roundNumber, seasonTeamData) {
+        const column = `race_${roundNumber}`;
+        let lowest = null;
+        seasonTeamData.forEach(row => {
+            if (row.team_id === 0) return; // Skip the Race Names row.
+            const scoreStr = row[column];
+            if (scoreStr) {
+            // Extract the numeric portion at the start of the string.
+            const match = scoreStr.match(/^(\d+(\.\d+)?)/);
+            if (match) {
+                let num = parseFloat(match[1]);
+                if (lowest === null || num < lowest) {
+                lowest = num;
+                }
+            }
+            }
+        });
+        return lowest;
         }
-      }
-    }
-  });
-  return lowest;
-}
 
 
         // Progress Helpers for Season Team Summary Section
@@ -3976,15 +3956,14 @@ function getLowestTeamScoreForRound(roundNumber, seasonTeamData) {
         updateProgressTeamSummary(`Updating season_team table (${seasonTeamTable}) for race ${raceNumber}...`);
 
         // Fetch current season team data to use for backfilling new records.
-const { data: seasonTeamData, error: seasonTeamDataError } = await supabase
-  .from(seasonTeamTable)
-  .select("*");
-if (seasonTeamDataError) {
-  updateProgressTeamSummary("Error fetching season team data: " + seasonTeamDataError.message);
-  return;
-}
-updateProgressTeamSummary(`Fetched ${seasonTeamData.length} season team rows.`);
-
+        const { data: seasonTeamData, error: seasonTeamDataError } = await supabase
+        .from(seasonTeamTable)
+        .select("*");
+        if (seasonTeamDataError) {
+        updateProgressTeamSummary("Error fetching season team data: " + seasonTeamDataError.message);
+        return;
+        }
+        updateProgressTeamSummary(`Fetched ${seasonTeamData.length} season team rows.`);
 
         // For each team scoring record, upsert into season_team_{year}.
         for (let record of teamScoringData) {
@@ -4019,23 +3998,23 @@ updateProgressTeamSummary(`Fetched ${seasonTeamData.length} season team rows.`);
                 updateProgressTeamSummary(`Record for team ${record.team_name} updated successfully.`);
             }
         } else {
-  // If no record exists, backfill previous rounds with the lowest team score.
-  for (let i = 1; i < raceNumber; i++) {
-    const lowest = getLowestTeamScoreForRound(i, seasonTeamData);
-    if (lowest !== null) {
-      updateObj[`race_${i}`] = `${lowest}(LS)`;
-    } else {
-      updateObj[`race_${i}`] = null; // or set as an empty string if preferred
-    }
-  }
-  // Insert new record with the backfilled data.
-  const { error: insertError } = await supabase.from(seasonTeamTable).insert(updateObj);
-  if (insertError) {
-    updateProgressTeamSummary(`Error inserting record for team ${record.team_name}: ${insertError.message}`);
-  } else {
-    updateProgressTeamSummary(`Record for team ${record.team_name} inserted successfully.`);
-  }
-}
+        // If no record exists, backfill previous rounds with the lowest team score.
+        for (let i = 1; i < raceNumber; i++) {
+            const lowest = getLowestTeamScoreForRound(i, seasonTeamData);
+            if (lowest !== null) {
+            updateObj[`race_${i}`] = `${lowest}(LS)`;
+            } else {
+            updateObj[`race_${i}`] = null; // or set as an empty string if preferred
+            }
+        }
+        // Insert new record with the backfilled data.
+        const { error: insertError } = await supabase.from(seasonTeamTable).insert(updateObj);
+        if (insertError) {
+            updateProgressTeamSummary(`Error inserting record for team ${record.team_name}: ${insertError.message}`);
+        } else {
+            updateProgressTeamSummary(`Record for team ${record.team_name} inserted successfully.`);
+        }
+        }
         }
 
         // Also update the "Race Names" row (team_id = 0) to store the race name.
@@ -4073,7 +4052,6 @@ updateProgressTeamSummary(`Fetched ${seasonTeamData.length} season team rows.`);
         alert("Season Team Summary update complete.");
         }
 
-        // -------------------------
         // Initialize Season Team Summary Section
         document.addEventListener("DOMContentLoaded", async () => {
         try {
@@ -4087,9 +4065,9 @@ updateProgressTeamSummary(`Fetched ${seasonTeamData.length} season team rows.`);
         }
         });
 
-// =============================
-// === CASINO PAGE ===
-// =============================
+    // ===================
+    // === CASINO PAGE ===
+    // ===================
         document.addEventListener("DOMContentLoaded", async function () {
             const casinoStatus = document.getElementById("casino-status");
             const casinoStatusLabel = document.getElementById("casino-status-label");
@@ -4342,25 +4320,27 @@ updateProgressTeamSummary(`Fetched ${seasonTeamData.length} season team rows.`);
         loadFeedback();
         });
 
+    // ===============================
+    // === CREATE GLOBAL FUNCTIONS ===
+    // ===============================
         // Expose functions to the global scope so inline event handlers can access them
-window.updatePlayer = updatePlayer;
-window.deletePlayer = deletePlayer;
-window.updatePlayerPassword = updatePlayerPassword;
-window.updateTeam = updateTeam;
-window.deleteTeam = deleteTeam;
-window.deleteDriver = deleteDriver;
-window.deleteConstructor = deleteConstructor;
-window.deleteRace = deleteRace;
-window.addDriver = addDriver;
-window.addConstructor = addConstructor;
-window.addRace = addRace;
-window.populatePlayers = populatePlayers;
-window.populateTeams = populateTeams;
-window.populateDrivers = populateDrivers;
-window.populateConstructors = populateConstructors;
-window.populateCalendar = populateCalendar;
-window.saveChanges = saveChanges;
-
-    </script>
+        window.updatePlayer = updatePlayer;
+        window.deletePlayer = deletePlayer;
+        window.updatePlayerPassword = updatePlayerPassword;
+        window.updateTeam = updateTeam;
+        window.deleteTeam = deleteTeam;
+        window.deleteDriver = deleteDriver;
+        window.deleteConstructor = deleteConstructor;
+        window.deleteRace = deleteRace;
+        window.addDriver = addDriver;
+        window.addConstructor = addConstructor;
+        window.addRace = addRace;
+        window.populatePlayers = populatePlayers;
+        window.populateTeams = populateTeams;
+        window.populateDrivers = populateDrivers;
+        window.populateConstructors = populateConstructors;
+        window.populateCalendar = populateCalendar;
+        window.saveChanges = saveChanges;
+</script>
 </body>
 </html>

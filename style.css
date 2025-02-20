@@ -1,4 +1,6 @@
-/* Ensure body takes full viewport height */
+/* ======================= */
+/* === GENERAL STYLING === */
+/* ======================= */
 body {
     font-family: Helvetica, sans-serif;
     margin: 0;
@@ -10,7 +12,6 @@ body {
     min-height: 100vh; /* Full viewport height */
 }
 
-/* Header remains at the top */
 header {
     background-color: #fff;
     color: #333;
@@ -19,12 +20,10 @@ header {
     width: 100%; /* Full width */
 }
 
-/* Main content area grows to fill space between header and footer */
 main {
     flex: 1; /* Allows this section to grow and fill available space */
 }
 
-/* Footer stays at the bottom */
 footer {
     text-align: center;
     padding: 10px;
@@ -32,13 +31,15 @@ footer {
     color: #333;
     width: 100%;
 }
-/* ---------- Main Results Table (Scored Results) ---------- */
+
+/* ======================== */
+/* === TABLE FORMATIING === */
+/* ======================== */
 #mainResultsTable {
   width: 100%;
   table-layout: auto; /* Allow columns to adjust automatically */
 }
 
-/* Combined styling for both mainResultsTable and player-results-table */
 #mainResultsTable th,
 #player-results-table th, #standings-table th, #standings-team-table th {
   background-color: #ddd; /* Light grey header */
@@ -74,7 +75,6 @@ footer {
   background-color: white;
 }
 
-/* ---------- Unscored Results Table (Unscored Predictions) ---------- */
 #unscoredResultsTable {
   width: 100%;
   table-layout: auto;
@@ -101,7 +101,9 @@ footer {
   vertical-align: middle;
 }
 
-/* ---------- Loading Indicator Styles ---------- */
+/* ========================== */
+/* === LOADING INDICATORS === */
+/* ========================== */
 .loading-indicator {
   text-align: center;
   margin: 20px 0;
@@ -149,6 +151,9 @@ footer {
   to { left: 100%; }
 }
 
+/* ======================== */
+/* === FONTS LOADING IN === */
+/* ======================== */
 @font-face {
     font-family: 'Press Start 2P';
     src: url('/fonts/PressStart2P.ttf') format('truetype');
@@ -170,8 +175,9 @@ footer {
   font-style: normal;
 }
 
-    /* 2. Apply the custom font to your body text */
-   
+/* ==================== */
+/* === TEXT STYLING === */
+/* ==================== */
 .pixel-art-heading {
     font-family: 'Press Start 2P', Helvetica, sans-serif; /* Fallback fonts */
     font-size: 1.2rem; /* Adjust as needed */
@@ -284,6 +290,9 @@ footer {
   z-index: 2; /* Ensure it's above overlays */
 }
 
+/* ===================== */
+/* === BUTTON STYLES === */
+/* ===================== */
 .pixel-button {
   font-family: 'Press Start 2P', Helvetica, Arial, sans-serif;
   font-size: 0.8rem;
@@ -376,7 +385,9 @@ footer {
   border-color: #777;
 }
 
-/* ===== Base Dropdown Menu ===== */
+/* ======================= */
+/* === DROPDOWN STYLES === */
+/* ======================= */
 .pixel-dropdown {
   position: relative;
   display: inline-block;
@@ -438,7 +449,6 @@ footer {
   display: block;
 }
 
-/* ===== Dark Theme Variant ===== */
 .pixel-dropdown.dark .pixel-button {
   color: #fff;
   background-color: #000;
@@ -464,7 +474,9 @@ footer {
   background-color: #444;
 }
   
-/* ---------- Countdown Timer Styling ---------- */
+/* =============================== */
+/* === COUNTDOWN TIMER STYLING === */
+/* =============================== */
 #countdown-timer {
   background-color: #333;      /* Dark grey background */
   color: #fff;                 /* White text */
@@ -484,7 +496,6 @@ footer {
   letter-spacing: 0.05em;
 }
 
-/* ---------- Form Countdown Timer Styling ---------- */
 #form-countdown-container, #card-countdown-container, #casino-countdown-container {
   background-color: #f0f0f0;      /* Light grey background */
   color: #333;                  /* Dark text */
@@ -506,7 +517,9 @@ footer {
   letter-spacing: 0.05em;
 }
 
-/* ===== Bootstrap Underline Tabs with Pixel Font ===== */
+/* ========================= */
+/* === UNDERLINE STYLING === */
+/* ========================= */
 .nav-underline .nav-item .nav-link {
   font-family: 'Pixeloid Sans', Helvetica, Arial, sans-serif; /* Apply Pixel Font */
   font-size: 1rem;  /* Smaller font size */
@@ -523,7 +536,9 @@ footer {
   border-bottom: 4px solid #606060; /* Lighter underline on hover */
 }
 
-/* ------ CASINO ------- */
+/* ============================== */
+/* === CASINO GENERAL STYLING === */
+/* ============================== */
 /* Casino Background */
 #casino-container {
   background-color: #3e8948;
@@ -572,8 +587,6 @@ footer {
   font-weight: bold;
 }
 
-
-
 .bet-amount {
   font-size: 20px;
   font-weight: bold;
@@ -584,7 +597,6 @@ footer {
   border: none;
 }
 
-
 /* Question wraps above on small screens */
 @media (max-width: 600px) {
   .bet-question {
@@ -594,10 +606,9 @@ footer {
   }
 }
 
-
-
-/* ------ CASINO BUTTON STYLES ------- */
-
+/* ============================ */
+/* === CASINO BUTTON STYLES === */
+/* ============================ */
 /* Bet Buttons */
 .bet-button {
   font-family: 'Press Start 2P', Helvetica, Arial, sans-serif;
@@ -732,6 +743,9 @@ footer {
   to { left: 100%; }
 }
 
+/* ========================== */
+/* === PIXEL ALERT STYLES === */
+/* ========================== */
 /* Base 8-bit style alert */
 .pixel-alert {
   padding: 1rem;
@@ -783,7 +797,9 @@ footer {
   border-color: #bee5eb;
 }
 
-
+/* ============================ */
+/* === LOGIN SYSTEM STYLING === */
+/* ============================ */
 /* Hide input text and replace with dots */
 #login-system-pin-input {
   -webkit-text-security: disc; /* For Webkit browsers (Chrome, Safari) */

@@ -238,13 +238,13 @@
     <p>&copy; 2025 F1 Predictions Form</p>
   </footer>
   
-  <!-- Main Form Script -->
-  <script type="module">
+<script type="module">
     import { getCookie, generateFormBlocks } from '/script.js';
-    
     let hasPreviousSubmission = false;
     
-    // FETCH RACE DETAILS
+  // ==========================
+  // === FETCH RACE DETAILS ===
+  // ==========================
     async function fetchRaceDetails() {
       try {
         const { data: formDetails, error: formDetailsError } = await supabase
@@ -274,7 +274,7 @@
       }
     }
     
-    // START FORM COUNTDOWN TIMER
+    // Start Form Countdown Timer
     function startFormCountdown(targetDate, onEnd) {
       const countdownElement = document.getElementById("form-countdown");
       if (!countdownElement) {
@@ -302,7 +302,7 @@
       }, 1000);
     }
     
-    // CHECK FORM ENABLED STATUS
+    // Check Form Enabled Status
     async function checkFormStatus() {
       try {
         const { data: formDetails, error: formDetailsError } = await supabase
@@ -321,7 +321,7 @@
       }
     }
     
-    // FETCH FORM CONFIGURATION
+    // Fetch Form Configuration
     async function fetchFormConfig() {
       const { data, error } = await supabase
         .from('form_configuration')
@@ -333,62 +333,62 @@
       window.formConfig = data;
     }
     
-    // LOAD EXISTING SUBMISSIONS & PRE-FILL DATA
-    // LOAD EXISTING SUBMISSIONS & PRE-FILL DATA
-async function loadExistingSubmissions() {
-  try {
-    // Get the current race number
-    const { data: formDetails, error: formDetailsError } = await supabase
-      .from('form_details')
-      .select('race_number')
-      .eq('id', 1)
-      .single();
-    if (formDetailsError) {
-      console.error('Error fetching form details:', formDetailsError);
-      return;
-    }
-    const raceNumber = formDetails.race_number;
-    
-    // Get the playerId from cookie and cast to Number
-    const playerIdStr = getCookie("playerId");
-    if (!playerIdStr) {
-      console.warn("No player logged in. Skipping loadExistingSubmissions.");
-      window.previousFormData = {};
-      hasPreviousSubmission = false;
-      return;
-    }
-    const playerId = Number(playerIdStr);
-    
-    // Query for an existing submission for this race and player.
-    const { data: previousResponses, error: responsesError } = await supabase
-      .from('form_raw')
-      .select('*')
-      .eq('race_number', raceNumber)
-      .eq('player_id', playerId)
-      .single();
-      
-    if (responsesError) {
-      // If no submission exists, Supabase returns an error with code "PGRST116".
-      if (responsesError.code === "PGRST116") {
-        window.previousFormData = {};
-        hasPreviousSubmission = false;
-      } else {
-        console.error('Error fetching previous responses:', responsesError);
+  // =================================================
+  // === LOAD EXISTING SUBMISSIONS & PRE-FILL DATA ===
+  // =================================================
+    async function loadExistingSubmissions() {
+      try {
+        // Get the current race number
+        const { data: formDetails, error: formDetailsError } = await supabase
+          .from('form_details')
+          .select('race_number')
+          .eq('id', 1)
+          .single();
+        if (formDetailsError) {
+          console.error('Error fetching form details:', formDetailsError);
+          return;
+        }
+        const raceNumber = formDetails.race_number;
+        
+        // Get the playerId from cookie and cast to Number
+        const playerIdStr = getCookie("playerId");
+        if (!playerIdStr) {
+          console.warn("No player logged in. Skipping loadExistingSubmissions.");
+          window.previousFormData = {};
+          hasPreviousSubmission = false;
+          return;
+        }
+        const playerId = Number(playerIdStr);
+        
+        // Query for an existing submission for this race and player.
+        const { data: previousResponses, error: responsesError } = await supabase
+          .from('form_raw')
+          .select('*')
+          .eq('race_number', raceNumber)
+          .eq('player_id', playerId)
+          .single();
+          
+        if (responsesError) {
+          // If no submission exists, Supabase returns an error with code "PGRST116".
+          if (responsesError.code === "PGRST116") {
+            window.previousFormData = {};
+            hasPreviousSubmission = false;
+          } else {
+            console.error('Error fetching previous responses:', responsesError);
+          }
+          return;
+        }
+        
+        // If a record was found, save it and set the flag.
+        window.previousFormData = previousResponses;
+        hasPreviousSubmission = true;
+        console.log('Existing Submissions:', window.previousFormData);
+      } catch (error) {
+        console.error('Error in loadExistingSubmissions:', error);
       }
-      return;
     }
-    
-    // If a record was found, save it and set the flag.
-    window.previousFormData = previousResponses;
-    hasPreviousSubmission = true;
-    console.log('Existing Submissions:', window.previousFormData);
-  } catch (error) {
-    console.error('Error in loadExistingSubmissions:', error);
-  }
-}
 
-    
-    // PREFILL FORM RESPONSES
+    // Prefill form responses
     async function prefillFormResponses() {
       if (!window.previousFormData || Object.keys(window.previousFormData).length === 0) {
         console.log("No previous form data found. Skipping pre-fill.");
@@ -410,7 +410,9 @@ async function loadExistingSubmissions() {
       console.log("Form pre-filled successfully.");
     }
     
-    // AUTO-FILL PLAYER FIELD ON FORM
+  // ======================================
+  // === AUTO-FILL PLAYER FIELD ON FORM ===
+  // ======================================
     function autofillFormPlayer() {
       const playerId = getCookie("playerId");
       const hiddenInput = document.getElementById("input-1");       // hidden field for submission
@@ -431,46 +433,47 @@ async function loadExistingSubmissions() {
     
     // LOAD STARTING GRID IMAGE
     async function loadStartingGridImage() {
-  console.log("Loading starting grid image...");
-  
-  const startingGridImage = document.getElementById("startingGridImage");
-  const placeholderContainer = document.getElementById("startingGridPlaceholderContainer");
-  
-  const bucketName = "media";
-  const fileNamePrefix = "current_starting_grid";
-  const fileExtensions = ["png", "jpg", "jpeg"];
-  
-  for (const ext of fileExtensions) {
-    const fileName = `${fileNamePrefix}.${ext}`;
-    const { data, error } = await supabase.storage
-      .from(bucketName)
-      .download(fileName);
-    
-    if (error) {
-      console.log(`Error loading ${fileName}:`, error.message);
-    } else {
-      console.log(`Loaded ${fileName}`);
-      const url = URL.createObjectURL(data);
-      startingGridImage.src = url;
+      console.log("Loading starting grid image...");
       
-      // When the image loads, hide the placeholder and show the image
-      startingGridImage.onload = function() {
-        placeholderContainer.style.display = 'none';
-        startingGridImage.style.display = 'block';
-      };
+      const startingGridImage = document.getElementById("startingGridImage");
+      const placeholderContainer = document.getElementById("startingGridPlaceholderContainer");
       
-      return; // Stop trying other extensions once one loads
+      const bucketName = "media";
+      const fileNamePrefix = "current_starting_grid";
+      const fileExtensions = ["png", "jpg", "jpeg"];
+      
+      for (const ext of fileExtensions) {
+        const fileName = `${fileNamePrefix}.${ext}`;
+        const { data, error } = await supabase.storage
+          .from(bucketName)
+          .download(fileName);
+        
+        if (error) {
+          console.log(`Error loading ${fileName}:`, error.message);
+        } else {
+          console.log(`Loaded ${fileName}`);
+          const url = URL.createObjectURL(data);
+          startingGridImage.src = url;
+          
+          // When the image loads, hide the placeholder and show the image
+          startingGridImage.onload = function() {
+            placeholderContainer.style.display = 'none';
+            startingGridImage.style.display = 'block';
+          };
+          
+          return; // Stop trying other extensions once one loads
+        }
+      }
+      
+      console.error("No matching file found");
+      startingGridImage.src = "";
+      // Optionally, update the placeholder to inform the user no image is available.
+      placeholderContainer.innerHTML = "<p class='text-center'>No image available</p>";
     }
-  }
-  
-  console.error("No matching file found");
-  startingGridImage.src = "";
-  // Optionally, update the placeholder to inform the user no image is available.
-  placeholderContainer.innerHTML = "<p class='text-center'>No image available</p>";
-}
 
-    
-    // MAIN FORM PAGE LOGIC
+  // ===============================
+  // === MAIN FORM PAGE FUNCTION ===
+  // ===============================
     document.addEventListener('DOMContentLoaded', async () => {
       const formEnabled = await checkFormStatus();
       const raceDetails = await fetchRaceDetails();
@@ -506,28 +509,25 @@ async function loadExistingSubmissions() {
       const loadingText = document.getElementById('loadingText');
       
       // Fetch form configuration and previous submission (if any)
-// Fetch form configuration and previous submission (if any)
-await fetchFormConfig();
-await loadExistingSubmissions();
+      await fetchFormConfig();
+      await loadExistingSubmissions();
 
-// Generate form blocks dynamically
-await generateFormBlocks();
+      // Generate form blocks dynamically
+      await generateFormBlocks();
 
-// If a previous submission exists, update the loading indicator, prefill the form responses,
-// and display the alert that existing predictions have been pre-filled.
-if (hasPreviousSubmission && window.previousFormData && Object.keys(window.previousFormData).length > 0) {
-  if (loadingText) {
-    loadingText.textContent = "Loading existing submissions...";
-  }
-  await prefillFormResponses();
-  // Display the alert indicating that existing predictions have been pre-filled.
-  document.getElementById("repeated-predictions-alert").classList.remove("d-none");
-} else {
-  console.log("No previous form data found. Skipping pre-fill.");
-}
+      // If a previous submission exists, update the loading indicator, prefill the form responses,
+      // and display the alert that existing predictions have been pre-filled.
+      if (hasPreviousSubmission && window.previousFormData && Object.keys(window.previousFormData).length > 0) {
+        if (loadingText) {
+          loadingText.textContent = "Loading existing submissions...";
+        }
+        await prefillFormResponses();
+        // Display the alert indicating that existing predictions have been pre-filled.
+        document.getElementById("repeated-predictions-alert").classList.remove("d-none");
+      } else {
+        console.log("No previous form data found. Skipping pre-fill.");
+      }
 
-
-  
       // Auto-fill the player field (both hidden and visible)
       autofillFormPlayer();
       // Load the starting grid image
@@ -620,109 +620,111 @@ if (hasPreviousSubmission && window.previousFormData && Object.keys(window.previ
           return;
         }
 
-        // *** NEW: Instead of using localStorage, simply redirect to confirmation.
+        // Redirect to confirmation page
         // On the confirmation page, re-query the submission (or use the playerId cookie) as needed.
         window.location.href = '/confirmation';
       });
     });
-// Helper function: Clears all pre-filled responses (inputs 2 to 28), including radio groups.
-function clearFormPrefill() {
-  for (let i = 2; i <= 28; i++) {
-    // For each input group (radio buttons, text inputs, etc.)
-    const elements = document.getElementsByName(`input-${i}`);
-    if (elements && elements.length > 0) {
-      Array.from(elements).forEach(element => {
-        if (element.type === "radio") {
-          element.checked = false;
-        } else {
-          element.value = "";
+
+  // ========================
+  // === HELPER FUNCTIONS ===
+  // ========================
+    // Helper function: Clears all pre-filled responses (inputs 2 to 28), including radio groups.
+    function clearFormPrefill() {
+      for (let i = 2; i <= 28; i++) {
+        // For each input group (radio buttons, text inputs, etc.)
+        const elements = document.getElementsByName(`input-${i}`);
+        if (elements && elements.length > 0) {
+          Array.from(elements).forEach(element => {
+            if (element.type === "radio") {
+              element.checked = false;
+            } else {
+              element.value = "";
+            }
+          });
         }
-      });
-    }
-  }
-  // Also clear any stored previous form data.
-  window.previousFormData = {};
-}
-
-// Listen for the custom "loginStateChanged" event dispatched from script.js.
-document.addEventListener("loginStateChanged", async (event) => {
-  const { loggedIn } = event.detail;
-  
-  // Always update the player field.
-  autofillFormPlayer();
-  
-  if (loggedIn) {
-    // Re-run the prefill checks by re-loading any existing submissions.
-    await loadExistingSubmissions();
-    
-    // If there is previous submission data, prefill the form and show the alert.
-    if (hasPreviousSubmission && window.previousFormData && Object.keys(window.previousFormData).length > 0) {
-      prefillFormResponses();
-      document.getElementById("repeated-predictions-alert").classList.remove("d-none");
-    } else {
-      // If no previous data is found, hide the alert.
-      document.getElementById("repeated-predictions-alert").classList.add("d-none");
-    }
-  } else {
-    // Logged out: Update the form to reflect a logged-out state.
-    const hiddenInput = document.getElementById("input-1");       // Hidden field for submission.
-    const visibleInput = document.getElementById("input-1-visible"); // Disabled field showing player name.
-    const registerNotice = document.getElementById("register-notice");
-    
-    if (hiddenInput) {
-      hiddenInput.value = "";
-    }
-    if (visibleInput) {
-      visibleInput.value = "Please log in";
-    }
-    if (registerNotice) {
-      registerNotice.style.display = "block";
-    }
-    
-    // Clear any prefilled responses to prevent mixing data between players.
-    clearFormPrefill();
-    
-    // Hide the repeated predictions alert.
-    document.getElementById("repeated-predictions-alert").classList.add("d-none");
-  }
-});
-
-async function updateFormAlert() {
-  try {
-    // Fetch the form alert settings from form_details (assumes record with id=1)
-    const { data, error } = await supabase
-      .from('form_details')
-      .select('form_alert_text, form_alert_text_enabled')
-      .eq('id', 1)
-      .single();
-
-    if (error) {
-      console.error('Error fetching form details:', error.message);
-      return;
+      }
+      // Also clear any stored previous form data.
+      window.previousFormData = {};
     }
 
-    // Get the alert element
-    const alertDiv = document.getElementById('form-alert-text');
-    if (!alertDiv) return;
+    // Listen for the custom "loginStateChanged" event dispatched from script.js.
+    document.addEventListener("loginStateChanged", async (event) => {
+      const { loggedIn } = event.detail;
+      
+      // Always update the player field.
+      autofillFormPlayer();
+      
+      if (loggedIn) {
+        // Re-run the prefill checks by re-loading any existing submissions.
+        await loadExistingSubmissions();
+        
+        // If there is previous submission data, prefill the form and show the alert.
+        if (hasPreviousSubmission && window.previousFormData && Object.keys(window.previousFormData).length > 0) {
+          prefillFormResponses();
+          document.getElementById("repeated-predictions-alert").classList.remove("d-none");
+        } else {
+          // If no previous data is found, hide the alert.
+          document.getElementById("repeated-predictions-alert").classList.add("d-none");
+        }
+      } else {
+        // Logged out: Update the form to reflect a logged-out state.
+        const hiddenInput = document.getElementById("input-1");       // Hidden field for submission.
+        const visibleInput = document.getElementById("input-1-visible"); // Disabled field showing player name.
+        const registerNotice = document.getElementById("register-notice");
+        
+        if (hiddenInput) {
+          hiddenInput.value = "";
+        }
+        if (visibleInput) {
+          visibleInput.value = "Please log in";
+        }
+        if (registerNotice) {
+          registerNotice.style.display = "block";
+        }
+        
+        // Clear any prefilled responses to prevent mixing data between players.
+        clearFormPrefill();
+        
+        // Hide the repeated predictions alert.
+        document.getElementById("repeated-predictions-alert").classList.add("d-none");
+      }
+    });
 
-    // Check if the alert should be enabled
-    if (data.form_alert_text_enabled) {
-      alertDiv.classList.remove('d-none');  // Show the alert
-      alertDiv.textContent = data.form_alert_text;  // Set the alert text
-    } else {
-      alertDiv.classList.add('d-none');  // Keep the alert hidden
+    async function updateFormAlert() {
+      try {
+        // Fetch the form alert settings from form_details (assumes record with id=1)
+        const { data, error } = await supabase
+          .from('form_details')
+          .select('form_alert_text, form_alert_text_enabled')
+          .eq('id', 1)
+          .single();
+
+        if (error) {
+          console.error('Error fetching form details:', error.message);
+          return;
+        }
+
+        // Get the alert element
+        const alertDiv = document.getElementById('form-alert-text');
+        if (!alertDiv) return;
+
+        // Check if the alert should be enabled
+        if (data.form_alert_text_enabled) {
+          alertDiv.classList.remove('d-none');  // Show the alert
+          alertDiv.textContent = data.form_alert_text;  // Set the alert text
+        } else {
+          alertDiv.classList.add('d-none');  // Keep the alert hidden
+        }
+      } catch (err) {
+        console.error('Error updating form alert:', err);
+      }
     }
-  } catch (err) {
-    console.error('Error updating form alert:', err);
-  }
-}
 
-// Call the function on page load
-document.addEventListener('DOMContentLoaded', updateFormAlert);
-
-
-  </script>
-  <!-- Bootstrap JS Bundle -->
-  <script src="/js/bootstrap.bundle.min.js"></script>
+    // Call the function on page load
+    document.addEventListener('DOMContentLoaded', updateFormAlert);
+</script>
+<!-- Bootstrap JS Bundle -->
+<script src="/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

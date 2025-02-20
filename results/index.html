@@ -217,9 +217,11 @@
     <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
         <p>&copy; 2025 F1 Predictions Form</p>
     </footer>
-    <script type="module">
-      import { getCookie, getColorForLetter } from '/script.js';
-        // Helper: Retrieve an entire table from Supabase.
+<script type="module">
+    import { getCookie, getColorForLetter } from '/script.js';
+  // ===========================
+  // === GET TABLE FUNCTIONS ===
+  // ===========================
     async function getTable(tableName) {
       const { data, error } = await supabase.from(tableName).select('*');
       if (error) {
@@ -229,6 +231,9 @@
       return data;
     }
 
+  // =============================
+  // === SEASON PLAYER RESULTS ===
+  // =============================
     async function loadFullSeasonResults() {
       try {
         // 1. Retrieve the current year from form_details.
@@ -455,8 +460,9 @@
       loadFullSeasonResults();
     });
 
-
-    // --- Team Season Total Display Function ---
+  // ===========================
+  // === SEASON TEAM RESULTS ===
+  // ===========================
     // Main function to load the full season team results.
     async function loadFullSeasonTeamResults() {
       try {
@@ -718,13 +724,11 @@
       loadFullSeasonTeamResults();
     });
 
-    // -----------------
-    // -----------------
-    // -----------------
-
-    // ---------- RACE OPTIONS LOADING ----------
-    // This function builds the dropdown by fetching the current year from form_details
-    // and then querying team_scoring_{year} to build a distinct list of races.
+    
+  // ================================================
+  // === RACE BY RACE RESULTS - LOAD RACE OPTIONS ===
+  // ================================================
+    // Race Options Loading
     async function loadRaceOptionsResults() {
       try {
         // Retrieve current year from form_details (assumes a single row with id=1)
@@ -794,102 +798,87 @@
       }
     }
 
+  // ==================================================
+  // === RACE BY RACE RESULTS - LOAD PLAYER RESULTS ===
+  // ==================================================
+    async function loadRaceResultsPlayer() {
+      try {
+        // Show the loading indicator
+        document.getElementById('playerLoading').style.display = 'block';
 
-    // ---------- PLAYER RESULTS LOADING ----------
-    // This function loads player results from form_responses_{year} for the selected race.
-    // ---------- PLAYER RESULTS LOADING ----------
-async function loadRaceResultsPlayer() {
-  try {
-    // Show the loading indicator
-    document.getElementById('playerLoading').style.display = 'block';
+        // FETCH DRIVERS AND CONSTRUCTORS
+        const { data: drivers, error: driversError } = await supabase
+          .from('drivers')
+          .select('*');
+        if (driversError) {
+          console.error("Error fetching drivers:", driversError.message);
+          document.getElementById('playerLoading').style.display = 'none';
+          return;
+        }
 
-    // ---------------------------------------
-    // FETCH DRIVERS AND CONSTRUCTORS
-    // ---------------------------------------
-    const { data: drivers, error: driversError } = await supabase
-      .from('drivers')
-      .select('*');
-    if (driversError) {
-      console.error("Error fetching drivers:", driversError.message);
-      document.getElementById('playerLoading').style.display = 'none';
-      return;
+        const { data: constructors, error: constructorsError } = await supabase
+          .from('constructors')
+          .select('*');
+        if (constructorsError) {
+          console.error("Error fetching constructors:", constructorsError.message);
+          document.getElementById('playerLoading').style.display = 'none';
+          return;
+        }
+
+        // GET CURRENT YEAR AND SELECTED RACE
+        const { data: formDetails, error: formDetailsError } = await supabase
+          .from('form_details')
+          .select('*')
+          .eq('id', 1)
+          .single();
+        if (formDetailsError) {
+          console.error("Error fetching form_details:", formDetailsError.message);
+          document.getElementById('playerLoading').style.display = 'none';
+          return;
+        }
+        const currentYear = formDetails.current_year;
+        const raceNumber = document.getElementById('team-select').value;
+
+        // FETCH FORM RESPONSES FOR THE SELECTED RACE
+        const formResponsesTable = `form_responses_${currentYear}`;
+        const { data: formResponses, error: formResponsesError } = await supabase
+          .from(formResponsesTable)
+          .select('*')
+          .eq('race_number', raceNumber);
+        if (formResponsesError) {
+          console.error("Error fetching form responses:", formResponsesError.message);
+          document.getElementById('playerLoading').style.display = 'none';
+          return;
+        }
+
+        // Process responses (assuming same structure as your home page)
+        const questions = formResponses.find(response => response.entry_type === 'questions');
+        const results = formResponses.find(response => response.entry_type === 'results');
+        const players = formResponses.filter(response => response.entry_type === 'player');
+        const lowestScores = formResponses.filter(response => response.entry_type === 'player_lowest_score');
+
+    // REORDER THE PLAYERS ARRAY SO THAT THE LOGGED-IN PLAYER IS FIRST
+    const currentUserId = getCookie("playerId");
+    let userResultPulled = false; // Flag to track if the current user's result exists
+
+    if (currentUserId) {
+      const userIndex = players.findIndex(player => player.player_id == currentUserId);
+      if (userIndex !== -1) {
+        userResultPulled = true;
+        const [userPlayer] = players.splice(userIndex, 1);
+        players.unshift(userPlayer);
+      }
     }
 
-    const { data: constructors, error: constructorsError } = await supabase
-      .from('constructors')
-      .select('*');
-    if (constructorsError) {
-      console.error("Error fetching constructors:", constructorsError.message);
-      document.getElementById('playerLoading').style.display = 'none';
-      return;
+    // ENABLE/DISABLE THE "PIN BOTH" CHECKBOX BASED ON THE PRESENCE OF THE USER RESULT
+    const pinBothCheckbox = document.getElementById('pinBothColumns');
+    if (userResultPulled) {
+      pinBothCheckbox.disabled = false;
+    } else {
+      pinBothCheckbox.disabled = true;
     }
 
-    // ---------------------------------------
-    // GET CURRENT YEAR AND SELECTED RACE
-    // ---------------------------------------
-    const { data: formDetails, error: formDetailsError } = await supabase
-      .from('form_details')
-      .select('*')
-      .eq('id', 1)
-      .single();
-    if (formDetailsError) {
-      console.error("Error fetching form_details:", formDetailsError.message);
-      document.getElementById('playerLoading').style.display = 'none';
-      return;
-    }
-    const currentYear = formDetails.current_year;
-    const raceNumber = document.getElementById('team-select').value;
-
-    // ---------------------------------------
-    // FETCH FORM RESPONSES FOR THE SELECTED RACE
-    // ---------------------------------------
-    const formResponsesTable = `form_responses_${currentYear}`;
-    const { data: formResponses, error: formResponsesError } = await supabase
-      .from(formResponsesTable)
-      .select('*')
-      .eq('race_number', raceNumber);
-    if (formResponsesError) {
-      console.error("Error fetching form responses:", formResponsesError.message);
-      document.getElementById('playerLoading').style.display = 'none';
-      return;
-    }
-
-    // Process responses (assuming same structure as your home page)
-    const questions = formResponses.find(response => response.entry_type === 'questions');
-    const results = formResponses.find(response => response.entry_type === 'results');
-    const players = formResponses.filter(response => response.entry_type === 'player');
-    const lowestScores = formResponses.filter(response => response.entry_type === 'player_lowest_score');
-
-    // ---------------------------------------
-// REORDER THE PLAYERS ARRAY SO THAT THE LOGGED-IN PLAYER IS FIRST
-// ---------------------------------------
-const currentUserId = getCookie("playerId");
-let userResultPulled = false; // Flag to track if the current user's result exists
-
-if (currentUserId) {
-  const userIndex = players.findIndex(player => player.player_id == currentUserId);
-  if (userIndex !== -1) {
-    userResultPulled = true;
-    const [userPlayer] = players.splice(userIndex, 1);
-    players.unshift(userPlayer);
-  }
-}
-
-// ---------------------------------------
-// ENABLE/DISABLE THE "PIN BOTH" CHECKBOX BASED ON THE PRESENCE OF THE USER RESULT
-// ---------------------------------------
-const pinBothCheckbox = document.getElementById('pinBothColumns');
-if (userResultPulled) {
-  pinBothCheckbox.disabled = false;
-} else {
-  pinBothCheckbox.disabled = true;
-}
-
-
-
-    // ---------------------------------------
     // BUILD THE PLAYER RESULTS TABLE
-    // ---------------------------------------
     const playerTable = document.getElementById('player-results-table');
     // Hide the table until rebuilt
     playerTable.style.display = 'none';
@@ -1007,10 +996,11 @@ if (userResultPulled) {
 
     playerTable.appendChild(tbody);
     playerTable.style.display = 'table';
-
-    // ---------------------------------------
+  
+  // ================================================
+  // === RACE BY RACE RESULTS - PLAYER FORMATTING ===
+  // ================================================
     // APPLY FORMATTING (as on the home page)
-    // ---------------------------------------
     const applyFormattingScored = (cell, value) => {
       if (/^[A-Z]{3}$/.test(value)) {
         const driver = drivers.find(driver => driver.abbreviation === value);
@@ -1042,9 +1032,7 @@ if (userResultPulled) {
       applyFormattingScored(cell, cell.textContent);
     });
 
-    // ---------------------------------------
     // HIGHLIGHTING FUNCTIONS (totals, etc.)
-    // ---------------------------------------
     const highlightHighest = (selector, colors) => {
       const cells = Array.from(document.querySelectorAll(selector));
       const values = cells.map(cell => parseFloat(cell.textContent)).filter(value => !isNaN(value));
@@ -1080,9 +1068,7 @@ if (userResultPulled) {
     highlightHighest('td.grand_total_score', ['gold', 'silver', '#cd7f32']);
     highlightClosestScore('td.form_id_28_score', 'lightyellow');
 
-    // ---------------------------------------
     // SET UP THE TOGGLE FOR DETAILED SCORING
-    // ---------------------------------------
     document.getElementById('toggleScoresPlayer').addEventListener('change', (event) => {
       const showScores = event.target.checked;
       document.querySelectorAll('#player-results-table tbody td').forEach(cell => {
@@ -1107,9 +1093,7 @@ if (userResultPulled) {
       lowestScoresDiv.textContent = `Lowest Score: ${lowestScoresText}`;
     }
 
-    // ---------------------------------------
     // ADD PINNING COLUMNS LOGIC FOR PLAYER RESULTS TABLE
-    // ---------------------------------------
     // Helper functions specific to the player results table:
     function getColumnWidthPlayer(index) {
       const headerRow = document.querySelector("#player-results-table thead tr");
@@ -1162,9 +1146,7 @@ if (userResultPulled) {
       updatePinnedColumnsPlayer();
     }
 
-    // ---------------------------------------
     // APPLY DYNAMIC HEADER COLORING FOR THE LOGGED-IN PLAYER
-    // ---------------------------------------
     // Helper functions for header coloring:
     function getColorForLetter(letter) {
       const colors = [
@@ -1234,20 +1216,17 @@ if (userResultPulled) {
       console.warn("No current user found for header coloring.");
     }
 
-    // ---------------------------------------
-    // FINALLY, HIDE THE LOADING INDICATOR
-    // ---------------------------------------
-    document.getElementById('playerLoading').style.display = 'none';
-  } catch (err) {
-    console.error("loadRaceResultsPlayer error:", err);
-    document.getElementById('playerLoading').style.display = 'none';
+      // Hide Loading Indicator
+      document.getElementById('playerLoading').style.display = 'none';
+    } catch (err) {
+      console.error("loadRaceResultsPlayer error:", err);
+      document.getElementById('playerLoading').style.display = 'none';
+    }
   }
-}
 
-
-
-
-    // ---------- TEAM RESULTS LOADING ----------
+  // ===========================================
+  // === RACE BY RACE RESULTS - TEAM RESULTS ===
+  // ===========================================
     // This function loads team results for the selected race from team_scoring_{year} and builds the team results table.
     async function loadRaceResultsTeam() {
       try {
@@ -1398,16 +1377,18 @@ if (userResultPulled) {
       }
     }
 
-    // ---------- INITIALIZATION ----------
+  // ======================
+  // === INITIALISATION ===
+  // ======================
     document.addEventListener("DOMContentLoaded", () => {
       loadRaceOptionsResults();
     });
 
     document.addEventListener("loginStateChanged", async (event) => {
-  loadRaceResultsPlayer();
-});
-    </script>
-    <!-- Bootstrap JS Bundle (Local) -->
-    <script src="/js/bootstrap.bundle.min.js"></script>
+      loadRaceResultsPlayer();
+    });
+</script>
+<!-- Bootstrap JS Bundle (Local) -->
+<script src="/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
