@@ -1725,6 +1725,9 @@
 
             alert("Calendar saved successfully!");
             await fetchCalendar();
+
+            // Re-disable the save button since no unsaved changes remain.
+            document.getElementById("save-calendar").disabled = true;
         }
 
 
@@ -1772,10 +1775,15 @@
                 return;
             }
 
+            // Clear all fields in the add race section
+            document.getElementById("new-race-number").value = "";
+            document.getElementById("new-race-name").value = "";
+            document.getElementById("new-race-country").value = "";
+            document.getElementById("new-race-date").value = "";
+
             await fetchCalendar();
             alert("Race added successfully!");
         }
-
 
     // ====================================
     // === COMBINED EDIT TABS FUNCTIONS ===
