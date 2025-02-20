@@ -22,9 +22,27 @@
 
     <!-- Encryption Script -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- script.js import -->
     <script type="module" src="/script.js"></script>
+
+    <style>
+      .chart-wrapper {
+    width: 100%; /* Let it fill the width */
+    max-width: 900px; /* Prevent it from becoming too wide */
+    height: 400px; /* Fixed height */
+    margin: 0 auto; /* Center it */
+    padding: 0 20px; /* Add padding on desktop */
+}
+
+@media (max-width: 768px) {
+    .chart-wrapper {
+        height: 500px; /* Increase height on smaller screens */
+        padding: 0 10px; /* Reduce padding */
+    }
+}
+    </style>
 </head>
 <body>
   <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999;"></div>
@@ -164,6 +182,11 @@
                     <!-- The table header and body will be injected via JS -->
                   </table>
                 </div>
+                <div class="container mt-4">
+                  <div class="chart-wrapper">
+                      <canvas id="standings-line-chart"></canvas>
+                  </div>                              
+                </div>
               </div>
               
 
@@ -175,6 +198,11 @@
                 <table id="full-season-team-table" class="table table-sm table-bordered">
                   <!-- Table header and body will be injected by JS -->
                 </table>
+              </div>
+              <div class="container mt-4">    
+                <div class="chart-wrapper">
+                    <canvas id="standings-team-line-chart"></canvas>
+                </div>                
               </div>
             </div>
 
@@ -1390,6 +1418,458 @@
 
     document.addEventListener("loginStateChanged", async (event) => {
       loadRaceResultsPlayer();
+    });
+
+  // =========================
+  // === PLAYER LINE CHART ===
+  // =========================
+  async function renderStandingsLineChart() {
+      try {
+        // 1. Retrieve current year from form_details.
+        const { data: formDetails, error: formDetailsError } = await supabase
+          .from('form_details')
+          .select('current_year')
+          .eq('id', 1)
+          .single();
+        if (formDetailsError) {
+          console.error('Error fetching form details:', formDetailsError);
+          return;
+        }
+        const currentYear = formDetails.current_year;
+
+        // 2. Retrieve season data.
+        const seasonTableName = `season_player_${currentYear}`;
+        const seasonData = await getTable(seasonTableName);
+        if (!seasonData || seasonData.length === 0) {
+          console.error("No season data available.");
+          return;
+        }
+
+        // 3. Get race names from the row where player_id === 0.
+        const raceNamesRow = seasonData.find(row => row.player_id === 0);
+        if (!raceNamesRow) {
+          console.error("No race names row found.");
+          return;
+        }
+        let lastRace = 0;
+        const raceLabels = [];
+        for (let i = 1; i <= 32; i++) {
+          const col = `race_${i}`;
+          let raceName = raceNamesRow[col];
+          if (raceName !== null && raceName !== "") {
+            // Strip any "(LS)" suffix and trim.
+            raceName = raceName.replace(/\(LS\)/g, "").trim();
+            raceLabels.push(raceName);
+            lastRace = i;
+          } else {
+            break;
+          }
+        }
+        if (lastRace === 0) {
+          console.error("No race names available.");
+          return;
+        }
+
+        // 4. Filter out player rows (player_id !== 0).
+        const playerRows = seasonData.filter(row => row.player_id !== 0);
+        if (!playerRows.length) {
+          console.error("No player data found.");
+          return;
+        }
+
+        // 5. Compute cumulative scores for each player.
+        const playerCumulativeScores = {};
+        playerRows.forEach(player => {
+          let cumulative = [];
+          let sum = 0;
+          for (let i = 1; i <= lastRace; i++) {
+            const col = `race_${i}`;
+            let scoreStr = player[col];
+            if (scoreStr !== null && scoreStr !== "") {
+              scoreStr = scoreStr.replace(/\(LS\)/g, "").trim();
+              const score = parseFloat(scoreStr);
+              if (!isNaN(score)) {
+                sum += score;
+              }
+            }
+            cumulative.push(sum);
+          }
+          playerCumulativeScores[player.player_id] = {
+            player_name: player.player_name,
+            cumulative: cumulative
+          };
+        });
+
+        // 6. Compute rankings for each race.
+        const playerRankings = {};
+        playerRows.forEach(player => {
+          playerRankings[player.player_id] = [];
+        });
+        for (let raceIndex = 0; raceIndex < lastRace; raceIndex++) {
+          const scores = playerRows.map(player => ({
+            player_id: player.player_id,
+            score: playerCumulativeScores[player.player_id].cumulative[raceIndex]
+          }));
+          scores.sort((a, b) => b.score - a.score);
+          let rank = 1;
+          let prevScore = null;
+          scores.forEach((item, index) => {
+            if (prevScore === null || item.score !== prevScore) {
+              rank = index + 1;
+            }
+            playerRankings[item.player_id].push(rank);
+            prevScore = item.score;
+          });
+        }
+
+        // 7. Build Chart.js datasets for each player.
+        const datasets = [];
+        const colors = [
+          '#e6194b', '#3cb44b', '#ffe119', '#4363d8',
+          '#f58231', '#911eb4', '#46f0f0', '#f032e6',
+          '#bcf60c', '#fabebe', '#008080', '#e6beff',
+          '#9a6324', '#fffac8', '#800000', '#aaffc3',
+          '#808000', '#ffd8b1', '#000075', '#808080'
+        ];
+        let colorIndex = 0;
+        playerRows.forEach(player => {
+          datasets.push({
+            label: player.player_name,
+            data: playerRankings[player.player_id],
+            fill: false,
+            borderColor: colors[colorIndex % colors.length],
+            backgroundColor: colors[colorIndex % colors.length],
+            borderWidth: 4,              // Thick lines for pixel-art feel.
+            tension: 0,                  // No smoothing.
+            pointStyle: 'rect',          // Square markers.
+            pointRadius: 5,
+            pointHoverRadius: 7
+          });
+          colorIndex++;
+        });
+        
+        // Sort datasets alphabetically by player name.
+        datasets.sort((a, b) => a.label.localeCompare(b.label));
+        
+        // 8. Determine max rank (number of players) for y-axis.
+        const maxRank = playerRows.length;
+
+        // 9. Create the chart.
+        const ctx = document.getElementById('standings-line-chart').getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: raceLabels,
+            datasets: datasets
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false, // Stops forced aspect ratio
+            layout: {
+                padding: 10,
+            },
+            onClick: (evt, activeEls) => {
+              if (activeEls.length > 0) {
+                const element = activeEls[0];
+                const datasetIndex = element.datasetIndex;
+                const playerName = datasets[datasetIndex].label;
+              }
+            },
+            plugins: {
+              title: {
+                display: true,
+                text: `Player Standings ${currentYear}`,
+                color: 'black',
+                font: {
+                  family: 'Pixeloid Sans Bold',
+                  size: 20,
+                }
+              },
+              legend: {
+                position: 'bottom',
+                labels: {
+                  font: {
+                    family: 'Pixeloid Sans'
+                  },
+                  color: 'black'
+                }
+              }
+            },
+            scales: {
+              y: {
+                reverse: true,    // So that rank 1 is at the top.
+                min: 1,
+                max: maxRank,
+                offset: true,     // Extra space so the top line isn’t cut off.
+                ticks: {
+                  stepSize: 1,
+                  padding: 10,
+                  font: {
+                    family: 'Pixeloid Sans'
+                  },
+                  color: 'black'
+                },
+                title: {
+                  display: true,
+                  text: 'Rank',
+                  font: {
+                    family: 'Pixeloid Sans'
+                  },
+                  color: 'black'
+                }
+              },
+              x: {
+                ticks: {
+                  font: {
+                    family: 'Pixeloid Sans'
+                  },
+                  color: 'black'
+                },
+                title: {
+                  display: false  // No x-axis label.
+                }
+              }
+            },
+            layout: {
+              padding: {
+                top: 20,
+                bottom: 20,
+                left: 10,
+                right: 10
+              }
+            }
+          }
+        });
+      } catch (err) {
+        console.error("Error rendering the standings chart:", err);
+      }
+    }
+
+  // =======================
+  // === TEAM LINE CHART ===
+  // =======================
+    async function renderTeamStandingsLineChart() {
+      try {
+        // 1. Retrieve current year from form_details.
+        const { data: formDetails, error: formDetailsError } = await supabase
+          .from('form_details')
+          .select('current_year')
+          .eq('id', 1)
+          .single();
+        if (formDetailsError) {
+          console.error('Error fetching form details:', formDetailsError);
+          return;
+        }
+        const currentYear = formDetails.current_year;
+
+        // 2. Retrieve season team data.
+        const seasonTeamTableName = `season_team_${currentYear}`;
+        const seasonTeamData = await getTable(seasonTeamTableName);
+        if (!seasonTeamData || seasonTeamData.length === 0) {
+          console.error("No season team data available.");
+          return;
+        }
+
+        // 3. Get race names from the row where team_id === 0.
+        const raceNamesRow = seasonTeamData.find(row => row.team_id === 0);
+        if (!raceNamesRow) {
+          console.error("No race names row found for teams.");
+          return;
+        }
+        let lastRace = 0;
+        const raceLabels = [];
+        for (let i = 1; i <= 32; i++) {
+          const col = `race_${i}`;
+          let raceName = raceNamesRow[col];
+          if (raceName !== null && raceName !== "") {
+            // Remove any tags (e.g. "(double)" or similar) and trim.
+            raceName = raceName.replace(/\(.*?\)/g, "").trim();
+            raceLabels.push(raceName);
+            lastRace = i;
+          } else {
+            break;
+          }
+        }
+        if (lastRace === 0) {
+          console.error("No race names available for teams.");
+          return;
+        }
+
+        // 4. Filter out the team rows (team_id !== 0).
+        const teamRows = seasonTeamData.filter(row => row.team_id !== 0);
+        if (!teamRows.length) {
+          console.error("No team data found.");
+          return;
+        }
+
+        // 5. Compute cumulative scores for each team.
+        const teamCumulativeScores = {};
+        teamRows.forEach(team => {
+          let cumulative = [];
+          let sum = 0;
+          for (let i = 1; i <= lastRace; i++) {
+            const col = `race_${i}`;
+            let scoreStr = team[col];
+            if (scoreStr !== null && scoreStr !== "") {
+              // Remove any tags such as "(double)".
+              scoreStr = scoreStr.replace(/\(.*?\)/g, "").trim();
+              const score = parseFloat(scoreStr);
+              if (!isNaN(score)) {
+                sum += score;
+              }
+            }
+            cumulative.push(sum);
+          }
+          teamCumulativeScores[team.team_id] = {
+            team_name: team.team_name,
+            cumulative: cumulative
+          };
+        });
+
+        // 6. Compute rankings for each race.
+        const teamRankings = {};
+        teamRows.forEach(team => {
+          teamRankings[team.team_id] = [];
+        });
+        for (let raceIndex = 0; raceIndex < lastRace; raceIndex++) {
+          const scores = teamRows.map(team => ({
+            team_id: team.team_id,
+            score: teamCumulativeScores[team.team_id].cumulative[raceIndex]
+          }));
+          scores.sort((a, b) => b.score - a.score);
+          let rank = 1;
+          let prevScore = null;
+          scores.forEach((item, index) => {
+            if (prevScore === null || item.score !== prevScore) {
+              rank = index + 1;
+            }
+            teamRankings[item.team_id].push(rank);
+            prevScore = item.score;
+          });
+        }
+
+        // 7. Build Chart.js datasets for each team.
+        const datasets = [];
+        const colors = [
+          '#e6194b', '#3cb44b', '#ffe119', '#4363d8',
+          '#f58231', '#911eb4', '#46f0f0', '#f032e6',
+          '#bcf60c', '#fabebe', '#008080', '#e6beff',
+          '#9a6324', '#fffac8', '#800000', '#aaffc3',
+          '#808000', '#ffd8b1', '#000075', '#808080'
+        ];
+        let colorIndex = 0;
+        teamRows.forEach(team => {
+          datasets.push({
+            label: team.team_name,
+            data: teamRankings[team.team_id],
+            fill: false,
+            borderColor: colors[colorIndex % colors.length],
+            backgroundColor: colors[colorIndex % colors.length],
+            borderWidth: 4,              // Thick lines for a pixel-art feel.
+            tension: 0,                  // No smoothing.
+            pointStyle: 'rect',          // Square markers.
+            pointRadius: 5,
+            pointHoverRadius: 7
+          });
+          colorIndex++;
+        });
+        
+        // Sort datasets alphabetically by team name.
+        datasets.sort((a, b) => a.label.localeCompare(b.label));
+        
+        // 8. Determine max rank (number of teams) for y-axis.
+        const maxRank = teamRows.length;
+
+        // 9. Create the chart.
+        const ctx = document.getElementById('standings-team-line-chart').getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: raceLabels,
+            datasets: datasets
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false, // Allow flexible sizing.
+            layout: {
+              padding: 10,
+            },
+            plugins: {
+              title: {
+                display: true,
+                text: `Team Standings ${currentYear}`,
+                color: 'black',
+                font: {
+                    family: 'Pixeloid Sans Bold',
+                    size: 20,
+                }
+              },
+              legend: {
+                position: 'bottom',
+                labels: {
+                  font: {
+                    family: 'Pixeloid Sans'
+                  },
+                  color: 'black'
+                }
+              }
+            },
+            scales: {
+              y: {
+                reverse: true,    // Rank 1 at the top.
+                min: 1,
+                max: maxRank,
+                offset: true,     // Extra space so the top line isn’t cut off.
+                ticks: {
+                  stepSize: 1,
+                  padding: 10,
+                  font: {
+                    family: 'Pixeloid Sans'
+                  },
+                  color: 'black'
+                },
+                title: {
+                  display: true,
+                  text: 'Rank',
+                  font: {
+                    family: 'Pixeloid Sans'
+                  },
+                  color: 'black'
+                }
+              },
+              x: {
+                ticks: {
+                  font: {
+                    family: 'Pixeloid Sans'
+                  },
+                  color: 'black'
+                },
+                title: {
+                  display: false  // No x-axis label.
+                }
+              }
+            },
+            layout: {
+              padding: {
+                top: 20,
+                bottom: 20,
+                left: 10,
+                right: 10
+              }
+            }
+          }
+        });
+      } catch (err) {
+        console.error("Error rendering the team standings chart:", err);
+      }
+    }
+
+  // ===============================
+  // === STANDINGS CHART LOADING ===
+  // ===============================
+    document.addEventListener("DOMContentLoaded", () => {
+        renderStandingsLineChart();
+      renderTeamStandingsLineChart();
     });
 </script>
 <!-- Bootstrap JS Bundle (Local) -->
