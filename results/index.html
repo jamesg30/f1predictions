@@ -179,7 +179,8 @@
             </div>
 
         </div>
-        <!-- LOGIN MODAL -->
+        
+<!-- LOGIN MODAL -->
 <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -190,13 +191,15 @@
       <div class="modal-body">
         <form id="login-form">
           <div class="mb-3">
-            <label for="login-player-name" class="form-label pixel-art-body">Select Player</label>
-            <select id="login-player-name" class="form-select pixel-art-body" required>
-              <!-- Options populated dynamically -->
-            </select>
+            <label for="login-player-name" class="form-label pixel-art-body">Name:</label>
+            <!-- Use an input with a datalist for suggestions -->
+            <input list="players-list" id="login-player-name" class="form-control pixel-art-body" required />
+            <datalist id="players-list">
+              <!-- Options will be populated dynamically -->
+            </datalist>
           </div>
           <div class="mb-3">
-            <label for="login-pin" class="form-label pixel-art-body">Enter PIN</label>
+            <label for="login-pin" class="form-label pixel-art-body">PIN:</label>
             <input type="password" id="login-pin" class="form-control pixel-art-body" maxlength="4" pattern="\d*" inputmode="numeric" required />
           </div>
           
@@ -206,12 +209,13 @@
               Remember me
             </label>
           </div>
-          <button type="submit" class="pixel-button">Login</button>
+          <button type="submit" class="pixel-button" disabled>Login</button>
         </form>
       </div>
     </div>
   </div>
 </div>
+
     </main>
  
     <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">

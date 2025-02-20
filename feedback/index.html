@@ -122,38 +122,40 @@
       </p>
     
     <!-- LOGIN MODAL -->
-    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title pixel-art-heading-2" id="loginModalLabel">Login</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title pixel-art-heading-2" id="loginModalLabel">Login</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="login-form">
+          <div class="mb-3">
+            <label for="login-player-name" class="form-label pixel-art-body">Name:</label>
+            <!-- Use an input with a datalist for suggestions -->
+            <input list="players-list" id="login-player-name" class="form-control pixel-art-body" required />
+            <datalist id="players-list">
+              <!-- Options will be populated dynamically -->
+            </datalist>
           </div>
-          <div class="modal-body">
-            <form id="login-form">
-              <div class="mb-3">
-                <label for="login-player-name" class="form-label pixel-art-body">Select Player</label>
-                <select id="login-player-name" class="form-select pixel-art-body" required>
-                  <!-- Options populated dynamically -->
-                </select>
-              </div>
-              <div class="mb-3">
-                <label for="login-pin" class="form-label pixel-art-body">Enter PIN</label>
-                <input type="password" id="login-pin" class="form-control pixel-art-body" maxlength="4" pattern="\d*" inputmode="numeric" required />
-              </div>
-              
-              <div class="mb-3">
-                <label for="rememberMe" class="form-check-label pixel-art-body">
-                  <input type="checkbox" id="rememberMe" class="form-check-input pixel-art-body" />
-                  Remember me
-                </label>
-              </div>
-              <button type="submit" class="pixel-button">Login</button>
-            </form>
+          <div class="mb-3">
+            <label for="login-pin" class="form-label pixel-art-body">PIN:</label>
+            <input type="password" id="login-pin" class="form-control pixel-art-body" maxlength="4" pattern="\d*" inputmode="numeric" required />
           </div>
-        </div>
+          
+          <div class="mb-3">
+            <label for="rememberMe" class="form-check-label pixel-art-body">
+              <input type="checkbox" id="rememberMe" class="form-check-input pixel-art-body" />
+              Remember me
+            </label>
+          </div>
+          <button type="submit" class="pixel-button" disabled>Login</button>
+        </form>
       </div>
     </div>
+  </div>
+</div>
     
   </main>
   

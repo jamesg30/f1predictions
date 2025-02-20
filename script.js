@@ -349,10 +349,15 @@ export function getCookie(name) {
       return;
     }
   
-    document.getElementById('login-player-name').innerHTML =
-      `<option value="" disabled selected>Select a name</option>` +
-      players.map(player => `<option value="${player.id}">${player.name}</option>`).join('');
+    // Populate the datalist for player names
+    const dataList = document.getElementById('players-list');
+    if (dataList) {
+      dataList.innerHTML = players
+        .map(player => `<option data-id="${player.id}" value="${player.name}"></option>`)
+        .join('');
+    }
   }
+  
   
   export function showAlert(message, type) {
     const alertContainer = document.getElementById('alert-container');
@@ -575,129 +580,191 @@ export function renderAvatar(element, settings, letter = 'A') {
     }
   }
   
-  export function updateLoginUI(playerData) {
-    const playerName = playerData.name;
-    
-    // Hide the "Log In" menu item.
-    const loginMenuItem = document.getElementById('loginMenuItem');
-    if (loginMenuItem) {
-      loginMenuItem.classList.add('d-none');
-    }
-    
-    // Show "Logged in as ..." text.
-    const loggedInUserDisplay = document.getElementById('loggedInUserDisplay');
-    if (loggedInUserDisplay) {
-      loggedInUserDisplay.innerHTML = `Logged in as <strong>${playerName}</strong>`;
-      loggedInUserDisplay.classList.remove('d-none');
-    }
-    
-    // Show the "Log Out" link.
-    const logoutMenuItem = document.getElementById('logoutMenuItem');
-    if (logoutMenuItem) {
-      logoutMenuItem.classList.remove('d-none');
-      const logoutBtn = document.getElementById('logoutBtn');
-      if (logoutBtn) {
-        logoutBtn.onclick = () => {
-          if (confirm('Are you sure you want to log out?')) {
-            clearCookie("playerId");
-            loggedInUserDisplay.classList.add('d-none');
-            logoutMenuItem.classList.add('d-none');
-            if (loginMenuItem) {
-              loginMenuItem.classList.remove('d-none');
-            }
-            hideUserAvatar();
-            updateFormPlayerDisplay(null);
-            document.dispatchEvent(new CustomEvent("loginStateChanged", { detail: { loggedIn: false } }));
-            showAlert('You have logged out!', 'success');
-          }
-        };
-      }
-    }
-    
-    // Update the header avatar using the entire player data.
-    updateUserAvatar(playerData);
-    
-    // Close the login modal and shift focus.
-    const loginModalEl = document.getElementById('loginModal');
-    let modalInstance = bootstrap.Modal.getInstance(loginModalEl);
-    if (!modalInstance) {
-      modalInstance = new bootstrap.Modal(loginModalEl);
-    }
-    modalInstance.hide();
-    setTimeout(() => {
-      document.getElementById('hamburgerMenu').focus();
-    }, 300);
+  // --- Update UI Logout Handler ---
+// Within your updateLoginUI (or wherever you handle logout) add the reset.
+export function updateLoginUI(playerData) {
+  const playerName = playerData.name;
+  
+  // Hide the "Log In" menu item.
+  const loginMenuItem = document.getElementById('loginMenuItem');
+  if (loginMenuItem) {
+    loginMenuItem.classList.add('d-none');
   }
   
+  // Show "Logged in as ..." text.
+  const loggedInUserDisplay = document.getElementById('loggedInUserDisplay');
+  if (loggedInUserDisplay) {
+    loggedInUserDisplay.innerHTML = `Logged in as <strong>${playerName}</strong>`;
+    loggedInUserDisplay.classList.remove('d-none');
+  }
   
+  // Show the "Log Out" link.
+  const logoutMenuItem = document.getElementById('logoutMenuItem');
+  if (logoutMenuItem) {
+    logoutMenuItem.classList.remove('d-none');
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.onclick = () => {
+        if (confirm('Are you sure you want to log out?')) {
+          clearCookie("playerId");
+          loggedInUserDisplay.classList.add('d-none');
+          logoutMenuItem.classList.add('d-none');
+          if (loginMenuItem) {
+            loginMenuItem.classList.remove('d-none');
+          }
+          hideUserAvatar();
+          updateFormPlayerDisplay(null);
+          document.dispatchEvent(new CustomEvent("loginStateChanged", { detail: { loggedIn: false } }));
+          showAlert('You have logged out!', 'success');
+          // Reset the login form so that if the user returns to log in again, the form is cleared and enabled.
+          resetLoginForm();
+        }
+      };
+    }
+  }
   
-  // --- INITIALIZATION ---
-  document.addEventListener("DOMContentLoaded", async () => {
-    await populateLoginPlayerDropdown();
+  // Update the header avatar using the entire player data.
+  updateUserAvatar(playerData);
   
-    // Auto-login: Check for an existing cookie.
-    const playerIdCookie = getCookie("playerId");
-    if (playerIdCookie) {
+  // Close the login modal and shift focus.
+  const loginModalEl = document.getElementById('loginModal');
+  let modalInstance = bootstrap.Modal.getInstance(loginModalEl);
+  if (!modalInstance) {
+    modalInstance = new bootstrap.Modal(loginModalEl);
+  }
+  modalInstance.hide();
+  setTimeout(() => {
+    document.getElementById('hamburgerMenu').focus();
+  }, 300);
+}
+
+  // --- Helper: Reset Login Form ---
+// Clears the login form and resets its fields to default state.
+function resetLoginForm() {
+  const loginForm = document.getElementById('login-form');
+  if (!loginForm) return;
+
+  // Clear all form fields.
+  loginForm.reset();
+
+  // Ensure fields are enabled.
+  const playerNameInput = document.getElementById('login-player-name');
+  const pinInput = document.getElementById('login-pin');
+  const loginButton = loginForm.querySelector('button[type="submit"]');
+  playerNameInput.disabled = false;
+  pinInput.disabled = false;
+  // Disable the login button until both fields have values.
+  loginButton.disabled = true;
+}
+
+// --- Initialization ---
+document.addEventListener("DOMContentLoaded", async () => {
+  await populateLoginPlayerDropdown();
+
+  // Attach reset handler when the modal is about to be shown.
+  const loginModalEl = document.getElementById('loginModal');
+  if (loginModalEl) {
+    loginModalEl.addEventListener('show.bs.modal', resetLoginForm);
+  }
+
+  // Auto-login: Check for an existing cookie.
+  const playerIdCookie = getCookie("playerId");
+  if (playerIdCookie) {
+    const { data: playerData, error } = await supabase
+      .from('players')
+      .select('id, name, password, avatar_settings')
+      .eq('id', playerIdCookie)
+      .single();
+    if (!error && playerData) {
+      updateLoginUI(playerData);
+    }
+  }
+
+  // Get references to the form elements.
+  const loginForm = document.getElementById('login-form');
+  const playerNameInput = document.getElementById('login-player-name');
+  const pinInput = document.getElementById('login-pin');
+  const loginButton = loginForm.querySelector('button[type="submit"]');
+
+  // Enable the login button only if both fields have a value.
+  function toggleLoginButton() {
+    if (playerNameInput.value.trim() !== "" && pinInput.value.trim() !== "") {
+      loginButton.disabled = false;
+    } else {
+      loginButton.disabled = true;
+    }
+  }
+
+  playerNameInput.addEventListener('input', toggleLoginButton);
+  pinInput.addEventListener('input', toggleLoginButton);
+
+  // Ensure the login button is disabled initially.
+  loginButton.disabled = true;
+
+  // Login form submission handler.
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Immediately disable the button and both input fields to prevent duplicate submissions.
+      loginButton.disabled = true;
+      playerNameInput.disabled = true;
+      pinInput.disabled = true;
+
+      const playerName = playerNameInput.value;
+      const pin = pinInput.value;
+      const rememberMe = document.getElementById('rememberMe').checked;
+
+      if (pin.length !== 4) {
+        showAlert('Please enter a 4-digit PIN.', 'danger');
+        // Re-enable inputs so the user can correct it.
+        loginButton.disabled = false;
+        playerNameInput.disabled = false;
+        pinInput.disabled = false;
+        return;
+      }
+
+      // Query player by name (assuming names are unique)
       const { data: playerData, error } = await supabase
         .from('players')
         .select('id, name, password, avatar_settings')
-        .eq('id', playerIdCookie)
+        .eq('name', playerName)
         .single();
-      if (!error && playerData) {
-        updateLoginUI(playerData);
+
+      if (error || !playerData) {
+        showAlert('Error logging in. Please try again.', 'danger');
+        loginButton.disabled = false;
+        playerNameInput.disabled = false;
+        pinInput.disabled = false;
+        return;
       }
-    }
-  
-    // Login form submission handler.
-    const loginForm = document.getElementById('login-form');
-    if (loginForm) {
-      loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-  
-        const playerId = document.getElementById('login-player-name').value;
-        const pin = document.getElementById('login-pin').value;
-        const rememberMe = document.getElementById('rememberMe').checked;
-  
-        if (pin.length !== 4) {
-          alert('Please enter a 4-digit PIN.');
-          return;
-        }
-  
-        const { data: playerData, error } = await supabase
-          .from('players')
-          .select('id, name, password, avatar_settings')
-          .eq('id', playerId)
-          .single();
-  
-        if (error || !playerData) {
-          alert('Error logging in. Please try again.');
-          return;
-        }
-  
-        const hashedPin = CryptoJS.MD5(pin).toString();
-  
-        if (hashedPin === playerData.password) {
-            showAlert('Login successful!', 'success');
-        
-            // Set cookie, update login UI, etc.
-            if (rememberMe) {
-                setCookie("playerId", playerId, 30 * 24 * 60 * 60); // 30 day cookie
-            } else {
-                setCookie("playerId", playerId);
-            }
-        
-            // Update the login UI in the menu, avatar, etc.
-            updateLoginUI(playerData);
-            document.dispatchEvent(new CustomEvent("loginStateChanged", { detail: { loggedIn: true } }));
-            // Update the auto-filled player display in the form.
-            updateFormPlayerDisplay(playerData.name);
+
+      const hashedPin = CryptoJS.MD5(pin).toString();
+
+      if (hashedPin === playerData.password) {
+        showAlert('Login successful!', 'success');
+        // Set cookie and update login UI.
+        if (rememberMe) {
+          setCookie("playerId", playerData.id, 30 * 24 * 60 * 60); // 30-day cookie
         } else {
-            showAlert('Incorrect PIN. Please try again.', 'danger');
+          setCookie("playerId", playerData.id);
         }
-        
-      });
-    }
-  });
+        updateLoginUI(playerData);
+        document.dispatchEvent(new CustomEvent("loginStateChanged", { detail: { loggedIn: true } }));
+        updateFormPlayerDisplay(playerData.name);
+      } else {
+        showAlert('Incorrect PIN. Please try again.', 'danger');
+        // Clear the PIN field on incorrect PIN.
+        pinInput.value = "";
+        // Re-enable the inputs so the user can try again.
+        playerNameInput.disabled = false;
+        pinInput.disabled = false;
+        toggleLoginButton();
+      }
+    });
+  }
+});
+  
 
   export function updateFormPlayerDisplay(newPlayerName) {
     // Look for all elements that should display the player's name.
