@@ -38,34 +38,65 @@ export async function fetchData(table, fields = '*') {
 // Helper function to create a dropdown
 // Helper function to create a dropdown
 function createDropdown(parent, options = [], inputId, defaultText = 'Select an option') {
-    const select = document.createElement('select');
-    select.id = inputId;
-    select.name = inputId;
-    select.className = 'form-select'; // Bootstrap styling for dropdowns
+  const select = document.createElement('select');
+  select.id = inputId;
+  select.name = inputId;
+  // Add a custom class so we can target it with our CSS if needed.
+  select.className = 'form-select custom-dropdown';
 
-    // Add a default "Select ..." option
-    const defaultOption = document.createElement('option');
-    defaultOption.value = ''; // No value for the default option
-    defaultOption.textContent = defaultText;
-    defaultOption.disabled = true; // Disable selection
-    defaultOption.selected = true; // Make it selected by default
-    select.appendChild(defaultOption);
+  // Add a default "Select ..." option.
+  const defaultOption = document.createElement('option');
+  defaultOption.value = '';
+  defaultOption.textContent = defaultText;
+  defaultOption.disabled = true;
+  defaultOption.selected = true;
+  select.appendChild(defaultOption);
 
-    // Ensure options is an array
-    if (!Array.isArray(options)) {
-        console.error('Invalid options passed to createDropdown:', options);
-        return;
+  // Ensure options is an array.
+  if (!Array.isArray(options)) {
+    console.error('Invalid options passed to createDropdown:', options);
+    return;
+  }
+
+  // Create each option and attach extra colour data if available.
+  options.forEach(option => {
+    const opt = document.createElement('option');
+    opt.value = option.id; // Use 'id' as value.
+    opt.textContent = option.name; // Display text.
+    if (option.bgColor) {
+      opt.dataset.bgcolor = option.bgColor;
     }
+    if (option.textColor) {
+      opt.dataset.textcolor = option.textColor;
+    }
+    select.appendChild(opt);
+  });
 
-    // Add the rest of the options
-    options.forEach(option => {
-        const opt = document.createElement('option');
-        opt.value = option.id; // Use 'id' as value
-        opt.textContent = option.name; // Use 'name' for display
-        select.appendChild(opt);
-    });
+  // Listen for changes and update the dropdown's inline style.
+  select.addEventListener('change', function () {
+    const selectedOption = select.options[select.selectedIndex];
+    const bgColor = selectedOption.dataset.bgcolor;
+    const textColor = selectedOption.dataset.textcolor;
+    // console.log(
+    //  `Dropdown [${inputId}] changed. Selected: "${selectedOption.textContent}". Detected bgColor: ${bgColor}, textColor: ${textColor}`
+    //);
+    if (bgColor && textColor) {
+      select.style.setProperty('background-color', bgColor, 'important');
+      select.style.setProperty('color', textColor, 'important');
+    } else {
+      select.style.removeProperty('background-color');
+      select.style.removeProperty('color');
+    }
+  });
 
-    parent.appendChild(select); // Add the dropdown to the parent container
+  parent.appendChild(select);
+
+  // If a non-default option is already selected (for instance, via pre-fill), force a change event.
+  if (select.selectedIndex > 0) {
+    select.dispatchEvent(new Event('change'));
+  }
+
+  return select;
 }
 
 
@@ -165,12 +196,12 @@ export async function generateFormBlocks() {
         const [formConfig, drivers, constructors, players] = await Promise.all([
             fetchFormConfiguration(),
             fetchData('drivers', 'id, name, constructor_id'),
-            fetchData('constructors', 'id, name'),
+            fetchData('constructors', 'id, name, background_colour, text_colour'),
             fetchData('players', 'id, name'),
         ]);
-
+        
         // Map constructor IDs to names for quick lookup
-        const constructorMap = Object.fromEntries(constructors.map(c => [c.id, c.name]));
+        const constructorMap = Object.fromEntries(constructors.map(c => [c.id, c]));
 
         // Prepare a sorted list of constructors by id order for the team dropdown
         const sortedConstructors = [...constructors].sort((a, b) => a.id - b.id);
@@ -201,34 +232,41 @@ export async function generateFormBlocks() {
 
             // Determine input type based on response_type
             switch (config.response_type) {
-                case 'Select - Driver List': {
-                    // Sort drivers by id order
-                    const sortedDrivers = [...drivers]
-                        .sort((a, b) => a.id - b.id)
-                        .map(d => ({
-                            id: d.id,
-                            name: `${d.name} (${constructorMap[d.constructor_id] || 'Unknown'})`,
-                        }));
-                    createDropdown(block, sortedDrivers, `input-${config.id}`, 'Select a driver');
-                    break;
-                }
-                case 'Select - Driver List + DNF': {
-                    // Sort drivers by id order and then append the no-DNF option at the end
-                    const sortedDrivers = [...drivers]
-                        .sort((a, b) => a.id - b.id)
-                        .map(d => ({
-                            id: d.id,
-                            name: `${d.name} (${constructorMap[d.constructor_id] || 'Unknown'})`,
-                        }));
-                    sortedDrivers.push({ id: 'no-dnf', name: 'No DNFs' });
-                    createDropdown(block, sortedDrivers, `input-${config.id}`, 'Select a driver or no DNFs');
-                    break;
-                }
-                case 'Select - Team List': {
-                    // Use the sorted team list (by id order)
-                    createDropdown(block, sortedConstructors, `input-${config.id}`, 'Select a team');
-                    break;
-                }
+              case 'Select - Driver List': {
+                const sortedDrivers = [...drivers]
+                    .sort((a, b) => a.id - b.id)
+                    .map(d => ({
+                        id: d.id,
+                        name: `${d.name} (${constructorMap[d.constructor_id]?.name || 'Unknown'})`,
+                        bgColor: constructorMap[d.constructor_id]?.background_colour || '',
+                        textColor: constructorMap[d.constructor_id]?.text_colour || ''
+                    }));
+                createDropdown(block, sortedDrivers, `input-${config.id}`, 'Select a driver');
+                break;
+            }
+            case 'Select - Driver List + DNF': {
+                const sortedDrivers = [...drivers]
+                    .sort((a, b) => a.id - b.id)
+                    .map(d => ({
+                        id: d.id,
+                        name: `${d.name} (${constructorMap[d.constructor_id]?.name || 'Unknown'})`,
+                        bgColor: constructorMap[d.constructor_id]?.background_colour || '',
+                        textColor: constructorMap[d.constructor_id]?.text_colour || ''
+                    }));
+                sortedDrivers.push({ id: 'no-dnf', name: 'No DNFs', bgColor: '', textColor: '' });
+                createDropdown(block, sortedDrivers, `input-${config.id}`, 'Select a driver or no DNFs');
+                break;
+            }
+            case 'Select - Team List': {
+                const teamOptions = sortedConstructors.map(c => ({
+                    id: c.id,
+                    name: c.name,
+                    bgColor: c.background_colour,
+                    textColor: c.text_colour
+                }));
+                createDropdown(block, teamOptions, `input-${config.id}`, 'Select a team');
+                break;
+            }            
                 case 'Select - Name List': {
                     // Retrieve the logged-in player's ID from cookies.
                     const loggedInPlayerId = getCookie("playerId");

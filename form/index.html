@@ -411,6 +411,12 @@
           if (field) field.value = savedValue || "";
         }
       }
+      // For all dropdowns (our custom ones) that have a value, dispatch a change event so the colour styling is applied.
+      document.querySelectorAll("select.custom-dropdown").forEach(select => {
+        if (select.value && select.value !== "") {
+          select.dispatchEvent(new Event("change"));
+        }
+      });
       console.log("Form pre-filled successfully.");
     }
     
@@ -635,8 +641,8 @@
   // ========================
     // Helper function: Clears all pre-filled responses (inputs 2 to 28), including radio groups.
     function clearFormPrefill() {
+      // Clear values for inputs 2 to 28
       for (let i = 2; i <= 28; i++) {
-        // For each input group (radio buttons, text inputs, etc.)
         const elements = document.getElementsByName(`input-${i}`);
         if (elements && elements.length > 0) {
           Array.from(elements).forEach(element => {
@@ -648,9 +654,17 @@
           });
         }
       }
-      // Also clear any stored previous form data.
+      // Clear any stored previous form data.
       window.previousFormData = {};
+
+      // Additionally, reset all custom dropdowns to default styling and value.
+      document.querySelectorAll("select.custom-dropdown").forEach(select => {
+        select.value = ""; // Reset to the default (empty) value.
+        select.style.removeProperty('background-color');
+        select.style.removeProperty('color');
+      });
     }
+
 
     // Listen for the custom "loginStateChanged" event dispatched from script.js.
     document.addEventListener("loginStateChanged", async (event) => {
