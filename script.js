@@ -599,6 +599,8 @@ export function renderAvatar(element, settings, letter = 'A') {
     // Special styling for playerId "1"
     if (getCookie("playerId") === "1") {
       userAvatar.style.borderColor = "gold";
+    } else if (getCookie("playerId") === "12") {
+      userAvatar.style.borderColor = "red";
     } else {
       userAvatar.style.borderColor = "#c0c0c0";
     }
