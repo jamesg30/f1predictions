@@ -85,13 +85,13 @@
         <!-- Tabs Navigation -->
         <ul class="nav nav-underline mb-4" id="tabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="form-rules-tab" data-bs-toggle="tab" href="#form-rules" role="tab" aria-controls="register-player" aria-selected="true">Form Rules</a>
+                <a class="nav-link active" id="form-rules-tab" data-bs-toggle="tab" href="#form-rules" role="tab" aria-labelledby="form-rules-tab" aria-selected="true">Form Rules</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="card-rules-tab" data-bs-toggle="tab" href="#card-rules" role="tab" aria-controls="register-team" aria-selected="false">Card Rules</a>
+                <a class="nav-link" id="team-guide-tab" data-bs-toggle="tab" href="#team-guide" role="tab" aria-labelledby="team-guide-tab" aria-selected="false">Guide to Teams</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="general-faq-tab" data-bs-toggle="tab" href="#general-faq" role="tab" aria-controls="register-team" aria-selected="false">General FAQ</a>
+                <a class="nav-link" id="general-faq-tab" data-bs-toggle="tab" href="#general-faq" role="tab" aria-labelledby="general-faq-tab" aria-selected="false">General FAQ</a>
             </li>
         </ul>
 
@@ -147,33 +147,60 @@
             </div>
 
             <!-- Card Rules -->
-            <div id="card-rules" class="tab-pane fade" role="tabpanel" aria-labelledby="card-rules-tab">
+            <div id="team-guide" class="tab-pane fade" role="tabpanel" aria-labelledby="team-guide-tab">
                 <div class="d-flex justify-content-left">
-                    <h2 class="mb-3 pixel-art-heading-3">Card Rules</h2>
+                    <h2 class="mb-3 pixel-art-heading-3">Guide to Teams</h2>
                 </div>
                 <div class="mb-3">
-                    At the beginning of the season, each new team will be given a set of cards which they can use to impact the scoring for that round. Playing these cards will be done before the race (same as the form) through the teams page. You can play one card each round. You will be given one of each card except the halo card which you will get 3 of.<br>
+                    This year, there is a new team's competition. You can register a team and then join it on the <a href="/register">Register Page</a>.
                 </div>
                 <div class="mb-3">
-                    There are 5 types of cards:
+                    Team's are formed of 2 players. Each week, the player's scores will be added up to form the team's score. The teams competition will never affect your player's individual scores, it is completely separate.
+                </div>
+                <div class="mb-3">
+                    Team scoring can also be impacted by cards and casino:
+                </div>
+                <div>
+                    <h5 class="mb-3 pixel-art-heading-2">Cards</h5>
+                </div>
+                <div class="mb-3">
+                    At the beginning of the season, each new team will be given a set of cards which they can use to impact the scoring for that round. <br>
+                    <ul>
+                        <li>Playing these cards will be done before the race (same as the form) through the <a href="/teams">Teams Page</a>.</li>
+                        <li>You can play one card each round.</li>
+                        <li>
+                            You will be given:<br>
+                            <ul>
+                                <li>1x Aero</li>
+                                <li>1x Double</li>
+                                <li>3x Halo</li>
+                                <li>1x Report</li>
+                                <li>1x Swap</li>
+                            </ul>
+                            
+                        </li>
+                    </ul>
+                </div>
+                <div class="mb-3">
+                    The description of how each card impacts the scoring is shown below:
                 </div>
                 <div class="mb-3"> 
                     <ul class="list-group">
                         <li class="list-group-item">
                             <img src="/media/cards/card_aero.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated; margin-right: 10px">
-                            Aero Upgrade: Both drivers will receive the higher of their 2 scores (e.g. if they score 14 & 22, team score will be 22+22=44)
+                            Aero Upgrade: Both drivers will receive the higher of their 2 scores (e.g. if they score 14 & 22, team score will be 22 + 22 = 44)
                         </li>
                         <li class="list-group-item">
                             <img src="/media/cards/card_double.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated; margin-right: 10px">
-                            Double Points: The points of the highest scoring team member is doubled (e.g if they score 14 & 22, team score will be 14+(2x22)=14+44=58)
+                            Double Points: The points of the highest scoring team member is doubled (e.g if they score 14 & 22, team score will be 14 + (2 x 22) = 14 + 44 = 58)
                         </li>
                         <li class="list-group-item">
                             <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated; margin-right: 10px">
-                            Halo: Protect yourself from any cards being applied to you.
+                            Halo: Protect yourself from report or swap cards from being applied to your team.
                         </li>
                         <li class="list-group-item">
                             <img src="/media/cards/card_report.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated; margin-right: 10px">
-                            Report: Report another team to the FIA, and their highest scoring driver will receive 0 (e.g. if they score 14 & 22, team score will be 14 + 0 = 14). Important to note, if more than one team reports the same team in the same round, that teams highest scoring driver will instead score double points.
+                            Report: Report another team to the FIA, and their highest scoring driver will receive 0 (e.g. if they score 14 & 22, team score will be 14 + 0 = 14). Important to note, if more than one team reports the same team in the same round, that teams highest scoring driver will instead score double points (e.g. if two or more reports on the same team with score 14 & 22, team score will be 14 + (2 x 22) = 14 + 44 = 58)
                         </li>
                         <li class="list-group-item">
                             <img src="/media/cards/card_swap.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated; margin-right: 10px">
@@ -184,6 +211,15 @@
                 <div class="mb-3">
                     Cards will be applied in the following order:<br>
                     Aero, Double, Halo, Report, Swap.<br>
+                </div>
+                <div>
+                    <h5 class="mb-3 pixel-art-heading-2">Casino</h5>
+                </div>
+                <div class="mb-3">
+                    These rounds occur during the Monaco and Las Vegas GP. During these rounds, no cards can be played.<br>
+                    In these rounds, the Casino will open instead of the card playing form. In the casino, you can bet some of your teams points on different questions, each with different odds. 
+                    e.g. Lance Stroll finishes on the podium: odds 10:1<br>
+                    There will be 3 to 5 questions, and each one can have up to either 5 or 10 points bet on it.
                 </div>
             </div>
             <!-- General FAQ -->
