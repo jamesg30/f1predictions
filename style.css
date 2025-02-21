@@ -278,14 +278,12 @@ footer {
   transform: translate(-50%, -50%);
   font-family: 'Press Start 2P', Helvetica, sans-serif; /* Fallback fonts */
   color: white; /* Main text color */
-  text-shadow: 3px 3px 0 black, /* Offset shadow color */
-               6px 6px 0 black; /* Layered shadow effect */
+  text-shadow: 2.5px 2.5px 0 black, /* Offset shadow color */
+               2.5px 2.5px 0 black; /* Layered shadow effect */
   font-size: clamp(0.8rem, 5vw, 2rem); /* Dynamic size for responsiveness */
   letter-spacing: 0em; /* For pixel art readability */
   line-height: 1.2; /* Adjust for spacing */
   font-weight: bold; /* Bold for emphasis */
-  /* Optional shadow for readability:
-  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7); */
   text-align: center; /* Center text in smaller containers */
   z-index: 2; /* Ensure it's above overlays */
 }
