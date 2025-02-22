@@ -303,6 +303,8 @@ footer {
   border: 2px solid;
   box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.3);
   transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+  touch-action: manipulation; /* Allow smooth touch interactions */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
 }
 
 /* Default theme */
@@ -344,14 +346,18 @@ footer {
 /* Button Press Effect (Works on touch & click) */
 .pixel-button:active,
 .pixel-button.pressed {
+  -webkit-transform: translate(2px, 2px);
   transform: translate(2px, 2px);
+  -webkit-box-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
   box-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
 }
 
 /* Ensure touch devices apply active effect */
 @media (hover: none) {
   .pixel-button:active {
+      -webkit-transform: translate(2px, 2px);
       transform: translate(2px, 2px);
+      -webkit-box-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
       box-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
   }
 }
@@ -382,6 +388,7 @@ footer {
   color: #aaa;
   border-color: #777;
 }
+
 
 /* ======================= */
 /* === DROPDOWN STYLES === */
