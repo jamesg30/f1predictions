@@ -320,6 +320,8 @@ footer {
   /* Touch-friendly */
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
   
   /* No transition so the active effect is immediate */
   transition: none;
