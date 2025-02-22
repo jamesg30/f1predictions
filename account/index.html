@@ -241,263 +241,274 @@
   </header>
   
   <main class="container my-5">
-    <div class="container my-5">
-      
-      <h2 class="mb-3 pixel-art-heading-3">Account</h2>
-      <hr>
-<!-- AVATAR CUSTOMISATION -->
-<h2 class="pixel-art-heading-3">Avatar Customisation</h2>
-<div class="container avatar-customisation-container">
-  <!-- Current Avatar Preview -->
-  <div class="current-avatar-section">
-    <div id="current-avatar" class="avatar-preview preview">A</div>
-    <div class="mb-3 pixel-art-heading-2" style="margin-top: 10px">Current Avatar</div>
-  </div>
+    <!-- Bootstrap Tabs Navigation -->
+    <ul class="nav nav-underline mb-4" id="accountTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="avatar-tab" data-bs-toggle="tab" data-bs-target="#avatarCustomisation" type="button" role="tab" aria-controls="avatarCustomisation" aria-selected="true">
+          Avatar Customisation
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#passwordSection" type="button" role="tab" aria-controls="passwordSection" aria-selected="false">
+          Password
+        </button>
+      </li>
+    </ul>
   
-  <!-- Icon Options -->
-  <div class="icon-options-section">
-    <h3 class="mb-3 pixel-art-heading-2">Icon Options:</h3>
-    
-    <div class="icon-group">
-      <h4 class="pixel-art-body" style="font-size: 1.2rem">Monochrome Icons:</h4>
-      <div class="icon-options">
-        
-          <!-- Letter Option -->
-          <div class="icon-option">
-            <label>
-              <input type="radio" name="avatar-icon" value="letter" data-type="letter">
-              <div class="icon-image">A</div>
-            </label>
-            <div class="icon-label">Letter</div>
+    <!-- Tabs Content -->
+    <div class="tab-content" id="accountTabContent">
+      <!-- Avatar Customisation Tab -->
+      <div class="tab-pane fade show active" id="avatarCustomisation" role="tabpanel" aria-labelledby="avatar-tab">
+        <h2 class="pixel-art-heading-3 mt-3">Avatar Customisation</h2>
+        <div class="container avatar-customisation-container">
+          <!-- Current Avatar Preview -->
+          <div class="current-avatar-section">
+            <div id="current-avatar" class="avatar-preview preview">A</div>
+            <div class="mb-3 pixel-art-heading-2" style="margin-top: 10px">Current Avatar</div>
           </div>
-          <!-- Car -->
-          <div class="icon-option">
-            <label>
-              <input type="radio" name="avatar-icon" value="icon_car.png" data-type="monochrome">
-              <img src="/media/icons/icon_car.png" alt="Car">
-            </label>
-            <div class="icon-label">Car</div>
-          </div>
-          <!-- Helmet -->
-          <div class="icon-option">
-            <label>
-              <input type="radio" name="avatar-icon" value="icon_helmet.png" data-type="monochrome">
-              <img src="/media/icons/icon_helmet.png" alt="Helmet">
-            </label>
-            <div class="icon-label">Helmet</div>
-          </div>
-          <!-- Star -->
-          <div class="icon-option">
-            <label>
-              <input type="radio" name="avatar-icon" value="icon_star.png" data-type="monochrome">
-              <img src="/media/icons/icon_star.png" alt="Star">
-            </label>
-            <div class="icon-label">Star</div>
-          </div>
-          <!-- Trophy -->
-          <div class="icon-option">
-            <label>
-              <input type="radio" name="avatar-icon" value="icon_trophy.png" data-type="monochrome">
-              <img src="/media/icons/icon_trophy.png" alt="Trophy">
-            </label>
-            <div class="icon-label">Trophy</div>
-          </div>
-          <!-- Red Bull -->
-          <div class="icon-option">
-            <label>
-              <input type="radio" name="avatar-icon" value="icon_redbull.png" data-type="monochrome">
-              <img src="/media/icons/icon_redbull.png" alt="Red Bull">
-            </label>
-            <div class="icon-label">Red Bull</div>
-          </div>
-          <!-- Monster -->
-          <div class="icon-option">
-            <label>
-              <input type="radio" name="avatar-icon" value="icon_monster.png" data-type="monochrome">
-              <img src="/media/icons/icon_monster.png" alt="Monster">
-            </label>
-            <div class="icon-label">Monster</div>
-          </div>
-          <!-- Fish -->
-          <div class="icon-option">
-            <label>
-              <input type="radio" name="avatar-icon" value="icon_fish.png" data-type="monochrome">
-              <img src="/media/icons/icon_fish.png" alt="Fish">
-            </label>
-            <div class="icon-label">Fish</div>
-          </div>
-        <!-- Tram -->
-        <div class="icon-option">
-          <label>
-            <input type="radio" name="avatar-icon" value="icon_tram.png" data-type="monochrome">
-            <img src="/media/icons/icon_tram.png" alt="Tram">
-          </label>
-          <div class="icon-label">Tram</div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="icon-group">
-      <h4 class="pixel-art-body" style="font-size: 1.2rem">Coloured Icons:</h4>
-      <div class="icon-options">
-        <div class="icon-option">
-          <label>
-            <input type="radio" name="avatar-icon" value="icon_tyre_soft.png" data-type="fixed">
-            <img src="/media/icons/icon_tyre_soft.png" alt="Soft">
-          </label>
-          <div class="icon-label">Soft</div>
-        </div>
-        <div class="icon-option">
-          <label>
-            <input type="radio" name="avatar-icon" value="icon_tyre_medium.png" data-type="fixed">
-            <img src="/media/icons/icon_tyre_medium.png" alt="Medium">
-          </label>
-          <div class="icon-label">Medium</div>
-        </div>
-        <div class="icon-option">
-          <label>
-            <input type="radio" name="avatar-icon" value="icon_tyre_hard.png" data-type="fixed">
-            <img src="/media/icons/icon_tyre_hard.png" alt="Hard">
-          </label>
-          <div class="icon-label">Hard</div>
-        </div>
-        <div class="icon-option">
-          <label>
-            <input type="radio" name="avatar-icon" value="icon_tyre_inter.png" data-type="fixed">
-            <img src="/media/icons/icon_tyre_inter.png" alt="Inter">
-          </label>
-          <div class="icon-label">Inter</div>
-        </div>
-        <div class="icon-option">
-          <label>
-            <input type="radio" name="avatar-icon" value="icon_tyre_wet.png" data-type="fixed">
-            <img src="/media/icons/icon_tyre_wet.png" alt="Wet">
-          </label>
-          <div class="icon-label">Wet</div>
-        </div>
-        <div class="icon-option">
-          <label>
-            <input type="radio" name="avatar-icon" value="icon_tyre_hypersoft.png" data-type="fixed">
-            <img src="/media/icons/icon_tyre_hypersoft.png" alt="Hypersoft">
-          </label>
-          <div class="icon-label">Hypersoft</div>
-        </div>
-        <!-- New option: Red Bull coloured icon -->
-        <div class="icon-option">
-          <label>
-            <input type="radio" name="avatar-icon" value="icon_redbullcolour" data-type="fixed">
-            <img src="/media/icons/icon_redbullcolour.png" alt="Red Bull Colour">
-          </label>
-          <div class="icon-label">Red Bull</div>
-        </div>
-      </div>
-    </div>
-    
   
-  <!-- Colour Options -->
-  <div class="colour-options-section">
-    <h3 class="mb-3 pixel-art-heading-2">Colour Options:</h3>
-    <div class="colour-pickers">
-      <div class="colour-picker-group">
-        <label for="icon-color" class="icon-label">Icon:</label>
-        <input type="color" id="icon-color" class="form-control">
-      </div>
-      <div class="colour-picker-group">
-        <label for="background-color" class="icon-label">Background:</label>
-        <input type="color" id="background-color" class="form-control">
-      </div>
-    </div>
-  </div>
+          <!-- Icon Options -->
+          <div class="icon-options-section">
+            <h3 class="mb-3 pixel-art-heading-2">Icon Options:</h3>
+            <div class="icon-group">
+              <h4 class="pixel-art-body" style="font-size: 1.2rem">Monochrome Icons:</h4>
+              <div class="icon-options">
+                <!-- Letter Option -->
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="letter" data-type="letter">
+                    <div class="icon-image">A</div>
+                  </label>
+                  <div class="icon-label">Letter</div>
+                </div>
+                <!-- Car -->
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_car.png" data-type="monochrome">
+                    <img src="/media/icons/icon_car.png" alt="Car">
+                  </label>
+                  <div class="icon-label">Car</div>
+                </div>
+                <!-- Helmet -->
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_helmet.png" data-type="monochrome">
+                    <img src="/media/icons/icon_helmet.png" alt="Helmet">
+                  </label>
+                  <div class="icon-label">Helmet</div>
+                </div>
+                <!-- Star -->
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_star.png" data-type="monochrome">
+                    <img src="/media/icons/icon_star.png" alt="Star">
+                  </label>
+                  <div class="icon-label">Star</div>
+                </div>
+                <!-- Trophy -->
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_trophy.png" data-type="monochrome">
+                    <img src="/media/icons/icon_trophy.png" alt="Trophy">
+                  </label>
+                  <div class="icon-label">Trophy</div>
+                </div>
+                <!-- Red Bull -->
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_redbull.png" data-type="monochrome">
+                    <img src="/media/icons/icon_redbull.png" alt="Red Bull">
+                  </label>
+                  <div class="icon-label">Red Bull</div>
+                </div>
+                <!-- Monster -->
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_monster.png" data-type="monochrome">
+                    <img src="/media/icons/icon_monster.png" alt="Monster">
+                  </label>
+                  <div class="icon-label">Monster</div>
+                </div>
+                <!-- Fish -->
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_fish.png" data-type="monochrome">
+                    <img src="/media/icons/icon_fish.png" alt="Fish">
+                  </label>
+                  <div class="icon-label">Fish</div>
+                </div>
+                <!-- Tram -->
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_tram.png" data-type="monochrome">
+                    <img src="/media/icons/icon_tram.png" alt="Tram">
+                  </label>
+                  <div class="icon-label">Tram</div>
+                </div>
+              </div>
+            </div>
   
-  <!-- New Avatar Preview -->
-  <div class="new-avatar-preview-section">
-    <h3 class="mb-3 pixel-art-heading-2">New Avatar Preview</h3>
-    <div id="new-avatar" class="avatar-preview preview">A</div>
-  </div>
-  
-  <!-- Action Buttons -->
-  <div class="action-buttons">
-    <button id="reset-avatar" class="pixel-button secondary">Reset to Default</button>
-    <button id="save-avatar" class="pixel-button primary">Save Avatar</button>
-  </div>
-</div>
-
-      <hr>
-<!-- PASSWORD CHANGE AND RESET-->      
-      <h2 class="mb-3 pixel-art-heading-3">Password Change & Reset</h2>
-      <div>
-        <p>
-          To reset your password, email <a href="mailto:f1predictionsform@outlook.com?subject=F1 Predictions Form Password Reset&body=Hi, I would like to request a password reset. My username is: ">f1predictionsform@outlook.com</a> with your username.
-          You will receive a response with a new password, which you can change using the form below.
-        </p>
-      </div>
-      <form id="passwordResetForm">
-        <!-- Autofilled Logged-In Name -->
-        <div class="mb-3">
-          <label for="logged-in-name" class="form-label">Name:</label>
-          <input type="text" id="logged-in-name" class="form-control" disabled>
-        </div>
-        <!-- Existing PIN -->
-<div class="mb-3">
-    <label for="current-pin" class="form-label">Current PIN:</label>
-    <input type="password" id="current-pin" class="form-control" placeholder="Re-enter your current PIN" maxlength="4" pattern="^\d{4}$" required>
-  </div>
-  <!-- New PIN -->
-  <div class="mb-3">
-    <label for="new-pin" class="form-label">New PIN:</label>
-    <input type="password" id="new-pin" class="form-control" placeholder="Enter new PIN" maxlength="4" pattern="^\d{4}$" required>
-  </div>
-  <!-- Confirm New PIN -->
-  <div class="mb-3">
-    <label for="confirm-new-pin" class="form-label">Confirm New PIN:</label>
-    <input type="password" id="confirm-new-pin" class="form-control" placeholder="Re-enter new PIN" maxlength="4" pattern="^\d{4}$" required>
-  </div>
-  
-        <!-- Update Password Button -->
-        <div class="text-center">
-            <button type="submit" id="passwordUpdateBtn" class="pixel-button primary">Update Password</button>
-
-        </div>
-      </form>
-    </div>
-    
-    <!-- LOGIN MODAL -->
-<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title pixel-art-heading-2" id="loginModalLabel">Login</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="login-form">
-          <div class="mb-3">
-            <label for="login-player-name" class="form-label pixel-art-body">Name:</label>
-            <!-- Use an input with a datalist for suggestions -->
-            <input list="players-list" id="login-player-name" class="form-control pixel-art-body" required />
-            <datalist id="players-list">
-              <!-- Options will be populated dynamically -->
-            </datalist>
-          </div>
-          <div class="mb-3">
-            <label for="login-pin" class="form-label pixel-art-body">PIN:</label>
-            <input type="password" id="login-pin" class="form-control pixel-art-body" maxlength="4" pattern="\d*" inputmode="numeric" required />
+            <div class="icon-group">
+              <h4 class="pixel-art-body" style="font-size: 1.2rem">Coloured Icons:</h4>
+              <div class="icon-options">
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_tyre_soft.png" data-type="fixed">
+                    <img src="/media/icons/icon_tyre_soft.png" alt="Soft">
+                  </label>
+                  <div class="icon-label">Soft</div>
+                </div>
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_tyre_medium.png" data-type="fixed">
+                    <img src="/media/icons/icon_tyre_medium.png" alt="Medium">
+                  </label>
+                  <div class="icon-label">Medium</div>
+                </div>
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_tyre_hard.png" data-type="fixed">
+                    <img src="/media/icons/icon_tyre_hard.png" alt="Hard">
+                  </label>
+                  <div class="icon-label">Hard</div>
+                </div>
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_tyre_inter.png" data-type="fixed">
+                    <img src="/media/icons/icon_tyre_inter.png" alt="Inter">
+                  </label>
+                  <div class="icon-label">Inter</div>
+                </div>
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_tyre_wet.png" data-type="fixed">
+                    <img src="/media/icons/icon_tyre_wet.png" alt="Wet">
+                  </label>
+                  <div class="icon-label">Wet</div>
+                </div>
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_tyre_hypersoft.png" data-type="fixed">
+                    <img src="/media/icons/icon_tyre_hypersoft.png" alt="Hypersoft">
+                  </label>
+                  <div class="icon-label">Hypersoft</div>
+                </div>
+                <!-- New option: Red Bull coloured icon -->
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_redbullcolour" data-type="fixed">
+                    <img src="/media/icons/icon_redbullcolour.png" alt="Red Bull Colour">
+                  </label>
+                  <div class="icon-label">Red Bull</div>
+                </div>
+              </div>
+            </div>
           </div>
           
-          <div class="mb-3">
-            <label for="rememberMe" class="form-check-label pixel-art-body">
-              <input type="checkbox" id="rememberMe" class="form-check-input pixel-art-body" />
-              Remember me
-            </label>
+          <!-- Colour Options -->
+          <div class="colour-options-section">
+            <h3 class="mb-3 pixel-art-heading-2">Colour Options:</h3>
+            <div class="colour-pickers">
+              <div class="colour-picker-group">
+                <label for="icon-color" class="icon-label">Icon:</label>
+                <input type="color" id="icon-color" class="form-control">
+              </div>
+              <div class="colour-picker-group">
+                <label for="background-color" class="icon-label">Background:</label>
+                <input type="color" id="background-color" class="form-control">
+              </div>
+            </div>
           </div>
-          <button type="submit" class="pixel-button" disabled>Login</button>
+          
+          <!-- New Avatar Preview -->
+          <div class="new-avatar-preview-section">
+            <h3 class="mb-3 pixel-art-heading-2">New Avatar Preview</h3>
+            <div id="new-avatar" class="avatar-preview preview">A</div>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="action-buttons">
+            <button id="reset-avatar" class="pixel-button secondary">Reset to Default</button>
+            <button id="save-avatar" class="pixel-button primary">Save Avatar</button>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Password Tab -->
+      <div class="tab-pane fade" id="passwordSection" role="tabpanel" aria-labelledby="password-tab">
+        <h2 class="mb-3 pixel-art-heading-3 mt-3">Password</h2>
+        <h3 class="mb-3 pixel-art-heading-2">Forgot Password</h3>
+        <div>
+          <p>
+            If you have forgotten your password, email <a href="mailto:f1predictionsform@outlook.com?subject=F1 Predictions Form Password Reset&body=Hi, I would like to request a password reset. My username is: ">f1predictionsform@outlook.com</a> with your username.
+            You will receive a response with a new password, which you can change using the form below.
+          </p>
+        </div>
+        <h3 class="mb-3 pixel-art-heading-2">Change Password</h3>
+        <form id="passwordResetForm">
+          <!-- Autofilled Logged-In Name -->
+          <div class="mb-3">
+            <label for="logged-in-name" class="form-label">Name:</label>
+            <input type="text" id="logged-in-name" class="form-control" disabled>
+          </div>
+          <!-- Existing PIN -->
+          <div class="mb-3">
+            <label for="current-pin" class="form-label">Current PIN:</label>
+            <input type="password" id="current-pin" class="form-control" placeholder="Re-enter your current PIN" maxlength="4" pattern="^\d{4}$" required>
+          </div>
+          <!-- New PIN -->
+          <div class="mb-3">
+            <label for="new-pin" class="form-label">New PIN:</label>
+            <input type="password" id="new-pin" class="form-control" placeholder="Enter new PIN" maxlength="4" pattern="^\d{4}$" required>
+          </div>
+          <!-- Confirm New PIN -->
+          <div class="mb-3">
+            <label for="confirm-new-pin" class="form-label">Confirm New PIN:</label>
+            <input type="password" id="confirm-new-pin" class="form-control" placeholder="Re-enter new PIN" maxlength="4" pattern="^\d{4}$" required>
+          </div>
+          <!-- Update Password Button -->
+          <div class="text-center">
+            <button type="submit" id="passwordUpdateBtn" class="pixel-button primary">Update Password</button>
+          </div>
         </form>
       </div>
     </div>
-  </div>
-</div>
-    
+  
+    <!-- LOGIN MODAL -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title pixel-art-heading-2" id="loginModalLabel">Login</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="login-form">
+              <div class="mb-3">
+                <label for="login-player-name" class="form-label pixel-art-body">Name:</label>
+                <input list="players-list" id="login-player-name" class="form-control pixel-art-body" required />
+                <datalist id="players-list">
+                  <!-- Options will be populated dynamically -->
+                </datalist>
+              </div>
+              <div class="mb-3">
+                <label for="login-pin" class="form-label pixel-art-body">PIN:</label>
+                <input type="password" id="login-pin" class="form-control pixel-art-body" maxlength="4" pattern="\d*" inputmode="numeric" required />
+              </div>
+              <div class="mb-3">
+                <label for="rememberMe" class="form-check-label pixel-art-body">
+                  <input type="checkbox" id="rememberMe" class="form-check-input pixel-art-body" />
+                  Remember me
+                </label>
+              </div>
+              <button type="submit" class="pixel-button" disabled>Login</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
+  
   
   <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
     <p>&copy; 2025 F1 Predictions Form</p>
