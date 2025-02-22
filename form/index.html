@@ -452,34 +452,35 @@
       const fileNamePrefix = "current_starting_grid";
       const fileExtensions = ["png", "jpg", "jpeg"];
       
-      for (const ext of fileExtensions) {
+      // Start all download requests concurrently.
+      const downloadPromises = fileExtensions.map(async ext => {
         const fileName = `${fileNamePrefix}.${ext}`;
-        const { data, error } = await supabase.storage
-          .from(bucketName)
-          .download(fileName);
-        
+        console.log(`Attempting to load ${fileName}...`);
+        const { data, error } = await supabase.storage.from(bucketName).download(fileName);
         if (error) {
-          console.log(`Error loading ${fileName}:`, error.message);
-        } else {
-          console.log(`Loaded ${fileName}`);
-          const url = URL.createObjectURL(data);
-          startingGridImage.src = url;
-          
-          // When the image loads, hide the placeholder and show the image
-          startingGridImage.onload = function() {
-            placeholderContainer.style.display = 'none';
-            startingGridImage.style.display = 'block';
-          };
-          
-          return; // Stop trying other extensions once one loads
+          throw new Error(`Error loading ${fileName}: ${error.message}`);
         }
-      }
+        return { fileName, data };
+      });
       
-      console.error("No matching file found");
-      startingGridImage.src = "";
-      // Optionally, update the placeholder to inform the user no image is available.
-      placeholderContainer.innerHTML = "<p class='text-center'>No image available</p>";
+      try {
+        // Promise.any will return as soon as the first download promise resolves.
+        const result = await Promise.any(downloadPromises);
+        console.log(`Loaded ${result.fileName} successfully.`);
+        const url = URL.createObjectURL(result.data);
+        startingGridImage.src = url;
+        startingGridImage.onload = function() {
+          placeholderContainer.style.display = 'none';
+          startingGridImage.style.display = 'block';
+        };
+      } catch (err) {
+        console.error("No matching file found:", err);
+        startingGridImage.src = "";
+        placeholderContainer.innerHTML = "<p class='text-center'>No image available</p>";
+      }
     }
+
+
 
   // ===============================
   // === MAIN FORM PAGE FUNCTION ===
