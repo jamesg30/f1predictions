@@ -1,4 +1,6 @@
-// General and Form Code
+// General and Form Code\
+// ensure buttons work
+document.addEventListener("touchstart", function() {}, false);
 // 1. Fetch Form Configuration
 export async function fetchFormConfiguration() {
     try {
