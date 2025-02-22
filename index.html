@@ -186,32 +186,35 @@
             </div>
     
     <!-- Right Column: Quick Links -->
-        <div class="col-md-6">
-            <div class="text-center">
-                <h5 class="mb-3 pixel-art-body">Quick Links:</h5>
-                <!-- Changed to flex-row for horizontal alignment -->
-                <div class="d-flex flex-row justify-content-center gap-3">
-                    <a href="/results">
-                        <button type="button" class="pixel-button">Results</button>
-                    </a>
-                    <a href="/teams">
-                        <button type="button" class="pixel-button">Teams</button>
-                    </a>
-                    <a href="https://www.formula1.com/en/latest/tags/analysis.3HkjTN75peeCOsSegCyOWi?articleFilters=&page=1">
-                      <button type="button" class="pixel-button"><img src="/media/symbols/external_link.png" style="height: 1.1rem; margin-right: 8px; margin-bottom: 2px">F1 Analysis</button>
-                  </a>
-                </div>
+      <div class="col-md-6">
+        <div class="text-center">
+          <h5 class="pixel-art-body">Next Race:</h5>
+            <div id="next-race-info" class="mt-3">
+                <p class="pixel-art-body-small">Loading next race...</p>
             </div>
         </div>
+      </div>
 
         </div>
     
     <!-- Next Race Section -->
-        <div class="text-center mt-5">
-            <h5 class="pixel-art-body">Next Race:</h5>
-            <div id="next-race-info" class="mt-3">
-                <p class="pixel-art-body-small">Loading next race...</p>
-            </div>
+        <div class="text-center">
+          <h5 class="mb-3 pixel-art-body">Quick Links:</h5>
+          <!-- Add flex-wrap to allow items to wrap onto a new line -->
+          <div class="d-flex flex-row flex-wrap justify-content-center gap-3">
+            <a href="/results">
+              <button type="button" class="pixel-button">Results</button>
+            </a>
+            <a href="/teams">
+              <button type="button" class="pixel-button">Teams</button>
+            </a>
+            <a href="https://www.formula1.com/en/latest/tags/analysis.3HkjTN75peeCOsSegCyOWi?articleFilters=&page=1">
+              <button type="button" class="pixel-button">
+                <img src="/media/symbols/external_link.png" style="height: 1.1rem; margin-right: 8px; margin-bottom: 2px">F1 Analysis
+              </button>
+            </a>
+          </div>
+            
         </div>
         <hr>
         <!-- Loading Indicator for Scored Results -->
