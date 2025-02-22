@@ -291,8 +291,14 @@ footer {
 /* ===================== */
 /* === BUTTON STYLES === */
 /* ===================== */
+
+/* Base style using CSS variables */
 .pixel-button {
-  font-family: 'Press Start 2P', Helvetica, Arial, sans-serif;
+  --font-color: #000;
+  --bg-color: #fff;
+  --main-color: #c0c0c0;
+
+  font-family: 'Press Start 2P', Helvetica, sans-serif;
   font-size: 0.8rem;
   text-transform: uppercase;
   text-align: center;
@@ -300,69 +306,57 @@ footer {
   padding: 0.3rem 0.6rem;
   cursor: pointer;
   position: relative;
-  border: 2px solid;
-  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.3);
-  transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
-  touch-action: manipulation; /* Allow smooth touch interactions */
-  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+  
+  /* Use the CSS variables */
+  border: 2px solid var(--main-color);
+  background-color: var(--bg-color);
+  box-shadow: 3px 3px 0 var(--main-color);
+  
+  /* Touch-friendly */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  
+  /* Remove transitions for immediate feedback */
+  transition: none;
 }
 
-/* Default theme */
-.pixel-button {
-  color: #000;
-  background-color: #fff;
-  border-color: #c0c0c0;
-  box-shadow: 3px 3px 0 #a0a0a0;
-}
-
+/* Hover state (desktop) */
 .pixel-button:hover {
+  /* For default theme, a slight lightening */
   background-color: #f0f0f0;
 }
 
-/* Primary theme (Blue) */
+/* Primary theme */
 .pixel-button.primary {
-  color: #fff;
-  background-color: #007bff;
-  border-color: #0056b3;
-  box-shadow: 3px 3px 0 #004494;
+  --font-color: #fff;
+  --bg-color: #007bff;
+  --main-color: #0056b3;
 }
 
 .pixel-button.primary:hover {
-  background-color: #0056b3;
+  /* Optionally, adjust hover background by setting the variable */
+  --bg-color: #0056b3;
 }
 
-/* Dark theme (Black) */
+/* Dark theme */
 .pixel-button.dark {
-  color: #fff;
-  background-color: #000;
-  border-color: #444;
-  box-shadow: 3px 3px 0 #111;
+  --font-color: #fff;
+  --bg-color: #000;
+  --main-color: #444;
 }
 
 .pixel-button.dark:hover {
-  background-color: #111;
+  --bg-color: #111;
 }
 
-/* Button Press Effect (Works on touch & click) */
+/* Active state: simulate button press on mobile & desktop */
 .pixel-button:active,
 .pixel-button.pressed {
-  -webkit-transform: translate(2px, 2px);
-  transform: translate(2px, 2px);
-  -webkit-box-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
-  box-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 0px var(--main-color);
+  transform: translate(3px, 3px);
 }
 
-/* Ensure touch devices apply active effect */
-@media (hover: none) {
-  .pixel-button:active {
-      -webkit-transform: translate(2px, 2px);
-      transform: translate(2px, 2px);
-      -webkit-box-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
-      box-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
-  }
-}
-
-/* Disabled State */
+/* Disabled state */
 .pixel-button:disabled,
 .pixel-button:disabled:hover {
   cursor: not-allowed;
@@ -370,7 +364,6 @@ footer {
   box-shadow: none;
 }
 
-/* Disabled styles per theme */
 .pixel-button:disabled {
   background-color: #e0e0e0;
   color: #777;
