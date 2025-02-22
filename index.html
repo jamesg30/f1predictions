@@ -12,10 +12,15 @@
     <style> 
         /* Container for the image and overlay */
         .full-width-image-container {
-            position: relative; /* Allows for absolute positioning of overlay */
-            width: 100%;        /* Full width of the container */
-            height: 180px;      /* Fixed height for the image */
-            overflow: hidden;   /* Prevents anything from overflowing */
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+
+            -webkit-user-select: none; /* Safari, Chrome, older browsers */
+            -moz-user-select: none;    /* Firefox */
+            -ms-user-select: none;     /* IE 10+ */
+            user-select: none;         /* Standard syntax */
         }
 
         /* Image styling */
