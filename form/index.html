@@ -61,6 +61,33 @@
     // Call the function to update the form title as soon as possible
     updateFormTitle();
   </script>
+
+  <style>
+    /* Default height for small devices */
+    #startingGridPlaceholderContainer .placeholder,
+    #startingGridImage {
+      height: 200px !important;
+      max-height: 200px !important;
+    }
+
+    /* Medium screens (tablets, small laptops) - 250px */
+    @media (min-width: 576px) {
+      #startingGridPlaceholderContainer .placeholder,
+      #startingGridImage {
+        height: 250px !important;
+        max-height: 250px !important;
+      }
+    }
+
+    /* Larger screens (laptops, desktops) - 300px */
+    @media (min-width: 992px) {
+      #startingGridPlaceholderContainer .placeholder,
+      #startingGridImage {
+        height: 300px !important;
+        max-height: 300px !important;
+      }
+    }
+  </style>
   
   <!-- Encryption Script -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
@@ -144,27 +171,24 @@
           </div>
   
           <hr>
-  
+
           <!-- Starting Grid Block with Image -->
-<!-- Starting Grid Block with Image -->
-<div id="starting-grid">
-  <h5 class="mb-3 pixel-art-heading-2">Starting Grid</h5>
-  <!-- Placeholder shown while image loads -->
-  <div id="startingGridPlaceholderContainer">
-    <p class="placeholder-glow">
-      <span class="placeholder col-12" style="display: block; height: 200px;"></span>
-    </p>
-  </div>
-  <!-- Actual starting grid image (initially hidden) -->
-  <img
-    id="startingGridImage"
-    src=""
-    alt="Starting Grid"
-    style="max-width: 100%; max-height: 200px; height: auto; display: none;"
-  >
-</div>
-
-
+          <div id="starting-grid">
+            <h5 class="mb-3 pixel-art-heading-2">Starting Grid</h5>
+            <!-- Placeholder shown while image loads -->
+            <div id="startingGridPlaceholderContainer">
+              <p class="placeholder-glow">
+                <span class="placeholder col-12" style="display: block;">&nbsp;</span>
+              </p>
+            </div>
+            <!-- Actual starting grid image (initially hidden) -->
+            <img
+              id="startingGridImage"
+              src=""
+              alt="Starting Grid"
+              style="max-width: 100%; display: none;"
+            >
+          </div>
           
           <div id="form-alert-text" class="pixel-alert pixel-alert-warning d-none" style="margin-top: 10px"></div>
   
