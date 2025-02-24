@@ -154,26 +154,6 @@ footer {
 /* ======================== */
 /* === FONTS LOADING IN === */
 /* ======================== */
-@font-face {
-    font-family: 'Press Start 2P';
-    src: url('/fonts/PressStart2P.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-  font-family: 'Pixeloid Sans';
-  src: url('fonts/PixeloidSans.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Pixeloid Sans Bold';
-  src: url('fonts/PixeloidSansBold.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
 
 /* ==================== */
 /* === TEXT STYLING === */
