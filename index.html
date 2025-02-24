@@ -67,11 +67,7 @@
 }
 
 .flag-img {
-  width: 64px;
   height: 36px;
-  image-rendering: pixelated;
-  /* 8-bit style shadow: crisp, no blur, offset to bottom-right */
-  box-shadow: 4px 4px 0px #a0a0a0;
 }
 
 @media (max-width: 768px) {
@@ -99,58 +95,61 @@
 <body>
     <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999;"></div>
    <!-- HEADER -->
-<header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
-    <!-- Left Section: Logo and Heading -->
-    <div class="d-flex align-items-center">
-      <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
-        <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
-      </a>
-      <a href="/" class="text-decoration-none text-black">
-        <h5 class="mb-0 pixel-art-heading-2" style="font-size: 1rem;">F1 Predictions</h5>
-      </a>
-    </div>
-  
-    <!-- Right Section: User Avatar and Hamburger Menu -->
-    <div class="d-flex align-items-center">
-      <!-- Pixel Avatar (initially hidden) -->
-      <div id="user-avatar" class="user-avatar d-none me-2"></div>
-      <!-- Hamburger Menu Dropdown -->
-      <div class="pixel-dropdown me-3">
-        <button class="pixel-button" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
-          Menu
+   <header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+      <div class="container-fluid">
+        <!-- Navbar Toggler -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
         </button>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
-          <!-- Other Menu Items -->
-          <li><a class="dropdown-item pixel-art-body-smallxb" href="/">Home</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
-          <!--<li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>-->
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/account">Account</a></li>
-          <li><hr class="dropdown-divider"></li>
-          <!-- Login/Logout Items -->
-          <li id="loggedInUserDisplay" class="dropdown-item-text d-none pixel-art-body-smallx" style="color: darkgrey">
-            Logged in as <strong></strong>
-          </li>
-          <li id="logoutMenuItem" class="d-none">
-            <a class="dropdown-item logout-link pixel-art-body-smallx" href="#" id="logoutBtn">
-                Log Out
+  
+        <!-- Brand -->
+        <a class="navbar-brand d-flex align-items-center" href="/">
+          <img src="/media/f1_predictions_logo.png" alt="Logo" width="45" height="45" class="me-2">
+          <span class="fs-5 text-dark">F1 Predictions</span>
+        </a>
+  
+        <!-- Offcanvas Navbar -->
+        <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasNavbarLabel"><img src="/media/f1_predictions_logo.png" alt="Logo" width="45" height="45" class="me-2"> F1 Predictions</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+              <li class="nav-item"><a class="nav-link" href="/form">Form</a></li>
+              <li class="nav-item"><a class="nav-link" href="/teams">Teams</a></li>
+              <li class="nav-item"><a class="nav-link" href="/results">Results</a></li>
+              <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
+              <li class="nav-item"><a class="nav-link" href="/feedback">Feedback</a></li>
+              <li class="nav-item"><a class="nav-link" href="/info">Info</a></li>
+            </ul>
+          </div>
+        </div>
+  
+        <!-- Right: Account Controls -->
+        <div class="d-flex align-items-center">
+          <!-- Avatar Dropdown (shown when user is logged in) -->
+          <div class="dropdown d-none" id="avatarDropdownContainer">
+            <a href="#" id="userDropdown" class="d-flex align-items-center text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
+              <div id="user-avatar" class="user-avatar" style="background-color: #ccc;"></div>
             </a>
-          </li>
-          <li id="loginMenuItem">
-            <a class="dropdown-item pixel-art-body-smallx" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
-              Log In
-            </a>
-          </li>
-          <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/admin">Admin</a></li>
-        </ul>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" id="logoutMenuItem">
+              <li id="loggedInUserDisplay" class="dropdown-item-text" style="color: darkgrey;">Logged in as <strong></strong></li>
+              <li><a class="dropdown-item" href="/account">Account</a></li>
+              <li><a class="dropdown-item" href="#" id="logoutBtn">Log Out</a></li>
+            </ul>
+          </div>
+          <!-- Log In Button (shown when user is not logged in) -->
+          <button id="loginButton" type="button" class="btn btn-outline-dark ms-2" data-bs-toggle="modal" data-bs-target="#loginModal">
+            Log In
+          </button>
+        </div>
       </div>
-    </div>
+    </nav>
   </header>
+  
+  
   
 
     <!-- Full-Width Image Section with Centered Text -->
@@ -175,12 +174,12 @@
             <!-- Left Column: Latest Form -->
             <div class="col-md-6">
                 <div class="text-center">
-                    <h5 class="mb-3 pixel-art-body">Latest Form:</h5>
+                    <h5 class="mb-3">Latest Form:</h5>
                     <a id="latest-form-link">
-                        <button id="latest-form-button" type="button" class="pixel-button" disabled>Loading...</button>
+                        <button id="latest-form-button" type="button" class="btn btn-dark" disabled>Loading...</button>
                     </a>
                     <div id="formStatusContainer" style="display: none; margin-top: 15px">
-                        <i id="formStatusText" class="mb-3 pixel-art-body"></i>
+                        <i id="formStatusText" class="mb-3"></i>
                     </div>
                 </div>
             </div>
@@ -188,9 +187,9 @@
           <!-- Right Column: Quick Links -->
             <div class="col-md-6">
               <div class="text-center">
-                <h5 class="pixel-art-body">Next Race:</h5>
+                <h5>Next Race:</h5>
                   <div id="next-race-info" class="mt-3">
-                      <p class="pixel-art-body-small">Loading next race...</p>
+                      <p>Loading next race...</p>
                   </div>
               </div>
             </div>
@@ -198,17 +197,17 @@
     
     <!-- Next Race Section -->
         <div class="text-center">
-          <h5 class="mb-3 pixel-art-body">Quick Links:</h5>
+          <h5 class="mb-3">Quick Links:</h5>
           <!-- Add flex-wrap to allow items to wrap onto a new line -->
           <div class="d-flex flex-row flex-wrap justify-content-center gap-3">
-            <a href="/results">
-              <button type="button" class="pixel-button">Results</button>
-            </a>
             <a href="/teams">
-              <button type="button" class="pixel-button">Teams</button>
+              <button type="button" class="btn btn-dark">Teams</button>
+            </a>
+            <a href="/results">
+              <button type="button" class="btn btn-dark">Results</button>
             </a>
             <a href="https://www.formula1.com/en/latest/tags/analysis.3HkjTN75peeCOsSegCyOWi?articleFilters=&page=1">
-              <button type="button" class="pixel-button">
+              <button type="button" class="btn btn-dark">
                 <img src="/media/symbols/external_link.png" style="height: 1rem; margin-right: 8px; margin-bottom: 2px; image-rendering: pixelated;">F1.com Analysis
               </button>
             </a>
@@ -390,31 +389,31 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title pixel-art-heading-2" id="loginModalLabel">Login</h5>
+        <h5 class="modal-title" id="loginModalLabel">Login</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <form id="login-form">
           <div class="mb-3">
-            <label for="login-player-name" class="form-label pixel-art-body">Name:</label>
+            <label for="login-player-name" class="form-label">Name:</label>
             <!-- Use an input with a datalist for suggestions -->
-            <input list="players-list" id="login-player-name" class="form-control pixel-art-body" required />
+            <input list="players-list" id="login-player-name" class="form-control" required />
             <datalist id="players-list">
               <!-- Options will be populated dynamically -->
             </datalist>
           </div>
           <div class="mb-3">
-            <label for="login-pin" class="form-label pixel-art-body">PIN:</label>
-            <input type="password" id="login-pin" class="form-control pixel-art-body" maxlength="4" pattern="\d*" inputmode="numeric" required />
+            <label for="login-pin" class="form-label">PIN:</label>
+            <input type="password" id="login-pin" class="form-control" maxlength="4" pattern="\d*" inputmode="numeric" required />
           </div>
           
           <div class="mb-3">
-            <label for="rememberMe" class="form-check-label pixel-art-body">
-              <input type="checkbox" id="rememberMe" class="form-check-input pixel-art-body" />
+            <label for="rememberMe" class="form-check-label">
+              <input type="checkbox" id="rememberMe" class="form-check-input" />
               Remember me
             </label>
           </div>
-          <button type="submit" class="pixel-button" disabled>Login</button>
+          <button type="submit" class="btn btn-primary" disabled>Login</button>
         </form>
       </div>
     </div>
@@ -423,7 +422,7 @@
 
     </main>
  
-    <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
+    <footer class="bg-light text-black text-center py-1">
         <p>&copy; 2025 F1 Predictions Form</p>
     </footer>
 
@@ -562,7 +561,7 @@
 
         document.getElementById("next-race-info").innerHTML = `
     <img src="${flagUrl}" alt="${raceDetails.country} Flag" class="flag-img">
-    <h6 class="mt-2 pixel-art-body-small">${raceDetails.name} GP</h6>
+    <h6 class="mt-2">${raceDetails.name} GP</h6>
     <div id="countdown-timer" class="mt-2" style="font-size: 0.8rem; text-align: center; display: inline-block;">
         <strong>Time left:</strong> <span id="countdown"></span>
     </div>

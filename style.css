@@ -12,14 +12,6 @@ body {
     min-height: 100vh; /* Full viewport height */
 }
 
-header {
-    background-color: #fff;
-    color: #333;
-    padding: 10px;
-    text-align: center;
-    width: 100%; /* Full width */
-}
-
 main {
     flex: 1; /* Allows this section to grow and fill available space */
 }

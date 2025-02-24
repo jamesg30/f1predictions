@@ -627,13 +627,19 @@ export function renderAvatar(element, settings, letter = 'A') {
 export function updateLoginUI(playerData) {
   const playerName = playerData.name;
   
-  // Hide the "Log In" menu item.
-  const loginMenuItem = document.getElementById('loginMenuItem');
-  if (loginMenuItem) {
-    loginMenuItem.classList.add('d-none');
+  // Hide the Log In button.
+  const loginButton = document.getElementById('loginButton');
+  if (loginButton) {
+    loginButton.classList.add('d-none');
   }
   
-  // Show "Logged in as ..." text.
+  // Show the avatar dropdown container.
+  const avatarDropdownContainer = document.getElementById('avatarDropdownContainer');
+  if (avatarDropdownContainer) {
+    avatarDropdownContainer.classList.remove('d-none');
+  }
+  
+  // Show "Logged in as ..." text in the dropdown.
   const loggedInUserDisplay = document.getElementById('loggedInUserDisplay');
   if (loggedInUserDisplay) {
     loggedInUserDisplay.innerHTML = `Logged in as<br><strong>${playerName}</strong>`;
@@ -651,14 +657,13 @@ export function updateLoginUI(playerData) {
           clearCookie("playerId");
           loggedInUserDisplay.classList.add('d-none');
           logoutMenuItem.classList.add('d-none');
-          if (loginMenuItem) {
-            loginMenuItem.classList.remove('d-none');
+          if (loginButton) {
+            loginButton.classList.remove('d-none');
           }
           hideUserAvatar();
           updateFormPlayerDisplay(null);
           document.dispatchEvent(new CustomEvent("loginStateChanged", { detail: { loggedIn: false } }));
           showAlert('You have logged out!', 'success');
-          // Reset the login form so that if the user returns to log in again, the form is cleared and enabled.
           resetLoginForm();
         }
       };
@@ -667,6 +672,24 @@ export function updateLoginUI(playerData) {
   
   // Update the header avatar using the entire player data.
   updateUserAvatar(playerData);
+  
+  // --- ADMIN LINK HANDLING ---
+  // Only add an Admin link in the dropdown if the logged-in user has id === 1.
+  if (playerData.id === 1 || getCookie("playerId") === "1") {
+    const dropdownMenu = document.getElementById('userDropdown').nextElementSibling;
+    let adminLinkItem = document.getElementById('adminLinkItem');
+    if (!adminLinkItem && dropdownMenu) {
+      adminLinkItem = document.createElement('li');
+      adminLinkItem.id = 'adminLinkItem';
+      adminLinkItem.innerHTML = `<a class="dropdown-item" href="/admin">Admin</a>`;
+      dropdownMenu.appendChild(adminLinkItem);
+    }
+  } else {
+    const adminLinkItem = document.getElementById('adminLinkItem');
+    if (adminLinkItem) {
+      adminLinkItem.remove();
+    }
+  }
   
   // Close the login modal and shift focus.
   const loginModalEl = document.getElementById('loginModal');
@@ -709,8 +732,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     loginModalEl.addEventListener('show.bs.modal', resetLoginForm);
   }
 
+  // Immediately, if a cookie exists, show a blank grey placeholder in the avatar.
+    const playerIdCookie = getCookie("playerId");
+    const userAvatar = document.getElementById('user-avatar');
+    const avatarDropdownContainer = document.getElementById('avatarDropdownContainer');
+    const loginButton = document.getElementById('loginButton');
+
+if (playerIdCookie) {
+  if (userAvatar) {
+    userAvatar.textContent = ""; // blank placeholder
+    userAvatar.style.backgroundColor = "#ccc"; // grey background
+    userAvatar.classList.remove('d-none');
+  }
+} else {
+  if (avatarDropdownContainer) avatarDropdownContainer.classList.add('d-none');
+  if (loginButton) loginButton.classList.remove('d-none');
+}
+
   // Auto-login: Check for an existing cookie.
-  const playerIdCookie = getCookie("playerId");
   if (playerIdCookie) {
     const { data: playerData, error } = await supabase
       .from('players')
@@ -721,27 +760,28 @@ document.addEventListener("DOMContentLoaded", async () => {
       updateLoginUI(playerData);
     }
   }
+  
+  // Get references to the login form elements.
+// Note: We rename the login form’s submit button to avoid conflict with the header login button.
+const loginForm = document.getElementById('login-form');
+const playerNameInput = document.getElementById('login-player-name');
+const pinInput = document.getElementById('login-pin');
+const loginSubmitButton = loginForm.querySelector('button[type="submit"]');
 
-  // Get references to the form elements.
-  const loginForm = document.getElementById('login-form');
-  const playerNameInput = document.getElementById('login-player-name');
-  const pinInput = document.getElementById('login-pin');
-  const loginButton = loginForm.querySelector('button[type="submit"]');
-
-  // Enable the login button only if both fields have a value.
-  function toggleLoginButton() {
-    if (playerNameInput.value.trim() !== "" && pinInput.value.trim() !== "") {
-      loginButton.disabled = false;
-    } else {
-      loginButton.disabled = true;
-    }
+function toggleLoginButton() {
+  if (playerNameInput.value.trim() !== "" && pinInput.value.trim() !== "") {
+    loginSubmitButton.disabled = false;
+  } else {
+    loginSubmitButton.disabled = true;
   }
+}
+
 
   playerNameInput.addEventListener('input', toggleLoginButton);
   pinInput.addEventListener('input', toggleLoginButton);
 
   // Ensure the login button is disabled initially.
-  loginButton.disabled = true;
+  loginSubmitButton.disabled = true;
 
   // Login form submission handler.
   if (loginForm) {
@@ -749,7 +789,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       e.preventDefault();
 
       // Immediately disable the button and both input fields to prevent duplicate submissions.
-      loginButton.disabled = true;
+      loginSubmitButton.disabled = true;
       playerNameInput.disabled = true;
       pinInput.disabled = true;
 
@@ -760,7 +800,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (pin.length !== 4) {
         showAlert('Please enter a 4-digit PIN.', 'danger');
         // Re-enable inputs so the user can correct it.
-        loginButton.disabled = false;
+        loginSubmitButton.disabled = false;
         playerNameInput.disabled = false;
         pinInput.disabled = false;
         return;
@@ -775,7 +815,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (error || !playerData) {
         showAlert('Error logging in. Please try again.', 'danger');
-        loginButton.disabled = false;
+        loginSubmitButton.disabled = false;
         playerNameInput.disabled = false;
         pinInput.disabled = false;
         return;
