@@ -636,7 +636,7 @@ export function updateLoginUI(playerData) {
   // Show "Logged in as ..." text.
   const loggedInUserDisplay = document.getElementById('loggedInUserDisplay');
   if (loggedInUserDisplay) {
-    loggedInUserDisplay.innerHTML = `Logged in as <strong>${playerName}</strong>`;
+    loggedInUserDisplay.innerHTML = `Logged in as<br><strong>${playerName}</strong>`;
     loggedInUserDisplay.classList.remove('d-none');
   }
   
