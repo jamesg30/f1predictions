@@ -96,10 +96,100 @@
     <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999;"></div>
    <!-- HEADER -->
    <header>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+    <!-- Mobile Header (Visible on mobile only) -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top d-lg-none">
+      <div class="container-fluid d-flex flex-wrap align-items-center">
+        <!-- Mobile: Toggler (visible only on mobile) -->
+        <button
+          class="navbar-toggler d-lg-none order-1"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNavDropdownMobile"
+          aria-controls="navbarNavDropdownMobile"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+  
+        <!-- Brand / Logo (centered on mobile using mx-auto) -->
+        <a class="navbar-brand mx-auto mx-lg-0 order-2 order-lg-1" href="/">
+          <img src="/media/f1_predictions_logo.png" alt="Logo" width="45" height="45" class="me-2">
+          <span class="fs-5 text-dark">F1 Predictions</span>
+        </a>
+  
+        <!-- Account Controls -->
+        <div class="d-flex align-items-center order-3 order-lg-3">
+          <!-- Avatar Dropdown (if logged in) -->
+          <div class="dropdown d-none" id="avatarDropdownContainerMobile">
+            <a
+              href="#"
+              id="userDropdownMobile"
+              class="d-flex align-items-center text-decoration-none"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <div id="user-avatar-mobile" class="user-avatar" style="background-color: #ccc;"></div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdownMobile" id="logoutMenuItemMobile">
+              <li id="loggedInUserDisplayMobile" class="dropdown-item-text" style="color: darkgrey;">
+                Logged in as <strong></strong>
+              </li>
+              <li><a class="dropdown-item" href="/account">Account</a></li>
+              <li><a class="dropdown-item" href="#" id="logoutBtnMobile">Log Out</a></li>
+            </ul>
+          </div>
+          <!-- Log In Button (if not logged in) -->
+          <button
+            id="loginButtonMobile"
+            type="button"
+            class="btn btn-outline-dark ms-2"
+            data-bs-toggle="modal"
+            data-bs-target="#loginModal"
+          >
+            Log In
+          </button>
+        </div>
+  
+        <!-- Navigation Links (Collapse on mobile) -->
+        <div class="collapse navbar-collapse order-4 w-100 order-lg-2 w-lg-auto" id="navbarNavDropdownMobile">
+          <ul class="navbar-nav mx-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/form">Form</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/teams">Teams</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/results">Results</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/register">Register</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/feedback">Feedback</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/info">Info</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  
+    <!-- Desktop Header (Visible on large screens and up) -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top d-none d-lg-flex">
       <div class="container-fluid">
-        <!-- Navbar Toggler -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+        <!-- Navbar Toggler (if needed, e.g. for collapsing the nav links) -->
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNavDropdownDesktop"
+          aria-controls="navbarNavDropdownDesktop"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
           <span class="navbar-toggler-icon"></span>
         </button>
   
@@ -109,45 +199,67 @@
           <span class="fs-5 text-dark">F1 Predictions</span>
         </a>
   
-        <!-- Offcanvas Navbar -->
-        <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
-          <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="offcanvasNavbarLabel"><img src="/media/f1_predictions_logo.png" alt="Logo" width="45" height="45" class="me-2"> F1 Predictions</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-          </div>
-          <div class="offcanvas-body">
-            <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-              <li class="nav-item"><a class="nav-link" href="/form">Form</a></li>
-              <li class="nav-item"><a class="nav-link" href="/teams">Teams</a></li>
-              <li class="nav-item"><a class="nav-link" href="/results">Results</a></li>
-              <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
-              <li class="nav-item"><a class="nav-link" href="/feedback">Feedback</a></li>
-              <li class="nav-item"><a class="nav-link" href="/info">Info</a></li>
-            </ul>
-          </div>
+        <!-- Collapsible Navbar: Navigation Links -->
+        <div class="collapse navbar-collapse" id="navbarNavDropdownDesktop">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" href="/form">Form</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/teams">Teams</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/results">Results</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/register">Register</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/feedback">Feedback</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/info">Info</a>
+            </li>
+          </ul>
         </div>
   
         <!-- Right: Account Controls -->
         <div class="d-flex align-items-center">
           <!-- Avatar Dropdown (shown when user is logged in) -->
-          <div class="dropdown d-none" id="avatarDropdownContainer">
-            <a href="#" id="userDropdown" class="d-flex align-items-center text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
-              <div id="user-avatar" class="user-avatar" style="background-color: #ccc;"></div>
+          <div class="dropdown d-none" id="avatarDropdownContainerDesktop">
+            <a
+              href="#"
+              id="userDropdownDesktop"
+              class="d-flex align-items-center text-decoration-none"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <div id="user-avatar-desktop" class="user-avatar" style="background-color: #ccc;"></div>
             </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" id="logoutMenuItem">
-              <li id="loggedInUserDisplay" class="dropdown-item-text" style="color: darkgrey;">Logged in as <strong></strong></li>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdownDesktop" id="logoutMenuItemDesktop">
+              <li id="loggedInUserDisplayDesktop" class="dropdown-item-text" style="color: darkgrey;">
+                Logged in as <strong></strong>
+              </li>
               <li><a class="dropdown-item" href="/account">Account</a></li>
-              <li><a class="dropdown-item" href="#" id="logoutBtn">Log Out</a></li>
+              <li><a class="dropdown-item" href="#" id="logoutBtnDesktop">Log Out</a></li>
             </ul>
           </div>
           <!-- Log In Button (shown when user is not logged in) -->
-          <button id="loginButton" type="button" class="btn btn-outline-dark ms-2" data-bs-toggle="modal" data-bs-target="#loginModal">
+          <button
+            id="loginButtonDesktop"
+            type="button"
+            class="btn btn-outline-dark ms-2"
+            data-bs-toggle="modal"
+            data-bs-target="#loginModal"
+          >
             Log In
           </button>
         </div>
       </div>
     </nav>
   </header>
+  
+  
   
   
   

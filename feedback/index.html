@@ -37,49 +37,96 @@
   <!-- Alert Container with high z-index so it appears on top -->
   <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999;"></div>
   
-  <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
-    <!-- Left Section: Logo and Heading -->
-    <div class="d-flex align-items-center">
-      <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
-        <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
-      </a>
-      <a href="/" class="text-decoration-none text-black">
-        <h5 class="mb-0 pixel-art-heading-2" style="font-size: 1rem;">F1 Predictions</h5>
-      </a>
-    </div>
-    <!-- Right Section: User Avatar and Hamburger Menu -->
-    <div class="d-flex align-items-center">
-      <div id="user-avatar" class="user-avatar d-none me-2"></div>
-      <div class="pixel-dropdown me-3">
-        <button class="pixel-button" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
-          Menu
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+      <div class="container-fluid">
+        <!-- For large screens: brand on the left -->
+        <a class="navbar-brand d-none d-lg-block" href="/">
+          <img src="/media/f1_predictions_logo.png" alt="Logo" width="45" height="45" class="me-2">
+          <span class="fs-5 text-dark">F1 Predictions</span>
+        </a>
+  
+        <!-- Navbar toggler (visible on mobile) -->
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarCollapse"
+          aria-controls="navbarCollapse"
+          aria-expanded="false"
+          aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
         </button>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/">Home</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallxb" href="/feedback">Feedback</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
-          <!--<li><a class="dropdown-item pixel-art-body-smallx" href="/archive">Archive</a></li>-->
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/account">Account</a></li>
-          <li><hr class="dropdown-divider"></li>
-          <li id="loggedInUserDisplay" class="dropdown-item-text d-none pixel-art-body-smallx" style="color: darkgrey">
-            Logged in as <strong></strong>
-          </li>
-          <li id="logoutMenuItem" class="d-none">
-            <a class="dropdown-item logout-link pixel-art-body-smallx" href="#" id="logoutBtn">Log Out</a>
-          </li>
-          <li id="loginMenuItem">
-            <a class="dropdown-item pixel-art-body-smallx" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log In</a>
-          </li>
-          <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/admin">Admin</a></li>
-        </ul>
+  
+        <!-- Collapsible area -->
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+          <div class="d-flex w-100 align-items-center">
+            <!-- For mobile: show brand inside collapse (left aligned) -->
+            <a class="navbar-brand d-lg-none" href="/">
+              <img src="/media/f1_predictions_logo.png" alt="Logo" width="45" height="45" class="me-2">
+              <span class="fs-5 text-dark">F1 Predictions</span>
+            </a>
+  
+            <!-- Right group: nav links and account controls -->
+            <div class="ms-auto d-flex align-items-center">
+              <ul class="navbar-nav me-3">
+                <li class="nav-item">
+                  <a class="nav-link" href="/form">Form</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/teams">Teams</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/results">Results</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/register">Register</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/feedback">Feedback</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/info">Info</a>
+                </li>
+              </ul>
+  
+              <!-- Account controls: always on the far right -->
+              <div class="d-flex align-items-center">
+                <div class="dropdown">
+                  <a
+                    href="#"
+                    id="userDropdown"
+                    class="d-flex align-items-center text-decoration-none"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    <div id="user-avatar" class="user-avatar" style="background-color: #ccc; width:40px; height:40px; border-radius:50%;"></div>
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <li id="loggedInUserDisplay" class="dropdown-item-text" style="color: darkgrey;">
+                      Logged in as <strong></strong>
+                    </li>
+                    <li><a class="dropdown-item" href="/account">Account</a></li>
+                    <li><a class="dropdown-item" href="#" id="logoutBtn">Log Out</a></li>
+                  </ul>
+                </div>
+                <!-- Optional: Log In button (if user is not logged in) -->
+                <button
+                  id="loginButton"
+                  type="button"
+                  class="btn btn-outline-dark ms-2 d-lg-block"
+                  data-bs-toggle="modal"
+                  data-bs-target="#loginModal">
+                  Log In
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </nav>
   </header>
+  
+  
   
   <main class="container my-5">
     <div class="container my-5">

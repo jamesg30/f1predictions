@@ -402,7 +402,7 @@ export function getCookie(name) {
   export function showAlert(message, type) {
     const alertContainer = document.getElementById('alert-container');
     const alert = document.createElement('div');
-    alert.classList.add('pixel-alert', `pixel-alert-${type}`);
+    alert.classList.add('alert', `alert-${type}`);
     alert.innerHTML = message;
     alertContainer.appendChild(alert);
   
