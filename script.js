@@ -1,6 +1,7 @@
-// General and Form Code\
+// General and Form Code
 // ensure buttons work
 document.addEventListener("touchstart", function() {}, false);
+
 // 1. Fetch Form Configuration
 export async function fetchFormConfiguration() {
     try {
@@ -726,30 +727,24 @@ function resetLoginForm() {
 document.addEventListener("DOMContentLoaded", async () => {
   await populateLoginPlayerDropdown();
 
-  // Attach reset handler when the modal is about to be shown.
-  const loginModalEl = document.getElementById('loginModal');
-  if (loginModalEl) {
-    loginModalEl.addEventListener('show.bs.modal', resetLoginForm);
+  const playerIdCookie = getCookie("playerId");
+  const userAvatar = document.getElementById('user-avatar');
+  const avatarDropdownContainer = document.getElementById('avatarDropdownContainer');
+  const loginButton = document.getElementById('loginButton');
+
+  if (playerIdCookie) {
+    // Cookie is present: leave the grey box in place.
+    if (userAvatar) {
+      userAvatar.textContent = ""; // ensure placeholder is blank
+      userAvatar.style.backgroundColor = "#ccc"; // light grey placeholder
+    }
+  } else {
+    // No cookie: hide the avatar placeholder and show the login button.
+    if (avatarDropdownContainer) avatarDropdownContainer.classList.add('d-none');
+    if (loginButton) loginButton.classList.remove('d-none');
   }
 
-  // Immediately, if a cookie exists, show a blank grey placeholder in the avatar.
-    const playerIdCookie = getCookie("playerId");
-    const userAvatar = document.getElementById('user-avatar');
-    const avatarDropdownContainer = document.getElementById('avatarDropdownContainer');
-    const loginButton = document.getElementById('loginButton');
-
-if (playerIdCookie) {
-  if (userAvatar) {
-    userAvatar.textContent = ""; // blank placeholder
-    userAvatar.style.backgroundColor = "#ccc"; // grey background
-    userAvatar.classList.remove('d-none');
-  }
-} else {
-  if (avatarDropdownContainer) avatarDropdownContainer.classList.add('d-none');
-  if (loginButton) loginButton.classList.remove('d-none');
-}
-
-  // Auto-login: Check for an existing cookie.
+  // Auto-login: If a cookie exists, fetch and render the actual avatar.
   if (playerIdCookie) {
     const { data: playerData, error } = await supabase
       .from('players')

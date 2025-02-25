@@ -122,42 +122,42 @@
         <!-- On mobile: centered via mx-auto; on desktop: left aligned (mx-lg-0) -->
         <a class="navbar-brand mx-auto mx-lg-0 order-2 order-lg-1" href="/">
           <img src="/media/f1_predictions_logo.png" alt="Logo" width="45" height="45" class="me-2">
-          <span class="fs-5 text-black"><strong>F1 Predictions</strong></span>
+          <span class="fs-5 text-black d-none d-lg-inline" style="margin-right: 8px"><strong>F1 Predictions</strong></span>
         </a>
   
         <!-- Shared Account Controls -->
-        <!-- ms-lg-auto pushes these to the far right on desktop -->
-        <div class="d-flex align-items-center order-3 order-lg-3 ms-lg-auto">
-          <!-- Avatar Dropdown (if logged in) -->
-          <div class="dropdown d-none" id="avatarDropdownContainer">
-            <a
-              href="#"
-              id="userDropdown"
-              class="d-flex align-items-center text-decoration-none"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              <div id="user-avatar" class="user-avatar" style="background-color: #ccc;"></div>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" id="logoutMenuItem">
-              <li id="loggedInUserDisplay" class="dropdown-item-text" style="color: darkgrey;">
-                Logged in as <strong></strong>
-              </li>
-              <li><a class="dropdown-item" href="/account">Account</a></li>
-              <li><a class="dropdown-item" href="#" id="logoutBtn">Log Out</a></li>
-            </ul>
-          </div>
-          <!-- Log In Button (if not logged in) -->
-          <button
-            id="loginButton"
-            type="button"
-            class="btn btn-outline-dark ms-2 text-nowrap"
-            data-bs-toggle="modal"
-            data-bs-target="#loginModal"
-          >
-            Log In
-          </button>
-        </div>
+<div class="d-flex align-items-center order-3 order-lg-3 ms-lg-auto">
+  <!-- Avatar Dropdown (default: always rendered as grey box) -->
+  <div class="dropdown" id="avatarDropdownContainer">
+    <a
+      href="#"
+      id="userDropdown"
+      class="d-flex align-items-center text-decoration-none"
+      data-bs-toggle="dropdown"
+      aria-expanded="false"
+    >
+      <!-- Default grey avatar placeholder -->
+      <div id="user-avatar" class="user-avatar" style="background-color: #ccc;"></div>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" id="logoutMenuItem">
+      <li id="loggedInUserDisplay" class="dropdown-item-text" style="color: darkgrey;">
+        Logged in as <br><strong></strong>
+      </li>
+      <li><a class="dropdown-item" href="/account">Account</a></li>
+      <li><a class="dropdown-item" href="#" id="logoutBtn">Log Out</a></li>
+    </ul>
+  </div>
+  <!-- Log In Button (default: hidden) -->
+  <button
+    id="loginButton"
+    type="button"
+    class="btn btn-outline-dark ms-2 text-nowrap d-none"
+    data-bs-toggle="modal"
+    data-bs-target="#loginModal"
+  >
+    Log In
+  </button>
+</div>
   
         <!-- Navigation Links -->
         <!-- On mobile: full-width collapse; on desktop: inline between brand and account controls -->
