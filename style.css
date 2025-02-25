@@ -24,6 +24,27 @@ footer {
     width: 100%;
 }
 
+@font-face {
+  font-family: 'Press Start 2P';
+  src: url('/fonts/PressStart2P.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Pixeloid Sans';
+  src: url('fonts/PixeloidSans.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Pixeloid Sans Bold';
+  src: url('fonts/PixeloidSansBold.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 /* ======================== */
 /* === TABLE FORMATIING === */
 /* ======================== */
@@ -702,3 +723,73 @@ footer {
 .pixel-dropdown:focus {
   outline: none !important;
 }
+
+/* ============== */
+/* === BURGER === */
+/* ============== */
+/* Remove outline and border from the toggler button */
+.navbar-toggler {
+  border: none;
+  outline: none;
+}
+.navbar-toggler:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Burger icon container (scaled down to ~75% of original size) */
+.navbar-toggler .burger {
+  position: relative;
+  width: 30px;    /* 40px * 0.75 = 30px */
+  height: 22.5px; /* 30px * 0.75 = 22.5px */
+  background: transparent;
+  cursor: pointer;
+  display: block;
+}
+
+/* Base styles for each burger line */
+.navbar-toggler .burger span {
+  display: block;
+  position: absolute;
+  height: 4px;
+  width: 100%;
+  background: black;
+  border-radius: 9px;
+  opacity: 1;
+  left: 0;
+  transform: rotate(0deg);
+  transition: 0.25s ease-in-out;
+}
+
+/* Positioning the three lines */
+.navbar-toggler .burger span:nth-of-type(1) {
+  top: 0px;
+  transform-origin: left center;
+}
+.navbar-toggler .burger span:nth-of-type(2) {
+  top: 50%;
+  transform: translateY(-50%);
+  transform-origin: left center;
+}
+.navbar-toggler .burger span:nth-of-type(3) {
+  top: 100%;
+  transform-origin: left center;
+  transform: translateY(-100%);
+}
+
+/* Animation when navbar is expanded (using aria-expanded state) */
+.navbar-toggler[aria-expanded="true"] .burger span:nth-of-type(1) {
+  transform: rotate(45deg);
+  top: 0px;
+  left: 4px; /* originally 5px, now scaled: ~4px */
+}
+.navbar-toggler[aria-expanded="true"] .burger span:nth-of-type(2) {
+  width: 0%;
+  opacity: 0;
+}
+.navbar-toggler[aria-expanded="true"] .burger span:nth-of-type(3) {
+  transform: rotate(-45deg);
+  top: 21px; /* originally 28px, now scaled: 28 * 0.75 = 21px */
+  left: 4px;
+}
+
