@@ -141,7 +141,7 @@
             <!-- Register Player -->
             <div id="register-player" class="tab-pane fade show active" role="tabpanel" aria-labelledby="register-player-tab">
                 <div class="d-flex justify-content-left">
-                <h2 class="mb-3 pixel-art-heading-3">Register Player</h2>
+                <h2 class="mb-3 heading-text-2">Register Player</h2>
                 </div>
                 
                 <div class="mb-3">
@@ -160,25 +160,23 @@
                 </div> 
             
                 <div class="mb-3">
-                <button id="register-player-btn" class="pixel-button primary">Register</button>
+                <button id="register-player-btn" class="btn btn-primary">Register</button>
                 </div>
-                <div class="pixel-alert pixel-alert-info" style="text-align: left">
+                <div class="alert alert-info" style="text-align: left">
                 <h4>
                     Login System:
                 </h4>
                 <ul>
-                    <li>Log in via the MENU dropdown.</li>
-                    <li>A box with the first letter of your username will appear next to the MENU button when logged in. You can also see your login status in the MENU dropdown.</li>
-                    <li>Passwords can be reset or changed in <a href="/account">Account Page</a>.</li>
-                    <li>You can customise your avatar on the <a href="/account">Account Page</a>.</li>
                     <li>Security is greatly improved.</li>
                     <li>All name and team fields will be automatically populated.</li>
                     <li>The form, cards and casino will populate with your previous predictions, making edits much easier.</li>
                     <li>Passwords are encrypted for security.</li>
+                    <li>You can customise your avatar on the <a href="/account">Account Page</a>.</li>
+                    <li>Passwords can be reset or changed in <a href="/account">Account Page</a>.</li>
                 </ul>
                 </div>
                 <div class="mb-3">
-                <h4 class="mb-3 pixel-art-heading-2">Registered Players List</h4>
+                <h4 class="mb-3 heading-text-3">Registered Players List</h4>
                 <ul id="player-list" class="list-group">
                     <!-- Registered players will be displayed here -->
                 </ul>
@@ -190,17 +188,17 @@
             <!-- Register Team -->
             <div id="register-team" class="tab-pane fade" role="tabpanel" aria-labelledby="register-team-tab">
                 <div class="d-flex justify-content-left">
-                    <h2 class="mb-3 pixel-art-heading-3">Register Team</h2>
+                    <h2 class="mb-3 heading-text-2">Register Team</h2>
                 </div>
                 <div class="mb-3">
                     <label for="team-name" class="form-label">Enter Team Name:</label>
                     <input type="text" id="team-name" class="form-control" maxlength="32">
                 </div>
                 <div class="mb-3">
-                    <button id="register-team-btn" class="pixel-button primary">Register</button>
+                    <button id="register-team-btn" class="btn btn-primary">Register</button>
                 </div>
                 <div class="mb-3">
-                    <h4 class="mb-3 pixel-art-heading-2">Registered Teams List</h4>
+                    <h4 class="mb-3 heading-text-3">Registered Teams List</h4>
                     <ul id="team-list" class="list-group">
                         <!-- Registered teams will be displayed here -->
                     </ul>
@@ -212,7 +210,7 @@
             <div id="join-team" class="tab-pane fade" role="tabpanel" aria-labelledby="join-team-tab">
                 <div id="join-team">
                     <div class="d-flex justify-content-left">
-                        <h2 class="mb-3 pixel-art-heading-3">Join Team</h2>
+                        <h2 class="mb-3 heading-text-2">Join Team</h2>
                     </div>
                     <div class="mb-3">
                         <label for="join-player-name" class="form-label">Player:</label>
@@ -227,10 +225,10 @@
                         <select id="team-select" class="form-select"></select>
                       </div>
                       <div class="mb-3">
-                        <button id="join-team-btn" class="pixel-button primary">Join Team</button>
+                        <button id="join-team-btn" class="btn btn-primary">Join Team</button>
                       </div>
                       <div class="mb-3">
-                        <h4 class="mb-3 pixel-art-heading-2">Current Teams</h4>
+                        <h4 class="mb-3 heading-text-3">Current Teams</h4>
                         <ul id="join-team-list" class="list-group">
                           <!-- Teams and their members will be displayed here -->
                         </ul>
@@ -286,9 +284,9 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
+    <footer class="bg-light text-black text-center py-1 body-text-xs">
         <p>&copy; 2025 F1 Predictions Form</p>
-    </footer>
+      </footer>
 
 <script type="module">
         import { fetchData, getCookie, populateLoginPlayerDropdown} from '/script.js';

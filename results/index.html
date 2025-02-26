@@ -157,7 +157,7 @@
         <div class="tab-content" id="tab-content">
             <!-- Race Results -->
             <div id="race-results" class="tab-pane fade show active" role="tabpanel" aria-labelledby="race-results-tab">
-              <h2 class="mb-3 pixel-art-heading-3">Race Results</h2>
+              <h2 class="mb-3 heading-text-2">Race Results</h2>
               <div class="mb-3">
                 <label for="team-select" class="form-label">Viewing results for:</label>
                 <!-- Dropdown will be populated with available races -->
@@ -165,13 +165,13 @@
               </div>
 
               <!-- Loading Indicator for Player Results -->
-              <div id="playerLoading" class="loading-indicator mb-3 pixel-art-heading-2" style="display: none;">
+              <div id="playerLoading" class="loading-indicator mb-3 heading-text-3" style="display: none;">
                 Results loading...
                 <div class="loading-bar"></div>
               </div>
 
               <!-- PLAYER RESULTS -->
-              <h4 class="mb-3 pixel-art-heading-2">Player Results</h4>
+              <h4 class="mb-3 heading-text-3">Player Results</h4>
               <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
                 <!-- We add an id so we can easily target this table in JS -->
                 <table id="player-results-table" class="table table-sm table-bordered"></table>
@@ -201,7 +201,7 @@
             </div>
               
               <!-- TEAM RESULTS -->
-              <h4 class="mb-3 pixel-art-heading-2">Team Results</h4>
+              <h4 class="mb-3 heading-text-3">Team Results</h4>
               <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
                 <!-- The team results table – again, an id is added for JS targeting -->
                 <table id="team-results-table" class="table table-sm table-bordered">
@@ -214,7 +214,7 @@
 
             <!-- Season - Player Results -->
             <div id="season-player" class="tab-pane fade" role="tabpanel" aria-labelledby="season-player-tab">
-                <h2 class="mb-3 pixel-art-heading-3">Season Player Results</h2>
+                <h2 class="mb-3 heading-text-2">Season Player Results</h2>
                 <!-- Scrollable container -->
                 <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
                   <table id="full-season-table" class="table table-sm table-bordered">
@@ -231,7 +231,7 @@
 
             <!-- Season Team Results -->
             <div id="season-team" class="tab-pane fade" role="tabpanel" aria-labelledby="season-team-tab">
-              <h2 class="mb-3 pixel-art-heading-3">Season Team Results</h2>
+              <h2 class="mb-3 heading-text-2">Season Team Results</h2>
               <!-- Scrollable container -->
               <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
                 <table id="full-season-team-table" class="table table-sm table-bordered">
@@ -291,8 +291,8 @@
 
     </main>
  
-    <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
-        <p>&copy; 2025 F1 Predictions Form</p>
+    <footer class="bg-light text-black text-center py-1 body-text-xs">
+      <p>&copy; 2025 F1 Predictions Form</p>
     </footer>
 <script type="module">
     import { getCookie, getColorForLetter } from '/script.js';
@@ -1626,7 +1626,7 @@
                 text: `Player Standings ${currentYear}`,
                 color: 'black',
                 font: {
-                  family: 'Pixeloid Sans Bold',
+                  family: 'Helvetica',
                   size: 20,
                 }
               },
@@ -1634,7 +1634,7 @@
                 position: 'bottom',
                 labels: {
                   font: {
-                    family: 'Pixeloid Sans'
+                    family: 'Helvetica'
                   },
                   color: 'black'
                 }
@@ -1650,7 +1650,7 @@
                   stepSize: 1,
                   padding: 10,
                   font: {
-                    family: 'Pixeloid Sans'
+                    family: 'Helvetica'
                   },
                   color: 'black'
                 },
@@ -1658,7 +1658,7 @@
                   display: true,
                   text: 'Rank',
                   font: {
-                    family: 'Pixeloid Sans'
+                    family: 'Helvetica'
                   },
                   color: 'black'
                 }
@@ -1666,7 +1666,7 @@
               x: {
                 ticks: {
                   font: {
-                    family: 'Pixeloid Sans'
+                    family: 'Helvetica'
                   },
                   color: 'black'
                 },
@@ -1845,7 +1845,7 @@
                 text: `Team Standings ${currentYear}`,
                 color: 'black',
                 font: {
-                    family: 'Pixeloid Sans Bold',
+                    family: 'Helvetica',
                     size: 20,
                 }
               },
@@ -1853,7 +1853,7 @@
                 position: 'bottom',
                 labels: {
                   font: {
-                    family: 'Pixeloid Sans'
+                    family: 'Helvetica'
                   },
                   color: 'black'
                 }
@@ -1869,7 +1869,7 @@
                   stepSize: 1,
                   padding: 10,
                   font: {
-                    family: 'Pixeloid Sans'
+                    family: 'Helvetica'
                   },
                   color: 'black'
                 },
@@ -1877,7 +1877,7 @@
                   display: true,
                   text: 'Rank',
                   font: {
-                    family: 'Pixeloid Sans'
+                    family: 'Helvetica'
                   },
                   color: 'black'
                 }
@@ -1885,7 +1885,7 @@
               x: {
                 ticks: {
                   font: {
-                    family: 'Pixeloid Sans'
+                    family: 'Helvetica'
                   },
                   color: 'black'
                 },
