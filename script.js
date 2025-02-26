@@ -487,7 +487,7 @@ export function renderAvatar(element, settings, letter = 'A') {
     element.style.backgroundColor = bgColor;
     element.style.color = settings.iconColor;
     element.style.textShadow = `1px 1px 0 ${shadowColor}, 2px 2px 0 ${shadowColor}`;
-    element.style.fontFamily = "'Press Start 2P', Helvetica, sans-serif";
+    element.style.fontFamily = "'Montserrat', Helvetica, sans-serif";
     element.style.fontWeight = "bold";
     element.style.textAlign = "center";
     // Set lineHeight to the element's height (ensure the height is defined via CSS)
@@ -500,8 +500,8 @@ export function renderAvatar(element, settings, letter = 'A') {
     const newIcon = `icon_invert_${settings.icon}`;
     shadow = darkenColor(settings.iconColor, 60);
     let offset = isSmall
-      ? ((settings.icon === 'icon_monster.png' || settings.icon === 'icon_redbull.png' || settings.icon === 'icon_fish.png' || settings.icon === 'icon_tram.png') ? 0.5 : 1)
-      : ((settings.icon === 'icon_monster.png' || settings.icon === 'icon_redbull.png' || settings.icon === 'icon_fish.png' || settings.icon === 'icon_tram.png') ? 1 : 2);
+      ? ((settings.icon === 'icon_monster.png' || settings.icon === 'icon_redbull.png' || settings.icon === 'icon_fish.png' || settings.icon === 'icon_tram.png') ? 0 : 0) // prev 0.5 : 1
+      : ((settings.icon === 'icon_monster.png' || settings.icon === 'icon_redbull.png' || settings.icon === 'icon_fish.png' || settings.icon === 'icon_tram.png') ? 0 : 0); // prev 1 : 2
       
     innerContent = `<div style="padding: ${padVal}; width: 100%; height: 100%; box-sizing: border-box;">
       <div style="position: relative; width: 100%; height: 100%;">
@@ -521,7 +521,6 @@ export function renderAvatar(element, settings, letter = 'A') {
           mask-size: contain;
           mask-repeat: no-repeat;
           mask-position: center;
-          image-rendering: pixelated;
         "></div>
         <!-- Icon layer -->
         <div style="
@@ -539,7 +538,6 @@ export function renderAvatar(element, settings, letter = 'A') {
           mask-size: contain;
           mask-repeat: no-repeat;
           mask-position: center;
-          image-rendering: pixelated;
         "></div>
       </div>
     </div>`;
@@ -549,8 +547,8 @@ export function renderAvatar(element, settings, letter = 'A') {
     // For fixed icons (e.g. tyre icons and the new Red Bull coloured icon)
     // For the red bull coloured icon, we render it as a normal image (no mask) and use a smaller shadow offset.
     let fixedShadowOffset = (settings.icon === 'icon_redbullcolour')
-      ? (isSmall ? "0.5px" : "1px")
-      : (isSmall ? "1px" : "2px");
+      ? (isSmall ? "0px" : "0px") // 0.5 : 1
+      : (isSmall ? "0px" : "0px"); // 1 : 2
     shadow = '#000000';
     // Ensure that if the icon value doesn’t already include an extension, add .png.
     const iconSrc = settings.icon.includes('.png') ? settings.icon : settings.icon + '.png';
@@ -558,7 +556,6 @@ export function renderAvatar(element, settings, letter = 'A') {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      image-rendering: pixelated;
       filter: drop-shadow(${fixedShadowOffset} ${fixedShadowOffset} 0px ${shadow});
     ">`;
     innerContent = `<div style="padding: ${padVal}; width: 100%; height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center;">
@@ -591,7 +588,7 @@ export function renderAvatar(element, settings, letter = 'A') {
       userAvatar.style.backgroundColor = bgColor;
       userAvatar.style.color = "#fff";
       userAvatar.style.textShadow = `1px 1px 0 ${shadowColor}, 2px 2px 0 ${shadowColor}`;
-      userAvatar.style.fontFamily = "'Press Start 2P', Helvetica, sans-serif";
+      userAvatar.style.fontFamily = "'Montserrat', Helvetica, sans-serif";
       userAvatar.style.fontWeight = "bold";
       userAvatar.style.textAlign = "center";
       userAvatar.style.lineHeight = userAvatar.style.height;
@@ -643,7 +640,7 @@ export function updateLoginUI(playerData) {
   // Show "Logged in as ..." text in the dropdown.
   const loggedInUserDisplay = document.getElementById('loggedInUserDisplay');
   if (loggedInUserDisplay) {
-    loggedInUserDisplay.innerHTML = `Logged in as<br><strong>${playerName}</strong>`;
+    loggedInUserDisplay.innerHTML = `Logged in as <strong>${playerName}</strong>`;
     loggedInUserDisplay.classList.remove('d-none');
   }
   

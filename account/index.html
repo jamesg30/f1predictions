@@ -46,6 +46,7 @@
     border: 4px solid #c0c0c0;
     margin: auto;
     box-sizing: border-box;
+    border-radius: 50%; /* Makes the avatar circular */
   }
 
 .current-avatar-section {
@@ -104,23 +105,23 @@
     height: 60px;
     object-fit: contain; /* Ensures aspect ratio is preserved */
     padding: 5px;
-    image-rendering: pixelated;
     border: 3px solid #c0c0c0;
     box-sizing: border-box;
+    border-radius: 50%; /* Makes the avatar circular */
   }
   /* For letter-based radio options */
   .icon-option .icon-image {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Press Start 2P', Helvetica, sans-serif;
+    font-family: 'Montserrat', Helvetica, sans-serif;
     font-weight: bold;
   }
 
 .icon-label {
   margin-top: 0.25rem;
   text-align: center;
-  font-family: 'Pixeloid Sans', Helvetica, sans-serif; /* Custom font with fallbacks */
+  font-family: Helvetica, sans-serif; /* Custom font with fallbacks */
     font-size: 1rem; /* Adjust as needed */
     color: #333; /* Main text color */
     letter-spacing: 0.1em; /* For pixel art readability */
@@ -172,14 +173,13 @@
 
 /* Ensure letters in avatar previews use "Press Start 2P" */
 .avatar-inner {
-    font-family: 'Press Start 2P', Helvetica, sans-serif !important;
+    font-family: 'Montserrat', Helvetica, sans-serif !important;
   }
   /* Ensure our masked (monochrome) icon displays correctly */
   .monochrome-icon {
     display: block;
     width: 100%;
     height: 100%;
-    image-rendering: pixelated;
   }
 
 /* Ensure our masked (monochrome) icon displays as block */
@@ -187,7 +187,6 @@
     display: block;
     width: 100%;
     height: 100%;
-    image-rendering: pixelated;
   }
 
    </style>
@@ -309,35 +308,27 @@
     <div class="tab-content" id="accountTabContent">
       <!-- Avatar Customisation Tab -->
       <div class="tab-pane fade show active" id="avatarCustomisation" role="tabpanel" aria-labelledby="avatar-tab">
-        <h2 class="pixel-art-heading-3 mt-3">Avatar Customisation</h2>
+        <h2 class="heading-text-2 mt-3">Avatar Customisation</h2>
         <div class="container avatar-customisation-container">
           <!-- Current Avatar Preview -->
           <div class="current-avatar-section">
             <div id="current-avatar" class="avatar-preview preview">A</div>
-            <div class="mb-3 pixel-art-heading-2" style="margin-top: 10px">Current Avatar</div>
+            <div class="mb-3 heading-text-3" style="margin-top: 10px">Current Avatar</div>
           </div>
   
           <!-- Icon Options -->
           <div class="icon-options-section">
-            <h3 class="mb-3 pixel-art-heading-2">Icon Options:</h3>
+            <h3 class="mb-3 heading-text-3">Icon Options:</h3>
             <div class="icon-group">
-              <h4 class="pixel-art-body" style="font-size: 1.2rem">Monochrome Icons:</h4>
+              <h4 class="body-text" style="font-size: 1.2rem">Monochrome Icons:</h4>
               <div class="icon-options">
                 <!-- Letter Option -->
                 <div class="icon-option">
                   <label>
                     <input type="radio" name="avatar-icon" value="letter" data-type="letter">
-                    <div class="icon-image">A</div>
+                    <div class="icon-image" style="font-size: 2rem;">A</div>
                   </label>
                   <div class="icon-label">Letter</div>
-                </div>
-                <!-- Car -->
-                <div class="icon-option">
-                  <label>
-                    <input type="radio" name="avatar-icon" value="icon_car.png" data-type="monochrome">
-                    <img src="/media/icons/icon_car.png" alt="Car">
-                  </label>
-                  <div class="icon-label">Car</div>
                 </div>
                 <!-- Helmet -->
                 <div class="icon-option">
@@ -387,6 +378,14 @@
                   </label>
                   <div class="icon-label">Fish</div>
                 </div>
+                <!-- Fish -->
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_butterfly.png" data-type="monochrome">
+                    <img src="/media/icons/icon_butterfly.png" alt="Butterfly">
+                  </label>
+                  <div class="icon-label">Butterfly</div>
+                </div>
                 <!-- Tram -->
                 <div class="icon-option">
                   <label>
@@ -395,11 +394,19 @@
                   </label>
                   <div class="icon-label">Tram</div>
                 </div>
+                <!-- Train -->
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_train.png" data-type="monochrome">
+                    <img src="/media/icons/icon_train.png" alt="Train">
+                  </label>
+                  <div class="icon-label">Train</div>
+                </div>
               </div>
             </div>
   
             <div class="icon-group">
-              <h4 class="pixel-art-body" style="font-size: 1.2rem">Coloured Icons:</h4>
+              <h4 class="body-text" style="font-size: 1.2rem">Coloured Icons:</h4>
               <div class="icon-options">
                 <div class="icon-option">
                   <label>
@@ -443,6 +450,13 @@
                   </label>
                   <div class="icon-label">Hypersoft</div>
                 </div>
+                <div class="icon-option">
+                  <label>
+                    <input type="radio" name="avatar-icon" value="icon_tyre_superhard.png" data-type="fixed">
+                    <img src="/media/icons/icon_tyre_superhard.png" alt="Superhard">
+                  </label>
+                  <div class="icon-label">Superhard</div>
+                </div>
                 <!-- New option: Red Bull coloured icon -->
                 <div class="icon-option">
                   <label>
@@ -457,7 +471,7 @@
           
           <!-- Colour Options -->
           <div class="colour-options-section">
-            <h3 class="mb-3 pixel-art-heading-2">Colour Options:</h3>
+            <h3 class="mb-3 heading-text-3">Colour Options:</h3>
             <div class="colour-pickers">
               <div class="colour-picker-group">
                 <label for="icon-color" class="icon-label">Icon:</label>
@@ -472,29 +486,29 @@
           
           <!-- New Avatar Preview -->
           <div class="new-avatar-preview-section">
-            <h3 class="mb-3 pixel-art-heading-2">New Avatar Preview</h3>
+            <h3 class="mb-3 heading-text-3">New Avatar Preview</h3>
             <div id="new-avatar" class="avatar-preview preview">A</div>
           </div>
           
           <!-- Action Buttons -->
           <div class="action-buttons">
-            <button id="reset-avatar" class="pixel-button secondary">Reset to Default</button>
-            <button id="save-avatar" class="pixel-button primary">Save Avatar</button>
+            <button id="reset-avatar" class="btn btn-dark">Reset to Default</button>
+            <button id="save-avatar" class="btn btn-primary">Save Avatar</button>
           </div>
         </div>
       </div>
   
       <!-- Password Tab -->
       <div class="tab-pane fade" id="passwordSection" role="tabpanel" aria-labelledby="password-tab">
-        <h2 class="mb-3 pixel-art-heading-3 mt-3">Password</h2>
-        <h3 class="mb-3 pixel-art-heading-2">Forgot Password</h3>
+        <h2 class="mb-3 heading-text-2 mt-3">Password</h2>
+        <h3 class="mb-3 heading-text-3">Forgot Password</h3>
         <div>
           <p>
             If you have forgotten your password, email <a href="mailto:f1predictionsform@outlook.com?subject=F1 Predictions Form Password Reset&body=Hi, I would like to request a password reset. My username is: ">f1predictionsform@outlook.com</a> with your username.
             You will receive a response with a new password, which you can change using the form below.
           </p>
         </div>
-        <h3 class="mb-3 pixel-art-heading-2">Change Password</h3>
+        <h3 class="mb-3 heading-text-3">Change Password</h3>
         <form id="passwordResetForm">
           <!-- Autofilled Logged-In Name -->
           <div class="mb-3">
@@ -518,7 +532,7 @@
           </div>
           <!-- Update Password Button -->
           <div class="text-center">
-            <button type="submit" id="passwordUpdateBtn" class="pixel-button primary">Update Password</button>
+            <button type="submit" id="passwordUpdateBtn" class="btn btn-primary">Update Password</button>
           </div>
         </form>
       </div>
@@ -675,7 +689,7 @@
       const letterIconEl = document.querySelector('input[name="avatar-icon"][value="letter"] + .icon-image');
       if (letterIconEl) {
         letterIconEl.textContent = letter;
-        letterIconEl.style.fontFamily = "'Press Start 2P', Helvetica, sans-serif";
+        letterIconEl.style.fontFamily = "'Montserrat', Helvetica, sans-serif";
         letterIconEl.style.fontWeight = "bold";
       }
 

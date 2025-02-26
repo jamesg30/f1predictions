@@ -218,6 +218,7 @@ footer {
   font-style: italic;
   color: black; /* Main text color */
   font-size: 1.5rem;
+  margin-left: -5px;
   line-height: 1.2; /* Adjust for spacing */
   font-weight: bold; /* Bold for emphasis */
 }
@@ -498,7 +499,6 @@ footer {
   border-radius: 10px;
   text-align: center;
   color: white;
-  font-family: 'Press Start 2P', cursive; /* Retro font */
 }
 
 /* Casino Header */
@@ -508,12 +508,6 @@ footer {
   image-rendering: pixelated;
 }
 
-.casino-info {
-  font-family: 'Pixeloid Sans', cursive; /* Retro font */
-  margin: 10px 0;
-  font-size: 1rem;
-  letter-spacing: 1px;
-}
 
 /* Team Selection */
 .casino-label {
@@ -558,69 +552,68 @@ footer {
   }
 }
 
-/* ============================ */
-/* === CASINO BUTTON STYLES === */
-/* ============================ */
-/* Bet Buttons */
-.bet-button {
-  font-family: 'Press Start 2P', Helvetica, Arial, sans-serif;
-  font-size: 20px;
+/* ============================== */
+/* === MODERN CASINO BUTTONS  === */
+/* ============================== */
+
+/* Bet Button – small square button */
+.btn-bet {
+  font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+  font-size: 24px;
+  font-weight: 800;
   width: 30px;
   height: 30px;
   text-align: center;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   border: 2px solid #B8860B; /* Dark Gold Border */
-  background: #FFD700; /* Gold */
+  background-color: #FFD700;  /* Gold */
   color: black;
-  box-shadow: 3px 3px 0 #8B6508; /* Deeper Gold Shadow */
-  transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+  /* No shadows or transitions */
 }
 
-.bet-button:hover {
-  background: #FFC400; /* Slightly Darker Gold */
+.btn-bet:hover {
+  background-color: #FFC400; /* Slightly Darker Gold */
 }
 
-.bet-button:active {
-  transform: translate(2px, 2px);
-  box-shadow: 0 0 0 #8B6508;
+.btn-bet:active {
+  background-color: #FFC400;
 }
 
 /* Casino Submit Button */
-.casino-button {
-  font-family: 'Press Start 2P', Helvetica, Arial, sans-serif;
-  font-size: 16px;
+.btn-casino {
+  font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+  font-weight: 800;
+  font-size: 20px;
   text-transform: uppercase;
   padding: 10px 20px;
   cursor: pointer;
   border: 2px solid #B8860B; /* Dark Gold Border */
-  background: #FFD700;
+  background-color: #FFD700;  /* Gold */
   color: black;
-  box-shadow: 3px 3px 0 #8B6508; /* Deeper Gold Shadow */
-  transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+  /* No shadows or transitions */
 }
 
-.casino-button:hover {
-  background: #FFC400;
+.btn-casino:hover {
+  background-color: #FFC400;
 }
 
-.casino-button:active {
-  transform: translate(2px, 2px);
-  box-shadow: 0 0 0 #8B6508;
+.btn-casino:active {
+  background-color: #FFC400;
 }
 
-/* Disabled Button (Muted Yellow) */
-.casino-button:disabled,
-.bet-button:disabled {
+/* Disabled state for both buttons */
+.btn-casino:disabled,
+.btn-bet:disabled {
   cursor: not-allowed;
-  background: #D3B76C; /* Muted Gold */
-  color: #665B40; /* Darker text */
-  border-color: #A08A50; /* Softer Border */
-  box-shadow: none;
+  background-color: #D3B76C; /* Muted Gold */
+  color: #665B40;           /* Darker text */
+  border-color: #A08A50;     /* Softer Border */
   opacity: 0.8;
 }
+
 
 /* Ensure the second row is centered */
 .bet-info {
@@ -758,16 +751,19 @@ footer {
 }
 
 /* User Avatar Box */
+/* User Avatar Box */
 .user-avatar {
   /* The size here determines the box dimensions */
-  width: 2.4rem;
-  height: 2.4rem;
+  width: 2.8rem;
+  height: 2.8rem;
+  font-size: 1.6rem; /* Adjust to your desired size */
   /* Ensure the text is centered */
   display: inline-block;
   text-align: center;
-  line-height: 2.4rem;
+  line-height: 2.8rem;
   margin-right: 0.5rem;
   border: 2px solid #c0c0c0;
+  border-radius: 50%; /* Makes the avatar circular */
   /* The dynamic background, text-shadow, font, and color are set via JS */
 }
 
