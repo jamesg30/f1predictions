@@ -1814,11 +1814,11 @@ async function getCurrentUser() {
             fill: false,
             borderColor: colors[colorIndex % colors.length],
             backgroundColor: colors[colorIndex % colors.length],
-            borderWidth: 4,              // Thick lines for pixel-art feel.
+            borderWidth: 3,              // Thick lines for a pixel-art feel.
             tension: 0,                  // No smoothing.
-            pointStyle: 'rect',          // Square markers.
-            pointRadius: 5,
-            pointHoverRadius: 7
+            pointStyle: 'circle',          // Square markers.
+            pointRadius: 3,
+            pointHoverRadius: 5
           });
           colorIndex++;
         });
@@ -2040,11 +2040,11 @@ async function getCurrentUser() {
             fill: false,
             borderColor: colors[colorIndex % colors.length],
             backgroundColor: colors[colorIndex % colors.length],
-            borderWidth: 4,              // Thick lines for a pixel-art feel.
+            borderWidth: 3,              // Thick lines for a pixel-art feel.
             tension: 0,                  // No smoothing.
-            pointStyle: 'rect',          // Square markers.
-            pointRadius: 5,
-            pointHoverRadius: 7
+            pointStyle: 'circle',          // Square markers.
+            pointRadius: 3,
+            pointHoverRadius: 5
           });
           colorIndex++;
         });
