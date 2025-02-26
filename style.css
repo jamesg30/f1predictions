@@ -590,7 +590,12 @@ footer {
     text-align: center;
   }
 }
-#userDropdown:focus {
-  outline: none;
-  box-shadow: none;
+#userDropdown:focus,
+#userDropdown:active,
+#userDropdown.show {
+  outline: none !important;
+  box-shadow: none !important;
+}
+#user-avatar {
+  pointer-events: none;
 }
