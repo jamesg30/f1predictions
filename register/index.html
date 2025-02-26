@@ -281,6 +281,19 @@
     </div>
   </div>
 
+ <!-- Custom Alert Modal (No Header) -->
+<div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body">
+          <!-- Message will be injected here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
     </main>
 
     <!-- Footer -->
@@ -289,7 +302,7 @@
       </footer>
 
 <script type="module">
-        import { fetchData, getCookie, populateLoginPlayerDropdown} from '/script.js';
+        import { fetchData, getCookie, populateLoginPlayerDropdown, showCustomAlert} from '/script.js';
 
         // =========================
         // === GENERAL FUNCTIONS ===
@@ -311,13 +324,13 @@
             // Use the cookie for the playerId
             const playerId = getCookie("playerId");
             if (!playerId) {
-                alert("Please log in to join a team.");
+                showCustomAlert("Please log in to join a team.");
                 return;
             }
 
             const teamId = document.getElementById('team-select').value;
             if (!teamId) {
-                alert('Please select a team.');
+                showCustomAlert('Please select a team.');
                 return;
             }
 
@@ -337,7 +350,7 @@
                         throw leaveError;
                     }
 
-                    alert('Player successfully left the team!');
+                    showCustomAlert('Player successfully left the team!');
                     await refreshPage();
                     return;
                 }
@@ -357,7 +370,7 @@
 
                 // Check if the team is already full
                 if (teamMembers.length >= 2) {
-                    alert('This team is already full. Please choose another team.');
+                    showCustomAlert('This team is already full. Please choose another team.');
                     return;
                 }
 
@@ -372,11 +385,11 @@
                     throw updateError;
                 }
 
-                alert('Player successfully joined the team!');
+                showCustomAlert('Player successfully joined the team!');
                 await refreshPage(); // Refresh the data on the page
             } catch (err) {
                 console.error('Error in joinTeam:', err);
-                alert('An error occurred. Please try again.');
+                showCustomAlert('An error occurred. Please try again.');
             }
         }
 
@@ -467,26 +480,26 @@
 
         // Validation checks for name.
         if (!playerName) {
-            alert('Please enter a valid name.');
+            showCustomAlert('Please enter a valid name.');
             return;
         }
         if (playerName.length > 32) {
-            alert('Player name must be 32 characters or less.');
+            showCustomAlert('Player name must be 32 characters or less.');
             return;
         }
         // Allow only A-Z, 0-9 and spaces.
         if (!/^[A-Za-z0-9 ]+$/.test(playerName)) {
-            alert('Player name can only contain letters, numbers, and spaces.');
+            showCustomAlert('Player name can only contain letters, numbers, and spaces.');
             return;
         }
         // Validate PIN format.
         if (!/^\d{4}$/.test(playerPin)) {
-            alert('Please enter a valid 4-digit PIN.');
+            showCustomAlert('Please enter a valid 4-digit PIN.');
             return;
         }
         // Check that the PIN and confirmation match.
         if (playerPin !== confirmPin) {
-            alert('The PINs do not match. Please try again.');
+            showCustomAlert('The PINs do not match. Please try again.');
             return;
         }
 
@@ -505,7 +518,7 @@
             return;
             }
             if (existingPlayers.length > 0) {
-            alert('This player name is already taken. Please choose a different name.');
+                showCustomAlert('This player name is already taken. Please choose a different name.');
             return;
             }
 
@@ -515,7 +528,7 @@
             ]);
             if (insertError) throw insertError;
 
-            alert('Player registered successfully!');
+            showCustomAlert('Player registered successfully!');
             // Clear the form fields.
             document.getElementById('player-name').value = '';
             document.getElementById('player-pin').value = '';
@@ -527,7 +540,7 @@
             await populateLoginPlayerDropdown();
         } catch (err) {
             console.error('Error registering player:', err);
-            alert('Failed to register player.');
+            showCustomAlert('Failed to register player.');
         }
         }
 
@@ -538,16 +551,16 @@
         async function registerTeam() {
             const teamName = document.getElementById('team-name').value.trim();
             if (!teamName) {
-                alert('Please enter a valid team name.');
+                showCustomAlert('Please enter a valid team name.');
                 return;
             }
             if (teamName.length > 32) {
-                alert('Team name must be 32 characters or less.');
+                showCustomAlert('Team name must be 32 characters or less.');
                 return;
             }
             // Allow only A-Z, 0-9 and spaces.
             if (!/^[A-Za-z0-9 ]+$/.test(teamName)) {
-                alert('Team name can only contain letters, numbers, and spaces.');
+                showCustomAlert('Team name can only contain letters, numbers, and spaces.');
                 return;
             }
 
@@ -563,7 +576,7 @@
                     throw checkError;
                 }
                 if (existingTeam) {
-                    alert('This team name is already taken. Please choose a different name.');
+                    showCustomAlert('This team name is already taken. Please choose a different name.');
                     return;
                 }
 
@@ -586,7 +599,7 @@
                 const { error: insertError } = await supabase.from('teams').insert([newTeam]);
                 if (insertError) throw insertError;
 
-                alert('Team registered successfully!');
+                showCustomAlert('Team registered successfully!');
                 document.getElementById('team-name').value = '';
 
                 // Refresh the registered teams list and update the join team dropdown.
@@ -594,7 +607,7 @@
                 await populateTeamDropdown();
             } catch (err) {
                 console.error('Error registering team:', err);
-                alert('Failed to register team.');
+                showCustomAlert('Failed to register team.');
             }
         }
 
@@ -641,7 +654,7 @@
                 });
             } catch (err) {
                 console.error('Error populating teams with members:', err);
-                alert('Failed to load team data.');
+                showCustomAlert('Failed to load team data.');
             }
         }
 

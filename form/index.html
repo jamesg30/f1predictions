@@ -312,6 +312,20 @@
   </div>
 </div>
 
+<!-- Custom Alert Modal (No Header) -->
+<div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body">
+        <!-- Message will be injected here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
   </main>
   
   <footer class="bg-light text-black text-center py-1 body-text-xs">
@@ -319,7 +333,7 @@
   </footer>
   
 <script type="module">
-    import { getCookie, generateFormBlocks } from '/script.js';
+    import { getCookie, generateFormBlocks, showCustomAlert } from '/script.js';
     let hasPreviousSubmission = false;
     
   // ==========================
@@ -635,12 +649,12 @@
           .eq('id', 1)
           .single();
         if (formDetailsError) {
-          alert('Error fetching form details');
+          showCustomAlert('Error fetching form details');
           console.error('Error fetching form details:', formDetailsError);
           return;
         }
         if (!formDetails.form_enabled) {
-          alert('Form submissions are currently closed.');
+          showCustomAlert('Form submissions are currently closed.');
           return;
         }
 
@@ -653,7 +667,7 @@
           if (config.enabled) {
             const value = formData.get(`input-${config.id}`);
             if (!value) {
-              alert(`Please fill out all required fields.`);
+              showCustomAlert(`Please fill out all required fields.`);
               return;
             }
           }
@@ -666,7 +680,7 @@
         }
         const uniqueDriverValues = new Set(driverValues);
         if (uniqueDriverValues.size < driverValues.length) {
-          alert("Duplicate Drivers in Top 6");
+          showCustomAlert("Duplicate Drivers in Top 6");
           return;
         }
 
@@ -702,7 +716,7 @@
         }
 
         if (saveError) {
-          alert('Error saving form submission');
+          showCustomAlert('Error saving form submission');
           console.error('Error saving form submission:', saveError);
           return;
         }

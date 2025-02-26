@@ -578,6 +578,39 @@
     </div>
   </div>
 </div>
+
+<!-- Custom Alert Modal (No Header) -->
+<div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body">
+        <!-- Message will be injected here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Confirm Modal -->
+<div class="modal fade" id="customConfirmModal" tabindex="-1" aria-labelledby="customConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="customConfirmModalLabel">Confirm</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Confirm message will be injected here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-dark" id="customConfirmCancel" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="customConfirmOk">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
   </main>
   
   
@@ -588,7 +621,7 @@
 <!-- Bootstrap JS Bundle (Local) -->
 <script src="/js/bootstrap.bundle.min.js"></script>
 <script type="module">
-    import { fetchData, getCookie, darkenColor, getColorForLetter, renderAvatar } from '/script.js';
+    import { fetchData, getCookie, darkenColor, getColorForLetter, renderAvatar, showCustomAlert, showCustomConfirm } from '/script.js';
   // ====================================
   // === AUTOFILL PASSWORD RESET FORM ===
   // ====================================
@@ -776,9 +809,9 @@
           .eq('id', playerId);
         if (error) {
           console.error('Error updating avatar settings:', error);
-          alert('Failed to update avatar.');
+          showCustomAlert('Failed to update avatar.');
         } else {
-          alert('Avatar updated!');
+          showCustomAlert('Avatar updated!');
           renderAvatar(currentAvatarEl, newSettings, letter);
           savedSettings = newSettings;
           saveButton.disabled = true;
@@ -790,16 +823,20 @@
 
       // Reset to default settings.
       resetButton.addEventListener('click', async () => {
-        if (!confirm('Are you sure you want to reset to defaults?')) return;
+        const confirmed = await showCustomConfirm('Are you sure you want to reset to defaults?');
+        if (!confirmed) {
+          // User canceled the action
+          return;
+        }
         const { error } = await supabase
           .from('players')
           .update({ avatar_settings: null })
           .eq('id', playerId);
         if (error) {
           console.error('Error resetting avatar settings:', error);
-          alert('Failed to reset avatar.');
+          showCustomAlert('Failed to reset avatar.');
         } else {
-          alert('Avatar reset!');
+          showCustomAlert('Avatar reset!');
           location.reload()
         }
       });
@@ -835,22 +872,22 @@
 
       // Validate that all PINs are 4 digits
       if (!/^\d{4}$/.test(currentPIN)) {
-        alert("Please enter a valid 4-digit current PIN.");
+        showCustomAlert("Please enter a valid 4-digit current PIN.");
         return;
       }
       if (!/^\d{4}$/.test(newPIN)) {
-        alert("Please enter a valid 4-digit new PIN.");
+        showCustomAlert("Please enter a valid 4-digit new PIN.");
         return;
       }
       if (newPIN !== confirmNewPIN) {
-        alert("New PIN and confirmation do not match.");
+        showCustomAlert("New PIN and confirmation do not match.");
         return;
       }
 
       // Get the logged in player's ID (ensure getCookie is defined and imported)
       const playerId = getCookie("playerId");
       if (!playerId) {
-        alert("You must be logged in to update your password.");
+        showCustomAlert("You must be logged in to update your password.");
         return;
       }
 
@@ -864,14 +901,14 @@
           
         if (fetchError || !player) {
           console.error("Error fetching player data:", fetchError);
-          alert("Failed to fetch player data.");
+          showCustomAlert("Failed to fetch player data.");
           return;
         }
 
         // Compare the entered current PIN (hashed) with the stored hash
         const hashedCurrentPIN = CryptoJS.MD5(currentPIN).toString();
         if (hashedCurrentPIN !== player.password) {
-          alert("Current PIN is incorrect.");
+          showCustomAlert("Current PIN is incorrect.");
           return;
         }
 
@@ -886,11 +923,11 @@
 
         if (updateError) {
           console.error("Error updating password:", updateError);
-          alert("Failed to update password.");
+          showCustomAlert("Failed to update password.");
           return;
         }
 
-        alert("Password updated successfully!");
+        showCustomAlert("Password updated successfully!");
 
         // Clear the form fields
         currentPINField.value = "";
@@ -898,7 +935,7 @@
         confirmNewPINField.value = "";
       } catch (err) {
         console.error("Unexpected error:", err);
-        alert("An unexpected error occurred while updating your password.");
+        showCustomAlert("An unexpected error occurred while updating your password.");
       }
     });
 </script>

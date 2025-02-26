@@ -314,13 +314,27 @@
     </div>
   </div>
 </div>
+
+<!-- Custom Alert Modal (No Header) -->
+<div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body">
+        <!-- Message will be injected here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
 </main>
  
 <footer class="bg-light text-black text-center py-1 body-text-xs">
   <p>&copy; 2025 F1 Predictions Form</p>
 </footer>
 <script type="module">
-    import {getCookie} from '/script.js';
+    import {getCookie, showCustomAlert} from '/script.js';
   // ================================
   // === TEAM STANDINGS AND CARDS ===
   // ================================
@@ -738,14 +752,14 @@ function lockCardPage() {
     const selectedTeamId = teamSelect.value;
     const team = teamsData.find(t => t.id == selectedTeamId);
     if (!team) {
-      alert("Team not found.");
+      showCustomAlert("Team not found.");
       return;
     }
 
     // Get the selected card value.
     const selectedCardRadio = document.querySelector("input[name='card']:checked");
     if (!selectedCardRadio) {
-      alert("Please select a card option.");
+      showCustomAlert("Please select a card option.");
       return;
     }
     const selectedCard = selectedCardRadio.value; // e.g., 'aero', 'double', 'halo', 'report', 'swap', or 'play-no-cards'
@@ -755,7 +769,7 @@ function lockCardPage() {
     if (selectedCard === "report" || selectedCard === "swap") {
       targetTeamId = document.getElementById("card-select").value;
       if (!targetTeamId) {
-        alert("Please select a team to report or swap.");
+        showCustomAlert("Please select a team to report or swap.");
         return;
       }
     }
@@ -778,7 +792,7 @@ function lockCardPage() {
       const unplayedCol = `card_${selectedCard}_unplayed`;
       const playedCol = `card_${selectedCard}_played`;
       if (updatedValues[unplayedCol] <= 0) {
-        alert(`You do not have any ${selectedCard} cards available.`);
+        showCustomAlert(`You do not have any ${selectedCard} cards available.`);
         return;
       }
       updatedValues[unplayedCol] -= 1;
@@ -805,11 +819,11 @@ function lockCardPage() {
       .eq('id', selectedTeamId);
     if (updateError) {
       console.error("Error updating team card submission:", updateError);
-      alert("Failed to submit cards.");
+      showCustomAlert("Failed to submit cards.");
       return;
     }
     
-    alert("Cards submitted successfully!");
+    showCustomAlert("Cards submitted successfully!");
     
     // Reset the form:
     // Clear team selection.
@@ -1481,7 +1495,7 @@ const submitButton = document.getElementById("submit-bets");
 submitButton.addEventListener("click", async function () {
   const selectedTeamIdCasino = parseInt(teamSelectCasino.value);
   if (!selectedTeamIdCasino) {
-    alert("Please select a team.");
+    showCustomAlert("Please select a team.");
     return;
   }
   const betsToSubmit = {};
@@ -1492,7 +1506,7 @@ submitButton.addEventListener("click", async function () {
     }
   }
   if (Object.keys(betsToSubmit).length === 0) {
-    alert("Please place some bets before submitting.");
+    showCustomAlert("Please place some bets before submitting.");
     return;
   }
   const betData = {
@@ -1505,15 +1519,15 @@ submitButton.addEventListener("click", async function () {
     .select("team_id")
     .eq("team_id", selectedTeamIdCasino);
   if (fetchError) {
-    alert("Failed to check existing bets.");
+    showCustomAlert("Failed to check existing bets.");
     return;
   }
   const query = existingRows.length > 0
     ? supabase.from("casino").update(betData).eq("team_id", selectedTeamIdCasino)
     : supabase.from("casino").insert([betData]);
   const { error } = await query;
-  if (error) alert("Failed to submit bets.");
-  else alert("Bets submitted successfully!");
+  if (error) showCustomAlert("Failed to submit bets.");
+  else showCustomAlert("Bets submitted successfully!");
 });
 
 // When the page loads, refresh the casino page.

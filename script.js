@@ -859,6 +859,59 @@ function toggleLoginButton() {
       }
     });
   }
+
+  export function showCustomAlert(message) {
+    const modalEl = document.getElementById('customAlertModal');
+    modalEl.querySelector('.modal-body').textContent = message;
+    const alertModal = new bootstrap.Modal(modalEl);
+    alertModal.show();
+  }
   
 
+  export function showCustomConfirm(message, title = 'Confirm') {
+    return new Promise((resolve) => {
+      const modalEl = document.getElementById('customConfirmModal');
+      // Update the title and message in the modal
+      document.getElementById('customConfirmModalLabel').textContent = title;
+      modalEl.querySelector('.modal-body').textContent = message;
+      
+      // Get the OK and Cancel buttons
+      const btnOk = document.getElementById('customConfirmOk');
+      const btnCancel = document.getElementById('customConfirmCancel');
+      
+      // Create a new Bootstrap modal instance
+      const confirmModal = new bootstrap.Modal(modalEl);
+      
+      // Clear any existing click handlers to avoid duplicate events
+      btnOk.replaceWith(btnOk.cloneNode(true));
+      btnCancel.replaceWith(btnCancel.cloneNode(true));
+      
+      // Re-select the cloned buttons
+      const newBtnOk = document.getElementById('customConfirmOk');
+      const newBtnCancel = document.getElementById('customConfirmCancel');
+      
+      // Set up event listeners for the buttons
+      newBtnOk.addEventListener('click', () => {
+        resolve(true);
+        confirmModal.hide();
+      });
+      
+      newBtnCancel.addEventListener('click', () => {
+        resolve(false);
+        confirmModal.hide();
+      });
+      
+      // Also handle dismissal by clicking the close button or outside the modal
+      modalEl.addEventListener('hidden.bs.modal', function handler() {
+        // Remove this handler after it fires to avoid duplicate resolution
+        modalEl.removeEventListener('hidden.bs.modal', handler);
+        // If neither button was clicked, resolve as false.
+        // (This may occur if the user clicks outside the modal or uses the close button.)
+        resolve(false);
+      });
+      
+      // Finally, show the modal
+      confirmModal.show();
+    });
+  }
   

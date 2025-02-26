@@ -703,6 +703,39 @@
       </div>
     </div>
   </div>
+
+<!-- Custom Alert Modal (No Header) -->
+<div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body">
+          <!-- Message will be injected here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Custom Confirm Modal -->
+  <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-labelledby="customConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="customConfirmModalLabel">Confirm</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Confirm message will be injected here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-dark" id="customConfirmCancel" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="customConfirmOk">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </main>
 
 <footer class="bg-light text-black text-center py-1 body-text-xs">
@@ -714,7 +747,7 @@
     // ==================================
     // === AUTOMATIC LOG IN FUNCTIONS ===
     // ==================================
-        import { getCookie } from '/script.js'; // Adjust the path as needed
+        import { getCookie, showCustomAlert, showCustomConfirm } from '/script.js'; // Adjust the path as needed
 
         // Polling function to check for the admin cookie.
         function checkAdminCookie(retries = 10, delay = 500) {
@@ -865,7 +898,7 @@
                     console.error('Error updating row:', update.id, error);
                 }
             }
-            alert('Form configuration changes saved successfully!');
+            showCustomAlert('Form configuration changes saved successfully!');
         }
 
         // Initialize
@@ -910,13 +943,13 @@
 
                 if (error) {
                     console.error('Error saving changes:', error);
-                    alert('An error occurred while saving changes.');
+                    showCustomAlert('An error occurred while saving changes.');
                     return;
                 }
 
                 // Disable the button again after successful save
                 saveButton.disabled = true;
-                alert('Changes saved successfully!');
+                showCustomAlert('Changes saved successfully!');
             });
         }
 
@@ -1143,7 +1176,7 @@
 
             // Validate that the PIN is exactly 4 digits
             if (!/^\d{4}$/.test(newPin)) {
-                alert('Please enter a valid 4-digit PIN.');
+                showCustomAlert('Please enter a valid 4-digit PIN.');
                 return;
             }
 
@@ -1159,16 +1192,16 @@
                     
                 if (error) {
                     console.error('Error updating password:', error);
-                    alert('Failed to update password.');
+                    showCustomAlert('Failed to update password.');
                     return;
                 }
 
-                alert('Password updated successfully!');
+                showCustomAlert('Password updated successfully!');
                 // Optionally clear the input field after a successful update:
                 passwordInput.value = '';
             } catch (err) {
                 console.error('Unexpected error:', err);
-                alert('An unexpected error occurred while updating password.');
+                showCustomAlert('An unexpected error occurred while updating password.');
             }
         }
 
@@ -1315,7 +1348,7 @@
                     await updateData(table, id, { [field]: value });
                 }
             }
-            // alert(`${table} updated successfully!`); commented out for now
+            // showCustomAlert(`${table} updated successfully!`); commented out for now
         }
 
     // ============================================
@@ -1327,12 +1360,12 @@
             const name = nameInput.value.trim();
 
             if (!name) {
-                alert('Name cannot be empty.');
+                showCustomAlert('Name cannot be empty.');
                 return;
             }
 
             if (await updateData('players', id, { name })) {
-                alert('Player updated successfully!');
+                showCustomAlert('Player updated successfully!');
                 populatePlayers();
             }
         }
@@ -1350,12 +1383,12 @@
             const name = nameInput.value.trim();
 
             if (!name) {
-                alert('Name cannot be empty.');
+                showCustomAlert('Name cannot be empty.');
                 return;
             }
 
             if (await updateData('teams', id, { name })) {
-                alert('Team updated successfully!');
+                showCustomAlert('Team updated successfully!');
                 populateTeams();
             }
         }
@@ -1521,12 +1554,12 @@
             .upsert(upsertData, { returning: "representation" });
         if (error) {
             console.error("Error saving drivers:", error);
-            alert("Failed to save drivers!");
+            showCustomAlert("Failed to save drivers!");
             return;
         }
         console.log("Upsert result data:", upsertResult);
 
-        alert("Drivers saved successfully!");
+        showCustomAlert("Drivers saved successfully!");
         // Refresh the drivers table after saving.
         await fetchDrivers();
         document.getElementById("save-drivers").disabled = true; // Re-disable button if needed
@@ -1540,7 +1573,7 @@
         const constructorIdStr = document.getElementById("new-driver-constructor").value.trim();
 
         if (!name || !abbreviation || !constructorIdStr) {
-            alert("All fields are required to add a driver.");
+            showCustomAlert("All fields are required to add a driver.");
             return;
         }
 
@@ -1554,7 +1587,7 @@
             return;
         }
         await fetchDrivers();
-        alert("Driver added successfully!");
+        showCustomAlert("Driver added successfully!");
         
         // Clear the input fields after a successful submission.
         document.getElementById("new-driver-name").value = "";
@@ -1564,17 +1597,19 @@
 
         // Delete a Driver.
         async function deleteDriver(driverId) {
-        if (!confirm("Are you sure you want to delete this driver?")) return;
+            if (!(await showCustomConfirm("Are you sure you want to delete this driver?", "Confirm Deletion"))) {
+                return;
+            }
         const { error } = await supabase
             .from("drivers")
             .delete()
             .eq("id", driverId);
         if (error) {
             console.error("Error deleting driver:", error);
-            alert("Failed to delete driver!");
+            showCustomAlert("Failed to delete driver!");
             return;
         }
-        alert("Driver deleted successfully!");
+        showCustomAlert("Driver deleted successfully!");
         await fetchDrivers();
         }
 
@@ -1639,11 +1674,11 @@
         const { error } = await supabase.from("constructors").upsert(upsertData);
         if (error) {
             console.error("Error saving constructors:", error);
-            alert("Failed to save constructors!");
+            showCustomAlert("Failed to save constructors!");
             return;
         }
 
-        alert("Constructors saved successfully!");
+        showCustomAlert("Constructors saved successfully!");
         document.getElementById("save-constructors").disabled = true; // Re-disable button
         await fetchConstructors(); // Refresh the table
         }
@@ -1655,20 +1690,20 @@
         const text_colour = document.getElementById("new-constructor-text").value.trim();
 
         if (!name || !background_colour || !text_colour) {
-            alert("All fields are required to add a constructor.");
+            showCustomAlert("All fields are required to add a constructor.");
             return;
         }
 
         const { error } = await supabase.from("constructors").insert([{ name, background_colour, text_colour }]);
         if (error) {
             console.error("Error adding constructor:", error);
-            alert("Failed to add constructor!");
+            showCustomAlert("Failed to add constructor!");
             return;
         }
 
         await fetchConstructors(); // Refresh table
         await populateConstructorDropdown(); // Update dropdown
-        alert("Constructor added successfully!");
+        showCustomAlert("Constructor added successfully!");
 
         // Clear input fields after submission
         document.getElementById("new-constructor-name").value = "";
@@ -1678,7 +1713,9 @@
 
         // Delete a Constructor and refresh the table.
         async function deleteConstructor(constructorId) {
-        if (!confirm("Are you sure you want to delete this constructor?")) return;
+            if (!(await showCustomConfirm("Are you sure you want to delete this constructor?", "Confirm Deletion"))) {
+                return;
+            }
 
         // Check if the constructor is being used in the "drivers" table
         const { data: driverData, error: driverError } = await supabase
@@ -1688,23 +1725,23 @@
 
         if (driverError) {
             console.error("Error checking constructor dependencies:", driverError);
-            alert("Failed to check dependencies.");
+            showCustomAlert("Failed to check dependencies.");
             return;
         }
 
         if (driverData.length > 0) {
-            alert("Cannot delete constructor. It is assigned to one or more drivers.");
+            showCustomAlert("Cannot delete constructor. It is assigned to one or more drivers.");
             return;
         }
 
         const { error } = await supabase.from("constructors").delete().eq("id", constructorId);
         if (error) {
             console.error("Error deleting constructor:", error);
-            alert("Failed to delete constructor!");
+            showCustomAlert("Failed to delete constructor!");
             return;
         }
 
-        alert("Constructor deleted successfully!");
+        showCustomAlert("Constructor deleted successfully!");
         await fetchConstructors();
         }
 
@@ -1719,7 +1756,7 @@
 
             if (error) {
                 console.error("Error fetching calendar:", error);
-                alert("Failed to fetch calendar data. Please try again.");
+                showCustomAlert("Failed to fetch calendar data. Please try again.");
                 return;
             }
 
@@ -1799,11 +1836,11 @@
             const { error } = await supabase.from("calendar").upsert(Object.values(groupedUpdates));
             if (error) {
                 console.error("Error saving calendar entries:", error);
-                alert("Failed to save calendar!");
+                showCustomAlert("Failed to save calendar!");
                 return;
             }
 
-            alert("Calendar saved successfully!");
+            showCustomAlert("Calendar saved successfully!");
             await fetchCalendar();
 
             // Re-disable the save button since no unsaved changes remain.
@@ -1813,16 +1850,18 @@
 
         // Delete Race Function
         async function deleteRace(id) {
-            if (!confirm("Are you sure you want to delete this race?")) return;
+            if (!(await showCustomConfirm("Are you sure you want to delete this race?", "Confirm Deletion"))) {
+                return;
+            }
 
             const { error } = await supabase.from("calendar").delete().eq("id", id);
             if (error) {
                 console.error("Error deleting race:", error);
-                alert("Failed to delete race!");
+                showCustomAlert("Failed to delete race!");
                 return;
             }
 
-            alert("Race deleted successfully!");
+            showCustomAlert("Race deleted successfully!");
             await fetchCalendar();
         }
 
@@ -1834,14 +1873,14 @@
             const date = document.getElementById("new-race-date").value.trim();
 
             if (!race_number || !name || !country || !date) {
-                alert("All fields are required to add a race.");
+                showCustomAlert("All fields are required to add a race.");
                 return;
             }
 
             // Append "Z" to force the input to be treated as UTC.
             const utcDate = new Date(date + "Z");
             if (isNaN(utcDate)) {
-                alert("Invalid date format!");
+                showCustomAlert("Invalid date format!");
                 return;
             }
             const isoDate = utcDate.toISOString(); // This stores the time in UTC
@@ -1851,7 +1890,7 @@
             ]);
             if (error) {
                 console.error("Error adding race:", error);
-                alert("Failed to add race!");
+                showCustomAlert("Failed to add race!");
                 return;
             }
 
@@ -1862,7 +1901,7 @@
             document.getElementById("new-race-date").value = "";
 
             await fetchCalendar();
-            alert("Race added successfully!");
+            showCustomAlert("Race added successfully!");
         }
 
     // ====================================
@@ -1961,13 +2000,13 @@
                 .single();
 
             if (formDetailsError) {
-                alert('Error fetching form details');
+                showCustomAlert('Error fetching form details');
                 console.error('Error fetching form details:', formDetailsError);
                 return;
             }
 
             if (!formDetails.form_enabled) {
-                alert('Form submissions are currently closed.');
+                showCustomAlert('Form submissions are currently closed.');
                 return;
             }
 
@@ -1981,7 +2020,7 @@
                 if (config.enabled && config.id !== 1) {
                     const value = formData.get(`input-${config.id}`);
                     if (!value) {
-                        alert(`Please fill out all required fields.`);
+                        showCustomAlert(`Please fill out all required fields.`);
                         return;
                     }
                 }
@@ -2016,7 +2055,7 @@
             }
 
             if (saveError) {
-                alert('Error saving form submission');
+                showCustomAlert('Error saving form submission');
                 console.error('Error saving form submission:', saveError);
                 return;
             }
@@ -2309,7 +2348,7 @@
             .eq('id', 1);
 
         if (updateError) {
-            alert('Error saving changes');
+            showCustomAlert('Error saving changes');
             console.error('Error saving changes:', updateError);
             return;
         }
@@ -2332,7 +2371,7 @@
 
         await fetchFormResponses();
 
-        alert('Changes saved successfully');
+        showCustomAlert('Changes saved successfully');
         });
         });
 
@@ -2920,7 +2959,7 @@
 
             if (!raceData || raceData.length === 0) {
             updateProgress("No race data found in " + responsesTable);
-            alert("No races found in the responses table for the current year.");
+            showCustomAlert("No races found in the responses table for the current year.");
             return;
             }
 
@@ -2955,7 +2994,7 @@
 
             if (raceSelect.options.length === 0) {
             updateProgress("No valid races found to populate the dropdown.");
-            alert("No valid races found in the responses table for the current year.");
+            showCustomAlert("No valid races found in the responses table for the current year.");
             return;
             }
             
@@ -3159,7 +3198,7 @@
         }
 
         updateProgress("Season totals update complete.");
-        alert("Season Totals update complete.");
+        showCustomAlert("Season Totals update complete.");
         }
 
         // On DOMContentLoaded, load initial options.
@@ -3261,7 +3300,7 @@
         updateProgressSeasonTeam(`Total options added: ${optionCount}`);
         if (raceSelect.options.length === 0) {
             updateProgressSeasonTeam("No valid races found to populate the dropdown.");
-            alert("No valid races found in the season player table for the current year.");
+            showCustomAlert("No valid races found in the season player table for the current year.");
             return;
         }
         
@@ -3985,7 +4024,7 @@
             if (!teamScoringData || teamScoringData.length === 0) {
             updateProgressTeamSummary("No team scoring records found for the selected race.");
             console.warn("No data returned for team scoring.");
-            alert("No team scoring records found for the selected race.");
+            showCustomAlert("No team scoring records found for the selected race.");
             return;
             }
         } catch (err) {
@@ -3994,7 +4033,7 @@
         }
         if (!teamScoringData || teamScoringData.length === 0) {
             updateProgressTeamSummary("No team scoring records found for the selected race.");
-            alert("No team scoring records found for the selected race.");
+            showCustomAlert("No team scoring records found for the selected race.");
             return;
         }
         updateProgressTeamSummary(`Fetched ${teamScoringData.length} team scoring records.`);
@@ -4141,7 +4180,7 @@
         }
 
         updateProgressTeamSummary("✅ Season Team Summary update complete.");
-        alert("Season Team Summary update complete.");
+        showCustomAlert("Season Team Summary update complete.");
         }
 
         // Initialize Season Team Summary Section
@@ -4295,10 +4334,10 @@
                 try {
                     await updateCasinoData(updatedData);
                     saveCasinoChanges.disabled = true;
-                    alert("Casino settings updated!");
+                    showCustomAlert("Casino settings updated!");
                 } catch (error) {
                     console.error("Failed to update casino settings:", error);
-                    alert("There was an error updating the casino settings. Please try again.");
+                    showCustomAlert("There was an error updating the casino settings. Please try again.");
                 }
             });
 
@@ -4316,11 +4355,11 @@
                     .eq("id", 1);
                 if (error) {
                     console.error("Error updating casino status:", error);
-                    alert("Failed to update casino status.");
+                    showCustomAlert("Failed to update casino status.");
                     return;
                 }
                 saveCasinoDashboard.disabled = true;
-                alert("Casino status updated!");
+                showCustomAlert("Casino status updated!");
             });
 
             await fetchCasinoStatus();
@@ -4398,7 +4437,7 @@
                     .eq("id", feedbackId);
                 if (error) {
                     console.error("Error deleting feedback:", error);
-                    alert("Failed to delete feedback.");
+                    showCustomAlert("Failed to delete feedback.");
                 } else {
                     // Remove the card from the DOM
                     card.remove();
