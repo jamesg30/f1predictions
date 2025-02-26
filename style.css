@@ -130,22 +130,29 @@ footer {
 }
 
 .loading-bar {
-  height: 20px;
   width: 200px;
-  background: #ccc;
-  position: relative;
+  height: 20px;
+  background-color: #e9ecef; /* Bootstrap progress background */
+  border-radius: 0.25rem;
   overflow: hidden;
   margin: 10px auto;
+  position: relative;
 }
 
 .loading-bar::before {
   content: "";
-  position: absolute;
-  left: -200px;
-  width: 200px;
-  height: 20px;
-  background: #333;
-  animation: loading 1s linear infinite;
+  display: block;
+  height: 100%;
+  width: 100%;
+  background-color: #343a40; /* Dark fill color */
+  background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent);
+  background-size: 40px 40px;
+  animation: progress-bar-stripes 1s linear infinite;
+}
+
+@keyframes progress-bar-stripes {
+  from { background-position: 40px 0; }
+  to { background-position: 0 0; }
 }
 
 #mainResultsTable {
@@ -164,11 +171,6 @@ footer {
   background-color: #fff;
   z-index: 3;
   left: 0;
-}
-
-@keyframes loading {
-  from { left: -200px; }
-  to { left: 100%; }
 }
 
 /* ======================== */
@@ -451,42 +453,44 @@ footer {
 /* === COUNTDOWN TIMER STYLING === */
 /* =============================== */
 #countdown-timer {
-  background-color: #333;      /* Dark grey background */
-  color: #fff;                 /* White text */
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.8rem;
-  padding: 4px 8px;
-  border: 3px solid #555;
+  background-color: #333; /* Dark background */
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem; /* Increased font size */
+  padding: 8px 16px;
+  border-radius: 8px;
   text-align: center;
-  margin: 20px auto;           /* Center horizontally with auto margins */
-  display: inline-block;       /* Shrink-wrap the content */
-  width: auto;                 /* Force auto width */
+  margin: 20px auto;
+  display: inline-block;
+  width: auto;
 }
 
 #countdown {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.8rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem; /* Increased font size */
   letter-spacing: 0.05em;
 }
 
-#form-countdown-container, #card-countdown-container, #casino-countdown-container {
-  background-color: #f0f0f0;      /* Light grey background */
-  color: #333;                  /* Dark text */
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.8rem;
-  padding: 4px 8px;
-  border: 3px solid #ccc;
+#form-countdown-container,
+#card-countdown-container,
+#casino-countdown-container {
+  background-color: #f0f0f0; /* Light grey background */
+  color: #333;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem; /* Increased font size */
+  padding: 8px 16px;
+  border-radius: 8px;
   text-align: center;
-  margin: 20px auto;            /* Center horizontally */
-  display: inline-block;        /* Shrink-wrap the content */
-  width: -moz-fit-content;      /* Firefox */
-  width: -webkit-fit-content;   /* Webkit */
-  width: fit-content;           /* Standard */
+  margin: 20px auto;
+  display: inline-block;
+  width: fit-content;
 }
 
-#form-countdown, #card-countdown, #casino-countdown {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.8rem;
+#form-countdown,
+#card-countdown,
+#casino-countdown {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem; /* Increased font size */
   letter-spacing: 0.05em;
 }
 
