@@ -215,7 +215,6 @@ footer {
 /* == Navbar Styled Heading == */
 .heading-text-11 {  
   font-family: 'Montserrat', sans-serif;
-  font-style: italic;
   color: black; /* Main text color */
   font-size: 1.5rem;
   margin-left: -5px;
@@ -754,13 +753,13 @@ footer {
 /* User Avatar Box */
 .user-avatar {
   /* The size here determines the box dimensions */
-  width: 2.8rem;
-  height: 2.8rem;
-  font-size: 1.6rem; /* Adjust to your desired size */
+  width: 2.6rem;
+  height: 2.6rem;
+  font-size: 1.4rem; /* Adjust to your desired size */
   /* Ensure the text is centered */
   display: inline-block;
   text-align: center;
-  line-height: 2.8rem;
+  line-height: 2.45rem;
   margin-right: 0.5rem;
   border: 2px solid #c0c0c0;
   border-radius: 50%; /* Makes the avatar circular */
@@ -852,7 +851,7 @@ footer {
 
 @media (max-width: 991.98px) {
   .account-controls {
-    width: 90px;       /* Fixed width */
+    width: 80px;       /* Fixed width */
     margin-left: auto; /* Push container to the far right */
     display: flex;     /* Use flex layout */
     justify-content: flex-end; /* Align children to the right edge */

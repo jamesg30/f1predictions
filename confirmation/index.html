@@ -123,30 +123,30 @@
   </header>  
 
   <main class="container my-5">
-    <h2 class="mb-3 pixel-art-heading-3">Form Submission Confirmation</h2>
-    <p class="mb-3 pixel-art-body-smallx">Your predictions have been successfully submitted. Please find a copy of your predictions below:</p>
+    <h2 class="mb-3 heading-text-2">Form Submission Confirmation</h2>
+    <p class="mb-3 body-text">Your predictions have been successfully submitted. Please find a copy of your predictions below:</p>
 
     
     <!-- Submission header: displays player's name, race name, and submission time -->
-    <p class="pixel-art-heading-2">Submission Details:</p>
+    <p class="heading-text-3">Submission Details:</p>
     <!-- Loading Placeholder -->
-    <div id="loadingPlaceholderBar" class="loading-indicator mb-3 pixel-art-heading-2">
+    <div id="loadingPlaceholderBar" class="loading-indicator mb-3 heading-text-3">
       Submission confirmation loading...
       <div class="loading-bar"></div>
     </div>
     <div id="submission-header" class="mb-4"></div>
     
-    <div class="pixel-alert pixel-alert-info" style="margin-top: 5px"">
+    <div class="alert alert-info" style="margin-top: 5px"">
       TIP: You can edit submissions until the race begins. Simply open the form and your responses will be pre-filled
   </div>
-  <p class="pixel-art-heading-2">Form Responses:</p>
+  <p class="heading-text-3">Form Responses:</p>
     <div id="confirmation-details" class="mb-3">
       <!-- Submission details will be loaded here -->
     </div>
     
     <div class="text-center mt-4">
       <a href="/" style="text-decoration:none;">
-        <button type="button" class="pixel-button primary">Back to Home</button>
+        <button type="button" class="btn btn-primary">Back to Home</button>
       </a>
     </div>
     
@@ -243,7 +243,7 @@
       const playerId = getCookie("playerId");
       if (!playerId) {
         confirmationDetails.innerHTML = `
-        <div class="pixel-alert pixel-alert-warning" style="margin-top: 5px"">
+        <div class="alert alert-warning" style="margin-top: 5px"">
       Please log in to view your form confirmation.
         </div>
         `;
@@ -340,9 +340,9 @@
       headerDiv.className = 'list-group-item mb-3';
       let submissionTime = submissionData.submission_time ? formatTimestampAEST(submissionData.submission_time) : 'Unknown Time';
       let playerNameDisplay = getDisplayName('Select - Name List', submissionData.player_id);
-      headerDiv.innerHTML = `<p class="pixel-art-body-smallx">Player: ${playerNameDisplay}</p>
-                             <p class="pixel-art-body-smallx">Race: ${raceName}</p>
-                             <p class="pixel-art-body-smallx">Submitted: ${submissionTime}</p>`;
+      headerDiv.innerHTML = `<p class="body-text-xs">Player: ${playerNameDisplay}</p>
+                             <p class="body-text-xs">Race: ${raceName}</p>
+                             <p class="body-text-xs">Submitted: ${submissionTime}</p>`;
       submissionHeader.appendChild(headerDiv);
     
       // Loop over submissionData keys and display details.

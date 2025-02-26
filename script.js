@@ -697,7 +697,7 @@ export function updateLoginUI(playerData) {
   }
   modalInstance.hide();
   setTimeout(() => {
-    document.getElementById('hamburgerMenu').focus();
+    document.getElementById('userDropdown').focus();
   }, 300);
 }
 
