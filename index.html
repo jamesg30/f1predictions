@@ -279,19 +279,19 @@
                         <tr>
                             <td style="vertical-align: middle;">
                                 <p>
-                                    <img src="/media/awards/medal_first.png" style="float:left; width: 16px; height: 26px; image-rendering: pixelated; margin-right: 10px;">
+                                    <img src="/media/awards/medal_first.png" style="float:left; width: 24px; height: 24px; margin-right: 5px;">
                                     <span id="firstPlace" class="body-text-emph"></span>
                                 </p>
                             </td>
                             <td style="vertical-align: middle;">
                                 <p>
-                                    <img src="/media/awards/medal_second.png" style="float:left; width: 16px; height: 26px; image-rendering: pixelated; margin-right: 10px; margin-left: 10px;">
+                                    <img src="/media/awards/medal_second.png" style="float:left; width: 24px; height: 24px; margin-right: 5px; margin-left: 15px;">
                                     <span id="secondPlace" class="body-text-emph"></span>
                                 </p>
                             </td>
                             <td style="vertical-align: middle;">
                                 <p>
-                                    <img src="/media/awards/medal_third.png" style="float:left; width: 16px; height: 26px; image-rendering: pixelated; margin-right: 10px; margin-left: 10px;">
+                                    <img src="/media/awards/medal_third.png" style="float:left; width: 24px; height: 24px; margin-right: 5px; margin-left: 15px;">
                                     <span id="thirdPlace" class="body-text-emph"></span>
                                 </p>
                             </td>
@@ -337,12 +337,12 @@
     <!-- Unscored Predictions Section -->
         <div id="unscoredPredictions" style="display: none;"> <!-- Unscored Predictions Placeholder -->
             <div class="container my-3 d-flex justify-content-left">
-                <h4 class="mb-3 pixel-art-heading-3">Unscored Predictions</h4>
+                <h4 class="mb-3 heading-text-2">Unscored Predictions</h4>
             </div>
             <div class="container my-4">
-                <h5 id="unscoredRaceTitle" class="mb-3 pixel-art-heading-2"></h5>
+                <h5 id="unscoredRaceTitle" class="mb-3 heading-text-3></h5>
                 <!-- Loading Indicator for Unscored Predictions -->
-                <div id="unscoredLoading" class="loading-indicator mb-3 pixel-art-heading-2">
+                <div id="unscoredLoading" class="loading-indicator mb-3 heading-text-3">
                     Predictions loading...
                     <div class="loading-bar"></div>
                 </div>
@@ -363,17 +363,17 @@
     <!-- No Display Section -->
         <div id="noDisplay" style="display: none;"> <!-- No Display Placeholder -->
             <div class="container my-3 d-flex justify-content-left">
-                <h4 class="mb-3 pixel-art-heading-2">No results to display</h4>
+                <h4 class="mb-3 heading-text-3">No results to display</h4>
             </div>
         </div>
         
         <hr>
-        <h3 class="pixel-art-heading-3" style="margin-top: 15px; margin-bottom: 15px">Season Standings</h3>
+        <h3 class="heading-text-2" style="margin-top: 15px; margin-bottom: 15px">Season Standings</h3>
         <div class="row g-4">
             <!-- Left Column: Latest Form -->
             <!-- Left Column: Latest Form / Player Standings -->
                 <div class="col-md-6">
-                    <h5 class="mb-3 pixel-art-heading-2">Player Standings</h5>
+                    <h5 class="mb-3 heading-text-3">Player Standings</h5>
                     <table id="standings-table" class="table table-sm table-bordered">
                     <thead>
                         <tr>
@@ -390,7 +390,7 @@
 
             <!-- Right Column: Quick Links -->
             <div class="col-md-6">
-                <h5 class="mb-3 pixel-art-heading-2">Team Standings</h5>
+                <h5 class="mb-3 heading-text-3">Team Standings</h5>
                 <table id="standings-team-table" class="table table-sm table-bordered">
                   <thead>
                     <tr>
@@ -415,7 +415,7 @@
               </div>
         <hr>
         <div class="container my-5">
-            <pre class="mb-3 pixel-art-heading-3"><img src="/media/awards/trophy.png" style="float:left; width: 32px; height: 38px; image-rendering: pixelated;"> Past Champions</pre>
+            <pre class="mb-3 heading-text-2"><img src="/media/awards/trophy.png" style="float:left; width: 32px; height: 38px; image-rendering: pixelated;"> Past Champions</pre>
             <p>
                 2024 - James<br>
                 2023 - Ethan<br>
@@ -1851,7 +1851,7 @@ async function getCurrentUser() {
                 text: `Player Standings ${currentYear}`,
                 color: 'black',
                 font: {
-                  family: 'Pixeloid Sans Bold',
+                  family: 'Helvetica',
                   size: 20,
                 }
               },
@@ -1859,7 +1859,7 @@ async function getCurrentUser() {
                 position: 'bottom',
                 labels: {
                   font: {
-                    family: 'Pixeloid Sans'
+                    family: 'Helvetica'
                   },
                   color: 'black'
                 }
@@ -1875,7 +1875,7 @@ async function getCurrentUser() {
                   stepSize: 1,
                   padding: 10,
                   font: {
-                    family: 'Pixeloid Sans'
+                    family: 'Helvetica'
                   },
                   color: 'black'
                 },
@@ -1883,7 +1883,7 @@ async function getCurrentUser() {
                   display: true,
                   text: 'Rank',
                   font: {
-                    family: 'Pixeloid Sans'
+                    family: 'Helvetica'
                   },
                   color: 'black'
                 }
@@ -1891,7 +1891,7 @@ async function getCurrentUser() {
               x: {
                 ticks: {
                   font: {
-                    family: 'Pixeloid Sans'
+                    family: 'Helvetica'
                   },
                   color: 'black'
                 },
@@ -2070,7 +2070,7 @@ async function getCurrentUser() {
                 text: `Team Standings ${currentYear}`,
                 color: 'black',
                 font: {
-                    family: 'Pixeloid Sans Bold',
+                    family: 'Helvetica',
                     size: 20,
                 }
               },
@@ -2078,7 +2078,7 @@ async function getCurrentUser() {
                 position: 'bottom',
                 labels: {
                   font: {
-                    family: 'Pixeloid Sans'
+                    family: 'Helvetica'
                   },
                   color: 'black'
                 }
@@ -2094,7 +2094,7 @@ async function getCurrentUser() {
                   stepSize: 1,
                   padding: 10,
                   font: {
-                    family: 'Pixeloid Sans'
+                    family: 'Helvetica'
                   },
                   color: 'black'
                 },
@@ -2102,7 +2102,7 @@ async function getCurrentUser() {
                   display: true,
                   text: 'Rank',
                   font: {
-                    family: 'Pixeloid Sans'
+                    family: 'Helvetica'
                   },
                   color: 'black'
                 }
@@ -2110,7 +2110,7 @@ async function getCurrentUser() {
               x: {
                 ticks: {
                   font: {
-                    family: 'Pixeloid Sans'
+                    family: 'Helvetica'
                   },
                   color: 'black'
                 },
