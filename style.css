@@ -195,6 +195,7 @@ footer {
 /* === TEXT STYLING === */
 /* ==================== */
 
+/* == Main Page Large Heading == */
 .heading-text-1 {
   position: absolute;
   top: 50%;
@@ -211,7 +212,7 @@ footer {
   text-align: center; /* Center text in smaller containers */
   z-index: 2; /* Ensure it's above overlays */
 }
-
+/* == Navbar Styled Heading == */
 .heading-text-11 {  
   font-family: 'Montserrat', sans-serif;
   font-style: italic;
@@ -221,17 +222,26 @@ footer {
   font-weight: bold; /* Bold for emphasis */
 }
 
-
+/* == Page Headings == */
 .heading-text-2 {
-  font-size: 1.3rem
+  font-family: 'Montserrat', sans-serif;
+  color: black; /* Main text color */
+  font-size: 2rem;
+  line-height: 1.2; /* Adjust for spacing */
+  font-weight: bold; /* Bold for emphasis */
 }
-
+/* == Page Sub-headings == */
 .heading-text-3 {
-  font-size: 1.3rem
+  font-size: 1.5rem;
+  font-weight: bold; /* Bold for emphasis */
 }
 
 .body-text {
   font-size: 1rem
+}
+
+.body-text-emph {
+  font-size: 1.2rem
 }
 
 .body-text-xs {
@@ -452,25 +462,8 @@ footer {
 /* =============================== */
 /* === COUNTDOWN TIMER STYLING === */
 /* =============================== */
-#countdown-timer {
-  background-color: #333; /* Dark background */
-  color: #fff;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1rem; /* Increased font size */
-  padding: 8px 16px;
-  border-radius: 8px;
-  text-align: center;
-  margin: 20px auto;
-  display: inline-block;
-  width: auto;
-}
 
-#countdown {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1rem; /* Increased font size */
-  letter-spacing: 0.05em;
-}
-
+#countdown-timer,
 #form-countdown-container,
 #card-countdown-container,
 #casino-countdown-container {
@@ -486,6 +479,7 @@ footer {
   width: fit-content;
 }
 
+#countdown,
 #form-countdown,
 #card-countdown,
 #casino-countdown {

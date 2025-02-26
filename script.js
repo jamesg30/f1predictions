@@ -682,7 +682,7 @@ export function updateLoginUI(playerData) {
     if (!adminLinkItem && dropdownMenu) {
       adminLinkItem = document.createElement('li');
       adminLinkItem.id = 'adminLinkItem';
-      adminLinkItem.innerHTML = `<a class="dropdown-item" href="/admin">Admin</a>`;
+      adminLinkItem.innerHTML = `<a class="dropdown-item body-text-xs" href="/admin">Admin</a>`;
       dropdownMenu.appendChild(adminLinkItem);
     }
   } else {

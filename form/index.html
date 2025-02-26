@@ -191,7 +191,7 @@
   
   <main class="container my-5">
     <div class="container my-5">
-      <h2 id="form-title" class="mb-3 pixel-art-heading-3">Form</h2>
+      <h2 id="form-title" class="mb-3 heading-text-2">Form</h2>
       <!-- Form Countdown Timer -->
       <div id="form-countdown-container" style="display: none;">
         <strong>Time left: </strong>
@@ -201,15 +201,15 @@
         <form id="prediction-form" action="/submit" method="POST">
           <div id="form-section-1"></div>
           <!-- Loading Indicator for Form Blocks -->
-          <div id="formLoading" class="loading-indicator mb-3 pixel-art-heading-2" style="display: none;">
+          <div id="formLoading" class="loading-indicator mb-3 heading-text-3" style="display: none;">
             <span id="loadingText">Form loading...</span>
             <div class="loading-bar"></div>
           </div>
   
-          <div id="repeated-predictions-alert" class="pixel-alert pixel-alert-info d-none">
+          <div id="repeated-predictions-alert" class="alert alert-info d-none">
             Existing predictions have been pre-filled. Submitting new predictions will override the previous ones.
           </div>
-          <div id="register-notice" class="pixel-alert pixel-alert-info" style="display: none;">
+          <div id="register-notice" class="alert alert-info" style="display: none;">
             Not seeing your name? Register at the <a href="/register">Register Page</a>, and ensure you are logged in.
         </div>        
           <div>
@@ -220,7 +220,7 @@
 
           <!-- Starting Grid Block with Image -->
           <div id="starting-grid">
-            <h5 class="mb-3 pixel-art-heading-2">Starting Grid</h5>
+            <h5 class="mb-3 heading-text-3">Starting Grid</h5>
             <!-- Placeholder shown while image loads -->
             <div id="startingGridPlaceholderContainer">
               <p class="placeholder-glow">
@@ -236,12 +236,12 @@
             >
           </div>
           
-          <div id="form-alert-text" class="pixel-alert pixel-alert-warning d-none" style="margin-top: 10px"></div>
+          <div id="form-alert-text" class="alert alert-warning d-none" style="margin-top: 10px"></div>
   
           <hr>
   
           <div>
-            <h5 class="mb-3 pixel-art-heading-2">Top 6 Predictions</h5>
+            <h5 class="mb-3 heading-text-3">Top 6 Predictions</h5>
             <p><i>Up to 2 points per prediction, 1 bonus point for winner</i></p>
           </div>
           <div id="form-section-2"></div>
@@ -249,7 +249,7 @@
           <hr>
   
           <div>
-            <h5 class="mb-3 pixel-art-heading-2">Other Predictions</h5>
+            <h5 class="mb-3 heading-text-3">Other Predictions</h5>
             <p><i>1 point per prediction, unless otherwise specified</i></p>
           </div>
           <div id="form-section-3"></div>
@@ -257,14 +257,14 @@
           <hr>
   
           <div>
-            <h5 class="mb-3 pixel-art-heading-2">Winning Margin</h5>
+            <h5 class="mb-3 heading-text-3">Winning Margin</h5>
             <p><i>1 point for closest guess</i></p>
           </div>
           <div id="form-section-4"></div>
               
           <!-- Submit Button -->
           <div class="text-center mt-4">
-            <button type="submit" class="pixel-button primary">Submit</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
           </div>
         </form>
       </div>
@@ -275,31 +275,37 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title pixel-art-heading-2" id="loginModalLabel">Login</h5>
+        <h5 class="modal-title heading-text-3" id="loginModalLabel">Log In</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <form id="login-form">
           <div class="mb-3">
-            <label for="login-player-name" class="form-label pixel-art-body">Name:</label>
+            <label for="login-player-name" class="form-label">Name:</label>
             <!-- Use an input with a datalist for suggestions -->
-            <input list="players-list" id="login-player-name" class="form-control pixel-art-body" required />
+            <input list="players-list" id="login-player-name" class="form-control" required />
             <datalist id="players-list">
               <!-- Options will be populated dynamically -->
             </datalist>
           </div>
           <div class="mb-3">
-            <label for="login-pin" class="form-label pixel-art-body">PIN:</label>
-            <input type="password" id="login-pin" class="form-control pixel-art-body" maxlength="4" pattern="\d*" inputmode="numeric" required />
+            <label for="login-pin" class="form-label">PIN:</label>
+            <input type="password" id="login-pin" class="form-control" maxlength="4" pattern="\d*" inputmode="numeric" required />
           </div>
           
           <div class="mb-3">
-            <label for="rememberMe" class="form-check-label pixel-art-body">
-              <input type="checkbox" id="rememberMe" class="form-check-input pixel-art-body" />
-              Remember me
+            <label for="rememberMe" class="form-check-label">
+              <input type="checkbox" id="rememberMe" class="form-check-input" />
+              Keep me logged in for 30 days
             </label>
           </div>
-          <button type="submit" class="pixel-button" disabled>Login</button>
+          <div class="d-grid gap-2 col-6 mx-auto">
+              <button type="submit" class="btn btn-primary" disabled>Log In</button>
+          </div>
+          <hr>
+          <div class="mb-3">
+            Forgot password? Visit the <a href="/account">Account Page</a>.
+          </div>
         </form>
       </div>
     </div>
@@ -308,7 +314,7 @@
 
   </main>
   
-  <footer class="bg-light text-black text-center py-1 pixel-art-body-smallx">
+  <footer class="bg-light text-black text-center py-1 body-text-xs">
     <p>&copy; 2025 F1 Predictions Form</p>
   </footer>
   
@@ -570,7 +576,7 @@
         if (!raceHasStarted) {
           startFormCountdown(raceStart, () => {
             document.getElementById('form-content').innerHTML =
-              '<div class="pixel-alert pixel-alert-warning">The form is now closed as the race has started.</div>';
+              '<div class="alert alert-warning">The form is now closed as the race has started.</div>';
           });
         } else {
           const countdownElement = document.getElementById("form-countdown");
@@ -581,7 +587,7 @@
       }
       if (!formEnabled || raceHasStarted) {
         document.getElementById('form-content').innerHTML =
-          '<div class="pixel-alert pixel-alert-warning" role="alert">The form is currently closed.</div>';
+          '<div class="alert alert-warning" role="alert">The form is currently closed.</div>';
         return;
       }
       

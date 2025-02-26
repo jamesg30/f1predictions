@@ -252,31 +252,37 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title pixel-art-heading-2" id="loginModalLabel">Login</h5>
+        <h5 class="modal-title heading-text-3" id="loginModalLabel">Log In</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <form id="login-form">
           <div class="mb-3">
-            <label for="login-player-name" class="form-label pixel-art-body">Name:</label>
+            <label for="login-player-name" class="form-label">Name:</label>
             <!-- Use an input with a datalist for suggestions -->
-            <input list="players-list" id="login-player-name" class="form-control pixel-art-body" required />
+            <input list="players-list" id="login-player-name" class="form-control" required />
             <datalist id="players-list">
               <!-- Options will be populated dynamically -->
             </datalist>
           </div>
           <div class="mb-3">
-            <label for="login-pin" class="form-label pixel-art-body">PIN:</label>
-            <input type="password" id="login-pin" class="form-control pixel-art-body" maxlength="4" pattern="\d*" inputmode="numeric" required />
+            <label for="login-pin" class="form-label">PIN:</label>
+            <input type="password" id="login-pin" class="form-control" maxlength="4" pattern="\d*" inputmode="numeric" required />
           </div>
           
           <div class="mb-3">
-            <label for="rememberMe" class="form-check-label pixel-art-body">
-              <input type="checkbox" id="rememberMe" class="form-check-input pixel-art-body" />
-              Remember me
+            <label for="rememberMe" class="form-check-label">
+              <input type="checkbox" id="rememberMe" class="form-check-input" />
+              Keep me logged in for 30 days
             </label>
           </div>
-          <button type="submit" class="pixel-button" disabled>Login</button>
+          <div class="d-grid gap-2 col-6 mx-auto">
+              <button type="submit" class="btn btn-primary" disabled>Log In</button>
+          </div>
+          <hr>
+          <div class="mb-3">
+            Forgot password? Visit the <a href="/account">Account Page</a>.
+          </div>
         </form>
       </div>
     </div>
