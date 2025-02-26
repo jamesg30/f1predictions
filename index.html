@@ -88,104 +88,104 @@
     </script>
     <!-- Encryption Script -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-
     <!-- script.js import -->
     <script type="module" src="/script.js"></script>
 </head>
 <body>
     <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999;"></div>
    <!-- HEADER -->
-   <header>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
-      <div class="container-fluid d-flex flex-wrap flex-lg-nowrap align-items-center">
-        <!-- Toggler (Visible on mobile only) -->
-        <!-- Toggler (Visible on mobile only) -->
-<!-- Toggler (Visible on mobile only) -->
-<button
-  class="navbar-toggler d-lg-none order-1"
-  type="button"
-  data-bs-toggle="collapse"
-  data-bs-target="#navbarNavDropdown"
-  aria-controls="navbarNavDropdown"
-  aria-expanded="false"
-  aria-label="Toggle navigation"
->
-  <!-- Custom animated burger icon replacing Bootstrap’s default icon -->
-  <span class="burger">
-    <span></span>
-    <span></span>
-    <span></span>
-  </span>
-</button>
-  
-        <!-- Brand / Logo -->
-        <!-- On mobile: centered via mx-auto; on desktop: left aligned (mx-lg-0) -->
-        <a class="navbar-brand mx-auto mx-lg-0 order-2 order-lg-1" href="/">
-          <img src="/media/f1_predictions_logo.png" alt="Logo" width="45" height="45" class="me-2">
-          <span class="fs-5 text-black d-none d-lg-inline" style="margin-right: 8px"><strong>F1 Predictions</strong></span>
-        </a>
-  
-        <!-- Shared Account Controls -->
-<div class="d-flex align-items-center order-3 order-lg-3 ms-lg-auto">
-  <!-- Avatar Dropdown (default: always rendered as grey box) -->
-  <div class="dropdown" id="avatarDropdownContainer">
-    <a
-      href="#"
-      id="userDropdown"
-      class="d-flex align-items-center text-decoration-none"
-      data-bs-toggle="dropdown"
-      aria-expanded="false"
-    >
-      <!-- Default grey avatar placeholder -->
-      <div id="user-avatar" class="user-avatar" style="background-color: #ccc;"></div>
-    </a>
-    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" id="logoutMenuItem">
-      <li id="loggedInUserDisplay" class="dropdown-item-text" style="color: darkgrey;">
-        Logged in as <br><strong></strong>
-      </li>
-      <li><a class="dropdown-item" href="/account">Account</a></li>
-      <li><a class="dropdown-item" href="#" id="logoutBtn">Log Out</a></li>
-    </ul>
-  </div>
-  <!-- Log In Button (default: hidden) -->
-  <button
-    id="loginButton"
-    type="button"
-    class="btn btn-outline-dark ms-2 text-nowrap d-none"
-    data-bs-toggle="modal"
-    data-bs-target="#loginModal"
-  >
-    Log In
-  </button>
-</div>
-  
-        <!-- Navigation Links -->
-        <!-- On mobile: full-width collapse; on desktop: inline between brand and account controls -->
-        <div class="collapse navbar-collapse order-4 w-100 order-lg-2 w-lg-auto" id="navbarNavDropdown">
-          <ul class="navbar-nav mx-auto mx-lg-0">
-            <li class="nav-item">
-              <a class="nav-link" href="/form">Form</a>
+   <!-- HEADER -->
+<header>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+    <div class="container-fluid d-flex flex-wrap flex-lg-nowrap align-items-center">
+      
+      <!-- Toggler (Visible on mobile only) -->
+      <button
+        class="navbar-toggler d-lg-none order-1"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNavDropdown"
+        aria-controls="navbarNavDropdown"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <!-- Custom animated burger icon replacing Bootstrap’s default icon -->
+        <span class="burger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </button>
+      
+      <!-- Brand / Logo -->
+      <!-- On mobile: centered via flex centering; on desktop: left aligned (mx-lg-0) -->
+      <a class="navbar-brand mx-auto mx-lg-0 order-2 order-lg-1" href="/">
+        <img src="/media/f1_predictions_logo.png" alt="Logo" width="45" height="45" class="me-2">
+        <span class="fs-5 d-none d-lg-inline heading-text-11" style="margin-right: 8px">F1 Predictions</span>
+      </a>
+      
+      <!-- Shared Account Controls -->
+      <div class="d-flex align-items-center order-3 order-lg-3 ms-lg-auto account-controls">
+        <!-- Avatar Dropdown (default: always rendered as grey box) -->
+        <div class="dropdown" id="avatarDropdownContainer">
+          <a
+            href="#"
+            id="userDropdown"
+            class="d-flex align-items-center text-decoration-none"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <!-- Default grey avatar placeholder -->
+            <div id="user-avatar" class="user-avatar" style="background-color: #ccc;"></div>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" id="logoutMenuItem">
+            <li id="loggedInUserDisplay" class="dropdown-item-text body-text" style="color: darkgrey;">
+              Logged in as <br><strong></strong>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/teams">Teams</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/results">Results</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/register">Register</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/feedback">Feedback</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/info">Info</a>
-            </li>
+            <li><a class="dropdown-item body-text-xs" href="/account">Account</a></li>
+            <li><a class="dropdown-item body-text-xs" href="#" id="logoutBtn">Log Out</a></li>
           </ul>
         </div>
+        <!-- Log In Button (default: hidden) -->
+        <button
+          id="loginButton"
+          type="button"
+          class="btn btn-outline-dark ms-2 text-nowrap d-none"
+          data-bs-toggle="modal"
+          data-bs-target="#loginModal"
+        >
+          Log In
+        </button>
       </div>
-    </nav>
-  </header>
+      
+      <!-- Navigation Links -->
+      <!-- On mobile: full-width collapse; on desktop: inline between brand and account controls -->
+      <div class="collapse navbar-collapse order-4 w-100 order-lg-2 w-lg-auto" id="navbarNavDropdown">
+        <ul class="navbar-nav mx-auto mx-lg-0">
+          <li class="nav-item">
+            <a class="nav-link body-text-xs" href="/form">Form</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link body-text-xs" href="/teams">Teams</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link body-text-xs" href="/results">Results</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link body-text-xs" href="/register">Register</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link body-text-xs" href="/feedback">Feedback</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link body-text-xs" href="/info">Info</a>
+          </li>
+        </ul>
+      </div>
+      
+    </div>
+  </nav>
+</header>
   
   
   
@@ -197,13 +197,13 @@
       <div id="image-placeholder" class="placeholder-glow"></div>
   
       <!-- Actual image, hidden initially -->
-      <img id="background-image" src="" alt="Full Width Image" class="full-width-image hidden" style="image-rendering: pixelated">
+      <img id="background-image" src="" alt="Full Width Image" class="full-width-image hidden">
       
       <!-- Transparent overlay -->
       <div class="overlay"></div>
   
       <!-- Centered Text -->
-      <h2 class="centered-text-pixel-art-heading">F1 Predictions Form</h2>
+      <h1 class="heading-text-1">F1 Predictions Form</h1>
   </section>
   
     

@@ -30,52 +30,96 @@
   <!-- Alert Container -->
   <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999;"></div>
   
-  <header class="bg-light text-black py-2.5 d-flex align-items-center justify-content-between sticky-top">
-    <!-- Left Section: Logo and Heading -->
-    <div class="d-flex align-items-center">
-      <a href="/" class="ms-2.5 me-2 d-flex align-items-center">
-        <img src="/media/f1_predictions_logo.png" alt="Logo" style="height: 45px;">
-      </a>
-      <a href="/" class="text-decoration-none text-black">
-        <h5 class="mb-0 pixel-art-heading-2" style="font-size: 1rem;">F1 Predictions</h5>
-      </a>
-    </div>
-    
-    <!-- Right Section: User Avatar and Hamburger Menu -->
-    <div class="d-flex align-items-center">
-      <div id="user-avatar" class="user-avatar d-none me-2"></div>
-      <div class="pixel-dropdown me-3">
-        <button class="pixel-button" type="button" id="hamburgerMenu" data-bs-toggle="dropdown" aria-expanded="false">
-          Menu
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+      <div class="container-fluid d-flex flex-wrap flex-lg-nowrap align-items-center">
+        
+        <!-- Toggler (Visible on mobile only) -->
+        <button
+          class="navbar-toggler d-lg-none order-1"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNavDropdown"
+          aria-controls="navbarNavDropdown"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <!-- Custom animated burger icon replacing Bootstrap’s default icon -->
+          <span class="burger">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
         </button>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenu">
-          <!-- Other Menu Items -->
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/">Home</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/form">Form</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/teams">Teams</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/results">Results</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/register">Register</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/feedback">Feedback</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/info">Info</a></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/account">Account</a></li>
-          <li><hr class="dropdown-divider"></li>
-          <!-- Login/Logout Items -->
-          <li id="loggedInUserDisplay" class="dropdown-item-text d-none pixel-art-body-smallx" style="color: darkgrey">
-            Logged in as <strong></strong>
-          </li>
-          <li id="logoutMenuItem" class="d-none">
-            <a class="dropdown-item logout-link pixel-art-body-smallx" href="#" id="logoutBtn">Log Out</a>
-          </li>
-          <li id="loginMenuItem">
-            <a class="dropdown-item pixel-art-body-smallx" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
-              Log In
+        
+        <!-- Brand / Logo -->
+        <!-- On mobile: centered via flex centering; on desktop: left aligned (mx-lg-0) -->
+        <a class="navbar-brand mx-auto mx-lg-0 order-2 order-lg-1" href="/">
+          <img src="/media/f1_predictions_logo.png" alt="Logo" width="45" height="45" class="me-2">
+          <span class="fs-5 d-none d-lg-inline heading-text-11" style="margin-right: 8px">F1 Predictions</span>
+        </a>
+        
+        <!-- Shared Account Controls -->
+        <div class="d-flex align-items-center order-3 order-lg-3 ms-lg-auto account-controls">
+          <!-- Avatar Dropdown (default: always rendered as grey box) -->
+          <div class="dropdown" id="avatarDropdownContainer">
+            <a
+              href="#"
+              id="userDropdown"
+              class="d-flex align-items-center text-decoration-none"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <!-- Default grey avatar placeholder -->
+              <div id="user-avatar" class="user-avatar" style="background-color: #ccc;"></div>
             </a>
-          </li>
-          <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item pixel-art-body-smallx" href="/admin">Admin</a></li>
-        </ul>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" id="logoutMenuItem">
+              <li id="loggedInUserDisplay" class="dropdown-item-text body-text" style="color: darkgrey;">
+                Logged in as <br><strong></strong>
+              </li>
+              <li><a class="dropdown-item body-text-xs" href="/account">Account</a></li>
+              <li><a class="dropdown-item body-text-xs" href="#" id="logoutBtn">Log Out</a></li>
+            </ul>
+          </div>
+          <!-- Log In Button (default: hidden) -->
+          <button
+            id="loginButton"
+            type="button"
+            class="btn btn-outline-dark ms-2 text-nowrap d-none"
+            data-bs-toggle="modal"
+            data-bs-target="#loginModal"
+          >
+            Log In
+          </button>
+        </div>
+        
+        <!-- Navigation Links -->
+        <!-- On mobile: full-width collapse; on desktop: inline between brand and account controls -->
+        <div class="collapse navbar-collapse order-4 w-100 order-lg-2 w-lg-auto" id="navbarNavDropdown">
+          <ul class="navbar-nav mx-auto mx-lg-0">
+            <li class="nav-item">
+              <a class="nav-link body-text-xs" href="/form">Form</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link body-text-xs" href="/teams">Teams</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link body-text-xs" href="/results">Results</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link body-text-xs" href="/register">Register</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link body-text-xs" href="/feedback">Feedback</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link body-text-xs" href="/info">Info</a>
+            </li>
+          </ul>
+        </div>
+        
       </div>
-    </div>
+    </nav>
   </header>  
 
   <main class="container my-5">

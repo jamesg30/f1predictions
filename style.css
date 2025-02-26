@@ -12,6 +12,13 @@ body {
     min-height: 100vh; /* Full viewport height */
 }
 
+/* Make sure the header remains sticky at the top, above other elements */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 1050; /* Adjust if needed so the header is above all content */
+}
+
 main {
     flex: 1; /* Allows this section to grow and fill available space */
 }
@@ -167,10 +174,78 @@ footer {
 /* ======================== */
 /* === FONTS LOADING IN === */
 /* ======================== */
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/fonts/Montserrat-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900; /* Adjust the range as needed */
+  font-style: normal;
+  font-display: swap;
+}
 
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/fonts/Montserrat-Italic-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900; /* Adjust the range as needed */
+  font-style: italic;
+  font-display: swap;
+}
 /* ==================== */
 /* === TEXT STYLING === */
 /* ==================== */
+
+.heading-text-1 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  color: white; /* Main text color */
+  text-shadow: 2.5px 2.5px 0 black; /* Offset shadow color */
+  font-size: clamp(1.5rem, 5vw, 3rem); /* Dynamic size for responsiveness */
+  line-height: 1.2; /* Adjust for spacing */
+  font-weight: bold; /* Bold for emphasis */
+  text-align: center; /* Center text in smaller containers */
+  z-index: 2; /* Ensure it's above overlays */
+}
+
+.heading-text-11 {  
+  font-family: 'Montserrat', sans-serif;
+  font-style: italic;
+  color: black; /* Main text color */
+  font-size: 1.5rem;
+  line-height: 1.2; /* Adjust for spacing */
+  font-weight: bold; /* Bold for emphasis */
+}
+
+
+.heading-text-2 {
+  font-size: 1.3rem
+}
+
+.heading-text-3 {
+  font-size: 1.3rem
+}
+
+.body-text {
+  font-size: 1rem
+}
+
+.body-text-xs {
+  font-size: 1rem;
+  line-height: 2; /* Adjust for spacing */
+  color: #000;
+}
+
+.body-text-xsb {
+  font-size: 1rem;
+  font-weight: bold;
+  line-height: 2; /* Adjust for spacing */
+  color: #000;
+}
+
+
 .pixel-art-heading {
     font-family: 'Press Start 2P', Helvetica, sans-serif; /* Fallback fonts */
     font-size: 1.2rem; /* Adjust as needed */
@@ -413,25 +488,6 @@ footer {
   font-family: 'Press Start 2P', monospace;
   font-size: 0.8rem;
   letter-spacing: 0.05em;
-}
-
-/* ========================= */
-/* === UNDERLINE STYLING === */
-/* ========================= */
-.nav-underline .nav-item .nav-link {
-  font-family: 'Pixeloid Sans', Helvetica, Arial, sans-serif; /* Apply Pixel Font */
-  font-size: 1rem;  /* Smaller font size */
-  text-transform: uppercase;  /* Uppercase text */
-}
-
-/* Active Tab */
-.nav-underline .nav-item .nav-link.active {
-  border-bottom: 4px solid #000; /* Pixelated underline */
-}
-
-/* Hover Effect */
-.nav-underline .nav-item .nav-link:hover {
-  border-bottom: 4px solid #606060; /* Lighter underline on hover */
 }
 
 /* ============================== */
@@ -796,11 +852,25 @@ footer {
 @media (max-width: 991.98px) {
   /* Add extra left padding for the nav links container */
   #navbarNavDropdown .navbar-nav {
-    padding-left: 5px;
+    padding-left: 10px;
   }
-  /* Increase spacing between nav items */
-  #navbarNavDropdown .nav-item {
-    margin-left: 5px;
-    margin-bottom: 5px; /* if the links stack vertically in mobile view */
+}
+
+@media (max-width: 991.98px) {
+  .account-controls {
+    width: 90px;       /* Fixed width */
+    margin-left: auto; /* Push container to the far right */
+    display: flex;     /* Use flex layout */
+    justify-content: flex-end; /* Align children to the right edge */
+    align-items: center; /* Vertically center */
+  }
+  
+  /* Keep your other mobile styles */
+  .navbar-toggler {
+    width: 90px;
+  }
+  .navbar-brand {
+    flex: 1;
+    text-align: center;
   }
 }
