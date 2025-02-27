@@ -7,12 +7,6 @@
     <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
     <!-- Apple Touch Icon: used when bookmarking or adding to home screen on iOS -->
   <link rel="apple-touch-icon" sizes="180x180" href="/media/f1_predictions_logo.png">
-  
-  <!-- Optional: Enable web app capabilities on iOS -->
-  <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="F1 Predictions">
 
     <!-- Bootstrap CSS (Local) -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -50,45 +44,44 @@
         }
 
         .placeholder-glow {
-    width: 100%;
-    height: 300px; /* Adjust as needed */
-    background-color: #ccc;
-    animation: pulse 1.5s infinite ease-in-out;
-}
+            width: 100%;
+            height: 300px; /* Adjust as needed */
+            background-color: #ccc;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
 
-@keyframes pulse {
-    0% { opacity: 0.6; }
-    50% { opacity: 1; }
-    100% { opacity: 0.6; }
-}
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
 
-.hidden {
-    display: none;
-}
+        .hidden {
+            display: none;
+        }
 
 
         .chart-wrapper {
-    width: 100%; /* Let it fill the width */
-    max-width: 900px; /* Prevent it from becoming too wide */
-    height: 400px; /* Fixed height */
-    margin: 0 auto; /* Center it */
-    padding: 0 20px; /* Add padding on desktop */
-}
+            width: 100%; /* Let it fill the width */
+            max-width: 900px; /* Prevent it from becoming too wide */
+            height: 400px; /* Fixed height */
+            margin: 0 auto; /* Center it */
+            padding: 0 20px; /* Add padding on desktop */
+        }
 
-.flag-img {
-  height: 36px;
-}
+        .flag-img {
+          height: 36px;
+        }
 
-@media (max-width: 768px) {
-    .chart-wrapper {
-        height: 500px; /* Increase height on smaller screens */
-        padding: 0 10px; /* Reduce padding */
-    }
-}
-
+        @media (max-width: 768px) {
+            .chart-wrapper {
+                height: 500px; /* Increase height on smaller screens */
+                padding: 0 10px; /* Reduce padding */
+            }
+        }
     </style>
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Initialize Supabase globally
         const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
