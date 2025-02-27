@@ -793,3 +793,15 @@ input, select, textarea {
   /* Use the inverse blue so that when inverted it appears blue */
   border: 3px solid #ffff00;
 }
+
+#loginButton {
+  border-color: white !important; /* Light outline */
+  color: white !important; /* Light text */
+}
+
+#loginButton:hover, 
+#loginButton:focus, 
+#loginButton:active {
+  background-color: white !important; /* Light background on hover */
+  color: black !important; /* Dark text on hover */
+}
