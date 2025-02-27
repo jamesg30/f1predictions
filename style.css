@@ -489,15 +489,8 @@ footer {
   /* The dynamic background, text-shadow, font, and color are set via JS */
 }
 
-.pixel-button:focus {
-  outline: none !important;
-}
-.pixel-dropdown:focus {
-  outline: none !important;
-}
-
 /* ============== */
-/* === BURGER === */
+/* === NAVBAR === */
 /* ============== */
 /* Remove outline and border from the toggler button */
 .navbar-toggler {
