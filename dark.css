@@ -1,0 +1,595 @@
+/* ======================= */
+/* === GENERAL STYLING === */
+/* ======================= */
+body {
+  font-family: Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #fff;
+  color: #333;
+  display: flex; /* Enables flexbox for layout */
+  flex-direction: column; /* Stacks children vertically */
+  min-height: 100vh; /* Full viewport height */
+}
+
+/* Make sure the header remains sticky at the top, above other elements */
+header {
+position: sticky;
+top: 0;
+color: #333;
+z-index: 1050; /* Adjust if needed so the header is above all content */
+}
+
+main {
+  flex: 1; /* Allows this section to grow and fill available space */
+}
+
+footer {
+  text-align: center;
+  padding: 10px;
+  background-color: #fff;
+  color: #333;
+  width: 100%;
+}
+
+/* ======================== */
+/* === TABLE FORMATIING === */
+/* ======================== */
+#mainResultsTable {
+width: 100%;
+table-layout: auto; /* Allow columns to adjust automatically */
+}
+
+#mainResultsTable th,
+#player-results-table th, #standings-table th, #standings-team-table th {
+background-color: #ddd; /* Light grey header */
+max-width: 10ch;
+word-wrap: break-word;
+white-space: normal;
+padding: 1px;
+text-align: center;
+vertical-align: middle;
+border: 1px solid #ddd;
+}
+
+#mainResultsTable td,
+#player-results-table td {
+border: 1px solid #ddd;
+max-width: 10ch;
+word-wrap: break-word;
+white-space: normal;
+padding: 1px;
+text-align: center;
+vertical-align: middle;
+}
+
+/* First column styling for both tables */
+#mainResultsTable td:first-child,
+#player-results-table td:first-child, #standings-table td:first-child, #standings-team-table td:first-child, #unscoredResultsTable td:first-child{
+background-color: #eeeeee;
+}
+
+/* Reset for spacer rows (if applicable) */
+#mainResultsTable tr.spacer-row td:first-child,
+#player-results-table tr.spacer-row td:first-child {
+background-color: white;
+}
+
+#unscoredResultsTable {
+width: 100%;
+table-layout: auto;
+}
+
+#unscoredResultsTable th {
+background-color: #ddd;
+max-width: 10ch;
+word-wrap: break-word;
+white-space: normal;
+padding: 1px;
+text-align: center;
+vertical-align: middle;
+border: 1px solid #ddd;
+}
+
+#unscoredResultsTable td {
+border: 1px solid #ddd;
+max-width: 10ch;
+word-wrap: break-word;
+white-space: normal;
+padding: 1px;
+text-align: center;
+vertical-align: middle;
+}
+
+/* ========================== */
+/* === LOADING INDICATORS === */
+/* ========================== */
+.loading-indicator {
+text-align: center;
+margin: 20px 0;
+}
+
+.loading-bar {
+width: 200px;
+height: 20px;
+background-color: #e9ecef; /* Bootstrap progress background */
+border-radius: 0.25rem;
+overflow: hidden;
+margin: 10px auto;
+position: relative;
+}
+
+.loading-bar::before {
+content: "";
+display: block;
+height: 100%;
+width: 100%;
+background-color: #343a40; /* Dark fill color */
+background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent);
+background-size: 40px 40px;
+animation: progress-bar-stripes 1s linear infinite;
+}
+
+@keyframes progress-bar-stripes {
+from { background-position: 40px 0; }
+to { background-position: 0 0; }
+}
+
+#mainResultsTable {
+border-collapse: collapse;
+border-spacing: 0;
+}
+
+#mainResultsTable th,
+#mainResultsTable td {
+border: 1px solid #ddd;
+}
+
+/* Pinned cells get sticky behavior */
+.pinned {
+position: sticky;
+background-color: #fff;
+z-index: 3;
+left: 0;
+}
+
+/* ======================== */
+/* === FONTS LOADING IN === */
+/* ======================== */
+@font-face {
+font-family: 'Montserrat';
+src: url('/fonts/Montserrat-VariableFont_wght.ttf') format('truetype');
+font-weight: 100 900; /* Adjust the range as needed */
+font-style: normal;
+font-display: swap;
+}
+
+@font-face {
+font-family: 'Montserrat';
+src: url('/fonts/Montserrat-Italic-VariableFont_wght.ttf') format('truetype');
+font-weight: 100 900; /* Adjust the range as needed */
+font-style: italic;
+font-display: swap;
+}
+/* ==================== */
+/* === TEXT STYLING === */
+/* ==================== */
+
+/* == Main Page Large Heading == */
+.heading-text-1 {
+position: absolute;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+font-family: 'Montserrat', sans-serif;
+font-weight: 900;
+font-style: italic;
+color: white; /* Main text color */
+text-shadow: 2.5px 2.5px 0 black; /* Offset shadow color */
+font-size: clamp(1.5rem, 5vw, 3rem); /* Dynamic size for responsiveness */
+line-height: 1.2; /* Adjust for spacing */
+font-weight: bold; /* Bold for emphasis */
+text-align: center; /* Center text in smaller containers */
+z-index: 2; /* Ensure it's above overlays */
+}
+/* == Navbar Styled Heading == */
+.heading-text-11 {  
+font-family: 'Montserrat', sans-serif;
+font-size: 1.5rem;
+margin-left: -5px;
+line-height: 1.2; /* Adjust for spacing */
+font-weight: bold; /* Bold for emphasis */
+}
+
+/* == Page Headings == */
+.heading-text-2 {
+font-family: 'Montserrat', sans-serif;
+font-size: 2rem;
+line-height: 1.2; /* Adjust for spacing */
+font-weight: bold; /* Bold for emphasis */
+}
+/* == Page Sub-headings == */
+.heading-text-3 {
+font-size: 1.5rem;
+font-weight: bold; /* Bold for emphasis */
+}
+
+.body-text {
+font-size: 1rem
+}
+
+.body-text-emph {
+font-size: 1.2rem
+}
+
+.body-text-xs {
+font-size: 1rem;
+line-height: 2; /* Adjust for spacing */
+}
+
+.body-text-xsb {
+font-size: 1rem;
+font-weight: bold;
+line-height: 2; /* Adjust for spacing */
+}
+
+/* =============================== */
+/* === COUNTDOWN TIMER STYLING === */
+/* =============================== */
+
+#countdown-timer,
+#form-countdown-container,
+#card-countdown-container,
+#casino-countdown-container {
+background-color: #f0f0f0; /* Light grey background */
+color: #333;
+font-family: 'Montserrat', sans-serif;
+font-size: 1rem; /* Increased font size */
+padding: 8px 16px;
+border-radius: 8px;
+text-align: center;
+margin: 20px auto;
+display: inline-block;
+width: fit-content;
+}
+
+#countdown,
+#form-countdown,
+#card-countdown,
+#casino-countdown {
+font-family: 'Montserrat', sans-serif;
+font-size: 1rem; /* Increased font size */
+letter-spacing: 0.05em;
+}
+
+/* ============================== */
+/* === CASINO GENERAL STYLING === */
+/* ============================== */
+/* Casino Background */
+#casino-container {
+background-color: #3e8948;
+padding: 20px;
+border-radius: 10px;
+text-align: center;
+color: white;
+}
+
+/* Casino Header */
+.casino-title {
+width: 174px;
+height: 66px;
+image-rendering: pixelated;
+}
+
+
+/* Team Selection */
+.casino-label {
+font-size: 16px;
+margin-right: 10px;
+}
+
+/* Ensure bet questions wrap on small screens */
+.bet-table {
+display: flex;
+flex-wrap: wrap;
+align-items: center;
+justify-content: space-between;
+background: #222;
+padding: 10px;
+border-radius: 5px;
+margin-top: 10px;
+}
+
+.bet-odds {
+flex: 1;
+text-align: center;
+font-weight: bold;
+}
+
+.bet-amount {
+font-size: 20px;
+font-weight: bold;
+width: 40px;
+text-align: center;
+background: black;
+color: white;
+border: none;
+}
+
+/* Question wraps above on small screens */
+@media (max-width: 600px) {
+.bet-question {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 5px;
+}
+}
+
+/* ============================== */
+/* === MODERN CASINO BUTTONS  === */
+/* ============================== */
+
+/* Bet Button – small square button */
+.btn-bet {
+font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+font-size: 24px;
+font-weight: 800;
+width: 30px;
+height: 30px;
+text-align: center;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+border: 2px solid #B8860B; /* Dark Gold Border */
+background-color: #FFD700;  /* Gold */
+color: black;
+/* No shadows or transitions */
+}
+
+.btn-bet:hover {
+background-color: #FFC400; /* Slightly Darker Gold */
+}
+
+.btn-bet:active {
+background-color: #FFC400;
+}
+
+/* Casino Submit Button */
+.btn-casino {
+font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+font-weight: 800;
+font-size: 20px;
+text-transform: uppercase;
+padding: 10px 20px;
+cursor: pointer;
+border: 2px solid #B8860B; /* Dark Gold Border */
+background-color: #FFD700;  /* Gold */
+color: black;
+/* No shadows or transitions */
+}
+
+.btn-casino:hover {
+background-color: #FFC400;
+}
+
+.btn-casino:active {
+background-color: #FFC400;
+}
+
+/* Disabled state for both buttons */
+.btn-casino:disabled,
+.btn-bet:disabled {
+cursor: not-allowed;
+background-color: #D3B76C; /* Muted Gold */
+color: #665B40;           /* Darker text */
+border-color: #A08A50;     /* Softer Border */
+opacity: 0.8;
+}
+
+
+/* Ensure the second row is centered */
+.bet-info {
+display: flex;
+justify-content: center;
+gap: 10px; /* Space between odds and max bet */
+width: 100%;
+text-align: center;
+}
+
+/* Add spacing between the bet controls and the coin display */
+.bet-controls {
+display: flex;
+width: 100%;
+margin-top: 5px;
+align-items: center;
+justify-content: center;
+gap: 10px; /* Space between buttons */
+}
+
+.coin-display {
+margin-left: 10px; /* Adds space between the bet controls and the coin display */
+max-width: 50px; /* Ensure the coin image has a reasonable max size */
+}
+
+/* Adjust input box size and space */
+.bet-amount {
+width: 60px; /* Increase the width to give more space */
+text-align: center;
+}
+
+/* Optional: Add margins or padding for further spacing adjustments */
+.bet-table {
+margin-bottom: 15px; /* Ensure there's space between each bet table */
+}
+
+.bet-question {
+margin-bottom: 10px;
+}
+
+/* ---------- Casino Loading Indicator Styles ---------- */
+.casino-loading-indicator {
+text-align: center;
+margin: 20px 0;
+font-size: 1.2rem;
+font-weight: bold;
+color: white;
+}
+
+.casino-loading-bar {
+height: 15px;
+width: 180px;
+background: #444;
+position: relative;
+overflow: hidden;
+margin: 10px auto;
+border-radius: 5px;
+}
+
+.casino-loading-bar::before {
+content: "";
+position: absolute;
+left: -180px;
+width: 180px;
+height: 15px;
+background: #ffcc00;
+animation: casino-loading 1s linear infinite;
+}
+
+@keyframes casino-loading {
+from { left: -180px; }
+to { left: 100%; }
+}
+
+/* ============================ */
+/* === LOGIN SYSTEM STYLING === */
+/* ============================ */
+/* Hide input text and replace with dots */
+#login-system-pin-input {
+-webkit-text-security: disc; /* For Webkit browsers (Chrome, Safari) */
+}
+
+/* User Avatar Box */
+/* User Avatar Box */
+.user-avatar {
+/* The size here determines the box dimensions */
+width: 2.6rem;
+height: 2.6rem;
+font-size: 1.4rem; /* Adjust to your desired size */
+/* Ensure the text is centered */
+display: inline-block;
+text-align: center;
+line-height: 2.45rem;
+margin-right: 0.5rem;
+border: 2px solid #c0c0c0;
+border-radius: 50%; /* Makes the avatar circular */
+/* The dynamic background, text-shadow, font, and color are set via JS */
+}
+
+/* ============== */
+/* === NAVBAR === */
+/* ============== */
+/* Remove outline and border from the toggler button */
+.navbar-toggler {
+border: none;
+outline: none;
+}
+.navbar-toggler:focus {
+outline: none;
+box-shadow: none;
+}
+
+/* Burger icon container (scaled down to ~75% of original size) */
+.navbar-toggler .burger {
+position: relative;
+width: 30px;    /* 40px * 0.75 = 30px */
+height: 22.5px; /* 30px * 0.75 = 22.5px */
+background: transparent;
+cursor: pointer;
+display: block;
+}
+
+/* Base styles for each burger line */
+.navbar-toggler .burger span {
+display: block;
+position: absolute;
+height: 3px;
+width: 100%;
+background: black;
+border-radius: 9px;
+opacity: 1;
+left: 0;
+transform: rotate(0deg);
+transition: 0.25s ease-in-out;
+}
+
+/* Positioning the three lines */
+.navbar-toggler .burger span:nth-of-type(1) {
+top: 0px;
+transform-origin: left center;
+}
+.navbar-toggler .burger span:nth-of-type(2) {
+top: 50%;
+transform: translateY(-50%);
+transform-origin: left center;
+}
+.navbar-toggler .burger span:nth-of-type(3) {
+top: 100%;
+transform-origin: left center;
+transform: translateY(-100%);
+}
+
+/* Animation when navbar is expanded (using aria-expanded state) */
+.navbar-toggler[aria-expanded="true"] .burger span:nth-of-type(1) {
+transform: rotate(45deg);
+top: 0px;
+left: 4px; /* originally 5px, now scaled: ~4px */
+}
+.navbar-toggler[aria-expanded="true"] .burger span:nth-of-type(2) {
+width: 0%;
+opacity: 0;
+}
+.navbar-toggler[aria-expanded="true"] .burger span:nth-of-type(3) {
+transform: rotate(-45deg);
+top: 21px; /* originally 28px, now scaled: 28 * 0.75 = 21px */
+left: 4px;
+}
+
+@media (max-width: 991.98px) {
+/* Add extra left padding for the nav links container */
+#navbarNavDropdown .navbar-nav {
+  padding-left: 10px;
+}
+}
+
+@media (max-width: 991.98px) {
+.account-controls {
+  width: 80px;       /* Fixed width */
+  margin-left: auto; /* Push container to the far right */
+  display: flex;     /* Use flex layout */
+  justify-content: flex-end; /* Align children to the right edge */
+  align-items: center; /* Vertically center */
+}
+
+/* Keep your other mobile styles */
+.navbar-toggler {
+  width: 90px;
+}
+.navbar-brand {
+  flex: 1;
+  text-align: center;
+}
+}
+#userDropdown:focus,
+#userDropdown:active,
+#userDropdown.show {
+outline: none !important;
+box-shadow: none !important;
+}
+#user-avatar {
+pointer-events: none;
+}
+
+#userDropdown[aria-expanded="true"] .user-avatar {
+box-shadow: 0 0 8px rgba(0, 0, 0, 0.2) !important;
+}

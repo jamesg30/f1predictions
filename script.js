@@ -915,3 +915,88 @@ function toggleLoginButton() {
     });
   }
   
+// ================= //
+// === DARK MODE === //
+// ================= //
+
+// Helper to apply or remove dark mode by switching the stylesheet
+function setDarkMode(enable) {
+  const link = document.getElementById('theme-stylesheet');
+  if (link) {
+    link.href = enable ? 'dark.css' : 'light.css';
+  } else {
+    // In case the stylesheet hasn't been added yet, create it
+    const newLink = document.createElement('link');
+    newLink.rel = 'stylesheet';
+    newLink.id = 'theme-stylesheet';
+    newLink.href = enable ? 'dark.css' : 'light.css';
+    document.head.appendChild(newLink);
+  }
+  console.log('setDarkMode: Loaded', enable ? 'dark.css' : 'light.css');
+}
+
+// Fetch user preferences from the players table (using the player's ID from a cookie)
+async function loadUserPreferences() {
+  const playerId = getCookie("playerId");
+  if (!playerId) return;
+
+  // Retrieve the dark_mode setting
+  const { data, error } = await supabase
+    .from('players')
+    .select('dark_mode')
+    .eq('id', playerId)
+    .single();
+
+  if (error || !data) {
+    console.error("Error fetching user preferences", error);
+    return;
+  }
+
+  const darkModeEnabled = data.dark_mode === true;
+  setDarkMode(darkModeEnabled);
+
+  // Update localStorage so subsequent pages can apply dark mode immediately.
+  localStorage.setItem('darkMode', darkModeEnabled);
+  console.log('loadUserPreferences: Dark mode saved in localStorage as', darkModeEnabled);
+
+  // Set the toggle state
+  const darkToggle = document.getElementById("darkModeToggle");
+  if (darkToggle) darkToggle.checked = darkModeEnabled;
+}
+
+// Update the player's dark_mode setting in the players table
+async function updateDarkModePreference(enable) {
+  const playerId = getCookie("playerId");
+  if (!playerId) return;
+
+  const { error } = await supabase
+    .from('players')
+    .update({ dark_mode: enable })
+    .eq('id', playerId);
+
+  if (error) {
+    console.error("Error updating dark mode preference", error);
+  } else {
+    console.log('updateDarkModePreference: Preference updated to', enable);
+  }
+}
+
+// Set up the event listener on the dark mode toggle switch
+document.addEventListener("DOMContentLoaded", () => {
+  // Only load preferences if the user is logged in
+  if (getCookie("playerId")) {
+    loadUserPreferences();
+  }
+
+  const darkToggle = document.getElementById("darkModeToggle");
+  if (darkToggle) {
+    darkToggle.addEventListener("change", async function () {
+      const enable = darkToggle.checked;
+      setDarkMode(enable);
+      // Update localStorage so that the preference persists across pages
+      localStorage.setItem('darkMode', enable);
+      console.log('Dark mode toggle changed. LocalStorage darkMode:', localStorage.getItem('darkMode'));
+      await updateDarkModePreference(enable);
+    });
+  }
+});
