@@ -919,21 +919,17 @@ function toggleLoginButton() {
 // === DARK MODE === //
 // ================= //
 
-// Helper to apply or remove dark mode by switching the stylesheet
+// Helper to update dark mode and reload the page
 function setDarkMode(enable) {
-  const link = document.getElementById('theme-stylesheet');
+  localStorage.setItem('darkMode', enable);
+
+  // Update the stylesheet dynamically without reloading
+  const link = document.getElementById('themeStylesheet');
   if (link) {
-    link.href = enable ? 'dark.css' : 'light.css';
-  } else {
-    // In case the stylesheet hasn't been added yet, create it
-    const newLink = document.createElement('link');
-    newLink.rel = 'stylesheet';
-    newLink.id = 'theme-stylesheet';
-    newLink.href = enable ? 'dark.css' : 'light.css';
-    document.head.appendChild(newLink);
+    link.href = enable ? '/dark.css' : '/light.css';
   }
-  console.log('setDarkMode: Loaded', enable ? 'dark.css' : 'light.css');
 }
+
 
 // Fetch user preferences from the players table (using the player's ID from a cookie)
 async function loadUserPreferences() {
@@ -953,9 +949,6 @@ async function loadUserPreferences() {
   }
 
   const darkModeEnabled = data.dark_mode === true;
-  setDarkMode(darkModeEnabled);
-
-  // Update localStorage so subsequent pages can apply dark mode immediately.
   localStorage.setItem('darkMode', darkModeEnabled);
   console.log('loadUserPreferences: Dark mode saved in localStorage as', darkModeEnabled);
 
@@ -992,11 +985,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (darkToggle) {
     darkToggle.addEventListener("change", async function () {
       const enable = darkToggle.checked;
-      setDarkMode(enable);
-      // Update localStorage so that the preference persists across pages
-      localStorage.setItem('darkMode', enable);
-      console.log('Dark mode toggle changed. LocalStorage darkMode:', localStorage.getItem('darkMode'));
       await updateDarkModePreference(enable);
+      console.log('Dark mode toggle changed. Reloading page...');
+      setDarkMode(enable); // This updates localStorage and reloads the page
     });
   }
 });

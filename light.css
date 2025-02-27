@@ -41,7 +41,8 @@ footer {
 }
 
 #mainResultsTable th,
-#player-results-table th, #standings-table th, #standings-team-table th {
+#player-results-table th, #standings-table th, #standings-team-table th, #full-season-table th, #full-season-team-table th,
+#team-results-table th {
   background-color: #ddd; /* Light grey header */
   max-width: 10ch;
   word-wrap: break-word;
@@ -68,6 +69,22 @@ footer {
 #player-results-table td:first-child, #standings-table td:first-child, #standings-team-table td:first-child, #unscoredResultsTable td:first-child{
   background-color: #eeeeee;
 }
+
+/* RESULTS PAGE STYLING */
+/* First three columns styling for both tables */
+#full-season-table td:first-child,
+#full-season-table td:nth-child(2),
+#full-season-table td:nth-child(3),
+#full-season-team-table td:first-child,#full-season-team-table td:nth-child(2),
+#full-season-team-table td:nth-child(3),
+#team-results-table td:first-child,
+#team-results-table td:nth-child(2) {
+  background-color: #eeeeee;
+}
+
+#spacer-column {
+  background-color: #fff !important;
+  }
 
 /* Reset for spacer rows (if applicable) */
 #mainResultsTable tr.spacer-row td:first-child,
@@ -591,5 +608,5 @@ footer {
 }
 
 #userDropdown[aria-expanded="true"] .user-avatar {
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4) !important;
 }

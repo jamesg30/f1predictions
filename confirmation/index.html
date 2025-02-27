@@ -1,17 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Page Details -->
+  <!-- Page Details 1 -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <script>
+    (function() {
+      const darkMode = localStorage.getItem('darkMode') === 'true';
+      const cssFile = darkMode ? '/dark.css' : '/light.css';
+      
+      // Create a new link element
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = cssFile;
+      link.id = 'themeStylesheet';
+
+      // Append it to the head after existing styles
+      document.head.appendChild(link);
+
+      console.log(`Loaded: ${cssFile}`);
+    })();
+  </script>
+  <!-- Page Details 2 -->
   <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
   <title>F1 Predictions | Form Confirmation</title>
 <!-- Apple Touch Icon: used when bookmarking or adding to home screen on iOS -->
 <link rel="apple-touch-icon" sizes="180x180" href="/media/f1_predictions_logo.png">
-  
-  <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="/style.css">
 
   <!-- Supabase Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
@@ -80,6 +96,15 @@
                 Logged in as <br><strong></strong>
               </li>
               <li><a class="dropdown-item body-text-xs" href="/account">Account</a></li>
+              <li>
+                <!-- Dark Mode Toggle without highlight -->
+                <div class="dropdown-item no-highlight">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                    <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
+                  </div>
+                </div>
+              </li>
               <li><a class="dropdown-item body-text-xs" href="#" id="logoutBtn">Log Out</a></li>
             </ul>
           </div>

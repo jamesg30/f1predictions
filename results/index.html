@@ -1,17 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Page Details -->
+    <!-- Page Details 1 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script>
+      (function() {
+        const darkMode = localStorage.getItem('darkMode') === 'true';
+        const cssFile = darkMode ? '/dark.css' : '/light.css';
+        
+        // Create a new link element
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = cssFile;
+        link.id = 'themeStylesheet';
+    
+        // Append it to the head after existing styles
+        document.head.appendChild(link);
+    
+        console.log(`Loaded: ${cssFile}`);
+    
+        // Set chart colors based on theme
+        const chartTextColor = darkMode ? '#ffffff' : '#000000';  // White for dark mode, black for light mode
+        const chartLineColor = darkMode ? '#ffffff' : '#000000';  // White for dark mode, black for light mode
+        const chartBackgroundColor = darkMode ? '#222222' : '#ffffff';  // Dark background for dark mode, light for light mode
+        const chartGridColor = darkMode ? '#444444' : '#cccccc';  // Darker grid for dark mode, lighter for light mode
+    
+        // Add these variables to the window object for later use in your chart
+        window.chartTheme = {
+          chartTextColor,
+          chartLineColor,
+          chartBackgroundColor,
+          chartGridColor
+        };
+      })();
+    </script>
+    
+    <!-- Page Details 2 -->
     <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
     <title>F1 Predictions | Results</title>
     <!-- Apple Touch Icon: used when bookmarking or adding to home screen on iOS -->
   <link rel="apple-touch-icon" sizes="180x180" href="/media/f1_predictions_logo.png">
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/style.css">
 
     <!-- Supabase Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
@@ -96,6 +127,15 @@
                 Logged in as <br><strong></strong>
               </li>
               <li><a class="dropdown-item body-text-xs" href="/account">Account</a></li>
+              <li>
+                <!-- Dark Mode Toggle without highlight -->
+                <div class="dropdown-item no-highlight">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                    <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
+                  </div>
+                </div>
+              </li>
               <li><a class="dropdown-item body-text-xs" href="#" id="logoutBtn">Log Out</a></li>
             </ul>
           </div>
@@ -475,19 +515,17 @@
         // a) Header styling: dark grey background, white text, center alignment.
         const headerCells = tableEl.querySelectorAll("thead th");
         headerCells.forEach(cell => {
-          cell.style.backgroundColor = "#ddd";
-          cell.style.color = "black";
           cell.style.textAlign = "center";
         });
 
         // b) For each row in the body, apply a light grey background to the first three columns.
         const bodyRows = tableEl.querySelectorAll("tbody tr");
-        bodyRows.forEach(row => {
-          const cells = row.querySelectorAll("td");
-          for (let j = 0; j < 3; j++) {
-            cells[j].style.backgroundColor = "#eeeeee";
-          }
-        });
+        // bodyRows.forEach(row => {
+        //   const cells = row.querySelectorAll("td");
+        //   for (let j = 0; j < 3; j++) {
+        //     cells[j].style.backgroundColor = "#eeeeee";
+        //   }
+        // });
 
         // c) For each race column cell, if it contains "(LS)", strip that text and set text colour to grey.
         //    Race columns start at column index 4 (0-indexed column 3).
@@ -742,19 +780,17 @@
         // a) Style header cells.
         const headerCells = tableEl.querySelectorAll("thead th");
         headerCells.forEach(cell => {
-          cell.style.backgroundColor = "#ddd";
-          cell.style.color = "black";
           cell.style.textAlign = "center";
         });
 
         // b) For each row in the table body, shade the first three columns.
         const bodyRows = tableEl.querySelectorAll("tbody tr");
-        bodyRows.forEach(row => {
-          const cells = row.querySelectorAll("td");
-          for (let j = 0; j < 3; j++) {
-            cells[j].style.backgroundColor = "#eeeeee";
-          }
-        });
+        // bodyRows.forEach(row => {
+        //   const cells = row.querySelectorAll("td");
+        //   for (let j = 0; j < 3; j++) {
+        //     cells[j].style.backgroundColor = "#eeeeee";
+        //   }
+        // });
 
         // c) For each race column cell, if it contains an "(LS)" indicator,
         //    remove it and set the text colour to grey.
@@ -982,8 +1018,6 @@
     });
     // Spacer column and "Results" column
     const spacerTh = document.createElement('th');
-    spacerTh.style.backgroundColor = "white";
-    spacerTh.style.borderTop = "none";
     spacerTh.style.borderBottom = "none";
     headerRow.appendChild(spacerTh);
     const resultsTh = document.createElement('th');
@@ -1013,7 +1047,6 @@
           row.appendChild(td);
         });
         const spacerTd = document.createElement('td');
-        spacerTd.style.backgroundColor = "white";
         row.appendChild(spacerTd);
         const resultTd = document.createElement('td');
         row.appendChild(resultTd);
@@ -1032,7 +1065,6 @@
             row.appendChild(td);
           });
           const spacerTd = document.createElement('td');
-          spacerTd.style.backgroundColor = "white";
           row.appendChild(spacerTd);
           const resultTd = document.createElement('td');
           resultTd.textContent = results[`form_id_${id}`];
@@ -1051,7 +1083,6 @@
     let spacerRow = document.createElement('tr');
     let spacerCell = document.createElement('td');
     spacerCell.colSpan = players.length + 3;
-    spacerCell.style.backgroundColor = "white";
     spacerRow.appendChild(spacerCell);
     tbody.appendChild(spacerRow);
     for (let i = 8; i <= 27; i++) {
@@ -1061,14 +1092,12 @@
     spacerRow = document.createElement('tr');
     spacerCell = document.createElement('td');
     spacerCell.colSpan = players.length + 3;
-    spacerCell.style.backgroundColor = "white";
     spacerRow.appendChild(spacerCell);
     tbody.appendChild(spacerRow);
     createRow(28, questions[`form_id_28`]);
     spacerRow = document.createElement('tr');
     spacerCell = document.createElement('td');
     spacerCell.colSpan = players.length + 3;
-    spacerCell.style.backgroundColor = "white";
     spacerRow.appendChild(spacerCell);
     tbody.appendChild(spacerRow);
     createRow('grand_total', 'Grand Total');
@@ -1094,10 +1123,8 @@
         // Numeric values: no extra formatting.
       } else if (value === 'Yes') {
         cell.style.color = 'green';
-        cell.style.backgroundColor = 'white';
       } else if (value === 'No') {
         cell.style.color = 'red';
-        cell.style.backgroundColor = 'white';
       } else {
         const constructor = constructors.find(constructor => constructor.name === value);
         if (constructor) {
@@ -1438,18 +1465,18 @@
         
         // Apply basic styling.
         const headerCells = teamTable.querySelectorAll("thead th");
-        headerCells.forEach(cell => {
-          cell.style.backgroundColor = "#ddd";
-          cell.style.color = "black";
-          cell.style.textAlign = "center";
-        });
+        // headerCells.forEach(cell => {
+        //   cell.style.backgroundColor = "#ddd";
+        //   cell.style.color = "black";
+        //   cell.style.textAlign = "center";
+        // });
         const bodyRows = teamTable.querySelectorAll("tbody tr");
-        bodyRows.forEach(row => {
-          const cells = row.querySelectorAll("td");
-          for (let i = 0; i < 2; i++) {
-            cells[i].style.backgroundColor = "#eeeeee";
-          }
-        });
+        // bodyRows.forEach(row => {
+        //   const cells = row.querySelectorAll("td");
+        //   for (let i = 0; i < 2; i++) {
+        //     cells[i].style.backgroundColor = "#eeeeee";
+        //   }
+        // });
         
       } catch (err) {
         console.error("loadRaceResultsTeam error:", err);
@@ -1626,7 +1653,7 @@
               title: {
                 display: true,
                 text: `Player Standings ${currentYear}`,
-                color: 'black',
+                color: window.chartTheme.chartTextColor,
                 font: {
                   family: 'Helvetica',
                   size: 20,
@@ -1638,7 +1665,7 @@
                   font: {
                     family: 'Helvetica'
                   },
-                  color: 'black'
+                  color: window.chartTheme.chartTextColor
                 }
               }
             },
@@ -1654,7 +1681,7 @@
                   font: {
                     family: 'Helvetica'
                   },
-                  color: 'black'
+                  color: window.chartTheme.chartTextColor
                 },
                 title: {
                   display: true,
@@ -1662,19 +1689,25 @@
                   font: {
                     family: 'Helvetica'
                   },
-                  color: 'black'
-                }
+                  color: window.chartTheme.chartTextColor
+                },
+                grid: {
+              color: window.chartTheme.chartGridColor  // Set grid color based on theme
+            }
               },
               x: {
                 ticks: {
                   font: {
                     family: 'Helvetica'
                   },
-                  color: 'black'
+                  color: window.chartTheme.chartTextColor
                 },
                 title: {
                   display: false  // No x-axis label.
-                }
+                },
+                grid: {
+              color: window.chartTheme.chartGridColor  // Set grid color based on theme
+            }
               }
             },
             layout: {
@@ -1845,7 +1878,7 @@
               title: {
                 display: true,
                 text: `Team Standings ${currentYear}`,
-                color: 'black',
+                color: window.chartTheme.chartTextColor,
                 font: {
                     family: 'Helvetica',
                     size: 20,
@@ -1857,7 +1890,7 @@
                   font: {
                     family: 'Helvetica'
                   },
-                  color: 'black'
+                  color: window.chartTheme.chartTextColor
                 }
               }
             },
@@ -1873,7 +1906,7 @@
                   font: {
                     family: 'Helvetica'
                   },
-                  color: 'black'
+                  color: window.chartTheme.chartTextColor
                 },
                 title: {
                   display: true,
@@ -1881,19 +1914,25 @@
                   font: {
                     family: 'Helvetica'
                   },
-                  color: 'black'
-                }
+                  color: window.chartTheme.chartTextColor
+                },
+                grid: {
+              color: window.chartTheme.chartGridColor  // Set grid color based on theme
+            }
               },
               x: {
                 ticks: {
                   font: {
                     family: 'Helvetica'
                   },
-                  color: 'black'
+                  color: window.chartTheme.chartTextColor
                 },
                 title: {
                   display: false  // No x-axis label.
-                }
+                },
+                grid: {
+              color: window.chartTheme.chartGridColor  // Set grid color based on theme
+            }
               }
             },
             layout: {

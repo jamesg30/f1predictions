@@ -5,8 +5,8 @@ body {
   font-family: Helvetica, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #fff;
-  color: #333;
+  background-color: #000;
+  color: #fff;
   display: flex; /* Enables flexbox for layout */
   flex-direction: column; /* Stacks children vertically */
   min-height: 100vh; /* Full viewport height */
@@ -14,65 +14,216 @@ body {
 
 /* Make sure the header remains sticky at the top, above other elements */
 header {
-position: sticky;
-top: 0;
-color: #333;
-z-index: 1050; /* Adjust if needed so the header is above all content */
+  position: sticky;
+  top: 0;
+  z-index: 1050; /* Adjust if needed so the header is above all content */
 }
 
+/* ======================= */
+/* === GENERAL STYLING === */
+/* ======================= */
+body {
+  font-family: Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #000 !important;
+  color: #fff !important;
+  display: flex; /* Enables flexbox for layout */
+  flex-direction: column; /* Stacks children vertically */
+  min-height: 100vh; /* Full viewport height */
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 1050;
+}
+
+/* =========================== */
+/* === NAVBAR OVERRIDES  ===== */
+/* =========================== */
+.navbar.navbar-light,
+.navbar-light .navbar-nav .nav-link,
+.bg-light {
+  background-color: #222 !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+.navbar.navbar-light {
+  border-bottom: 1px solid #444;
+}
+
+.navbar-brand {
+  color: #fff !important;
+}
+
+.navbar-nav .nav-link {
+  color: #fff !important;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #ddd !important;
+}
+
+/* Navbar Underline Tabs Override */
+.nav.nav-underline .nav-link {
+  border-bottom: 2px solid transparent;
+  color: lightskyblue !important;
+}
+
+.nav.nav-underline .nav-link.active {
+  border-bottom-color: #fff !important;
+  color: #fff !important;
+}
+
+/* Dropdown menu styling in navbar */
+.dropdown-menu {
+  background-color: #222 !important;
+  color: #fff !important;
+  border: 1px solid #444;
+}
+
+.dropdown-menu .dropdown-item {
+  color: #fff !important;
+}
+
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus {
+  background-color: #333 !important;
+}
+
+/* =========================== */
+/* === MAIN CONTENT ========= */
+/* =========================== */
 main {
-  flex: 1; /* Allows this section to grow and fill available space */
+  flex: 1;
 }
 
+/* =========================== */
+/* === FOOTER OVERRIDES  ===== */
+/* =========================== */
 footer {
   text-align: center;
   padding: 10px;
-  background-color: #fff;
-  color: #333;
+  background-color: #333 !important;
+  color: #fff !important;
   width: 100%;
 }
 
+/* Override any Bootstrap bg-light and text-black used elsewhere */
+.bg-light {
+  background-color: #222 !important;
+}
+
+.text-black {
+  color: #fff !important;
+}
+
+/* =========================== */
+/* === MODAL & FORM OVERRIDES */
+/* =========================== */
+.modal-content {
+  background-color: #222 !important;
+  color: #fff;
+  border: 1px solid #444;
+}
+
+.modal-header,
+.modal-body,
+.modal-footer {
+  border-color: #444 !important;
+}
+
+.btn-close {
+  filter: invert(1);
+}
+
+/* =========================== */
+/* === ADDITIONAL OVERRIDES === */
+/* =========================== */
+.form-control {
+  background-color: #111;
+  color: #fff;
+  border: 1px solid #444;
+}
+
+.alert {
+  background-color: #222;
+  color: #fff;
+  border: 1px solid #444;
+}
 /* ======================== */
 /* === TABLE FORMATIING === */
 /* ======================== */
+#mainResultsTable td,
+#player-results-table td, #standings-table td, #standings-team-table td, #team-results-table td,#full-season-table td, #full-season-team-table td {
+border: 1px solid #222;
+background-color: #111;
+color: white;
+}
+
+
+
+
 #mainResultsTable {
 width: 100%;
 table-layout: auto; /* Allow columns to adjust automatically */
 }
 
 #mainResultsTable th,
-#player-results-table th, #standings-table th, #standings-team-table th {
-background-color: #ddd; /* Light grey header */
+#player-results-table th, #standings-table th, #standings-team-table th, #team-results-table th, #full-season-table th, #full-season-team-table th{
+background-color: #333; /* Light grey header */
 max-width: 10ch;
 word-wrap: break-word;
 white-space: normal;
 padding: 1px;
 text-align: center;
 vertical-align: middle;
-border: 1px solid #ddd;
+border: 1px solid #222;
+color: white;
 }
+
+/* RESULTS PAGE STYLING */
+/* First three columns styling for both tables */
+#full-season-table td:first-child,
+#full-season-table td:nth-child(2),
+#full-season-table td:nth-child(3),
+#full-season-team-table td:first-child,#full-season-team-table td:nth-child(2),
+#full-season-team-table td:nth-child(3),
+#team-results-table td:first-child,
+#team-results-table td:nth-child(2) {
+  background-color: #444;
+}
+
+#spacer-column {
+  background-color: #000 !important;
+  }
+
 
 #mainResultsTable td,
 #player-results-table td {
-border: 1px solid #ddd;
+border: 1px solid #222;
 max-width: 10ch;
 word-wrap: break-word;
 white-space: normal;
 padding: 1px;
 text-align: center;
 vertical-align: middle;
+color: white;
 }
 
 /* First column styling for both tables */
 #mainResultsTable td:first-child,
 #player-results-table td:first-child, #standings-table td:first-child, #standings-team-table td:first-child, #unscoredResultsTable td:first-child{
-background-color: #eeeeee;
+background-color: #444;
+color: white;
 }
 
 /* Reset for spacer rows (if applicable) */
 #mainResultsTable tr.spacer-row td:first-child,
 #player-results-table tr.spacer-row td:first-child {
-background-color: white;
+background-color: #333;
 }
 
 #unscoredResultsTable {
@@ -140,9 +291,9 @@ border-collapse: collapse;
 border-spacing: 0;
 }
 
-#mainResultsTable th,
 #mainResultsTable td {
-border: 1px solid #ddd;
+border: 1px solid #222;
+background-color: #111;
 }
 
 /* Pinned cells get sticky behavior */
@@ -515,7 +666,7 @@ display: block;
 position: absolute;
 height: 3px;
 width: 100%;
-background: black;
+background: white;
 border-radius: 9px;
 opacity: 1;
 left: 0;
@@ -591,5 +742,54 @@ pointer-events: none;
 }
 
 #userDropdown[aria-expanded="true"] .user-avatar {
-box-shadow: 0 0 8px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Dark mode for lists */
+.list-group {
+  background-color: #222 !important;
+}
+
+.list-group-item {
+  background-color: #333 !important;
+  color: white !important;
+  border-color: #555 !important;
+}
+
+/* Dark mode for disabled form fields */
+input:disabled, select:disabled, textarea:disabled {
+  background-color: #444 !important;
+  color: #bbb !important;
+  border-color: #666 !important;
+  opacity: 1 !important;
+}
+
+/* Fix for other form fields */
+input, select, textarea {
+  background-color: #222 !important;
+  color: white !important;
+  border-color: #666 !important;
+}
+
+/* Dark mode checkboxes, toggles, and radio buttons */
+.form-check-input {
+  background-color: #444 !important;
+  border-color: #777 !important;
+}
+
+.form-check-input:checked {
+  background-color: #0d6efd !important; /* Bootstrap primary color */
+  border-color: #0d6efd !important;
+}
+
+.icon-option label > input[data-type="monochrome"] + img {
+  filter: invert(100%) brightness(100%);
+  transition: filter 0.3s ease, border-color 0.3s ease;
+  /* Use the inverse grey so that when inverted it looks like #c0c0c0 */
+  border: 3px solid #3f3f3f;
+}
+
+.icon-option label > input:checked[data-type="monochrome"] + img {
+  /* Use the inverse blue so that when inverted it appears blue */
+  border: 3px solid #ffff00;
 }
