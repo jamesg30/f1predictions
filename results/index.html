@@ -1497,6 +1497,8 @@
   // =========================
   // === PLAYER LINE CHART ===
   // =========================
+  const chartInstances = {};
+
   async function renderStandingsLineChart() {
       try {
         // 1. Retrieve current year from form_details.
@@ -1628,9 +1630,15 @@
         // 8. Determine max rank (number of players) for y-axis.
         const maxRank = playerRows.length;
 
+                // 9. Destroy previous chart instance if it exists.
+    const chartKey = 'standings';
+    if (chartInstances[chartKey]) {
+      chartInstances[chartKey].destroy();
+    }
+
         // 9. Create the chart.
         const ctx = document.getElementById('standings-line-chart').getContext('2d');
-        new Chart(ctx, {
+        chartInstances[chartKey] = new Chart(ctx, {
           type: 'line',
           data: {
             labels: raceLabels,
@@ -1860,9 +1868,14 @@
         // 8. Determine max rank (number of teams) for y-axis.
         const maxRank = teamRows.length;
 
+        const chartKey = 'teamStandings';
+if (chartInstances[chartKey]) {
+  chartInstances[chartKey].destroy();
+}
+
         // 9. Create the chart.
         const ctx = document.getElementById('standings-team-line-chart').getContext('2d');
-        new Chart(ctx, {
+        chartInstances[chartKey] = new Chart(ctx, {
           type: 'line',
           data: {
             labels: raceLabels,
@@ -1957,6 +1970,34 @@
         renderStandingsLineChart();
       renderTeamStandingsLineChart();
     });
+
+    // --- Re-render charts on theme change ---
+    function reRenderCharts() {
+  
+  console.log("Charts re-rendered with new theme:", window.chartTheme);
+
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  // Set chart colors based on theme
+  const chartTextColor = darkMode ? '#ffffff' : '#000000';  // White for dark mode, black for light mode
+        const chartLineColor = darkMode ? '#ffffff' : '#000000';  // White for dark mode, black for light mode
+        const chartBackgroundColor = darkMode ? '#222222' : '#ffffff';  // Dark background for dark mode, light for light mode
+        const chartGridColor = darkMode ? '#444444' : '#cccccc';  // Darker grid for dark mode, lighter for light mode
+    
+        // Add these variables to the window object for later use in your chart
+        window.chartTheme = {
+          chartTextColor,
+          chartLineColor,
+          chartBackgroundColor,
+          chartGridColor
+        };
+
+        renderStandingsLineChart();
+  renderTeamStandingsLineChart();
+}
+
+// Listen for a custom 'themeChanged' event.
+window.addEventListener('themeChanged', reRenderCharts);
+
 </script>
 <!-- Bootstrap JS Bundle (Local) -->
 <script src="/js/bootstrap.bundle.min.js"></script>

@@ -928,6 +928,9 @@ function setDarkMode(enable) {
   if (link) {
     link.href = enable ? '/dark.css' : '/light.css';
   }
+  
+  // Dispatch a custom event to notify that the theme has changed
+  window.dispatchEvent(new Event('themeChanged'));
 }
 
 
