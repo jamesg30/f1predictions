@@ -650,23 +650,28 @@ export function updateLoginUI(playerData) {
     logoutMenuItem.classList.remove('d-none');
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
-      logoutBtn.onclick = () => {
-        if (confirm('Are you sure you want to log out?')) {
-          clearCookie("playerId");
-          loggedInUserDisplay.classList.add('d-none');
-          logoutMenuItem.classList.add('d-none');
-          if (loginButton) {
-            loginButton.classList.remove('d-none');
-          }
-          hideUserAvatar();
-          updateFormPlayerDisplay(null);
-          document.dispatchEvent(new CustomEvent("loginStateChanged", { detail: { loggedIn: false } }));
-          showAlert('You have logged out!', 'success');
-          resetLoginForm();
+      logoutBtn.onclick = async () => {
+        const confirmed = await showCustomConfirm('Are you sure you want to log out?');
+        if (!confirmed) {
+          return; // User canceled the action
         }
+
+        // Proceed with logout
+        clearCookie("playerId");
+        loggedInUserDisplay.classList.add('d-none');
+        logoutMenuItem.classList.add('d-none');
+        if (loginButton) {
+          loginButton.classList.remove('d-none');
+        }
+        hideUserAvatar();
+        updateFormPlayerDisplay(null);
+        document.dispatchEvent(new CustomEvent("loginStateChanged", { detail: { loggedIn: false } }));
+        showAlert('You have logged out!', 'success');
+        resetLoginForm();
       };
     }
   }
+
   
   // Update the header avatar using the entire player data.
   updateUserAvatar(playerData);
