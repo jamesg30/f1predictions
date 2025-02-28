@@ -209,7 +209,9 @@ footer {
 }
 
 .player-name {
-  font-weight: bold;
+  font-size: 1.1rem;
+  margin-left: -5px;
+  margin-right: 3px;
 }
 
 .player-cell {
