@@ -317,30 +317,7 @@
                     Results loading...
                     <div class="loading-bar"></div>
                 </div>
-                <table id="resultsTable">
-                    <tbody>
-                        <tr>
-                            <td style="vertical-align: middle;">
-                                <p>
-                                    <img src="/media/awards/medal_first.png" style="float:left; width: 28px; height: 28px; margin-right: 5px;">
-                                    <span id="firstPlace" class="body-text-emph"></span>
-                                </p>
-                            </td>
-                            <td style="vertical-align: middle;">
-                                <p>
-                                    <img src="/media/awards/medal_second.png" style="float:left; width: 28px; height: 28px; margin-right: 5px; margin-left: 15px;">
-                                    <span id="secondPlace" class="body-text-emph"></span>
-                                </p>
-                            </td>
-                            <td style="vertical-align: middle;">
-                                <p>
-                                    <img src="/media/awards/medal_third.png" style="float:left; width: 28px; height: 28px; margin-right: 5px; margin-left: 15px;">
-                                    <span id="thirdPlace" class="body-text-emph"></span>
-                                </p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div id="topPlayersContainer" class="top-players-wrapper"></div>
             
                 <!-- Scrollable container for main results table -->
                 <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
@@ -542,7 +519,7 @@
 <script src="/js/bootstrap.bundle.min.js"></script>
 
 <script type="module">
-  import { getCookie, getColorForLetter } from '/script.js';
+  import { getCookie, getColorForLetter, renderAvatar, darkenColor, createSmallAvatarHTML } from '/script.js';
   // =========================
   // === HEADER IMAGE CODE ===
   // =========================
@@ -1208,12 +1185,49 @@
     highlightClosestScore('td.form_id_28_score', 'lightyellow');
 
     const grandTotals = players.map(player => ({
-        name: player.player_name,
-        total: parseFloat(player.grand_total)
-    })).sort((a, b) => b.total - a.total);
-    document.getElementById('firstPlace').textContent = grandTotals[0]?.name || '';
-    document.getElementById('secondPlace').textContent = grandTotals[1]?.name || '';
-    document.getElementById('thirdPlace').textContent = grandTotals[2]?.name || '';
+    id: player.player_id,
+    name: player.player_name,
+    total: parseFloat(player.grand_total),
+    avatar_settings: player.avatar_settings || null
+})).sort((a, b) => b.total - a.total);
+const getMedalIcon = (rank) => {
+    if (rank === 1) return '<img src="/media/awards/medal_first.png" class="medal-icon">';
+    if (rank === 2) return '<img src="/media/awards/medal_second.png" class="medal-icon">';
+    if (rank === 3) return '<img src="/media/awards/medal_third.png" class="medal-icon">';
+    return ''; // No medal for other ranks
+};
+
+let topPlayers = [];
+let rank = 1, prevScore = null, count = 0, lastValidRank = 1;
+
+for (let i = 0; i < grandTotals.length; i++) {
+    const player = grandTotals[i];
+
+    if (prevScore !== null && player.total !== prevScore) {
+        rank = count + 1; // Move to next rank
+        if (rank > 3 && lastValidRank !== 3) break; // Stop beyond 3rd place
+        lastValidRank = rank;
+    }
+
+    if (rank <= 3) {
+        topPlayers.push({ ...player, rank });
+    } else {
+        break; 
+    }
+
+    prevScore = player.total;
+    count++;
+}
+
+// Render all top players in one container
+document.getElementById('topPlayersContainer').innerHTML = topPlayers.map(player => `
+    <div class="player-block">
+       ${getMedalIcon(player.rank)}
+       ${createSmallAvatarHTML(player)}
+       <span class="player-name">${player.name}</span>
+    </div>
+`).join('');
+
 
     document.getElementById('toggleScores').addEventListener('change', (event) => {
     const showScores = event.target.checked;
@@ -1543,27 +1557,48 @@ async function getCurrentUser() {
         });
         }
 
+        // Fetch all players data (id, name, avatar_settings) for avatars.
+        const { data: playersData, error: playersError } = await supabase
+          .from('players')
+          .select('id, avatar_settings, name');
+        if (playersError) {
+          console.error("Error fetching players data for avatars:", playersError);
+        }
+        const playersMap = {};
+        if (playersData) {
+          playersData.forEach(player => {
+            playersMap[player.id] = player;
+          });
+        }
+
         // 9. Build HTML rows.
         let html = "";
         standings.forEach(player => {
-        const currRank = currentRankMap[player.player_id];
-        let movement = "";
-        if (lastRace > 1 && prevRankMap[player.player_id] !== undefined) {
-            const diff = prevRankMap[player.player_id] - currRank;
-            if (diff > 0) {
-            movement = `(+${diff})`;
-            } else if (diff < 0) {
-            movement = `(${diff})`;
-            } else {
-            movement = "(=)";
-            }
-        }
-        html += `<tr>
-                    <td>${currRank} ${movement}</td>
-                    <td>${player.player_name}</td>
-                    <td>${player.total}</td>
-                </tr>`;
-        });
+  const currRank = currentRankMap[player.player_id];
+  let movement = "";
+  if (lastRace > 1 && prevRankMap[player.player_id] !== undefined) {
+    const diff = prevRankMap[player.player_id] - currRank;
+    if (diff > 0) {
+      movement = `(+${diff})`;
+    } else if (diff < 0) {
+      movement = `(${diff})`;
+    } else {
+      movement = "(=)";
+    }
+  }
+  // Lookup the full player data from playersMap. Fall back to season data if not found.
+  const fullPlayerData = playersMap[player.player_id] || { name: player.player_name };
+  html += `<tr>
+            <td>${currRank} ${movement}</td>
+            <td>
+              <div class="d-flex align-items-center">
+                ${createSmallAvatarHTML(fullPlayerData)}
+                <span>${fullPlayerData.name}</span>
+              </div>
+            </td>
+            <td>${player.total}</td>
+          </tr>`;
+});
         document.querySelector("#standings-table tbody").innerHTML = html;
     } catch (err) {
         console.error("loadHomeStandings error:", err);

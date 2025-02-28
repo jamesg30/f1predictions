@@ -356,7 +356,7 @@
       <p>&copy; 2025 F1 Predictions Form</p>
     </footer>
 <script type="module">
-    import { getCookie, getColorForLetter } from '/script.js';
+    import { getCookie, getColorForLetter, renderAvatar, darkenColor, createSmallAvatarHTML } from '/script.js';
   // ===========================
   // === GET TABLE FUNCTIONS ===
   // ===========================
@@ -369,9 +369,9 @@
       return data;
     }
 
-  // =============================
-  // === SEASON PLAYER RESULTS ===
-  // =============================
+      // =============================
+    // === SEASON PLAYER RESULTS ===
+    // =============================
     async function loadFullSeasonResults() {
       try {
         // 1. Retrieve the current year from form_details.
@@ -395,15 +395,29 @@
           return;
         }
 
-        // 3. Extract the special "Race Names" row (player_id === 0).
+        // 3. Fetch all players data (id, name, avatar_settings) for avatars.
+        const { data: playersData, error: playersError } = await supabase
+          .from('players')
+          .select('id, avatar_settings, name');
+        if (playersError) {
+          console.error("Error fetching players data for avatars:", playersError);
+        }
+        // Store players in a map for quick lookup.
+        const playersMap = {};
+        if (playersData) {
+          playersData.forEach(player => {
+            playersMap[player.id] = player;
+          });
+        }
+        console.log("Players Map:", playersMap);
+
+        // 4. Extract the special "Race Names" row (player_id === 0) and determine last race.
         const raceNamesRow = seasonData.find(row => row.player_id === 0);
         if (!raceNamesRow) {
           document.getElementById("full-season-table").innerHTML =
             "<tr><td colspan='3'>No race names row found.</td></tr>";
           return;
         }
-
-        // 4. Determine the last race that has been scored.
         let lastRace = 0;
         for (let i = 1; i <= 32; i++) {
           const col = `race_${i}`;
@@ -420,7 +434,7 @@
           return;
         }
 
-        // 5. Build table header.
+        // 5. Build table header HTML.
         let headerHTML = "<thead><tr>" +
           "<th>Rank</th><th>Player</th><th>Total</th>";
         for (let i = 1; i <= lastRace; i++) {
@@ -435,7 +449,6 @@
             "<tr><td colspan='3'>No player data available.</td></tr>";
           return;
         }
-
         // 7. Compute totals for each player.
         const standings = playerRows.map(row => {
           let total = 0;
@@ -459,12 +472,15 @@
               raceScores.push("");
             }
           }
+          // Lookup avatar settings from playersMap.
+          const playerData = playersMap[row.player_id] || {};
           return {
             player_id: row.player_id,
             player_name: row.player_name,
             total: total,
             prevTotal: prevTotal,
-            raceScores: raceScores
+            raceScores: raceScores,
+            avatar_settings: playerData.avatar_settings || null
           };
         });
 
@@ -482,7 +498,7 @@
           currentRankMap[player.player_id] = currentRank;
           prevScore = player.total;
         });
-        
+
         let prevRank = 1;
         let prevPrevScore = null;
         const prevRankMap = {};
@@ -513,9 +529,14 @@
             }
           }
           bodyHTML += `<tr>
-                        <td>${currRank} ${movement}</td>
-                        <td>${player.player_name}</td>
-                        <td>${player.total}</td>`;
+              <td>${currRank} ${movement}</td>
+              <td>
+                <div class="player-cell">
+                  ${createSmallAvatarHTML({ name: player.player_name, avatar_settings: player.avatar_settings })}
+                  <span class="player-name">${player.player_name}</span>
+                </div>
+              </td>
+              <td>${player.total}</td>`;
           // Append each race score.
           player.raceScores.forEach(score => {
             bodyHTML += `<td>${score}</td>`;
@@ -530,24 +551,13 @@
         tableEl.innerHTML = fullHTML;
 
         // 12. Post-process the table styling.
-
-        // a) Header styling: dark grey background, white text, center alignment.
+        // a) Center header text.
         const headerCells = tableEl.querySelectorAll("thead th");
         headerCells.forEach(cell => {
           cell.style.textAlign = "center";
         });
-
-        // b) For each row in the body, apply a light grey background to the first three columns.
+        // b) For each race column cell, if it contains "(LS)", strip that text and set text color to grey.
         const bodyRows = tableEl.querySelectorAll("tbody tr");
-        // bodyRows.forEach(row => {
-        //   const cells = row.querySelectorAll("td");
-        //   for (let j = 0; j < 3; j++) {
-        //     cells[j].style.backgroundColor = "#eeeeee";
-        //   }
-        // });
-
-        // c) For each race column cell, if it contains "(LS)", strip that text and set text colour to grey.
-        //    Race columns start at column index 4 (0-indexed column 3).
         bodyRows.forEach(row => {
           const cells = row.querySelectorAll("td");
           for (let j = 3; j < cells.length; j++) {
@@ -558,9 +568,7 @@
             }
           }
         });
-
-        // d) Highlight the top three finishers for each race column individually.
-        //    Loop over each race column (columns 4 to last).
+        // c) Highlight the top three finishers for each race column individually.
         const numColumns = tableEl.querySelector("thead tr").children.length;
         for (let col = 3; col < numColumns; col++) {
           // For each column, get the cell values from the body.
@@ -576,7 +584,7 @@
               const rank = sortedUnique.indexOf(val);
               if (rank >= 0 && rank < 3) {
                 cell.style.backgroundColor = colors[rank];
-                // If the cell was originally marked as lowest (grey), leave it; otherwise, force black.
+                // If the cell wasn't marked as "lowest" (grey), force text color to black.
                 if (cell.style.color !== "grey") {
                   cell.style.color = "black";
                 }
@@ -595,6 +603,7 @@
     document.addEventListener("DOMContentLoaded", () => {
       loadFullSeasonResults();
     });
+
 
   // ===========================
   // === SEASON TEAM RESULTS ===

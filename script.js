@@ -658,6 +658,8 @@ export function updateLoginUI(playerData) {
 
         // Proceed with logout
         clearCookie("playerId");
+        localStorage.removeItem("darkMode"); // Clear dark mode preference from local storage.
+        setDarkMode(false); // Force light mode.
         loggedInUserDisplay.classList.add('d-none');
         logoutMenuItem.classList.add('d-none');
         if (loginButton) {
@@ -784,16 +786,16 @@ function toggleLoginButton() {
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-
+  
       // Immediately disable the button and both input fields to prevent duplicate submissions.
       loginSubmitButton.disabled = true;
       playerNameInput.disabled = true;
       pinInput.disabled = true;
-
+  
       const playerName = playerNameInput.value;
       const pin = pinInput.value;
       const rememberMe = document.getElementById('rememberMe').checked;
-
+  
       if (pin.length !== 4) {
         showAlert('Please enter a 4-digit PIN.', 'danger');
         // Re-enable inputs so the user can correct it.
@@ -802,14 +804,14 @@ function toggleLoginButton() {
         pinInput.disabled = false;
         return;
       }
-
-      // Query player by name (assuming names are unique)
+  
+      // Query player by name (assuming names are unique) and include dark_mode
       const { data: playerData, error } = await supabase
         .from('players')
-        .select('id, name, password, avatar_settings')
+        .select('id, name, password, avatar_settings, dark_mode')
         .eq('name', playerName)
         .single();
-
+  
       if (error || !playerData) {
         showAlert('Error logging in. Please try again.', 'danger');
         loginSubmitButton.disabled = false;
@@ -817,9 +819,9 @@ function toggleLoginButton() {
         pinInput.disabled = false;
         return;
       }
-
+  
       const hashedPin = CryptoJS.MD5(pin).toString();
-
+  
       if (hashedPin === playerData.password) {
         showAlert('Login successful!', 'success');
         // Set cookie and update login UI.
@@ -827,6 +829,12 @@ function toggleLoginButton() {
           setCookie("playerId", playerData.id, 30 * 24 * 60 * 60); // 30-day cookie
         } else {
           setCookie("playerId", playerData.id);
+        }
+        // Check player's dark mode preference and apply the theme.
+        if (playerData.dark_mode) {
+          setDarkMode(true);
+        } else {
+          setDarkMode(false);
         }
         updateLoginUI(playerData);
         document.dispatchEvent(new CustomEvent("loginStateChanged", { detail: { loggedIn: true } }));
@@ -841,7 +849,7 @@ function toggleLoginButton() {
         toggleLoginButton();
       }
     });
-  }
+  }  
 });
   
 
@@ -999,3 +1007,50 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+export function createSmallAvatarHTML(player) {
+  // Use the player's name to get the first letter (fallback to "?" if missing)
+  const letter = player.name ? player.name.charAt(0).toUpperCase() : '?';
+  const avatar = document.createElement('div');
+  avatar.classList.add('small-avatar');
+  
+  // Use inline-block layout (ensures one line) with centered text.
+  avatar.style.display = "inline-block";
+  avatar.style.width = "1.8rem";
+  avatar.style.height = "1.8rem";
+  avatar.style.fontSize = "1rem";
+  avatar.style.lineHeight = "1.8rem"; // Vertically center text
+  avatar.style.textAlign = "center";
+  avatar.style.marginRight = "0.5rem";
+  // avatar.style.border = "1px solid #c0c0c0";
+  if (player.name === 'James') {
+    avatar.style.border = "1px solid gold";
+  } else if (player.name === 'Josh Watling') {
+    avatar.style.border = "1px solid red";
+  } else {
+    avatar.style.border = "1px solid #c0c0c0";
+  }
+  avatar.style.borderRadius = "50%";
+  
+  // If custom avatar settings exist, render that; otherwise, fallback to a letter avatar.
+  if (player.avatar_settings) {
+    renderAvatar(avatar, player.avatar_settings, letter);
+    // Force inline-block again in case renderAvatar changes it:
+    avatar.style.display = "inline-block";
+    avatar.style.lineHeight = "1.8rem";
+    avatar.style.textAlign = "center";
+  } else {
+    avatar.textContent = letter;
+    const bgColor = getColorForLetter(letter);
+    avatar.style.backgroundColor = bgColor;
+    avatar.style.color = "#fff";
+    avatar.style.fontFamily = 'Montserrat';
+    avatar.style.fontWeight = 700;
+    // Add a small text shadow using a darkened version of the background.
+    const shadowColor = darkenColor(bgColor, 30);
+    avatar.style.textShadow = `1px 1px 0 ${shadowColor}`;
+  }
+  
+  return avatar.outerHTML;
+}
+

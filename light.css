@@ -35,6 +35,47 @@ footer {
 /* ======================== */
 /* === TABLE FORMATIING === */
 /* ======================== */
+
+.top-players-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* Space between each player block */
+  justify-content: left; /* Centers the blocks when wrapping */
+  margin-bottom: 10px;
+}
+
+.player-block {
+  display: flex;
+  align-items: center;
+  gap: 5px; /* Space between medal, avatar, and name */
+  white-space: nowrap; /* Ensures everything stays together */
+}
+
+.medal-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.player-name {
+  font-weight: bold;
+}
+
+.player-cell {
+  display: flex;
+  align-items: center;
+  gap: 5px; /* Spacing between avatar and name */
+}
+
+.player-cell img {
+  width: 24px; /* Adjust avatar size */
+  height: 24px;
+  border-radius: 50%;
+}
+
+#full-season-table td {
+  vertical-align: middle;
+}
+
 #mainResultsTable {
   width: 100%;
   table-layout: auto; /* Allow columns to adjust automatically */
@@ -90,6 +131,11 @@ footer {
 #mainResultsTable tr.spacer-row td:first-child,
 #player-results-table tr.spacer-row td:first-child {
   background-color: white;
+}
+
+
+#standings-table td {
+  vertical-align: middle;
 }
 
 #unscoredResultsTable {
