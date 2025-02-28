@@ -180,12 +180,13 @@
             <li>
               <!-- Dark Mode Toggle without highlight -->
               <div class="dropdown-item no-highlight">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                <div class="form-check form-switch" style="line-height: 2; vertical-align: middle;">
+                  <input class="form-check-input" type="checkbox" id="darkModeToggle" style="margin-top: 0.5rem">
                   <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
                 </div>
               </div>
             </li>
+            <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item body-text-xs" href="#" id="logoutBtn">Log Out</a></li>
           </ul>
         </div>
@@ -294,8 +295,18 @@
               </button>
             </a>
           </div>
-            
         </div>
+        <div class="mb-3 alert alert-info" style="text-align: left; margin-top: 15px;">
+          <h4>
+              Welcome to the new website!
+          </h4>
+          <ul>
+              <li>Register on the <a href="/register">Register Page</a>.</li>
+              <li>There is a new team's competition! For information, view the <a href="/info">Info Page</a>.</li>
+              <li>If you have any feedback or encounter any bugs, please visit the <a href="/feedback">Feedback Page</a>.</li>
+              <li>You can customise your avatar and change or reset passwords on the <a href="/account">Account Page</a>.</li>
+          </ul>
+          </div>
         <hr>
         <!-- Loading Indicator for Scored Results -->
         <div id="loadingPlaceholderBar" class="loading-indicator mb-3 heading-text-3">
@@ -1059,7 +1070,7 @@
     }
     // Merge custom avatar data into each player object in the players array.
     players = players.map(player => ({ ...player, ...playersMap[player.player_id] }));
-    
+
     // Enable or disable the "pin both" checkbox based on the flag.
     const pinBothCheckbox = document.getElementById('pinBothColumns');
     if (userResultPulled) {
