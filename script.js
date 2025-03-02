@@ -126,6 +126,32 @@ export function createNumberInput(container, id, isDecimal) {
   input.placeholder = isDecimal 
     ? 'Enter a number (up to 2 decimal places)' 
     : 'Enter a number (0-20)';
+  
+  // Limit input to 7 characters (note: enforcement may vary for numeric inputs)
+  input.setAttribute('maxlength', '7');
+
+  if (isDecimal) {
+    // Enforce no more than 2 decimal places.
+    input.addEventListener('input', function() {
+      const value = input.value;
+      if (value.includes('.')) {
+        const parts = value.split('.');
+        if (parts[1].length > 2) {
+          input.value = parts[0] + '.' + parts[1].substring(0, 2);
+        }
+      }
+    });
+  } else {
+    // Enforce only integers: if a decimal point is entered, remove it and all following characters.
+    input.addEventListener('input', function() {
+      const value = input.value;
+      if (value.includes('.')) {
+        const parts = value.split('.');
+        input.value = parts[0];
+      }
+    });
+  }
+
   container.appendChild(input);
 }
 
