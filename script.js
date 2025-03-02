@@ -627,6 +627,8 @@ export function renderAvatar(element, settings, letter = 'A') {
       userAvatar.style.borderColor = "gold";
     } else if (getCookie("playerId") === "12") {
       userAvatar.style.borderColor = "red";
+    } else if (getCookie("playerId") === "45") {
+      userAvatar.style.borderColor = "#9210B7";
     } else {
       userAvatar.style.borderColor = "#c0c0c0";
     }
@@ -1053,6 +1055,8 @@ export function createSmallAvatarHTML(player) {
     avatar.style.border = "1px solid gold";
   } else if (player.name === 'Josh Watling') {
     avatar.style.border = "1px solid red";
+  } else if (player.name === 'Damien') {
+    avatar.style.border = "1px solid #9210B7";
   } else {
     avatar.style.border = "1px solid #c0c0c0";
   }
