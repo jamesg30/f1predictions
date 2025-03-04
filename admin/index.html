@@ -3481,11 +3481,18 @@
             let card_report_details = '';
             let card_swap_applied = 0;
             let card_swap_details = '';
+            // Card Played Column Code
+            let card_aero_playedcol = 0;
+            let card_double_playedcol = 0;
+            let card_halo_playedcol = 0;
+            let card_report_playedcol = 0;
+            let card_swap_playedcol = 0;
 
             // Process the halo card. Only one halo is applied per team.
             const haloPlayed = team.card_halo_played ? true : false;
             if (haloPlayed) {
             card_halo_applied = 1;
+            card_halo_playedcol = 1;
             updateProgressSeasonTeam(`Halo card is recorded for ${teamName}.`);
             }
 
@@ -3494,7 +3501,26 @@
             const higherScore = Math.max(score1, score2);
             cardPointsDelta += higherScore;
             card_double_applied = 1;
+            card_double_playedcol = 1;
             updateProgressSeasonTeam(`Double applied on ${teamName}: +${higherScore}`);
+            }
+
+            // Process the aero card (only if halo was not played)
+            if (team.card_aero_played && !haloPlayed) {
+            cardPointsDelta += Math.abs(score1 - score2);
+            card_aero_applied = 1;
+            card_aero_playedcol = 1;
+            updateProgressSeasonTeam(`Aero applied on ${teamName}: +${cardPointsDelta}`);
+            }
+
+            if (team.card_report_played && !haloPlayed) {
+            card_report_playedcol = 1;
+            updateProgressSeasonTeam(`Noted report card played`);
+            }
+
+            if (team.card_swap_played && !haloPlayed) {
+            card_swap_playedcol = 1;
+            updateProgressSeasonTeam(`Noted swap card played`);
             }
 
             // Calculate temporary total (subtotal plus any double bonus)
@@ -3513,11 +3539,16 @@
             cardPointsDelta,
             grandTotal: tempTotal, // To be updated later.
             card_aero_applied,
+            card_aero_playedcol,
             card_double_applied,
+            card_double_playedcol,
             card_halo_applied,
+            card_halo_playedcol,
             card_report_applied,
+            card_report_playedcol,
             card_report_details,
             card_swap_applied,
+            card_swap_playedcol,
             card_swap_details
             });
 
@@ -3628,6 +3659,11 @@
             card_report_details: teamData.card_report_details,
             card_swap_applied: teamData.card_swap_applied,
             card_swap_details: teamData.card_swap_details,
+            card_aero_playedcol: teamData.card_aero_playedcol,
+            card_double_playedcol: teamData.card_double_playedcol,
+            card_halo_playedcol: teamData.card_halo_playedcol,
+            card_report_playedcol: teamData.card_report_playedcol,
+            card_swap_playedcol: teamData.card_swap_playedcol,
             player_id_1: teamData.player1.id,
             player_name_1: teamData.player1.name,
             player_points_1: teamData.score1,

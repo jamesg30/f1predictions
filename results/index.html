@@ -245,12 +245,6 @@
               
               <!-- TEAM RESULTS -->
               <h4 class="mb-3 heading-text-3">Team Results</h4>
-              <div class="alert alert-info">
-                <p class="mb-0">
-                    Card's that impact your own scoring are shown in your row of the results table. e.g. a swap card is displayed on both teams which are affected by the swap, a report card is only displayed on the team that is reported. Notes are shown on all teams to improve clarity.<br>
-                    A 'cards played' column will be added later in the season.
-                </p>
-              </div>
               <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
                 <!-- The team results table – again, an id is added for JS targeting -->
                 <table id="team-results-table" class="table table-sm table-bordered">
@@ -1425,7 +1419,8 @@
             <th>Player 2</th>
             <th>Player 2<br>Points</th>
             <th>Sub-total</th>
-            <th>Card/Casino<br>Details</th>
+            <th>Cards Played</th>
+            <th>Cards Applied/<br>Casino Details</th>
             <th>Card/Casino<br>Points</th>
             <th>Total</th>
           </tr>
@@ -1446,6 +1441,7 @@
           
           // Build "Cards Played" cell.
           let cardsHTML = "";
+          let cardsplayedHTML = "";
           
           // If casino was used (casino_details exists and is nonempty), display the casino image and details.
           if (team.casino_details && team.casino_details.trim() !== "") {
@@ -1479,6 +1475,31 @@
                 cardsHTML += `<img src="/media/cards/card_swap.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
               }
             }
+            if (team.card_aero_playedcol && team.card_aero_playedcol > 0) {
+              
+                cardsplayedHTML += `<img src="/media/cards/card_aero.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+              
+            }
+            if (team.card_double_playedcol && team.card_double_playedcol > 0) {
+              
+                cardsplayedHTML += `<img src="/media/cards/card_double.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+              
+            }
+            if (team.card_halo_playedcol && team.card_halo_playedcol > 0) {
+              
+                cardsplayedHTML += `<img src="/media/cards/card_halo.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+              
+            }
+            if (team.card_report_playedcol && team.card_report_playedcol > 0) {
+              
+                cardsplayedHTML += `<img src="/media/cards/card_report.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+              
+            }
+            if (team.card_swap_playedcol && team.card_swap_playedcol > 0) {
+              
+                cardsplayedHTML += `<img src="/media/cards/card_swap.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+              
+            }
             // Always display the textual details for report and swap, even if the numeric applied value is zero.
             if (team.card_report_details) {
               cardsHTML += `<div style="clear:both; word-wrap: break-word; white-space: normal;">(${team.card_report_details})</div>`;
@@ -1490,7 +1511,8 @@
           }
           
           // Use a TD with inline styles to force text wrapping.
-          bodyHTML += `<td style="word-wrap: break-word; white-space: normal;">${cardsHTML}</td>
+          bodyHTML += `<td style="word-wrap: break-word; white-space: normal;">${cardsplayedHTML}</td>
+            <td style="word-wrap: break-word; white-space: normal;">${cardsHTML}</td>
             <td>${team.card_points_delta}</td>
             <td>${team.grand_total}</td>
           </tr>`;
