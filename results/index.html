@@ -767,7 +767,7 @@
         // Otherwise, append an image for each non-casino tag.
         cardTags.forEach(tag => {
           if (tag !== "casino") {
-            output += `<img src="/media/cards/card_${tag}.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+            output += `<img src="/media/cards/card_${tag}.png" style="float:left; width:45px; height:61px;">`;
           }
         });
       }
@@ -1452,52 +1452,52 @@
             // Otherwise, display individual card images for each card played.
             if (team.card_aero_applied && team.card_aero_applied > 0) {
               for (let i = 0; i < team.card_aero_applied; i++) {
-                cardsHTML += `<img src="/media/cards/card_aero.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+                cardsHTML += `<img src="/media/cards/card_aero.png" style="float:left; width:45px; height:61px;">`;
               }
             }
             if (team.card_double_applied && team.card_double_applied > 0) {
               for (let i = 0; i < team.card_double_applied; i++) {
-                cardsHTML += `<img src="/media/cards/card_double.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+                cardsHTML += `<img src="/media/cards/card_double.png" style="float:left; width:45px; height:61px;">`;
               }
             }
             if (team.card_halo_applied && team.card_halo_applied > 0) {
               for (let i = 0; i < team.card_halo_applied; i++) {
-                cardsHTML += `<img src="/media/cards/card_halo.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+                cardsHTML += `<img src="/media/cards/card_halo.png" style="float:left; width:45px; height:61px;">`;
               }
             }
             if (team.card_report_applied && team.card_report_applied > 0) {
               for (let i = 0; i < team.card_report_applied; i++) {
-                cardsHTML += `<img src="/media/cards/card_report.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+                cardsHTML += `<img src="/media/cards/card_report.png" style="float:left; width:45px; height:61px;">`;
               }
             }
             if (team.card_swap_applied && team.card_swap_applied > 0) {
               for (let i = 0; i < team.card_swap_applied; i++) {
-                cardsHTML += `<img src="/media/cards/card_swap.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+                cardsHTML += `<img src="/media/cards/card_swap.png" style="float:left; width:45px; height:61px;">`;
               }
             }
             if (team.card_aero_playedcol && team.card_aero_playedcol > 0) {
               
-                cardsplayedHTML += `<img src="/media/cards/card_aero.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+                cardsplayedHTML += `<img src="/media/cards/card_aero.png" style="float:left; width:45px; height:61px;">`;
               
             }
             if (team.card_double_playedcol && team.card_double_playedcol > 0) {
               
-                cardsplayedHTML += `<img src="/media/cards/card_double.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+                cardsplayedHTML += `<img src="/media/cards/card_double.png" style="float:left; width:45px; height:61px;">`;
               
             }
             if (team.card_halo_playedcol && team.card_halo_playedcol > 0) {
               
-                cardsplayedHTML += `<img src="/media/cards/card_halo.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+                cardsplayedHTML += `<img src="/media/cards/card_halo.png" style="float:left; width:45px; height:61px;">`;
               
             }
             if (team.card_report_playedcol && team.card_report_playedcol > 0) {
               
-                cardsplayedHTML += `<img src="/media/cards/card_report.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+                cardsplayedHTML += `<img src="/media/cards/card_report.png" style="float:left; width:45px; height:61px;">`;
               
             }
             if (team.card_swap_playedcol && team.card_swap_playedcol > 0) {
               
-                cardsplayedHTML += `<img src="/media/cards/card_swap.png" style="float:left; width:45px; height:61px; image-rendering: pixelated;">`;
+                cardsplayedHTML += `<img src="/media/cards/card_swap.png" style="float:left; width:45px; height:61px;">`;
               
             }
             // Always display the textual details for report and swap, even if the numeric applied value is zero.

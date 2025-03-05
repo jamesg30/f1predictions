@@ -215,31 +215,31 @@
                     <li class="list-group-item">
                         <input class="form-check-input me-1 card-option" type="radio" name="card" value="aero" id="card-aero" disabled>
                         <label class="form-check-label stretched-link" for="card-aero">
-                            <img src="/media/cards/card_aero.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                            <img src="/media/cards/card_aero.png" style="float:left; width: 45px; height: 61px;">
                         </label>
                     </li>
                     <li class="list-group-item">
                         <input class="form-check-input me-1 card-option" type="radio" name="card" value="double" id="card-double" disabled>
                         <label class="form-check-label stretched-link" for="card-double">
-                            <img src="/media/cards/card_double.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                            <img src="/media/cards/card_double.png" style="float:left; width: 45px; height: 61px;">
                         </label>
                     </li>
                     <li class="list-group-item">
                         <input class="form-check-input me-1 card-option" type="radio" name="card" value="halo" id="card-halo" disabled>
                         <label class="form-check-label stretched-link" for="card-halo">
-                            <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                            <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px;">
                         </label>
                     </li>
                     <li class="list-group-item">
                         <input class="form-check-input me-1 card-option" type="radio" name="card" value="report" id="card-report" disabled>
                         <label class="form-check-label stretched-link" for="card-report">
-                            <img src="/media/cards/card_report.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                            <img src="/media/cards/card_report.png" style="float:left; width: 45px; height: 61px;">
                         </label>
                     </li>
                     <li class="list-group-item">
                         <input class="form-check-input me-1 card-option" type="radio" name="card" value="swap" id="card-swap" disabled>
                         <label class="form-check-label stretched-link" for="card-swap">
-                            <img src="/media/cards/card_swap.png" style="float:left; width: 45px; height: 61px; image-rendering: pixelated;">
+                            <img src="/media/cards/card_swap.png" style="float:left; width: 45px; height: 61px;">
                         </label>
                     </li>
                     <li class="list-group-item">
@@ -511,7 +511,7 @@
             const count = (Number(teamInfo[`card_${card.name}_unplayed`]) || 0) +
                           (Number(teamInfo[`card_${card.name}_played`]) || 0);
             for (let i = 0; i < count; i++) {
-              cardImagesHTML += `<img src="${card.src}" style="float:left; width: 45px; height: 61px; image-rendering: pixelated; margin-right: 5px;">`;
+              cardImagesHTML += `<img src="${card.src}" style="float:left; width: 45px; height: 61px; margin-right: 5px;">`;
             }
           });
 
