@@ -105,6 +105,29 @@
           height: 36px;
         }
 
+        /* Default height for small devices */
+    .track-img {
+      height: 200px !important;
+      max-height: 200px !important;
+    }
+
+    /* Medium screens (tablets, small laptops) - 250px */
+    @media (min-width: 576px) {
+      .track-img {
+        height: 250px !important;
+        max-height: 250px !important;
+      }
+    }
+
+    /* Larger screens (laptops, desktops) - 300px */
+    @media (min-width: 992px) {
+      .track-img {
+        height: 300px !important;
+        max-height: 300px !important;
+      }
+    }
+
+        
         @media (max-width: 768px) {
             .chart-wrapper {
                 height: 500px; /* Increase height on smaller screens */
@@ -253,27 +276,42 @@
     
 
     <main class="container my-5">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm">
+            <div class="text-center">
+              <h5 class="mb-3 body-text-emph">Latest Form:</h5>
+              <a id="latest-form-link">
+                  <button id="latest-form-button" type="button" class="btn btn-dark" disabled>Loading...</button>
+              </a>
+              <div id="formStatusContainer" style="display: none; margin-top: 15px">
+                  <i id="formStatusText" class="mb-3"></i>
+              </div>
+          </div>
+          </div>
+          <div class="col-sm mt-3 text-center" id="next-race-info">
+            Race info loading...
+          </div>
+          <div class="col-sm mt-3 text-center" id="track-race-info">
+            Track info loading...
+          </div>
+        </div>
+      </div>
         <div class="row g-4">
             <!-- Left Column: Latest Form -->
             <div class="col-md-6">
-                <div class="text-center">
-                    <h5 class="mb-3 body-text-emph">Latest Form:</h5>
-                    <a id="latest-form-link">
-                        <button id="latest-form-button" type="button" class="btn btn-dark" disabled>Loading...</button>
-                    </a>
-                    <div id="formStatusContainer" style="display: none; margin-top: 15px">
-                        <i id="formStatusText" class="mb-3"></i>
-                    </div>
-                </div>
+                
             </div>
     
           <!-- Right Column: Quick Links -->
             <div class="col-md-6">
               <div class="text-center">
-                <h5 class="mb-3 body-text-emph">Next Race:</h5>
+                
+                <!-- <h5 class="mb-3 body-text-emph">Next Race:</h5>
                   <div id="next-race-info" class="mt-3">
                       <p class="body-text">Loading next race...</p>
-                  </div>
+                  </div> -->
+                  
               </div>
             </div>
         </div>
@@ -671,6 +709,31 @@
         const countdownEl = document.getElementById("countdown");
         countdownEl.style.color = "black";
         });
+
+        // Fetch the race details from the calendar table
+        const { data: trackDetails, error: trackDetailsError } = await supabase
+            .from('tracks')
+            .select('*')
+            .eq('name', raceDetails.name)
+            .single();
+
+        if (trackDetailsError) {
+            console.error('Error fetching race details:', trackDetailsError);
+            return null;
+        }
+
+        const trackUrl = `/media/tracks/${trackDetails.track_image_name}.png`;
+        document.getElementById("track-race-info").innerHTML = `
+
+      <img src="${trackUrl}" class="card-img-top" alt="${raceDetails.name} Track Image">
+      <div>
+        <h5 class="body-text-emph">${trackDetails.circuit_name}</h5>
+        <p class="body-text">Number of Laps: ${trackDetails.number_of_laps}<br>
+          Lap Distance: ${trackDetails.circuit_length} km<br>
+          Race Distance: ${trackDetails.race_distance} km<br>
+          First Race: ${trackDetails.first_grand_prix}</p>
+      </div>
+      `
         }
     
     // Start countdown
