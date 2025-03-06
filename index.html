@@ -279,7 +279,7 @@
       <div class="container">
         <div class="row">
           <div class="col-sm">
-            <div class="text-center">
+            <div class="mb-3 text-center">
               <h5 class="mb-3 body-text-emph">Latest Form:</h5>
               <a id="latest-form-link">
                   <button id="latest-form-button" type="button" class="btn btn-dark" disabled>Loading...</button>
@@ -289,32 +289,14 @@
               </div>
           </div>
           </div>
-          <div class="col-sm mt-3 text-center" id="next-race-info">
+          <div class="col-sm mb-3 text-center" id="next-race-info">
             Race info loading...
           </div>
-          <div class="col-sm mt-3 text-center" id="track-race-info">
+          <div class="col-sm mb-3 text-center" id="track-race-info">
             Track info loading...
           </div>
         </div>
       </div>
-        <div class="row g-4">
-            <!-- Left Column: Latest Form -->
-            <div class="col-md-6">
-                
-            </div>
-    
-          <!-- Right Column: Quick Links -->
-            <div class="col-md-6">
-              <div class="text-center">
-                
-                <!-- <h5 class="mb-3 body-text-emph">Next Race:</h5>
-                  <div id="next-race-info" class="mt-3">
-                      <p class="body-text">Loading next race...</p>
-                  </div> -->
-                  
-              </div>
-            </div>
-        </div>
     
     <!-- Next Race Section -->
         <div class="text-center">
@@ -693,6 +675,7 @@
     const flagUrl = `/media/flags/${raceDetails.country.toLowerCase()}.png`;
 
         document.getElementById("next-race-info").innerHTML = `
+         <h5 class="mb-3 body-text-emph">Next Race:</h5>
     <img src="${flagUrl}" alt="${raceDetails.country} Flag" class="flag-img">
     <h6 class="mt-2 body-text">${raceDetails.name} GP</h6>
     <div id="countdown-timer" class="mt-2" style="text-align: center; display: inline-block;">
