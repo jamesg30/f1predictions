@@ -215,6 +215,31 @@
                       <input type="number" class="form-control" id="current-year" min="2000" max="2100">
                     </div>
                   </div>
+                  <!-- New row for Main Page Alert settings -->
+<div class="row mb-2">
+    <div class="col-md-6">
+      <label class="form-label">Main Page Alert Text</label>
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="main-page-alert-enabled">
+        <label class="form-check-label" for="main-page-alert-enabled" id="main-page-alert-enabled-label">Loading...</label>
+      </div>
+      <input type="text" class="form-control" id="main-page-alert-text-input" placeholder="Enter main page alert HTML">
+    </div>
+    <div class="col-md-6">
+      <label for="main-page-alert-type-select" class="form-label">Main Page Alert Type</label>
+      <select class="form-select" id="main-page-alert-type-select">
+        <option value="primary">Primary</option>
+        <option value="secondary">Secondary</option>
+        <option value="success">Success</option>
+        <option value="danger">Danger</option>
+        <option value="warning">Warning</option>
+        <option value="info" selected>Info</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+    </div>
+  </div>
+  
                   <!-- New row for Form Status Text fields -->
                   <div class="row mb-2">
                     <div class="col-md-6">
@@ -273,7 +298,7 @@
                 </form>
               </div>
             </div>
-          </div>
+        </div>
           
         <div>  
         
@@ -2205,6 +2230,10 @@
         // New variables for alert text
         let formAlertText;
         let formAlertTextEnabled;
+        let mainPageAlertText;
+let mainPageAlertEnabled;
+let mainPageAlertType;
+
 
         // Fetch current form details including new alert text fields
         async function fetchFormDetails() {
@@ -2220,8 +2249,11 @@
             form_status_text_enabled,
             form_alert_text,
             form_alert_text_enabled,
-            background_image`
-            )
+            background_image,
+            main_page_alert_text,
+            main_page_alert_enabled,
+            main_page_alert_type`
+        )
             .eq('id', 1)
             .single();
 
@@ -2230,6 +2262,7 @@
             return;
         }
 
+        // Existing fields...
         currentRaceNumber = formDetails.race_number;
         formEnabled = formDetails.form_enabled;
         resultsDisplayRaceNumber = formDetails.results_display_race_number;
@@ -2239,6 +2272,33 @@
         formStatusTextEnabled = formDetails.form_status_text_enabled;
         formAlertText = formDetails.form_alert_text;
         formAlertTextEnabled = formDetails.form_alert_text_enabled;
+        // New main page alert fields:
+        mainPageAlertText = formDetails.main_page_alert_text;
+        mainPageAlertEnabled = formDetails.main_page_alert_enabled;
+        mainPageAlertType = formDetails.main_page_alert_type;
+
+        // Update existing UI elements (background image, form status, etc.)
+        formStatus.checked = formEnabled;
+        formStatusLabel.textContent = formEnabled ? 'Enabled' : 'Disabled';
+        currentYearInput.value = currentYear;
+        resultsDisplayTypeSelect.value = resultsDisplayType;
+        formStatusTextEnabledInput.checked = formStatusTextEnabled;
+        formStatusTextEnabledLabel.textContent = formStatusTextEnabled ? 'Enabled' : 'Disabled';
+        formStatusTextInput.value = formStatusText;
+        formAlertTextEnabledInput.checked = formAlertTextEnabled;
+        formAlertTextEnabledLabel.textContent = formAlertTextEnabled ? 'Enabled' : 'Disabled';
+        formAlertTextInput.value = formAlertText;
+
+        // Update new Main Page Alert UI elements:
+        const mainPageAlertEnabledInput = document.getElementById('main-page-alert-enabled');
+        const mainPageAlertEnabledLabel = document.getElementById('main-page-alert-enabled-label');
+        const mainPageAlertTextInput = document.getElementById('main-page-alert-text-input');
+        const mainPageAlertTypeSelect = document.getElementById('main-page-alert-type-select');
+
+        mainPageAlertEnabledInput.checked = mainPageAlertEnabled;
+        mainPageAlertEnabledLabel.textContent = mainPageAlertEnabled ? 'Enabled' : 'Disabled';
+        mainPageAlertTextInput.value = mainPageAlertText;
+        mainPageAlertTypeSelect.value = mainPageAlertType;
 
         // New: Update background image select
         const backgroundImageSelect = document.getElementById('background-image-select');
@@ -2348,6 +2408,21 @@
         saveChangesButton.disabled = false;
         });
 
+        // For Main Page Alert Enabled toggle
+document.getElementById('main-page-alert-enabled').addEventListener('change', () => {
+  saveChangesButton.disabled = false;
+  document.getElementById('main-page-alert-enabled-label').textContent =
+    document.getElementById('main-page-alert-enabled').checked ? 'Enabled' : 'Disabled';
+});
+// For Main Page Alert Text input
+document.getElementById('main-page-alert-text-input').addEventListener('input', () => {
+  saveChangesButton.disabled = false;
+});
+// For Main Page Alert Type select
+document.getElementById('main-page-alert-type-select').addEventListener('change', () => {
+  saveChangesButton.disabled = false;
+});
+
         // Save changes
         document.getElementById('dashboard-form').addEventListener('submit', async event => {
         event.preventDefault();
@@ -2361,25 +2436,37 @@
         const selectedFormStatusText = formStatusTextInput.value;
         const selectedFormAlertTextEnabled = formAlertTextEnabledInput.checked;
         const selectedFormAlertText = formAlertTextInput.value;
+        
+        // New: Get values for Main Page Alert fields
+        const mainPageAlertEnabledInput = document.getElementById('main-page-alert-enabled');
+        const mainPageAlertTextInput = document.getElementById('main-page-alert-text-input');
+        const mainPageAlertTypeSelect = document.getElementById('main-page-alert-type-select');
+        
+        const selectedMainPageAlertEnabled = mainPageAlertEnabledInput.checked;
+        const selectedMainPageAlertText = mainPageAlertTextInput.value;
+        const selectedMainPageAlertType = mainPageAlertTypeSelect.value;
 
-        // New: Get selected background image from the new selector
+        // Also get background image value as before…
         const backgroundImageSelect = document.getElementById('background-image-select');
         const selectedBackgroundImage = backgroundImageSelect.value;
 
-        // Update form details in the database
+        // Update the form_details table
         const { error: updateError } = await supabase
             .from('form_details')
             .update({
-            race_number: selectedRaceNumber,
-            form_enabled: selectedFormStatus,
-            results_display_race_number: selectedResultsDisplayRaceNumber,
-            results_display_type: selectedResultsDisplayType,
-            current_year: selectedCurrentYear,
-            form_status_text_enabled: selectedFormStatusTextEnabled,
-            form_status_text: selectedFormStatusText,
-            form_alert_text_enabled: selectedFormAlertTextEnabled,
-            form_alert_text: selectedFormAlertText,
-            background_image: selectedBackgroundImage  // New update field
+                race_number: selectedRaceNumber,
+                form_enabled: selectedFormStatus,
+                results_display_race_number: selectedResultsDisplayRaceNumber,
+                results_display_type: selectedResultsDisplayType,
+                current_year: selectedCurrentYear,
+                form_status_text_enabled: selectedFormStatusTextEnabled,
+                form_status_text: selectedFormStatusText,
+                form_alert_text_enabled: selectedFormAlertTextEnabled,
+                form_alert_text: selectedFormAlertText,
+                main_page_alert_enabled: selectedMainPageAlertEnabled,  // New field
+                main_page_alert_text: selectedMainPageAlertText,         // New field
+                main_page_alert_type: selectedMainPageAlertType,         // New field
+                background_image: selectedBackgroundImage
             })
             .eq('id', 1);
 
@@ -2389,7 +2476,7 @@
             return;
         }
 
-        // Update UI with the new values
+        // Update local variables
         currentRaceNumber = selectedRaceNumber;
         formEnabled = selectedFormStatus;
         resultsDisplayRaceNumber = selectedResultsDisplayRaceNumber;
@@ -2399,14 +2486,18 @@
         formStatusText = selectedFormStatusText;
         formAlertTextEnabled = selectedFormAlertTextEnabled;
         formAlertText = selectedFormAlertText;
+        mainPageAlertEnabled = selectedMainPageAlertEnabled;
+        mainPageAlertText = selectedMainPageAlertText;
+        mainPageAlertType = selectedMainPageAlertType;
 
         formStatusLabel.textContent = formEnabled ? 'Enabled' : 'Disabled';
         formStatusTextEnabledLabel.textContent = formStatusTextEnabled ? 'Enabled' : 'Disabled';
         formAlertTextEnabledLabel.textContent = formAlertTextEnabled ? 'Enabled' : 'Disabled';
+        document.getElementById('main-page-alert-enabled-label').textContent = mainPageAlertEnabled ? 'Enabled' : 'Disabled';
+
         saveChangesButton.disabled = true;
-
+        
         await fetchFormResponses();
-
         showCustomAlert('Changes saved successfully');
         });
         });

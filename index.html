@@ -345,9 +345,9 @@
         </div>
     
     <!-- Next Race Section -->
-     <div class="alert alert-info" style="text-align: left;"">
-        Read the <a href="/info">Info Page</a> to learn about Teams! Register and join a team at the <a href="/register">Register Page</a>.
-     </div>
+     <!-- Main page alert container (initially hidden) -->
+<div id="main-page-alert-container" style="display: none;"></div>
+
         <div class="text-center">
           <h5 class="mb-3">Quick Links:</h5>
           <!-- Add flex-wrap to allow items to wrap onto a new line -->
@@ -902,6 +902,41 @@
           }
       });
       });
+
+       // ============================
+  // === MAIN PAGE ALERT CODE ===
+  // ============================
+      async function updateMainPageAlert() {
+  // Fetch main page alert settings from form_details table
+  const { data, error } = await supabase
+    .from('form_details')
+    .select('main_page_alert_text, main_page_alert_enabled, main_page_alert_type')
+    .eq('id', 1)
+    .single();
+
+  if (error) {
+    console.error('Error fetching main page alert settings:', error);
+    return;
+  }
+
+  const alertContainer = document.getElementById('main-page-alert-container');
+
+  // If enabled, render the alert with the chosen Bootstrap alert type; otherwise, hide the container.
+  if (data.main_page_alert_enabled) {
+    alertContainer.innerHTML = `
+      <div class="alert alert-${data.main_page_alert_type}" style="text-align: left;">
+        ${data.main_page_alert_text}
+      </div>
+    `;
+    alertContainer.style.display = 'block';
+  } else {
+    alertContainer.style.display = 'none';
+  }
+}
+
+// Call this function after the DOM loads.
+document.addEventListener('DOMContentLoaded', updateMainPageAlert);
+
 
 
   // ============================
