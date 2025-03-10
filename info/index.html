@@ -153,13 +153,13 @@
         <!-- Tabs Navigation -->
         <ul class="nav nav-underline mb-4" id="tabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="general-faq-tab" data-bs-toggle="tab" href="#general-faq" role="tab" aria-labelledby="general-faq-tab" aria-selected="true">General FAQ</a>
+                <a class="nav-link active" id="general-faq-tab" data-bs-toggle="tab" href="#general-faq" role="tab" aria-labelledby="general-faq-tab" aria-selected="true">Guide to Form</a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link" id="team-guide-tab" data-bs-toggle="tab" href="#team-guide" role="tab" aria-labelledby="team-guide-tab" aria-selected="false">Guide to Teams</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="form-rules-tab" data-bs-toggle="tab" href="#form-rules" role="tab" aria-labelledby="form-rules-tab" aria-selected="false">Form Scoring Rules</a>
+                <a class="nav-link" id="form-rules-tab" data-bs-toggle="tab" href="#form-rules" role="tab" aria-labelledby="form-rules-tab" aria-selected="false">Scoring Rules</a>
             </li>
         </ul>
 
@@ -168,7 +168,7 @@
             <!-- Form Scoring Rules -->
             <div id="form-rules" class="tab-pane fade" role="tabpanel" aria-labelledby="form-rules-tab">
                 <div class="d-flex justify-content-left">
-                    <h2 class="mb-3 heading-text-2">Form Scoring Rules</h2>
+                    <h2 class="mb-3 heading-text-2">Scoring Rules</h2>
                 </div>
                 <div>
                     <h5 class="mb-3 heading-text-3">Top 6 Predictions</h5>
@@ -209,7 +209,8 @@
                 <div>
                     <p>
                         <i>Lowest Score</i><br>
-                        In the event a player misses a round, they will be awarded the lowest score that was achieved that round.<br>
+                        In the event a player or team misses a round, they will be awarded the lowest score that was achieved that round.<br>
+                        Teams or players who register after the season has begun will have the lowest scores backfilled after the first race they participate in.
                     </p>
                 </div>
             </div>
@@ -223,7 +224,7 @@
                     This year, there is a new team's competition. You can register a team and then join it on the <a href="/register">Register Page</a>.
                 </div>
                 <div class="mb-3">
-                    Team's are formed of 2 players. Each week, the player's scores will be added up to form the team's score. The teams competition will never affect your player's individual scores, it is completely separate. Teams will not be scored unless there are 2 players.
+                    Team's are formed of 2 players. Each week, the player's scores will be added up to form the team's score. The teams competition <b>does not change</b> your player's individual scores, it is completely separate. Teams will not be scored unless there are 2 players.
                 </div>
                 <div class="mb-3">
                     Team scoring can also be impacted by cards and casino:
@@ -234,10 +235,10 @@
                 <div class="mb-3">
                     At the beginning of the season, each new team will be given a set of cards which they can use to impact the scoring for that round. <br>
                     <ul>
-                        <li>Playing these cards will be done before the race (same as the form) through the <a href="/teams">Teams Page</a>.</li>
-                        <li>You can play one card each round.</li>
+                        <li>Playing these cards will be done before the race (same as the form) through the <a href="/teams">Teams Page</a>. Ensure they are submitted before the countdown runs out.</li>
+                        <li>Play ONE card each round.</li>
                         <li>
-                            You will be given:<br>
+                            Each team is given:<br>
                             <ul>
                                 <li>1x Aero</li>
                                 <li>1x Double</li>
@@ -250,8 +251,11 @@
                     </ul>
                 </div>
                 <div class="mb-3">
-                    The description of how each card impacts the scoring is shown below:
+                    Cards remaining for each team is displayed on the <a href="/teams">Teams Page</a>. This does not show cards played in the current round (they are hidden).
                 </div>
+                <div class="mb-3">
+                  The description of how each card impacts the scoring is shown below:
+              </div>
                 <div class="mb-3"> 
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -268,7 +272,9 @@
                         </li>
                         <li class="list-group-item">
                             <img src="/media/cards/card_report.png" style="float:left; width: 45px; height: 61px; margin-right: 10px">
-                            Report: Report another team to the FIA, and their highest scoring driver will receive 0 (e.g. if they score 14 & 22, team score will be 14 + 0 = 14). Important to note, if more than one team reports the same team in the same round, that teams highest scoring driver will instead score double points (e.g. if two or more reports on the same team with score 14 & 22, team score will be 14 + (2 x 22) = 14 + 44 = 58)
+                            Report: Report another team to the FIA, and their highest scoring driver will receive 0 (e.g. if they score 14 & 22, team score will be 14 + 0 = 14).
+                            <div style="margin-top: 8px">Important to note, if a team is reported multiple times in a single round, that teams highest scoring driver will instead score double points!</div>
+                            <div style="margin-top: 8px">e.g. If two or more reports on the same team with score 14 & 22, team score will be 14 + (2 x 22) = 14 + 44 = 58. Keep this in mind when reporting the top team!</div>
                         </li>
                         <li class="list-group-item">
                             <img src="/media/cards/card_swap.png" style="float:left; width: 45px; height: 61px; margin-right: 10px">
@@ -294,31 +300,27 @@
             <!-- General FAQ -->
             <div id="general-faq" class="tab-pane fade show active" role="tabpanel" aria-labelledby="general-faq-tab">
                 <div class="d-flex justify-content-left">
-                    <h2 class="mb-3 heading-text-2">General FAQ</h2>
+                    <h2 class="mb-3 heading-text-2">Guide to Form</h2>
                 </div>
                 <div class="mb-3">
-                    <div class="mb-3 heading-text-3">What is the individual competition?</div>
-                    The individual competition involves predicting various questions and submitting the predictions <b>before</b> the race starts through the form (hence the URL).<br>
-                    The form is released after qualifying. Last season, this would typically be around 3pm for the typical 11pm race (Melbourne Time)<br>
+                    The individual competition involves predicting various questions and submitting the predictions <b>before</b> the race starts through the form.<br>
+                    The form is released <b>after qualifying</b> at least 12 hours before the race. In Melbourne Time this is around 11am.<br>
+                </div>
+                <div>
                     Each race will feature:
                     <ul>
-                        <li>Top 6 Predictions</li>
-                        <li>10 random questions (typically 5 yes/no)</li>
-                        <li>Winning Margin Prediction</li>
+                        <li>Top 6 Predictions (13 points)</li>
+                        <li>10 random questions (first DNF, fastest lap, yes/no etc.) (~10-15 points)</li>
+                        <li>Winning Margin Prediction (1 point)</li>
                     </ul>
-                    The individual competition will remain <b>unchanged</b> from previous years. I have no plans to change the individual format.<br>
-                    In some races, there may be one or two extra questions in the middle section. Typically, the last race will have many more questions. Please read both the Guide to Teams and Form Scoring Rules tab to understand all the details
+                    Please read both the Guide to Teams and Form Scoring Rules tab to understand all the details
                 </div>
-                <div class="mb-3">
+                <div class="mb-3" style="margin-top: 10px">
                     <div class="mb-3 heading-text-3">What is the submision/results/scoring process?</div>
-                    <ul>
-                        <li>The form will be posted after qualifying is completed.</li>
-                    </ul>
-                    Typically, F1 races are on Sunday evening Australia time, and in these case the form will aim to be released by 3pm. In other cases, please check the page, it will be uploaded as soon as possible.
-                    <br>
-                    The form/team cards will <b>close on the hour when the race starts</b>! i.e. If the race starts at 11pm, the form/team cards will no longer accept responses at this time. This is different to previous years where there was a small amount of flexibility, the process is now automated and <b>there is a hard cut-off</b>
-                    <br>
-                    Results will be released as soon as practical (often races finish in the middle of the night, or waiting on websites being updated to see fastest pit stops etc.). The results and scoring process is completely automated. Results can be viewed for all of the races in the 'Results' tab, as well as the season summaries. If any issues are noticed, please fill out the feedback page and they will be investigated.
+                    The form/team cards will <b>close on the hour when the race starts</b>! i.e. If the race starts at 11pm, the form/team cards will no longer accept responses at this time. Look at the countdown to see how much time you have left!
+                  </div>
+                  <div>
+                    Results will be released as soon as practical (often races finish in the middle of the night, or waiting on websites being updated to see fastest pit stops etc.). Results can be viewed for all of the races in the 'Results' tab, as well as the season summaries.
                 </div>
             </div>
         </div>
