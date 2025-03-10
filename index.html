@@ -82,6 +82,15 @@
             animation: pulse 1.5s infinite ease-in-out;
         }
 
+        .placeholder-16by9 {
+          width: 100%;
+          padding-top: 56.25%; /* 16:9 aspect ratio */
+          border-radius: 0.25rem;
+          animation: glow 1.5s ease-in-out infinite;
+          background-color: #ccc;
+        }
+
+
         @keyframes pulse {
             0% { opacity: 0.6; }
             50% { opacity: 1; }
@@ -103,6 +112,31 @@
 
         .flag-img {
           height: 36px;
+          border-radius: 0.2rem; /* optional: slightly rounded corners */
+        }
+
+        .flag-placeholder {
+          width: 70px;       /* adjust width as needed */
+          height: 36px;      /* adjust height for desired flag ratio (e.g., 3:2) */
+          background-color: #ccc;
+          animation: glow 1.5s ease-in-out infinite;
+          display: inline-block;
+          border-radius: 0.2rem; /* optional: slightly rounded corners */
+        }
+
+        .loading-text-placeholder {
+          display: inline-block;
+          width: 100%;   /* Adjust width as needed */
+          height: 1.6em;    /* Adjust height as needed */
+          background-color: #ccc;
+          border-radius: 0.25rem;
+          animation: glow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+          0% { opacity: 0.5; }
+          50% { opacity: 1; }
+          100% { opacity: 0.5; }
         }
 
         /* Default height for small devices */
@@ -276,27 +310,39 @@
     
 
     <main class="container my-5">
-      <div class="container">
-        <div class="row">
-          <div class="col-sm">
-            <div class="mb-3 text-center">
-              <h5 class="mb-3 body-text-emph">Latest Form:</h5>
-              <a id="latest-form-link">
-                  <button id="latest-form-button" type="button" class="btn btn-dark" disabled>Loading...</button>
-              </a>
-              <div id="formStatusContainer" style="display: none; margin-top: 15px">
-                  <i id="formStatusText" class="mb-3"></i>
+        <div class="container">
+          <div class="row">
+            <!-- 1st Column -->
+            <div class="col-sm">
+              <div class="mb-3 text-center">
+                <h5 class="mb-3 body-text-emph">Latest Form:</h5>
+                <a id="latest-form-link">
+                    <button id="latest-form-button" type="button" class="btn btn-dark" disabled>Loading...</button>
+                </a>
+                <div id="formStatusContainer" style="display: none; margin-top: 15px">
+                    <i id="formStatusText" class="mb-3"></i>
+                </div>
               </div>
-          </div>
-          </div>
-          <div class="col-sm mb-3 text-center" id="next-race-info">
-            Race info loading...
-          </div>
-          <div class="col-sm mb-3 text-center" id="track-race-info">
-            Track info loading...
+            </div>
+            <!-- 2nd Column -->
+            <div class="col-sm mb-3 text-center" id="next-race-info">
+              <h5 class="mb-3 body-text-emph">Next Race:</h5>
+              <div class="flag-placeholder"></div>
+              <h6 class="mt-2 body-text">Loading...</h6>
+              <div id="countdown-timer" class="mt-2" style="text-align: center; display: inline-block;">
+                  <strong>Time left:</strong> <span id="countdown"></span>
+              </div>
+            </div>
+            <!-- 3rd Column -->
+            <div class="col-sm mb-3 text-center" id="track-race-info">
+              <div class="card-img-top placeholder-16by9"></div>
+              <div>
+                <span class="loading-text-placeholder" style="height: 2em; margin-top: 5px"></span>
+                <span class="loading-text-placeholder" style="margin-top: -2px"></span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
     
     <!-- Next Race Section -->
         <div class="text-center">
@@ -316,7 +362,9 @@
             </a>
           </div>
         </div>
+
         <hr>
+
         <!-- Loading Indicator for Scored Results -->
         <div id="loadingPlaceholderBar" class="loading-indicator mb-3 heading-text-3">
             <div class="container my-3 d-flex justify-content-left">
@@ -676,12 +724,12 @@
 
         document.getElementById("next-race-info").innerHTML = `
          <h5 class="mb-3 body-text-emph">Next Race:</h5>
-    <img src="${flagUrl}" alt="${raceDetails.country} Flag" class="flag-img">
-    <h6 class="mt-2 body-text">${raceDetails.name} GP</h6>
-    <div id="countdown-timer" class="mt-2" style="text-align: center; display: inline-block;">
-        <strong>Time left:</strong> <span id="countdown"></span>
-    </div>
-  `;
+        <img src="${flagUrl}" alt="${raceDetails.country} Flag" class="flag-img">
+        <h6 class="mt-2 body-text">${raceDetails.name} GP</h6>
+        <div id="countdown-timer" class="mt-2" style="text-align: center; display: inline-block;">
+            <strong>Time left:</strong> <span id="countdown"></span>
+        </div>
+        `;
 
 
         // Show the countdown container (it should now size to its content)
@@ -710,7 +758,7 @@
 
       <img src="${trackUrl}" class="card-img-top" alt="${raceDetails.name} Track Image">
       <div>
-        <h5 class="body-text-emph">${trackDetails.circuit_name}</h5>
+        <h5 class="body-text-emph" style="margin-top: 5px">${trackDetails.circuit_name}</h5>
         <p class="body-text">Laps: ${trackDetails.number_of_laps}, Distance: ${trackDetails.circuit_length} km</p>
       </div>
       `
