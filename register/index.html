@@ -359,6 +359,10 @@
         // =========================
             async function fetchAndDisplayList(table, containerId) {
                 const data = await fetchData(table, 'name');
+
+                // Sort the data alphabetically by the 'name' property
+                data.sort((a, b) => a.name.localeCompare(b.name));
+
                 const container = document.getElementById(containerId);
                 container.innerHTML = '';
 
