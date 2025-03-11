@@ -319,6 +319,9 @@
                 <a id="latest-form-link">
                     <button id="latest-form-button" type="button" class="btn btn-dark" disabled>Loading...</button>
                 </a>
+                <div id="formPreviousSubmissionContainer" style="display: none; margin-top: 10px;">
+                  <span id="formPreviousSubmissionText" class="badge bg-success">Predictions Submitted</span>
+                </div>
                 <div id="formStatusContainer" style="display: none; margin-top: 15px">
                     <i id="formStatusText" class="mb-3"></i>
                 </div>
@@ -937,6 +940,87 @@
 // Call this function after the DOM loads.
 document.addEventListener('DOMContentLoaded', updateMainPageAlert);
 
+// Declare it globally so it's accessible across functions
+let hasFormPreviousSubmission = false;
+
+// Update the form previous submission status display on the home page.
+function updateFormPreviousSubmissionHomePageStatus() {
+  const formPreviousSubmissionContainer = document.getElementById('formPreviousSubmissionContainer');
+  const formPreviousSubmissionText = document.getElementById('formPreviousSubmissionText');
+
+  if (!formPreviousSubmissionContainer) {
+    console.warn("Warning: formPreviousSubmissionContainer not found in DOM.");
+    return;
+  }
+
+  if (hasFormPreviousSubmission) {
+    formPreviousSubmissionContainer.style.display = 'block'; // Show the tag
+  } else {
+    formPreviousSubmissionContainer.style.display = 'none'; // Hide the tag on logout or no submission
+  }
+}
+
+// Loads existing submissions for the form previous submission home page.
+async function loadFormPreviousSubmissionHomePage() {
+  try {
+    // Get the current race number
+    const { data: formDetails, error: formDetailsError } = await supabase
+      .from('form_details')
+      .select('race_number')
+      .eq('id', 1)
+      .single();
+    if (formDetailsError) {
+      console.error('Error fetching form details:', formDetailsError);
+      return;
+    }
+    const raceNumber = formDetails.race_number;
+    
+    // Get the playerId from cookie and cast to Number
+    const playerIdStr = getCookie("playerId");
+    if (!playerIdStr) {
+      console.warn("No player logged in. Skipping loadFormPreviousSubmissionHomePage.");
+      window.formPreviousSubmissionData = {};
+      hasFormPreviousSubmission = false;
+      updateFormPreviousSubmissionHomePageStatus(); // 🔹 Ensure tag is hidden on logout
+      return;
+    }
+    
+    const playerId = Number(playerIdStr);
+    
+    // Query for an existing submission for this race and player.
+    const { data: previousResponses, error: responsesError } = await supabase
+      .from('form_raw')
+      .select('*')
+      .eq('race_number', raceNumber)
+      .eq('player_id', playerId)
+      .single();
+      
+    if (responsesError) {
+      // If no submission exists, Supabase returns an error with code "PGRST116".
+      if (responsesError.code === "PGRST116") {
+        window.formPreviousSubmissionData = {};
+        hasFormPreviousSubmission = false;
+      } else {
+        console.error('Error fetching previous responses:', responsesError);
+      }
+    } else {
+      // If a record was found, save it and set the flag.
+      window.formPreviousSubmissionData = previousResponses;
+      hasFormPreviousSubmission = true;
+    }
+
+    // Update UI based on submission status
+    updateFormPreviousSubmissionHomePageStatus();
+    
+  } catch (error) {
+    console.error('Error in loadFormPreviousSubmissionHomePage:', error);
+  }
+}
+
+// Call loadFormPreviousSubmissionHomePage during initialization.
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadFormPreviousSubmissionHomePage();
+});
 
 
   // ============================
@@ -1465,6 +1549,7 @@ document.getElementById('topPlayersContainer').innerHTML = topPlayers.map(player
     document.addEventListener("loginStateChanged", async (event) => {
   // Reload results and predictions
     await loadResultsPredictions();
+    await loadFormPreviousSubmissionHomePage()
   });
 
   // ===========================================
