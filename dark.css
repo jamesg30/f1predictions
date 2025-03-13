@@ -1001,3 +1001,25 @@ input, select, textarea {
 .loading-text-placeholder {
   background-color: #444 !important; 
 }
+
+/* Dark theme colors */
+#game-container {
+  background: #222;
+  border-color: #111 !important; /* Darker border for dark mode */
+}
+#overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #fff;
+}
+.light {
+  background-color: #333;
+  border-color: #555;
+}
+.light.active {
+  background-color: #ff5555;
+  box-shadow: 0 0 8px #ff5555;
+}
+#timer-display,
+#best-score {
+  color: #ddd;
+}

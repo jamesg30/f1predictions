@@ -690,3 +690,25 @@ footer {
 .table caption {
   color: #000;  /* Black caption text */
 }
+
+/* Light theme colors */
+#game-container {
+  background: #f9f9f9;
+  border-color: #ccc;
+}
+#overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #fff;
+}
+.light {
+  background-color: #555;
+  border-color: #333;
+}
+.light.active {
+  background-color: red;
+  box-shadow: 0 0 8px red;
+}
+#timer-display,
+#best-score {
+  color: #000;
+}
