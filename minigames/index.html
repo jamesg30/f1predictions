@@ -453,8 +453,16 @@
 
       // Reset all lights
       function resetLights() {
-        document.querySelectorAll(".light").forEach(light => light.classList.remove("active"));
-      }
+  document.querySelectorAll(".light").forEach(light => {
+    // Temporarily disable transitions
+    light.style.transition = 'none';
+    light.classList.remove("active");
+    // Force reflow to apply the change immediately
+    void light.offsetWidth;
+    // Restore transition for future animations
+    light.style.transition = '';
+  });
+}
 
       // Initialize game UI and state
       function initGame() {
