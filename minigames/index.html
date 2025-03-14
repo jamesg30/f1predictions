@@ -97,15 +97,30 @@
         }
 
         #average-indicator {
-          font-size: 2em;
-          line-height: 1;
+          display: flex;
+          gap: 0.5rem;
+          align-items: center;
+          justify-content: center;
+          margin-top: 10px;
         }
 
-        #average-indicator .circle {
-          font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-          display: inline-block;
-          vertical-align: middle;
-          line-height: 1;
+        .circle {
+          width: 20px;           /* fixed width */
+          height: 20px;          /* fixed height */
+          border-radius: 50%;    /* makes it a circle */
+          border: 2px solid #999;/* grey border for hollow state */
+          box-sizing: border-box;
+          background-color: transparent;
+          transition: background-color 0.2s ease;
+        }
+
+        .circle.filled {
+          background-color: #000; /* default filled color */
+        }
+
+        /* When complete, override filled color with green */
+        .circle.complete {
+          background-color: green;
         }
       </style>
 </head>
@@ -287,7 +302,11 @@
             <div id="timer-display" class="mt-3">0.000 s</div>
             <div id="best-score" class="mt-2">Best: --</div>
             <!-- Example addition in your HTML (inside #game-container, below timer-display) -->
-            <div id="average-indicator" style="font-size: 2em; margin-top: 5px;">○ ○ ○</div>
+            <div id="average-indicator">
+              <div class="circle hollow"></div>
+              <div class="circle hollow"></div>
+              <div class="circle hollow"></div>
+            </div>
             <div id="best-average" style="font-size: 1.2em; margin-top: 3px;">Best Average: --</div>
           </div>
         </div>
@@ -581,16 +600,21 @@
     
       // Update the average indicator (3 circles: filled "●" for a recorded attempt, hollow "○" for none)
       function updateAverageIndicator() {
-        const indicator = document.getElementById("average-indicator");
-        let circles = "";
-        for (let i = 0; i < 3; i++) {
+        const circles = document.querySelectorAll('#average-indicator .circle');
+        const complete = reactionTimes.length === 3;
+        circles.forEach((circle, i) => {
           if (reactionTimes[i] !== undefined) {
-            circles += `<span class="circle filled">●</span> `;
+            circle.classList.add('filled');
+            // If complete, add extra class so the filled color becomes green
+            if (complete) {
+              circle.classList.add('complete');
+            } else {
+              circle.classList.remove('complete');
+            }
           } else {
-            circles += `<span class="circle hollow">○</span> `;
+            circle.classList.remove('filled', 'complete');
           }
-        }
-        indicator.innerHTML = circles.trim();
+        });
       }
     
       // Initialize game UI and state (note: we do not clear reactionTimes here so valid attempts persist)
