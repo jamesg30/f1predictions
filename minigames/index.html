@@ -187,9 +187,12 @@
       <div class="tab-content" id="tab-content">
         <!-- Leaderboard Tab -->
         <div id="leaderboard" class="tab-pane fade show active" role="tabpanel" aria-labelledby="leaderboard-tab">
-            <div class="d-flex justify-content-left">
-                <h2 class="mb-3 heading-text-2">Reaction Time Leaderboard</h2>
-            </div>
+          <div class="d-flex justify-content-left">
+              <h2 class="mb-3 heading-text-2">Reaction Time Leaderboard</h2>
+          </div>
+          <div class="d-flex justify-content-left">
+            <h3 class="mb-3 heading-text-3">Best Time</h3>
+          </div>
           <div class="table-responsive my-4">
             <table class="table table-striped">
                 <thead>
@@ -204,12 +207,32 @@
                 </tbody>
               </table>
           </div>
+          <div class="d-flex justify-content-left">
+            <h3 class="mb-3 heading-text-3">Average Time</h3>
+          </div>
+          <div class="d-flex justify-content-left">
+            <p class="mb-3 body-text">Average of 3 times. The 3 times reset on false starts.</p>
+          </div>
+          <div class="table-responsive my-4">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>#</th> <!-- Ranking Column -->
+                  <th>Player Name</th>
+                  <th>Best Average (ms)</th>
+                </tr>
+              </thead>
+              <tbody id="average-leaderboard-table">
+                <!-- Average leaderboard rows inserted dynamically -->
+              </tbody>
+            </table>
+          </div>          
         </div>
         <!-- Reaction Game Tab -->
         <div id="game" class="tab-pane fade" role="tabpanel" aria-labelledby="game-tab">
-            <div class="d-flex justify-content-left">
-                <h2 class="mb-3 heading-text-2">Reaction Time Game</h2>
-            </div>
+          <div class="d-flex justify-content-left">
+              <h2 class="mb-3 heading-text-2">Reaction Time Game</h2>
+          </div>
           <div id="game-container">
             <!-- Overlay for start/result messages -->
             <div id="overlay">
@@ -251,6 +274,9 @@
             <!-- Timer display and Best Score -->
             <div id="timer-display" class="mt-3">0.000 s</div>
             <div id="best-score" class="mt-2">Best: --</div>
+            <!-- Example addition in your HTML (inside #game-container, below timer-display) -->
+            <div id="average-indicator" style="font-size: 2em; margin-top: 5px;">○ ○ ○</div>
+            <div id="best-average" style="font-size: 1.2em; margin-top: 3px;">Best Average: --</div>
           </div>
         </div>
       </div>
@@ -347,7 +373,11 @@
       let startTime;
       let currentCol = 0;
       let progressiveTimer, randomDelayTimer;
-
+      // Rolling array for last 3 valid reaction times
+      let reactionTimes = [];
+      // Best average (loaded from Supabase)
+      let bestAverage = null;
+    
       // DOM elements for game
       const overlay = document.getElementById("overlay");
       const startBtn = document.getElementById("start-btn");
@@ -356,36 +386,36 @@
       const bestScoreDisplay = document.getElementById("best-score");
       const lightSets = document.querySelectorAll(".light-set");
       const leaderboardTable = document.getElementById("leaderboard-table");
-
+    
       // Helper: Get cookie by name
       function getCookie(name) {
         const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
         if (match) return match[2];
         return null;
       }
-
+    
       // Check login status using cookie
       let isLoggedIn = false;
       const playerId = getCookie("playerId");
       if (playerId) {
         isLoggedIn = true;
       }
-
+    
       // Updated function to set overlay content based on login status:
-    function updateStartButtonState() {
-    if (!isLoggedIn) {
-        overlay.style.display = "flex";
-        overlay.innerHTML = `<div>Please log in to play.</div>`;
-    } else {
-        overlay.style.display = "flex";
-        overlay.innerHTML = `<button id="start-btn" class="btn btn-primary">Start</button>`;
-        document.getElementById("start-btn").addEventListener("click", function(e) {
-        e.stopPropagation();
-        startGame();
-        });
-    }
-    }
-
+      function updateStartButtonState() {
+        if (!isLoggedIn) {
+          overlay.style.display = "flex";
+          overlay.innerHTML = `<div>Please log in to play.</div>`;
+        } else {
+          overlay.style.display = "flex";
+          overlay.innerHTML = `<button id="start-btn" class="btn btn-primary">Start</button>`;
+          document.getElementById("start-btn").addEventListener("click", function(e) {
+            e.stopPropagation();
+            startGame();
+          });
+        }
+      }
+    
       // Load player's best time from Supabase
       async function loadPlayerBestTime() {
         if (!playerId) {
@@ -404,7 +434,27 @@
           bestScoreDisplay.textContent = data.best_time ? "Best: " + data.best_time + " ms" : "Best: --";
         }
       }
-
+    
+      // Load player's best average time from Supabase
+      async function loadPlayerBestAverage() {
+        if (!playerId) {
+          document.getElementById("best-average").textContent = "Best Average: --";
+          return;
+        }
+        const { data, error } = await supabase
+          .from('players')
+          .select('average_time')
+          .eq('id', playerId)
+          .single();
+        if (error) {
+          console.error('Error loading player best average:', error);
+          document.getElementById("best-average").textContent = "Best Average: --";
+        } else {
+          bestAverage = data.average_time;
+          document.getElementById("best-average").textContent = data.average_time ? "Best Average: " + data.average_time + " ms" : "Best Average: --";
+        }
+      }
+    
       // Update player's best time in Supabase if improved
       async function updatePlayerBestTime(newTime) {
         if (!playerId) return;
@@ -430,47 +480,111 @@
           }
         }
       }
-
-      // Load leaderboard standings from Supabase
+    
+      // Update player's best average time in Supabase if improved
+      async function updatePlayerAverageTime(newAverage) {
+        if (!playerId) return;
+        const { data, error } = await supabase
+          .from('players')
+          .select('average_time')
+          .eq('id', playerId)
+          .single();
+        if (error) {
+          console.error('Error retrieving player average record:', error);
+          return;
+        }
+        // Update if no average is recorded or if the new average is lower (better)
+        if (!data.average_time || newAverage < data.average_time) {
+          const { error: updateError } = await supabase
+            .from('players')
+            .update({ average_time: newAverage })
+            .eq('id', playerId);
+          if (updateError) {
+            console.error('Error updating best average:', updateError);
+          } else {
+            loadPlayerBestAverage();
+            loadAverageLeaderboard();
+          }
+        }
+      }
+    
+      // Load Best Time leaderboard from Supabase
       async function loadLeaderboard() {
         const { data, error } = await supabase
-            .from('players')
-            .select('id, name, best_time')
-            .not('best_time', 'is', null)
-            .order('best_time', { ascending: true });
+          .from('players')
+          .select('id, name, best_time')
+          .not('best_time', 'is', null)
+          .order('best_time', { ascending: true });
         if (error) {
-            console.error('Error loading leaderboard:', error);
-            leaderboardTable.innerHTML = '<tr><td colspan="3">Error loading leaderboard.</td></tr>';
+          console.error('Error loading leaderboard:', error);
+          leaderboardTable.innerHTML = '<tr><td colspan="3">Error loading leaderboard.</td></tr>';
         } else {
-            leaderboardTable.innerHTML = '';
-            data.forEach((player, index) => {
+          leaderboardTable.innerHTML = '';
+          let rank = 1;
+          data.forEach((player, index) => {
+            if (index > 0 && player.best_time !== data[index - 1].best_time) {
+              rank = index + 1;
+            }
             const row = document.createElement('tr');
-            row.innerHTML = `<td>${index + 1}</td><td>${player.name}</td><td>${player.best_time} ms</td>`;
+            row.innerHTML = `<td>${rank}</td><td>${player.name}</td><td>${player.best_time} ms</td>`;
             leaderboardTable.appendChild(row);
-            });
+          });
         }
+      }
+    
+      // Load Average Time leaderboard from Supabase
+      async function loadAverageLeaderboard() {
+        const { data, error } = await supabase
+          .from('players')
+          .select('id, name, average_time')
+          .not('average_time', 'is', null)
+          .order('average_time', { ascending: true });
+        const avgLeaderboardTable = document.getElementById("average-leaderboard-table");
+        if (error) {
+          console.error('Error loading average leaderboard:', error);
+          avgLeaderboardTable.innerHTML = '<tr><td colspan="3">Error loading average leaderboard.</td></tr>';
+        } else {
+          avgLeaderboardTable.innerHTML = '';
+          let rank = 1;
+          data.forEach((player, index) => {
+            if (index > 0 && player.average_time !== data[index - 1].average_time) {
+              rank = index + 1;
+            }
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${rank}</td><td>${player.name}</td><td>${player.average_time} ms</td>`;
+            avgLeaderboardTable.appendChild(row);
+          });
         }
-
-      // Reset all lights
+      }
+    
+      // Reset all lights (instant off by temporarily disabling transitions)
       function resetLights() {
-  document.querySelectorAll(".light").forEach(light => {
-    // Temporarily disable transitions
-    light.style.transition = 'none';
-    light.classList.remove("active");
-    // Force reflow to apply the change immediately
-    void light.offsetWidth;
-    // Restore transition for future animations
-    light.style.transition = '';
-  });
-}
-
-      // Initialize game UI and state
+        document.querySelectorAll(".light").forEach(light => {
+          light.style.transition = 'none';
+          light.classList.remove("active");
+          void light.offsetWidth;
+          light.style.transition = '';
+        });
+      }
+    
+      // Update the average indicator (3 circles: filled "●" for a recorded attempt, hollow "○" for none)
+      function updateAverageIndicator() {
+        const indicator = document.getElementById("average-indicator");
+        let circles = "";
+        for (let i = 0; i < 3; i++) {
+          circles += reactionTimes[i] !== undefined ? "● " : "○ ";
+        }
+        indicator.textContent = circles.trim();
+      }
+    
+      // Initialize game UI and state (note: we do not clear reactionTimes here so valid attempts persist)
       function initGame() {
         gameState = "waiting";
         currentCol = 0;
         resetLights();
         timerDisplay.textContent = "0.000 s";
         loadPlayerBestTime();
+        loadPlayerBestAverage();
         overlay.style.display = "flex";
         overlay.innerHTML = `<button id="start-btn" class="btn btn-primary">Start</button>`;
         document.getElementById("start-btn").addEventListener("click", function(e) {
@@ -479,7 +593,7 @@
         });
         updateStartButtonState();
       }
-
+    
       // Progressive lighting: light bottom two lights (rows 3 and 4) in one column
       function lightNextColumn() {
         if (currentCol < lightSets.length) {
@@ -498,16 +612,16 @@
           randomDelayTimer = setTimeout(signalGo, randomDelay);
         }
       }
-
-      // Signal "Go": turn off lights and start timer
+    
+      // Signal "Go": instantly turn off lights and start the timer
       function signalGo() {
         if (gameState !== "delay") return;
         resetLights();
         gameState = "go";
         startTime = Date.now();
       }
-
-      // Start game: hide overlay and begin progressive lighting
+    
+      // Start game: hide overlay, reset lights, and begin progressive lighting
       function startGame() {
         gameState = "progress";
         overlay.style.display = "none";
@@ -515,13 +629,16 @@
         currentCol = 0;
         progressiveTimer = setTimeout(lightNextColumn, 1000);
       }
-
-      // Handle game clicks (false start or valid reaction)
+    
+      // Handle game clicks (for both false start and valid reaction)
       function handleGameClick() {
         if (gameState === "progress" || gameState === "delay") {
+          // False start: clear rolling attempts and update average indicator
           clearTimeout(progressiveTimer);
           clearTimeout(randomDelayTimer);
           gameState = "result";
+          reactionTimes = [];  // Reset the rolling average
+          updateAverageIndicator();
           overlay.style.display = "flex";
           overlay.innerHTML = `<div>False Start!<br>Click to try again.</div>`;
           overlay.addEventListener("click", resetGame, { once: true });
@@ -530,36 +647,61 @@
           gameState = "result";
           timerDisplay.textContent = reactionTime + " ms";
           updatePlayerBestTime(reactionTime);
-          overlay.style.display = "flex";
-          overlay.innerHTML = `<div>Your reaction time: ${reactionTime} ms<br>Click to try again.</div>`;
+    
+          // Record valid reaction time in the rolling array (rolling last 3)
+          reactionTimes.push(reactionTime);
+          if (reactionTimes.length > 3) {
+            reactionTimes.shift();
+          }
+          updateAverageIndicator();
+    
+          // If we have 3 valid attempts, calculate the average
+          if (reactionTimes.length === 3) {
+            let avg = reactionTimes.reduce((a, b) => a + b, 0) / 3;
+            avg = Math.round(avg * 1000) / 1000;
+            let showPopup = false;
+            // If no best average exists or new average is better, update it and mark for popup
+            if (!bestAverage || avg < bestAverage) {
+              showPopup = true;
+              updatePlayerAverageTime(avg);
+            }
+            overlay.style.display = "flex";
+            overlay.innerHTML = `<div>Your reaction time: ${reactionTime} ms<br>Your 3-guess average: ${avg} ms${showPopup ? '<br>New Best Average!' : ''}<br>Click to try again.</div>`;
+          } else {
+            // If less than 3 valid attempts, just show reaction time
+            overlay.style.display = "flex";
+            overlay.innerHTML = `<div>Your reaction time: ${reactionTime} ms<br>Click to try again.</div>`;
+          }
           overlay.addEventListener("click", resetGame, { once: true });
         }
       }
-
-      // Reset game for new round
+    
+      // Reset game for new round (note: valid rounds preserve the rolling average; false starts clear it in handleGameClick)
       function resetGame() {
         initGame();
       }
-
-      // Listen for clicks on the game container (outside Start button)
+    
+      // Listen for clicks on the game container (outside the Start button)
       gameContainer.addEventListener("click", function () {
         if (gameState === "progress" || gameState === "delay" || gameState === "go") {
           handleGameClick();
         }
       });
-
-      // On DOMContentLoaded, initialize game and load leaderboard
+    
+      // On DOMContentLoaded, initialize game and load leaderboards
       document.addEventListener("DOMContentLoaded", async () => {
         initGame();
         loadLeaderboard();
+        loadAverageLeaderboard();
       });
-
+    
       // Listen for logout events (e.g. on the logout button)
-document.getElementById("logoutBtn").addEventListener("click", function() {
-  // Perform your logout logic here, then update the state:
-  isLoggedIn = false;  // Ensure login flag is false after logout
-  updateStartButtonState();
-});
+      document.getElementById("logoutBtn").addEventListener("click", function() {
+        // Perform your logout logic here, then update the state:
+        isLoggedIn = false;  // Ensure login flag is false after logout
+        updateStartButtonState();
+      });
     </script>
+    
 </body>
 </html>
