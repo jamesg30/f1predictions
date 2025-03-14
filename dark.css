@@ -1023,3 +1023,7 @@ input, select, textarea {
 #best-score {
   color: #ddd;
 }
+
+.circle.filled {
+  background-color: #c0c0c0; /* default filled color */
+}

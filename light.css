@@ -712,3 +712,7 @@ footer {
 #best-score {
   color: #000;
 }
+
+.circle.filled {
+  background-color: #000; /* default filled color */
+}
