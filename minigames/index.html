@@ -97,11 +97,16 @@
         }
 
         #average-indicator {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 2em;
-  line-height: 1;
-}
+          font-size: 2em;
+          line-height: 1;
+        }
 
+        #average-indicator .circle {
+          font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+          display: inline-block;
+          vertical-align: middle;
+          line-height: 1;
+        }
       </style>
 </head>
 <body>
@@ -579,9 +584,13 @@
         const indicator = document.getElementById("average-indicator");
         let circles = "";
         for (let i = 0; i < 3; i++) {
-          circles += reactionTimes[i] !== undefined ? "● " : "○ ";
+          if (reactionTimes[i] !== undefined) {
+            circles += `<span class="circle filled">●</span> `;
+          } else {
+            circles += `<span class="circle hollow">○</span> `;
+          }
         }
-        indicator.textContent = circles.trim();
+        indicator.innerHTML = circles.trim();
       }
     
       // Initialize game UI and state (note: we do not clear reactionTimes here so valid attempts persist)
