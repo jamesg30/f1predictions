@@ -1046,91 +1046,106 @@
     // ========================
     // === GRID UPLOAD CODE ===
     // ========================
-        // Loading Starting Grid/Upload Handling
         document.addEventListener("DOMContentLoaded", async () => {
-            const gridImageInput = document.getElementById("gridImageInput");
-            const uploadGridImageButton = document.getElementById("uploadGridImageButton");
-            const currentGridImage = document.getElementById("currentGridImage");
-            const uploadStatus = document.getElementById("uploadStatus");
+        const gridImageInput = document.getElementById("gridImageInput");
+        const uploadGridImageButton = document.getElementById("uploadGridImageButton");
+        const currentGridImage = document.getElementById("currentGridImage");
+        const uploadStatus = document.getElementById("uploadStatus");
 
-            const bucketName = "media";
-            const fileNamePrefix = "current_starting_grid";
-            const fileExtensions = ["png", "jpg", "jpeg"];
+        const bucketName = "media";
+        // We'll remove fileNamePrefix since each upload gets a unique name
+        const fileExtensions = ["png", "jpg", "jpeg"];
 
-            // Load the existing image on page load
-            async function loadGridImage() {
-                console.log("Loading grid image...");
-                for (const ext of fileExtensions) {
-                    const fileName = `${fileNamePrefix}.${ext}`;
-                    const { data, error } = await supabase.storage
-                        .from(bucketName)
-                        .download(fileName);
+        // 1) Load the existing file name from the DB, then download the file from Supabase
+        async function loadGridImage() {
+            console.log("Loading grid image name from DB...");
 
-                    if (error) {
-                        console.log(`Error loading ${fileName}:`, error.message);
-                    } else {
-                        console.log(`Loaded ${fileName}`);
-                        const url = URL.createObjectURL(data);
-                        currentGridImage.src = url;
-                        return; // Exit the loop once the file is found
-                    }
-                }
-                console.error("No matching file found");
-                currentGridImage.src = ""; // Reset if no matching file found
+            // --- Step A: Get the filename from your `form_details` row
+            const { data: formData, error: formError } = await supabase
+            .from("form_details")
+            .select("form_image_name")
+            .eq("id", 1)               // adapt to your row logic
+            .single();
+
+            if (formError) {
+            console.error("Error retrieving form_image_name:", formError.message);
+            currentGridImage.src = "";
+            return;
             }
 
-            // Delete existing files
-            async function deleteExistingFiles() {
-                console.log("Deleting existing files...");
-                for (const ext of fileExtensions) {
-                    const fileName = `${fileNamePrefix}.${ext}`;
-                    const { error } = await supabase.storage
-                        .from(bucketName)
-                        .remove([fileName]);
-
-                    if (error) {
-                        console.log(`Error deleting ${fileName}:`, error.message);
-                    } else {
-                        console.log(`Deleted ${fileName}`);
-                    }
-                }
+            if (!formData || !formData.form_image_name) {
+            console.log("No form_image_name found in DB");
+            currentGridImage.src = "";
+            return;
             }
 
-            // Handle image upload
-            uploadGridImageButton.addEventListener("click", async () => {
-                if (gridImageInput.files.length === 0) {
-                    uploadStatus.textContent = "Please select an image to upload.";
-                    return;
-                }
+            const fileName = formData.form_image_name;
+            console.log("Retrieved file name:", fileName);
 
-                const file = gridImageInput.files[0];
-                const fileExtension = file.name.split(".").pop(); // Get the file extension
-                const finalFileName = `${fileNamePrefix}.${fileExtension}`; // Build the final file name
+            // --- Step B: Download that file from Supabase Storage
+            const { data: fileData, error: downloadError } = await supabase.storage
+            .from(bucketName)
+            .download(fileName);
 
-                uploadStatus.textContent = "Uploading...";
+            if (downloadError) {
+            console.error(`Error downloading ${fileName}:`, downloadError.message);
+            currentGridImage.src = "";
+            } else {
+            console.log(`Loaded ${fileName}`);
+            const url = URL.createObjectURL(fileData);
+            currentGridImage.src = url;
+            }
+        }
 
-                // Delete existing files before uploading the new one
-                await deleteExistingFiles();
+        // 2) Handle image upload, create a unique name with timestamp, store in DB
+        uploadGridImageButton.addEventListener("click", async () => {
+            if (gridImageInput.files.length === 0) {
+            uploadStatus.textContent = "Please select an image to upload.";
+            return;
+            }
 
-                console.log("Uploading file:", finalFileName);
-                const { error } = await supabase.storage
-                    .from(bucketName)
-                    .upload(finalFileName, file, {
-                        upsert: true, // Overwrite existing file
-                    });
+            const file = gridImageInput.files[0];
+            const fileExtension = file.name.split(".").pop().toLowerCase();
 
-                if (error) {
-                    console.error("Error uploading grid image:", error.message);
-                    uploadStatus.textContent = "Upload failed. Please try again.";
-                } else {
-                    console.log("Upload successful");
-                    uploadStatus.textContent = "Upload successful!";
-                    await loadGridImage(); // Reload the image preview
-                }
+            // Create a unique name with timestamp, e.g. "starting_grid_2025-03-20_12-34-56-123.png"
+            const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+            const finalFileName = `starting_grid_${timestamp}.${fileExtension}`;
+
+            uploadStatus.textContent = "Uploading...";
+
+            console.log("Uploading file:", finalFileName);
+            const { error: uploadError } = await supabase.storage
+            .from(bucketName)
+            .upload(finalFileName, file, {
+                upsert: true, // If file with same name exists, overwrite
             });
 
-            // Initial load
+            if (uploadError) {
+            console.error("Error uploading grid image:", uploadError.message);
+            uploadStatus.textContent = "Upload failed. Please try again.";
+            return;
+            } else {
+            console.log("Upload successful");
+            uploadStatus.textContent = "Upload successful!";
+            }
+
+            // 3) Store the new file name in the `form_details` table
+            const { error: dbUpdateError } = await supabase
+            .from("form_details")
+            .update({ form_image_name: finalFileName })
+            .eq("id", 1); // adapt to your logic
+            if (dbUpdateError) {
+            console.error("Error updating form_details with new image name:", dbUpdateError.message);
+            } else {
+            console.log("Database updated with new image name:", finalFileName);
+            }
+
+            // 4) Reload the newly uploaded image from Supabase
             await loadGridImage();
+        });
+
+        // Initial load (attempt to load existing image from DB)
+        await loadGridImage();
         });
 
     // =================================

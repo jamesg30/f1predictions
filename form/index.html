@@ -585,41 +585,58 @@
     
     // LOAD STARTING GRID IMAGE
     async function loadStartingGridImage() {
-      console.log("Loading starting grid image...");
-      
+      console.log("Loading starting grid image from DB...");
+
       const startingGridImage = document.getElementById("startingGridImage");
       const placeholderContainer = document.getElementById("startingGridPlaceholderContainer");
-      
+
       const bucketName = "media";
-      const fileNamePrefix = "current_starting_grid";
-      const fileExtensions = ["png", "jpg", "jpeg"];
-      
-      // Start all download requests concurrently.
-      const downloadPromises = fileExtensions.map(async ext => {
-        const fileName = `${fileNamePrefix}.${ext}`;
-        console.log(`Attempting to load ${fileName}...`);
-        const { data, error } = await supabase.storage.from(bucketName).download(fileName);
-        if (error) {
-          throw new Error(`Error loading ${fileName}: ${error.message}`);
-        }
-        return { fileName, data };
-      });
-      
-      try {
-        // Promise.any will return as soon as the first download promise resolves.
-        const result = await Promise.any(downloadPromises);
-        console.log(`Loaded ${result.fileName} successfully.`);
-        const url = URL.createObjectURL(result.data);
-        startingGridImage.src = url;
-        startingGridImage.onload = function() {
-          placeholderContainer.style.display = 'none';
-          startingGridImage.style.display = 'block';
-        };
-      } catch (err) {
-        console.error("No matching file found:", err);
+
+      // 1) Get the stored image name from the DB
+      const { data: formData, error: formError } = await supabase
+        .from("form_details")
+        .select("form_image_name")
+        .eq("id", 1) // Adapt to your actual row logic
+        .single();
+
+      if (formError) {
+        console.error("Error retrieving form_image_name from DB:", formError.message);
         startingGridImage.src = "";
         placeholderContainer.innerHTML = "<p class='text-center'>No image available</p>";
+        return;
       }
+
+      if (!formData || !formData.form_image_name) {
+        console.log("No form_image_name found in DB");
+        startingGridImage.src = "";
+        placeholderContainer.innerHTML = "<p class='text-center'>No image available</p>";
+        return;
+      }
+
+      const finalFileName = formData.form_image_name;
+      console.log("Retrieved file name from DB:", finalFileName);
+
+      // 2) Download that file from Supabase Storage
+      const { data: fileData, error: downloadError } = await supabase
+        .storage
+        .from(bucketName)
+        .download(finalFileName);
+
+      if (downloadError) {
+        console.error(`Error downloading ${finalFileName}:`, downloadError.message);
+        startingGridImage.src = "";
+        placeholderContainer.innerHTML = "<p class='text-center'>No image available</p>";
+        return;
+      }
+
+      // 3) Create a local URL for the downloaded file and display it
+      console.log(`Loaded ${finalFileName} successfully.`);
+      const url = URL.createObjectURL(fileData);
+      startingGridImage.src = url;
+      startingGridImage.onload = function() {
+        placeholderContainer.style.display = 'none';
+        startingGridImage.style.display = 'block';
+      };
     }
 
 
