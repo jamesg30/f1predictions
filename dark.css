@@ -1027,3 +1027,26 @@ input, select, textarea {
 .circle.filled {
   background-color: #c0c0c0; /* default filled color */
 }
+
+/* Example for dark mode placeholder styling */
+.form-control::-webkit-input-placeholder {
+  color: #ccc !important;
+  opacity: 1 !important;
+}
+.form-control:-ms-input-placeholder {
+  color: #ccc !important;
+  opacity: 1 !important;
+}
+.form-control::-ms-input-placeholder {
+  color: #ccc !important;
+  opacity: 1 !important;
+}
+.form-control::placeholder {
+  color: #ccc !important;
+  opacity: 1 !important;
+}
+
+/* If you want to target all <input> fields, use:
+   input::-webkit-input-placeholder, etc. 
+   Instead of .form-control. */
+
