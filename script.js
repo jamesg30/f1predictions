@@ -685,19 +685,19 @@ export function updateLoginUI(playerData) {
         }
 
         // Proceed with logout
-        clearCookie("playerId");
-        localStorage.removeItem("darkMode"); // Clear dark mode preference from local storage.
-        setDarkMode(false); // Force light mode.
-        loggedInUserDisplay.classList.add('d-none');
-        logoutMenuItem.classList.add('d-none');
-        if (loginButton) {
-          loginButton.classList.remove('d-none');
-        }
-        hideUserAvatar();
-        updateFormPlayerDisplay(null);
-        document.dispatchEvent(new CustomEvent("loginStateChanged", { detail: { loggedIn: false } }));
-        showAlert('You have logged out!', 'success');
-        resetLoginForm();
+        // clearCookie("playerId");
+        // localStorage.removeItem("darkMode"); // Clear dark mode preference from local storage.
+        // setDarkMode(false); // Force light mode.
+        // loggedInUserDisplay.classList.add('d-none');
+        // logoutMenuItem.classList.add('d-none');
+        // if (loginButton) {
+        //   loginButton.classList.remove('d-none');
+        // }
+        // hideUserAvatar();
+        // updateFormPlayerDisplay(null);
+        // document.dispatchEvent(new CustomEvent("loginStateChanged", { detail: { loggedIn: false } }));
+        // showAlert('You have logged out!', 'success');
+        // resetLoginForm();
       };
     }
   }
@@ -735,6 +735,48 @@ export function updateLoginUI(playerData) {
     document.getElementById('userDropdown').focus();
   }, 300);
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Global logout event delegation: catches any click on an element with id "logoutBtn"
+  document.addEventListener('click', async function(e) {
+    let target = e.target;
+    // Traverse up the DOM tree in case the clicked element is nested
+    while (target && target !== document) {
+      if (target.id === 'logoutBtn') {
+        e.preventDefault(); // Prevent any default behavior
+        
+        // Show the confirm modal
+        const confirmed = await showCustomConfirm('Are you sure you want to log out?');
+        if (!confirmed) return;
+        
+        // Clear the cookie robustly
+        clearCookie("playerId");  // Using your helper (sets max-age=0)
+        document.cookie = "playerId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        
+        // Clear other persisted state and reset UI elements
+        localStorage.removeItem("darkMode");
+        setDarkMode(false);
+        const loggedInUserDisplay = document.getElementById('loggedInUserDisplay');
+        if (loggedInUserDisplay) loggedInUserDisplay.classList.add('d-none');
+        const logoutMenuItem = document.getElementById('logoutMenuItem');
+        if (logoutMenuItem) logoutMenuItem.classList.add('d-none');
+        const loginButton = document.getElementById('loginButton');
+        if (loginButton) loginButton.classList.remove('d-none');
+        hideUserAvatar();
+        updateFormPlayerDisplay(null);
+        document.dispatchEvent(new CustomEvent("loginStateChanged", { detail: { loggedIn: false } }));
+        showAlert('You have logged out!', 'success');
+        resetLoginForm();
+        
+        // Force a reload to clear any lingering state
+        setTimeout(() => location.reload(), 500);
+        
+        break;
+      }
+      target = target.parentElement;
+    }
+  });
+});
 
   // --- Helper: Reset Login Form ---
 // Clears the login form and resets its fields to default state.
