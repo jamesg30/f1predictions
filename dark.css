@@ -236,7 +236,7 @@ footer {
 
 
 #mainResultsTable td,
-#player-results-table td, #standings-table td, #standings-team-table td, #team-results-table td,#full-season-table td, #full-season-team-table td {
+#player-results-table td, #standings-table td, #standings-team-table td, #team-results-table td,#full-season-table td, #full-season-team-table td, #unscoredResultsTable td {
 border: 1px solid #222;
 background-color: #111;
 color: white;
@@ -251,7 +251,7 @@ table-layout: auto; /* Allow columns to adjust automatically */
 }
 
 #mainResultsTable th,
-#player-results-table th, #standings-table th, #standings-team-table th, #team-results-table th, #full-season-table th, #full-season-team-table th{
+#player-results-table th, #standings-table th, #standings-team-table th, #team-results-table th, #full-season-table th, #full-season-team-table th, #unscoredResultsTable th{
 background-color: #333; /* Light grey header */
 max-width: 10ch;
 word-wrap: break-word;
@@ -314,18 +314,15 @@ table-layout: auto;
 }
 
 #unscoredResultsTable th {
-background-color: #ddd;
 max-width: 10ch;
 word-wrap: break-word;
 white-space: normal;
 padding: 1px;
 text-align: center;
 vertical-align: middle;
-border: 1px solid #ddd;
 }
 
 #unscoredResultsTable td {
-border: 1px solid #ddd;
 max-width: 10ch;
 word-wrap: break-word;
 white-space: normal;
