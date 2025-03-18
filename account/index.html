@@ -206,6 +206,19 @@
     height: 100%;
   }
 
+  .icon-option.restricted img {
+  opacity: 0.5;
+  pointer-events: none; /* Prevent clicking on the image */
+}
+
+.icon-option.restricted label {
+  pointer-events: none; /* Prevent clicks on the entire label */
+}
+
+.icon-option.restricted input {
+  pointer-events: none; /* Prevent clicking on the radio input */
+}
+
    </style>
 </head>
 <body>
@@ -455,6 +468,14 @@
                     <img src="/media/icons/icon_train.png" alt="Train">
                   </label>
                   <div class="icon-label">Train</div>
+                </div>
+                <!-- Goat -->
+                <div class="icon-option restricted">
+                  <label>
+                    <input id="goat_icon" type="radio" name="avatar-icon" value="icon_goat.png" data-type="monochrome">
+                    <img src="/media/icons/icon_goat.png" alt="goat">
+                  </label>
+                  <div class="icon-label">Goat <small>(Restricted - Past Champions)</small></div>
                 </div>
               </div>
             </div>
@@ -910,6 +931,7 @@
     document.addEventListener("loginStateChanged", async (event) => {
       await autofillLoggedInName();
       await initializeAvatarCustomization();
+      await updateRestrictedIcons();
     });
 
   // ================================
@@ -995,6 +1017,29 @@
         console.error("Unexpected error:", err);
         showCustomAlert("An unexpected error occurred while updating your password.");
       }
+    });
+
+    async function updateRestrictedIcons() {
+      const playerId = getCookie("playerId");
+      // Locate the container element of the goat icon.
+      const goatOption = document.getElementById('goat_icon').closest('.icon-option');
+      
+      // Check if the player is eligible.
+      if (playerId == 1 || playerId == 57) {
+        // Eligible: remove restricted class if it exists.
+        if (goatOption.classList.contains('restricted')) {
+          goatOption.classList.remove('restricted');
+        }
+      } else {
+        // Not eligible: add restricted class if it's not already there.
+        if (!goatOption.classList.contains('restricted')) {
+          goatOption.classList.add('restricted');
+        }
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      updateRestrictedIcons();
     });
 </script>
 </body>

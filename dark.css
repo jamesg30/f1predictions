@@ -1047,3 +1047,6 @@ input, select, textarea {
    input::-webkit-input-placeholder, etc. 
    Instead of .form-control. */
 
+   .icon-label {
+      color: #fff !important; /* Main text color */
+  }
