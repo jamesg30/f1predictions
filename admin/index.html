@@ -2570,6 +2570,7 @@ document.getElementById('main-page-alert-type-select').addEventListener('change'
 
             // Step 3: Create Scoring Function
             function calculateScore(response, result, scoringType, results) {
+                console.log(scoringType);
                 switch (scoringType) {
                     case 'Off (0)':
                         return 0;
@@ -2613,8 +2614,8 @@ document.getElementById('main-page-alert-type-select').addEventListener('change'
                         return response === result ? 1 : 0;
                     case 'Driver + Team (2)':
                         if (response === result) return 2;
-                        let responseDriver = drivers.find(driver => driver.abbreviation === response);
-                        let resultDriver = drivers.find(driver => driver.abbreviation === result);
+                        let responseDriver = drivers.find(driver => driver.id === Number(response));
+                        let resultDriver = drivers.find(driver => driver.id === Number(result));                        
                         if (responseDriver && resultDriver) {
                         return responseDriver.constructor_id === resultDriver.constructor_id ? 1 : 0;
                         } else {
