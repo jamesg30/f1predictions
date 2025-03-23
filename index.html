@@ -1520,7 +1520,7 @@ document.getElementById('topPlayersContainer').innerHTML = topPlayers.map(player
     const lowestScoresDiv = document.getElementById('lowestScores');
     if (lowestScores.length > 0) {
         const lowestScoresText = lowestScores.map(player => player.player_name).join(', ');
-        lowestScoresDiv.textContent = `Lowest Score: ${lowestScoresText}`;
+        lowestScoresDiv.textContent = `Did not play (receives lowest score): ${lowestScoresText}`;
     }
 
     // Hide the loading indicator after the scored results table is built.
