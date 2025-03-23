@@ -803,7 +803,7 @@
 </main>
 
 <footer class="bg-light text-black text-center py-1 body-text-xs">
-    <p>&copy; 2025 F1 Predictions Form | Build 221</p>
+    <p>&copy; 2025 F1 Predictions Form | Build 222</p>
   </footer>
 
 <script src="/js/bootstrap.bundle.min.js"></script>
@@ -3449,7 +3449,7 @@ document.getElementById('main-page-alert-type-select').addEventListener('change'
             return;
         }
         
-        if (window.initialLoad === undefined || window.initialLoad === true) {
+        if (window.initialLoadSeasonTeam === undefined || window.initialLoadSeasonTeam === true) {
             for (let j = 0; j < raceSelect.options.length; j++) {
             if (raceSelect.options[j].dataset.raceNumber == latestRaceNumber) {
                 raceSelect.selectedIndex = j;
@@ -3457,7 +3457,7 @@ document.getElementById('main-page-alert-type-select').addEventListener('change'
                 break;
             }
             }
-            window.initialLoad = false;
+            window.initialLoadSeasonTeam = false;
         }
         
         updateProgressSeasonTeam("Race options loaded for Season Team.");

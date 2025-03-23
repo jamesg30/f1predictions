@@ -69,12 +69,27 @@
     padding: 0 20px; /* Add padding on desktop */
 }
 
+.chart-wrapper-tall {
+    width: 100%; /* Let it fill the width */
+    max-width: 900px; /* Prevent it from becoming too wide */
+    height: 650px; /* Fixed height */
+    margin: 0 auto; /* Center it */
+    padding: 0 20px; /* Add padding on desktop */
+}
+
 @media (max-width: 768px) {
     .chart-wrapper {
         height: 500px; /* Increase height on smaller screens */
         padding: 0 10px; /* Reduce padding */
     }
 }
+
+@media (max-width: 768px) {
+            .chart-wrapper-tall {
+                height: 750px; /* Increase height on smaller screens */
+                padding: 0 10px; /* Reduce padding */
+            }
+        }
     </style>
 </head>
 <body>
@@ -268,7 +283,7 @@
                   </table>
                 </div>
                 <div class="container mt-4">
-                  <div class="chart-wrapper">
+                  <div class="chart-wrapper-tall">
                       <canvas id="standings-line-chart"></canvas>
                   </div>                              
                 </div>
@@ -1183,15 +1198,33 @@
 
     // HIGHLIGHTING FUNCTIONS (totals, etc.)
     const highlightHighest = (selector, colors) => {
-      const cells = Array.from(document.querySelectorAll(selector));
-      const values = cells.map(cell => parseFloat(cell.textContent)).filter(value => !isNaN(value));
-      const sortedValues = [...new Set(values)].sort((a, b) => b - a);
-      cells.forEach(cell => {
-        const cellValue = parseFloat(cell.textContent);
-        const rank = sortedValues.indexOf(cellValue);
-        if (rank >= 0 && rank < colors.length) {
-          cell.style.backgroundColor = colors[rank];
-          cell.style.color = 'black';
+      // Gather cells with their numeric values
+      const cells = Array.from(document.querySelectorAll(selector)).map(cell => ({
+        cell,
+        value: parseFloat(cell.textContent)
+      })).filter(item => !isNaN(item.value));
+
+      // Sort by value descending
+      cells.sort((a, b) => b.value - a.value);
+
+      // Compute competition ranks
+      let rank = 1;
+      let prevValue = null;
+      let count = 0;
+      cells.forEach(item => {
+        if (prevValue !== null && item.value !== prevValue) {
+          rank = count + 1;
+        }
+        item.rank = rank;
+        prevValue = item.value;
+        count++;
+      });
+
+      // Highlight cells with a rank within the podium range
+      cells.forEach(item => {
+        if (item.rank <= colors.length) {
+          item.cell.style.backgroundColor = colors[item.rank - 1];
+          item.cell.style.color = 'black';
         }
       });
     };

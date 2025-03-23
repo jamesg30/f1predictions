@@ -110,6 +110,14 @@
             padding: 0 20px; /* Add padding on desktop */
         }
 
+        .chart-wrapper-tall {
+            width: 100%; /* Let it fill the width */
+            max-width: 900px; /* Prevent it from becoming too wide */
+            height: 650px; /* Fixed height */
+            margin: 0 auto; /* Center it */
+            padding: 0 20px; /* Add padding on desktop */
+        }
+
         .flag-img {
           height: 36px;
           border-radius: 0.2rem; /* optional: slightly rounded corners */
@@ -165,6 +173,13 @@
         @media (max-width: 768px) {
             .chart-wrapper {
                 height: 500px; /* Increase height on smaller screens */
+                padding: 0 10px; /* Reduce padding */
+            }
+        }
+
+        @media (max-width: 768px) {
+            .chart-wrapper-tall {
+                height: 750px; /* Increase height on smaller screens */
                 padding: 0 10px; /* Reduce padding */
             }
         }
@@ -325,6 +340,9 @@
                 <div id="formPreviousSubmissionContainer" style="display: none; margin-top: 10px;">
                   <span id="formPreviousSubmissionText" class="badge bg-success">Predictions Submitted</span>
                 </div>
+                <div id="teamMateAlertContainer" style="display: none; margin-top: 10px;">
+                  <span id="formTeammateSubmissionText" class="badge bg-dark">Teammate Submitted</span>
+                </div>                
                 <div id="formStatusContainer" style="display: none; margin-top: 15px">
                     <i id="formStatusText" class="mb-3"></i>
                 </div>
@@ -506,7 +524,7 @@
               </div>
 
               <div class="container mt-4">
-                <div class="chart-wrapper">
+                <div class="chart-wrapper-tall">
                     <canvas id="standings-line-chart"></canvas>
                 </div>                
                 <div class="chart-wrapper">
@@ -1020,9 +1038,89 @@ async function loadFormPreviousSubmissionHomePage() {
   }
 }
 
-// Call loadFormPreviousSubmissionHomePage during initialization.
+async function updateTeamMateSubmissionAlert() {
+  // Get current playerId from cookie
+  const playerIdStr = getCookie("playerId");
+  if (!playerIdStr) {
+    document.getElementById('teamMateAlertContainer').style.display = 'none';
+    return;
+  }
+  const playerId = Number(playerIdStr);
+
+  // (a) Retrieve your player record to get your team id.
+  const { data: playerData, error: playerError } = await supabase
+    .from('players')
+    .select('participant_team_id')
+    .eq('id', playerId)
+    .single();
+  if (playerError || !playerData) {
+    console.error("Error fetching current player:", playerError);
+    return;
+  }
+  const teamId = playerData.participant_team_id;
+
+  // (b) If not in a team, hide the alert.
+  if (!teamId) {
+    document.getElementById('teamMateAlertContainer').style.display = 'none';
+    return;
+  }
+
+  // (c) Get your teammate's player id (exclude your own id).
+  const { data: teamPlayers, error: teamPlayersError } = await supabase
+    .from('players')
+    .select('id')
+    .eq('participant_team_id', teamId);
+  if (teamPlayersError) {
+    console.error("Error fetching team players:", teamPlayersError);
+    return;
+  }
+  const teammate = teamPlayers.find(p => p.id !== playerId);
+  if (!teammate) {
+    // No teammate found
+    document.getElementById('teamMateAlertContainer').style.display = 'none';
+    return;
+  }
+  const teammateId = teammate.id;
+
+  // (d) Retrieve the current race number from form_details.
+  const { data: formDetails, error: formDetailsError } = await supabase
+    .from('form_details')
+    .select('race_number')
+    .eq('id', 1)
+    .single();
+  if (formDetailsError) {
+    console.error("Error fetching form details:", formDetailsError);
+    return;
+  }
+  const currentRaceNumber = formDetails.race_number;
+
+  // (e) Get the list of player_ids who submitted predictions for the current race from form_raw.
+  const { data: submissions, error: submissionsError } = await supabase
+    .from('form_raw')
+    .select('player_id')
+    .eq('race_number', currentRaceNumber);
+  if (submissionsError) {
+    console.error("Error fetching submissions:", submissionsError);
+    return;
+  }
+
+  // (f) Check if your teammate's player id is in the submissions list.
+  const teammateSubmitted = submissions.some(sub => sub.player_id === teammateId);
+
+  // (g) Simply show or hide the existing alert element.
+  const teamMateAlertContainer = document.getElementById('teamMateAlertContainer');
+  if (teammateSubmitted) {
+    teamMateAlertContainer.style.display = 'block';
+  } else {
+    teamMateAlertContainer.style.display = 'none';
+  }
+}
+
+
+
 document.addEventListener('DOMContentLoaded', async () => {
   await loadFormPreviousSubmissionHomePage();
+  await updateTeamMateSubmissionAlert();
 });
 
 
@@ -1416,18 +1514,37 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Highlight highest scores, closest scores, and display top scorers
     const highlightHighest = (selector, colors) => {
-        const cells = Array.from(document.querySelectorAll(selector));
-        const values = cells.map(cell => parseFloat(cell.textContent)).filter(value => !isNaN(value));
-        const sortedValues = [...new Set(values)].sort((a, b) => b - a);
-        cells.forEach(cell => {
-            const cellValue = parseFloat(cell.textContent);
-            const rank = sortedValues.indexOf(cellValue);
-            if (rank >= 0 && rank < colors.length) {
-                cell.style.backgroundColor = colors[rank];
-                cell.style.color = 'black';
-            }
-        });
+      // Gather cells with their numeric values
+      const cells = Array.from(document.querySelectorAll(selector)).map(cell => ({
+        cell,
+        value: parseFloat(cell.textContent)
+      })).filter(item => !isNaN(item.value));
+
+      // Sort by value descending
+      cells.sort((a, b) => b.value - a.value);
+
+      // Compute competition ranks
+      let rank = 1;
+      let prevValue = null;
+      let count = 0;
+      cells.forEach(item => {
+        if (prevValue !== null && item.value !== prevValue) {
+          rank = count + 1;
+        }
+        item.rank = rank;
+        prevValue = item.value;
+        count++;
+      });
+
+      // Highlight cells with a rank within the podium range
+      cells.forEach(item => {
+        if (item.rank <= colors.length) {
+          item.cell.style.backgroundColor = colors[item.rank - 1];
+          item.cell.style.color = 'black';
+        }
+      });
     };
+
 
     const highlightClosestScore = (selector, color) => {
         const cells = Array.from(document.querySelectorAll(selector));
