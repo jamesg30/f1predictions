@@ -779,11 +779,19 @@
       return output;
     }
 
+    const { data: players, error: playerError } = await supabase
+            .from('players')
+            .select('id, name, participant_team_id');
+        if (playerError) {
+            console.error("Error fetching players:", playerError);
+        }
 
         // 11. Build table body rows.
         let bodyHTML = "<tbody>";
         standings.forEach(team => {
           const currRank = currentRankMap[team.team_id];
+          const teamPlayers = players ? players.filter(player => player.participant_team_id === team.team_id) : [];
+          const playerNames = teamPlayers.map(player => player.name).join(', ');
           let movement = "";
           if (lastRace > 1 && prevRankMap[team.team_id] !== undefined) {
             const diff = prevRankMap[team.team_id] - currRank;
@@ -797,7 +805,7 @@
           }
           bodyHTML += `<tr>
                         <td>${currRank} ${movement}</td>
-                        <td>${team.team_name}</td>
+                        <td><b>${team.team_name}</b>${playerNames ? '<br>' + playerNames : ''}</td>
                         <td>${team.total}</td>`;
           team.raceScores.forEach(score => {
             bodyHTML += `<td>${processTeamRaceScore(score)}</td>`;
