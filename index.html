@@ -183,6 +183,109 @@
                 padding: 0 10px; /* Reduce padding */
             }
         }
+/* Podium container */
+.podium-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 10px;
+  margin: 20px;
+}
+
+/* Each podium box */
+.podium-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 150px; /* default width for mobile */
+}
+
+/* On desktop, make the podium slightly wider */
+@media (min-width: 768px) {
+  .podium-box {
+    width: 150px;
+  }
+}
+
+/* Container for player info above each box */
+.podium-box .player-names {
+  margin-bottom: 5px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Player info: inline-flex so items try to stay on one line,
+   but with wrapping allowed if the name overflows */
+.player-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+/* Icon container: never wraps */
+/* Ensure all elements inside the icons container align vertically in the center */
+.icons {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Player name: by default on the same line but will wrap if needed */
+.player-name {
+  flex: 1 1 auto;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Podium block with centered rank number */
+.podium-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  border: 2px solid #999;
+  border-radius: 4px 4px 0 0;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Different heights and subtle accent colors */
+.podium-box.first .podium-block {
+  height: 85px;
+  background-color: rgba(255, 215, 0, 0.2); /* gold accent */
+}
+.podium-box.second .podium-block {
+  height: 55px;
+  background-color: rgba(192, 192, 192, 0.2); /* silver accent */
+}
+.podium-box.third .podium-block {
+  height: 35px;
+  background-color: rgba(205, 127, 50, 0.2); /* bronze accent */
+}
+
+
+/* Rank number styling -- no absolute positioning needed now */
+.rank-number {
+  font-family: 'Montserrat'
+  /* Centered by the flex container */
+}
+
+.player-name {
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 400px) {
+  .player-name {
+    font-size: 1em;
+  }
+  .podium-box {
+    width: 90px;
+  }
+}
+
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -406,13 +509,43 @@
                 <h4 class="mb-3 heading-text-2">Latest Results</h4>
             </div>
             <div class="container my-4">
-                <h5 id="raceTitle" class="mb-3 heading-text-3"></h5>
+                <h5 id="raceTitle" class="mb-3 heading-text-3" style="text-align: center"></h5>
                 <!-- Loading Indicator for Scored Results -->
                 <div id="scoredLoading" class="loading-indicator mb-3 heading-text-3">
                     Results loading...
                     <div class="loading-bar"></div>
                 </div>
-                <div id="topPlayersContainer" class="top-players-wrapper"></div>
+                <div id="topPlayersContainer" class="podium-container">
+                  <!-- Second Place -->
+                  <div class="podium-box second">
+                    <div class="player-names" id="secondNames">
+                      <!-- 2nd place player names injected here -->
+                    </div>
+                    <div class="podium-block">
+                      <div class="rank-number" style="color: rgba(192, 192, 192, 0.9); /* subtle silver accent */">2</div>
+                    </div>
+                  </div>
+                
+                  <!-- First Place -->
+                  <div class="podium-box first">
+                    <div class="player-names" id="firstNames">
+                      <!-- 1st place player names injected here -->
+                    </div>
+                    <div class="podium-block">
+                      <div class="rank-number" style="color: rgba(255, 215, 0, 0.9); /* subtle gold accent */">1</div>
+                    </div>
+                  </div>
+                
+                  <!-- Third Place -->
+                  <div class="podium-box third">
+                    <div class="player-names" id="thirdNames">
+                      <!-- 3rd place player names injected here -->
+                    </div>
+                    <div class="podium-block">
+                      <div class="rank-number" style="color: rgba(205, 127, 50, 0.9); /* subtle bronze accent */">3</div>
+                    </div>
+                  </div>
+                </div>
             
                 <!-- Scrollable container for main results table -->
                 <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
@@ -1602,14 +1735,35 @@ for (let i = 0; i < grandTotals.length; i++) {
     count++;
 }
 
-// Render all top players in one container
-document.getElementById('topPlayersContainer').innerHTML = topPlayers.map(player => `
-    <div class="player-block">
-       ${getMedalIcon(player.rank)}
-       ${createSmallAvatarHTML(player)}
-       <span class="player-name">${player.name}</span>
-    </div>
-`).join('');
+
+// Group players by rank for podium display
+const podiumGroups = { 1: [], 2: [], 3: [] };
+
+topPlayers.forEach(player => {
+    if (podiumGroups[player.rank]) {
+        podiumGroups[player.rank].push(player);
+    }
+});
+
+// Helper function to generate HTML for player info,
+// placing medal and avatar in an icons container and the name beside them.
+// If the name is too long, it will wrap underneath.
+function generatePlayerNamesHTML(players) {
+    return players.map(player => `
+      <div class="player-info">
+         <div class="icons">
+            ${getMedalIcon(player.rank)}
+            ${createSmallAvatarHTML(player)}
+         </div>
+         <div class="player-name">${player.name}</div>
+      </div>
+    `).join('');
+}
+
+// Render the names in their respective podium boxes
+document.getElementById('firstNames').innerHTML = generatePlayerNamesHTML(podiumGroups[1]);
+document.getElementById('secondNames').innerHTML = generatePlayerNamesHTML(podiumGroups[2]);
+document.getElementById('thirdNames').innerHTML = generatePlayerNamesHTML(podiumGroups[3]);
 
 
     document.getElementById('toggleScores').addEventListener('change', (event) => {
