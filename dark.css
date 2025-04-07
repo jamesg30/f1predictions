@@ -39,6 +39,10 @@ header {
   z-index: 1050;
 }
 
+div.list-group-item {
+  background-color: transparent !important;
+  }
+
 /* =========================== */
 /* === NAVBAR OVERRIDES  ===== */
 /* =========================== */

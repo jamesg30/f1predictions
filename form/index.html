@@ -768,25 +768,23 @@
           submissionData[`form_id_${i}`] = formData.get(`input-${i}`);
         }
 
-        // Insert or update the submission.
-        let saveError;
-        if (hasPreviousSubmission) {
-          const { error: updateError } = await supabase
+        try {
+          // Use upsert to insert or update based on the unique combination of race_number and player_id.
+          const { error } = await supabase
             .from('form_raw')
-            .update(submissionData)
-            .eq('player_id', playerId)
-            .eq('race_number', raceNumber);
-          saveError = updateError;
-        } else {
-          const { error: insertError } = await supabase
-            .from('form_raw')
-            .insert([submissionData]);
-          saveError = insertError;
-        }
+            .upsert(submissionData, {
+              // Ensure Supabase checks for duplicates based on these columns.
+              onConflict: ['race_number', 'player_id']
+            });
 
-        if (saveError) {
+          if (error) {
+            showCustomAlert(`Error saving form submission: ${error.message}`);
+            console.error('Error saving form submission:', error);
+            return;
+          }
+        } catch (error) {
           showCustomAlert('Error saving form submission');
-          console.error('Error saving form submission:', saveError);
+          console.error('Unexpected error saving form submission:', error);
           return;
         }
 
