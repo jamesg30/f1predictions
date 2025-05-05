@@ -335,6 +335,23 @@ text-align: center;
 vertical-align: middle;
 }
 
+/* First column styling for both tables */
+#mainResultsTable td:first-child, #unscoredResultsTable td:first-child, #player-results-table td:first-child{
+  min-width: 13ch !important;
+}
+
+#team-results-table td:nth-child(9){
+  min-width: 20ch !important;
+}
+
+.your-results-box td {
+  border: 1px solid #222;
+}
+
+.your-results-box td:first-child {
+  background-color: #444;
+}
+
 /* ========================== */
 /* === LOADING INDICATORS === */
 /* ========================== */

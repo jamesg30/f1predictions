@@ -252,18 +252,31 @@
 
 /* Different heights and subtle accent colors */
 .podium-box.first .podium-block {
-  height: 85px;
+  height: 90px;
   background-color: rgba(255, 215, 0, 0.2); /* gold accent */
 }
 .podium-box.second .podium-block {
-  height: 55px;
+  height: 65px;
   background-color: rgba(192, 192, 192, 0.2); /* silver accent */
 }
 .podium-box.third .podium-block {
-  height: 35px;
+  height: 55px;
   background-color: rgba(205, 127, 50, 0.2); /* bronze accent */
 }
 
+.rank-score {
+  font-size: 0.7em;
+  color: #333;
+  margin-top: 4px;
+}
+
+.podium-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
 
 /* Rank number styling -- no absolute positioning needed now */
 .rank-number {
@@ -284,6 +297,42 @@
   .podium-box {
     width: 90px;
   }
+}
+
+.your-results-box {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.your-results-box h3 {
+  margin-top: 0;
+}
+
+.your-results-box table {
+  width: 100%;
+  table-layout: auto;
+  border-collapse: collapse;
+}
+
+.your-results-box td {
+  border: 1px solid #ddd;
+  max-width: 10ch;
+  word-wrap: break-word;
+  white-space: normal;
+  padding: 1px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.your-results-box td:first-child{
+  background-color: #eeeeee;
+  min-width: 3ch
+}
+
+.your-results-box td:nth-child(2){
+  text-align: left;
+  padding-left: 8px;
+  padding-top: 5px;
 }
 
     </style>
@@ -522,7 +571,10 @@
                       <!-- 2nd place player names injected here -->
                     </div>
                     <div class="podium-block">
-                      <div class="rank-number" style="color: rgba(192, 192, 192, 0.9); /* subtle silver accent */">2</div>
+                      <div class="podium-content">
+                        <div class="rank-number" style="color: rgba(192, 192, 192, 0.9); /* subtle silver accent */">2</div>
+                        <div class="rank-score" style="color: rgba(192, 192, 192, 0.9); /* subtle silver accent */  margin-top: -5px" id="secondScore"></div>
+                      </div>
                     </div>
                   </div>
                 
@@ -532,7 +584,10 @@
                       <!-- 1st place player names injected here -->
                     </div>
                     <div class="podium-block">
-                      <div class="rank-number" style="color: rgba(255, 215, 0, 0.9); /* subtle gold accent */">1</div>
+                      <div class="podium-content">
+                        <div class="rank-number" style="color: rgba(255, 215, 0, 0.9); /* subtle gold accent */">1</div>
+                        <div class="rank-score" style="color: rgba(255, 215, 0, 0.9); /* subtle gold accent */  margin-top: -5px" id="firstScore"></div>
+                      </div>
                     </div>
                   </div>
                 
@@ -542,9 +597,20 @@
                       <!-- 3rd place player names injected here -->
                     </div>
                     <div class="podium-block">
-                      <div class="rank-number" style="color: rgba(205, 127, 50, 0.9); /* subtle bronze accent */">3</div>
+                      <div class="podium-content">
+                        <div class="rank-number" style="color: rgba(205, 127, 50, 0.9); /* subtle bronze accent */">3</div>
+                        <div class="rank-score" style="color: rgba(205, 127, 50, 0.9); /* subtle bronze accent */ margin-top: -5px" id="thirdScore"></div>
+                      </div>
                     </div>
                   </div>
+                </div>
+
+                <div id="yourResultsBox" style="display: none;" class="your-results-box">
+                  <h3 class="heading-text-3" style="font-size: 1.2rem !important">Your results</h3>
+                  <table>
+                    <tbody id="yourResultsContent"></tbody>
+                  </table>
+                  <di style="margin-bottom: 5px"></div>
                 </div>
             
                 <!-- Scrollable container for main results table -->
@@ -1756,6 +1822,20 @@ topPlayers.forEach(player => {
     }
 });
 
+const firstPlayer = podiumGroups[1][0];
+const secondPlayer = podiumGroups[2][0];
+const thirdPlayer = podiumGroups[3][0];
+
+if (firstPlayer) {
+    document.getElementById('firstScore').textContent = `${firstPlayer.total} pts`;
+}
+if (secondPlayer) {
+    document.getElementById('secondScore').textContent = `${secondPlayer.total} pts`;
+}
+if (thirdPlayer) {
+    document.getElementById('thirdScore').textContent = `${thirdPlayer.total} pts`;
+}
+
 // Helper function to generate HTML for player info,
 // placing medal and avatar in an icons container and the name beside them.
 // If the name is too long, it will wrap underneath.
@@ -1776,6 +1856,40 @@ document.getElementById('firstNames').innerHTML = generatePlayerNamesHTML(podium
 document.getElementById('secondNames').innerHTML = generatePlayerNamesHTML(podiumGroups[2]);
 document.getElementById('thirdNames').innerHTML = generatePlayerNamesHTML(podiumGroups[3]);
 
+// === DISPLAY "YOUR RESULTS" BOX IF LOGGED IN ===
+if (currentUserId && userResultPulled) {
+    const userPlayer = players.find(p => p.player_id == currentUserId);
+    const userRank = grandTotals.findIndex(p => p.id == currentUserId) + 1;
+
+    if (userPlayer) {
+        const yourResultsBox = document.getElementById('yourResultsBox');
+        const yourResultsContent = document.getElementById('yourResultsContent');
+
+        yourResultsBox.style.display = 'block';
+
+        const row = document.createElement('tr');
+
+        // Create avatar HTML
+        const avatarCell = document.createElement('td');
+        avatarCell.colSpan = 1;
+        avatarCell.innerHTML = `
+            <div class="player-info">
+                <div class="icons">
+                    ${createSmallAvatarHTML(userPlayer)}
+                </div>
+                <div class="player-name">${userPlayer.name}</div>
+            </div>
+        `;
+
+        row.innerHTML = `
+            <td><strong>${userRank}</strong></td>
+            <td>${avatarCell.innerHTML}</td>
+            <td>${userPlayer.grand_total ?? 0} pts</td>
+        `;
+        yourResultsContent.innerHTML = '';
+        yourResultsContent.appendChild(row);
+    }
+}
 
     document.getElementById('toggleScores').addEventListener('change', (event) => {
     const showScores = event.target.checked;

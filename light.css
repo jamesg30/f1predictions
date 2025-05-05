@@ -113,6 +113,16 @@ footer {
   background-color: #eeeeee;
 }
 
+/* First column styling for both tables */
+#mainResultsTable td:first-child, #unscoredResultsTable td:first-child, #player-results-table td:first-child{
+  min-width: 13ch !important;
+}
+
+#team-results-table td:nth-child(9){
+  min-width: 20ch !important;
+}
+
+
 /* RESULTS PAGE STYLING */
 /* First three columns styling for both tables */
 #full-season-table td:first-child,
