@@ -501,13 +501,16 @@
               </div>
             </div>
             <!-- 2nd Column -->
-            <div class="col-sm mb-3 text-center" id="next-race-info">
-              <h5 class="mb-3 body-text-emph">Next Race:</h5>
-              <div class="flag-placeholder"></div>
-              <h6 class="mt-2 body-text">Loading...</h6>
-              <div id="countdown-timer" class="mt-2" style="text-align: center; display: inline-block;">
-                  <strong>Time left:</strong> <span id="countdown"></span>
+            <div class="col-sm mb-3 text-center">
+              <div id="next-race-info">
+                <h5 class="mb-3 body-text-emph">Next Race:</h5>
+                <div class="flag-placeholder"></div>
+                <h6 class="mt-2 body-text">Loading...</h6>
+                <div id="countdown-timer" class="mt-2" style="text-align: center; display: inline-block;">
+                    <strong>Time left:</strong> <span id="countdown"></span>
+                </div>
               </div>
+              <div id="raceTimeDisplay"></div>
             </div>
             <!-- 3rd Column -->
             <div class="col-sm mb-3 text-center" id="track-race-info">
@@ -824,6 +827,7 @@
  
     <footer class="bg-light text-black text-center py-1 body-text-xs">
       <p>&copy; 2025 F1 Predictions Form</p>
+      <small><div id="userLocationDisplay" style="margin-top: -20px; color: #838383"></div></small>
     </footer>
 
 <!-- Bootstrap JS Bundle (Local) -->
@@ -1037,6 +1041,9 @@
           return;
       }
       
+      // ALSO trigger the display update here, using the same date
+      displayLocalRaceTime(targetDate, "raceTimeDisplay", "userLocationDisplay");
+
       let timer;
       
       function updateCountdown() {
@@ -2098,6 +2105,29 @@ async function getCurrentUser() {
   }
   console.log("getCurrentUser: Fetched user data:", data);
   return data;
+}
+
+function displayLocalRaceTime(raceUTCDate, timeElementId, locationElementId) {
+  const timeElement = document.getElementById(timeElementId);
+  const locationElement = document.getElementById(locationElementId);
+
+  if (!timeElement || !locationElement) return;
+
+  // Format local time
+  const options = {
+    hour: "numeric",
+    minute: "2-digit",
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  };
+  const localTimeStr = raceUTCDate.toLocaleString(undefined, options);
+
+  timeElement.textContent = `Race Start: ${localTimeStr}`;
+
+  // Display timezone
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  locationElement.textContent = `Timezone: ${timeZone.replaceAll("_", " ")}`;
 }
 
   // ===============================
