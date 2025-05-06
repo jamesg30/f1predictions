@@ -256,11 +256,11 @@
   background-color: rgba(255, 215, 0, 0.2); /* gold accent */
 }
 .podium-box.second .podium-block {
-  height: 65px;
+  height: 70px;
   background-color: rgba(192, 192, 192, 0.2); /* silver accent */
 }
 .podium-box.third .podium-block {
-  height: 55px;
+  height: 60px;
   background-color: rgba(205, 127, 50, 0.2); /* bronze accent */
 }
 
@@ -501,17 +501,24 @@
               </div>
             </div>
             <!-- 2nd Column -->
-            <div class="col-sm mb-3 text-center">
-              <div id="next-race-info">
-                <h5 class="mb-3 body-text-emph">Next Race:</h5>
-                <div class="flag-placeholder"></div>
-                <h6 class="mt-2 body-text">Loading...</h6>
-                <div id="countdown-timer" class="mt-2" style="text-align: center; display: inline-block;">
-                    <strong>Time left:</strong> <span id="countdown"></span>
-                </div>
-              </div>
-              <div id="raceTimeDisplay"></div>
-            </div>
+<!-- 2nd Column -->
+<div class="col-sm mb-3 text-center">
+  <div id="next-race-info">
+    <h5 class="mb-3 body-text-emph">Next Race:</h5>
+    <div class="row justify-content-center align-items-center mb-2">
+      <div class="col-auto" id="race-flag"></div>
+      <div class="col-auto" id="weather-forecast">
+        <div id="weather-icon" style="margin: 5px 0;"></div>
+        <span id="weather-summary" class="body-text"></span>
+      </div>
+    </div>
+    <h6 class="body-text" id="race-title"></h6>
+    <div id="countdown-timer" class="mt-2">
+      <strong>Time left:</strong> <span id="countdown"></span>
+    </div>
+  </div>
+</div>
+
             <!-- 3rd Column -->
             <div class="col-sm mb-3 text-center" id="track-race-info">
               <div class="card-img-top placeholder-16by9"></div>
@@ -963,75 +970,91 @@
 
     const flagUrl = `/media/flags/${raceDetails.country.toLowerCase()}.png`;
 
-        document.getElementById("next-race-info").innerHTML = `
-         <h5 class="mb-3 body-text-emph">Next Race:</h5>
-        <img src="${flagUrl}" alt="${raceDetails.country} Flag" class="flag-img">
-        <h6 class="mt-2 body-text">${raceDetails.name} GP</h6>
-        <div id="countdown-timer" class="mt-2" style="text-align: center; display: inline-block;">
-            <strong>Time left:</strong> <span id="countdown"></span>
+    // Set the new structured layout
+    document.getElementById("next-race-info").innerHTML = `
+      <h5 class="mb-3 body-text-emph text-center">Next Race:</h5>
+      <div class="row align-items-center justify-content-center">
+        <div class="col-6 text-center">
+          <div class="mb-2">
+            <img src="${flagUrl}" alt="${raceDetails.country} Flag" class="flag-img">
+          </div>
+          <h6 class="body-text">${raceDetails.name} GP</h6>
         </div>
-        `;
+        <div class="col-6 text-center">
+          <div id="weather-forecast">
+            <div id="weather-icon" style="margin-top: -10px;margin-bottom: -5px;"></div>
+            <span id="weather-summary" class="body-text"></span>
+          </div>
+        </div>
+      </div>
+      <div id="countdown-timer" class="mt-3 text-center">
+        <strong>Time left:</strong> <span id="countdown"></span>
+      </div>
+      <div id="raceTimeDisplay" class="mt-2 text-center"></div>
+    `;
 
-
-        // Show the countdown container (it should now size to its content)
-        document.getElementById("countdown-timer").style.display = "inline-block";
-
-        // Start the generic countdown as before
-        startGenericCountdown(raceDate, "countdown", function() {
+    // Start countdown
+    document.getElementById("countdown-timer").style.display = "block";
+    startGenericCountdown(raceDate, "countdown", () => {
         const countdownEl = document.getElementById("countdown");
-        // countdownEl.style.color = "black";
-        });
+        countdownEl.textContent = "Race started!";
+    });
 
-        // Fetch the race details from the calendar table
-        const { data: trackDetails, error: trackDetailsError } = await supabase
-            .from('tracks')
-            .select('*')
-            .eq('name', raceDetails.name)
-            .single();
+    // Fetch track details
+    const { data: trackDetails, error: trackDetailsError } = await supabase
+        .from('tracks')
+        .select('*')
+        .eq('name', raceDetails.name)
+        .single();
 
-        if (trackDetailsError) {
-            console.error('Error fetching race details:', trackDetailsError);
-            return null;
-        }
+    if (trackDetailsError) {
+        console.error('Error fetching track details:', trackDetailsError);
+        return;
+    }
 
-        const trackUrl = `/media/tracks/${trackDetails.track_image_name}.png`;
-        document.getElementById("track-race-info").innerHTML = `
-  <div class="image-placeholder-container">
-    <div id="track-placeholder" class="placeholder-16by9"></div> 
-    <img id="track-image" src="${trackUrl}" class="card-img-top hidden" alt="${raceDetails.name} Track Image">
-  </div>
-  
-  <div>
-    <h5 class="body-text-emph" style="margin-top: 5px">${trackDetails.circuit_name}</h5>
-    <p class="body-text">Laps: ${trackDetails.number_of_laps}, Distance: ${trackDetails.circuit_length} km</p>
-  </div>
-`;
+    // Set track image and stats
+    const trackUrl = `/media/tracks/${trackDetails.track_image_name}.png`;
+    document.getElementById("track-race-info").innerHTML = `
+      <div class="image-placeholder-container">
+        <div id="track-placeholder" class="placeholder-16by9"></div> 
+        <img id="track-image" src="${trackUrl}" class="card-img-top hidden" alt="${raceDetails.name} Track Image">
+      </div>
+      <div>
+        <h5 class="body-text-emph mt-2">${trackDetails.circuit_name}</h5>
+        <p class="body-text">Laps: ${trackDetails.number_of_laps}, Distance: ${trackDetails.circuit_length} km</p>
+      </div>
+    `;
 
-      // <br>
-      //     Race Distance: ${trackDetails.race_distance} km<br>
-      //     First Race: ${trackDetails.first_grand_prix}
-    // Get references to the new image and its placeholder
+    // Handle image loading (including cache case)
     const trackImage = document.getElementById('track-image');
     const trackPlaceholder = document.getElementById('track-placeholder');
+    const showTrackImage = () => {
+        if (trackPlaceholder && trackImage) {
+            trackPlaceholder.classList.add('hidden');
+            trackImage.classList.remove('hidden');
+        }
+    };
+    trackImage.addEventListener('load', showTrackImage);
+    if (trackImage.complete) showTrackImage();
 
-    if (trackImage) {
-      // Listen for the image load event
-      trackImage.addEventListener('load', () => {
-        // Hide the placeholder and show the image
-        trackPlaceholder.classList.add('hidden');
-        trackImage.classList.remove('hidden');
-        console.log('Track map image loaded successfully.');
-      });
+    // === WEATHER ===
+    const weatherData = await fetchWeatherForecast(trackDetails.lat, trackDetails.lon, raceDate);
+    const iconContainer = document.getElementById("weather-icon");
+    const summaryContainer = document.getElementById("weather-summary");
 
-      // In case the image is cached and already loaded
-      if (trackImage.complete) {
-        trackPlaceholder.classList.add('hidden');
-        trackImage.classList.remove('hidden');
-      }
+    if (weatherData?.tooFar) {
+        iconContainer.innerHTML = "";
+        summaryContainer.textContent = "No forecast available";
+    } else if (weatherData) {
+      const { maxTemp, minTemp, weatherCode } = weatherData;
+const desc = getWeatherDescription(weatherCode);
+iconContainer.innerHTML = `<img src="/media/weather/${weatherCode}.svg" alt="${desc}" width="64" height="64">`;
+summaryContainer.textContent = `↑ ${Math.round(maxTemp)}ºC ↓ ${Math.round(minTemp)}ºC, ${desc}`;
+    } else {
+        iconContainer.innerHTML = "";
+        summaryContainer.textContent = "Weather unavailable";
     }
-    
-    
-    }
+}
     
     // Start countdown
       function startGenericCountdown(targetDate, countdownElementId, onEnd) {
@@ -1143,6 +1166,63 @@
           }
       });
       });
+
+      async function fetchWeatherForecast(lat, lon, raceDateUTC) {
+    const now = new Date();
+    const diffHours = (raceDateUTC - now) / (1000 * 60 * 60);
+
+    if (diffHours > 15 * 24) {
+        return { tooFar: true };
+    }
+
+    const isoDate = raceDateUTC.toISOString().split("T")[0]; // YYYY-MM-DD
+
+    console.log(`Requesting weather forecast for coordinates (Lat: ${lat}, Lon: ${lon}) on ${isoDate}`);
+
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=UTC&start_date=${isoDate}&end_date=${isoDate}`;
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        console.log("Weather forecast data received:", data); // Log the received data
+
+        const tempsMax = data.daily.temperature_2m_max;
+const tempsMin = data.daily.temperature_2m_min;
+const codes = data.daily.weathercode;
+
+return {
+    maxTemp: tempsMax[0],
+    minTemp: tempsMin[0],
+    weatherCode: codes[0], // Most significant weather code for the day
+};
+
+    } catch (err) {
+        console.error("Error fetching weather:", err);
+        return null;
+    }
+}
+
+      function getWeatherDescription(code) {
+    const descriptions = {
+        0: "Clear",
+        1: "Mainly Clear",
+        2: "Partly Cloudy",
+        3: "Overcast",
+        45: "Fog",
+        48: "Depositing Rime Fog",
+        51: "Light Drizzle",
+        53: "Moderate Drizzle",
+        55: "Dense Drizzle",
+        61: "Slight Rain",
+        63: "Moderate Rain",
+        65: "Heavy Rain",
+        80: "Rain Showers",
+        95: "Thunderstorm",
+    };
+    return descriptions[code] || "Unknown";
+}
+
 
        // ============================
   // === MAIN PAGE ALERT CODE ===
