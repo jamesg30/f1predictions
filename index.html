@@ -500,24 +500,32 @@
                 </div>
               </div>
             </div>
+
             <!-- 2nd Column -->
-<!-- 2nd Column -->
-<div class="col-sm mb-3 text-center">
-  <div id="next-race-info">
-    <h5 class="mb-3 body-text-emph">Next Race:</h5>
-    <div class="row justify-content-center align-items-center mb-2">
-      <div class="col-auto" id="race-flag"></div>
-      <div class="col-auto" id="weather-forecast">
-        <div id="weather-icon" style="margin: 5px 0;"></div>
-        <span id="weather-summary" class="body-text"></span>
-      </div>
-    </div>
-    <h6 class="body-text" id="race-title"></h6>
-    <div id="countdown-timer" class="mt-2">
-      <strong>Time left:</strong> <span id="countdown"></span>
-    </div>
-  </div>
-</div>
+            <div class="col-sm mb-3 text-center">
+              <div id="next-race-info">
+                <h5 class="mb-3 body-text-emph">Next Race:</h5>
+                <div class="row align-items-center justify-content-center">
+                  <div class="col-6 text-center">
+                    <div class="mb-2">
+                      <div class="flag-placeholder"></div>
+                    </div>
+                    <span class="loading-text-placeholder" style="height: 1.2em; margin-top: -5px"></span>
+                  </div>
+                  <div class="col-6 text-center">
+                    <div id="weather-forecast">
+                      <div class="flag-placeholder" style="margin-top: -10px;margin-bottom: -5px; height: 64px; width: 64px"></div>
+                      <span class="loading-text-placeholder" style="height: 1.2em; margin-top: 5px"></span>
+                    </div>
+                  </div>
+                </div>
+                
+                <h6 class="body-text" id="race-title"></h6>
+                <div id="countdown-timer" class="mt-2">
+                  <strong>Time left:</strong> <span id="countdown"></span>
+                </div>
+              </div>
+            </div>
 
             <!-- 3rd Column -->
             <div class="col-sm mb-3 text-center" id="track-race-info">
@@ -982,8 +990,8 @@
         </div>
         <div class="col-6 text-center">
           <div id="weather-forecast">
-            <div id="weather-icon" style="margin-top: -10px;margin-bottom: -5px;"></div>
-            <span id="weather-summary" class="body-text"></span>
+              <div id="weather-icon" class="flag-placeholder align-items-center justify-content-center" style="display: block; margin: 0 auto; margin-top: -10px; margin-bottom: 0px; height: 64px; width: 64px"></div>
+              <span id="weather-summary" class="loading-text-placeholder center" style="height: 1.2em; margin-top: 5px"></span>
           </div>
         </div>
       </div>
@@ -1048,7 +1056,9 @@
     } else if (weatherData) {
       const { maxTemp, minTemp, weatherCode } = weatherData;
 const desc = getWeatherDescription(weatherCode);
+iconContainer.classList.remove("flag-placeholder");
 iconContainer.innerHTML = `<img src="/media/weather/${weatherCode}.svg" alt="${desc}" width="64" height="64">`;
+summaryContainer.classList.remove("loading-text-placeholder");
 summaryContainer.textContent = `↑ ${Math.round(maxTemp)}ºC ↓ ${Math.round(minTemp)}ºC, ${desc}`;
     } else {
         iconContainer.innerHTML = "";
