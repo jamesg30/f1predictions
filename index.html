@@ -10,7 +10,6 @@
       (function() {
         const darkMode = localStorage.getItem('darkMode') === 'true';
         const cssFile = darkMode ? '/dark.css' : '/light.css';
-        
         // Create a new link element
         const link = document.createElement('link');
         link.rel = 'stylesheet';
@@ -990,7 +989,7 @@
         </div>
         <div class="col-6 text-center">
           <div id="weather-forecast">
-              <div id="weather-icon" class="flag-placeholder align-items-center justify-content-center" style="display: block; margin: 0 auto; margin-top: -10px; margin-bottom: 0px; height: 64px; width: 64px"></div>
+              <div id="weather-icon" class="flag-placeholder align-items-center justify-content-center invert-icon" style="display: block; margin: 0 auto; margin-top: -10px; margin-bottom: 0px; height: 64px; width: 64px"></div>
               <span id="weather-summary" class="loading-text-placeholder center" style="height: 1.2em; margin-top: 5px"></span>
           </div>
         </div>

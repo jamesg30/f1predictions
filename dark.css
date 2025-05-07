@@ -286,6 +286,15 @@ color: white;
   background-color: #000 !important;
   }
 
+  .invert-icon img {
+    filter: brightness(0) invert(1);
+  }
+
+
+  .your-results-box td:first-child{
+    background-color: #444 !important;
+    min-width: 3ch
+  }
 
 #mainResultsTable td,
 #player-results-table td {
