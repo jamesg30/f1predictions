@@ -1052,16 +1052,20 @@
     if (weatherData?.tooFar) {
         iconContainer.innerHTML = "";
         summaryContainer.textContent = "No forecast available";
+        iconContainer.classList.remove("flag-placeholder");
+        summaryContainer.classList.remove("loading-text-placeholder");
     } else if (weatherData) {
       const { maxTemp, minTemp, weatherCode } = weatherData;
-const desc = getWeatherDescription(weatherCode);
-iconContainer.classList.remove("flag-placeholder");
-iconContainer.innerHTML = `<img src="/media/weather/${weatherCode}.svg" alt="${desc}" width="64" height="64">`;
-summaryContainer.classList.remove("loading-text-placeholder");
-summaryContainer.textContent = `↑ ${Math.round(maxTemp)}ºC ↓ ${Math.round(minTemp)}ºC, ${desc}`;
+      const desc = getWeatherDescription(weatherCode);
+      iconContainer.classList.remove("flag-placeholder");
+      iconContainer.innerHTML = `<img src="/media/weather/${weatherCode}.svg" alt="${desc}" width="64" height="64">`;
+      summaryContainer.classList.remove("loading-text-placeholder");
+      summaryContainer.textContent = `↑ ${Math.round(maxTemp)}ºC ↓ ${Math.round(minTemp)}ºC, ${desc}`;
     } else {
-        iconContainer.innerHTML = "";
-        summaryContainer.textContent = "Weather unavailable";
+      iconContainer.classList.remove("flag-placeholder");
+      summaryContainer.classList.remove("loading-text-placeholder");  
+      iconContainer.innerHTML = "";
+      summaryContainer.textContent = "Weather unavailable";  
     }
 }
     
