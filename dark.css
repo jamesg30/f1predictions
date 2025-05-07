@@ -296,6 +296,10 @@ color: white;
     min-width: 3ch
   }
 
+  .your-results-box td {
+    border: 1px solid #222 !important;
+  }
+
 #mainResultsTable td,
 #player-results-table td {
 border: 1px solid #222;
