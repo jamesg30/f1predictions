@@ -337,7 +337,12 @@
     <ul class="nav nav-underline mb-4" id="accountTab" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="avatar-tab" data-bs-toggle="tab" data-bs-target="#avatarCustomisation" type="button" role="tab" aria-controls="avatarCustomisation" aria-selected="true">
-          Avatar Customisation
+          Avatar
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="customisation-tab" data-bs-toggle="tab" data-bs-target="#customisationSection" type="button" role="tab" aria-controls="customisationSection" aria-selected="false">
+          Customisation [BETA]
         </button>
       </li>
       <li class="nav-item" role="presentation">
@@ -351,7 +356,7 @@
     <div class="tab-content" id="accountTabContent">
       <!-- Avatar Customisation Tab -->
       <div class="tab-pane fade show active" id="avatarCustomisation" role="tabpanel" aria-labelledby="avatar-tab">
-        <h2 class="heading-text-2 mt-3">Avatar Customisation</h2>
+        <h2 class="heading-text-2 mt-3">Avatar</h2>
         <div class="container avatar-customisation-container">
           <!-- Current Avatar Preview -->
           <div class="current-avatar-section">
@@ -573,6 +578,16 @@
         </div>
       </div>
   
+      <div class="tab-pane fade" id="customisationSection" role="tabpanel" aria-labelledby="password-tab">
+        <h2 class="mb-3 heading-text-2 mt-3">Customisation [BETA]</h2>
+        <div>
+          <p>
+            The customisation is currently in beta. Changes here will not be reflected on the main home page, but can be previewed on <a href="/beta">f1predictionsform.com/beta</a>. 
+          </p>
+        </div>
+      </div>
+    </div>
+
       <!-- Password Tab -->
       <div class="tab-pane fade" id="passwordSection" role="tabpanel" aria-labelledby="password-tab">
         <h2 class="mb-3 heading-text-2 mt-3">Password</h2>

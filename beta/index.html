@@ -473,7 +473,7 @@
       <div class="overlay"></div>
   
       <!-- Centered Text -->
-      <h1 class="heading-text-1">F1 Predictions Form</h1>
+      <h1 class="heading-text-1">F1 Predictions Form <i>[Beta]</i></h1>
   </section>
   
     
@@ -1732,6 +1732,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const headerRow = document.createElement('tr');
     headerRow.classList.add('header');
     headerRow.innerHTML = '<th>Name</th>';
+    headerRow.innerHTML += '<th id="spacer-column"></th><th>Results</th><th id="spacer-column"></th>';
     players.forEach(player => {
         const th = document.createElement('th');
         // Tag the header if this is the logged-in user.
@@ -1743,7 +1744,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         headerRow.appendChild(th);
     });
-    headerRow.innerHTML += '<th id="spacer-column"></th><th>Results</th>';
     document.getElementById('tableHeader').appendChild(headerRow);
 
     // Create data rows for scored results
@@ -1753,6 +1753,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (isTotalColumn) {
             const row = document.createElement('tr');
             row.innerHTML = `<td>${label}</td>`;
+            row.innerHTML += `<td></td><td></td><td></td>`;
             players.forEach(player => {
                 const td = document.createElement('td');
                 td.textContent = player[id];
@@ -1760,12 +1761,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 td.dataset.playerId = player.player_id;
                 row.appendChild(td);
             });
-            row.innerHTML += `<td></td><td></td>`;
+            
             tableBody.appendChild(row);
         } else {
             if (results[`form_id_${id}`] !== null) {
                 const row = document.createElement('tr');
                 row.innerHTML = `<td>${label}</td>`;
+                row.innerHTML += `<td></td><td>${results[`form_id_${id}`]}</td><td></td>`;
                 players.forEach(player => {
                     const td = document.createElement('td');
                     td.textContent = player[`form_id_${id}`];
@@ -1773,7 +1775,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     td.dataset.playerId = player.player_id;
                     row.appendChild(td);
                 });
-                row.innerHTML += `<td></td><td>${results[`form_id_${id}`]}</td>`;
+                
                 tableBody.appendChild(row);
             }
         }
@@ -2056,14 +2058,14 @@ if (currentUserId && userResultPulled) {
   // ===========================================
   // === PINNING COLUMNS & COLOURING HEADERS ===
   // ===========================================
-    // ✅ Global flag to track when the table is ready
+    // Global flag to track when the table is ready
     let tableReady = false;
 
-    // ✅ Move updatePinnedColumns OUTSIDE so it’s globally accessible
+    // Move updatePinnedColumns OUTSIDE so it’s globally accessible
     function updatePinnedColumns() {
       if (!tableReady) {
         console.log("Table not ready yet, skipping pinning...");
-        return; // 🛑 Don't pin until the table is fully created
+        return; // Don't pin until the table is fully created
       }
       console.log("Pinning columns...");
       resetPinnedStyles();
