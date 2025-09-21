@@ -220,6 +220,22 @@ footer {
   border: 1px solid #ddd;
 }
 
+  #mainResultsTable td:nth-child(2),
+  #mainResultsTable th:nth-child(2),
+  #mainResultsTable td:nth-child(4),
+  #mainResultsTable th:nth-child(4) {
+    border-top: none;
+    border-bottom: none;
+  }
+
+  #mainResultsTable tr:nth-child(8) td,
+  #mainResultsTable tr:nth-last-child(4) td,
+  #mainResultsTable tr:nth-last-child(2) td {
+    
+    border-left: none;
+    border-right: none;
+  }
+
 /* Pinned cells get sticky behavior */
 .pinned {
   position: sticky;

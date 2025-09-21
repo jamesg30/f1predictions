@@ -1732,7 +1732,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const headerRow = document.createElement('tr');
     headerRow.classList.add('header');
     headerRow.innerHTML = '<th>Name</th>';
-    headerRow.innerHTML += '<th id="spacer-column"></th><th>Results</th><th id="spacer-column"></th>';
+    headerRow.innerHTML += '<th id="spacer-column"></th><th>Results</th><th id="spacer-column"></th>';// added spacer
     players.forEach(player => {
         const th = document.createElement('th');
         // Tag the header if this is the logged-in user.
@@ -1753,7 +1753,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (isTotalColumn) {
             const row = document.createElement('tr');
             row.innerHTML = `<td>${label}</td>`;
-            row.innerHTML += `<td></td><td></td><td></td>`;
+            row.innerHTML += `<td></td><td></td><td></td>`; // added spacer
             players.forEach(player => {
                 const td = document.createElement('td');
                 td.textContent = player[id];
@@ -1767,7 +1767,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (results[`form_id_${id}`] !== null) {
                 const row = document.createElement('tr');
                 row.innerHTML = `<td>${label}</td>`;
-                row.innerHTML += `<td></td><td>${results[`form_id_${id}`]}</td><td></td>`;
+                row.innerHTML += `<td></td><td>${results[`form_id_${id}`]}</td><td></td>`; // added spacer
                 players.forEach(player => {
                     const td = document.createElement('td');
                     td.textContent = player[`form_id_${id}`];
@@ -2073,7 +2073,7 @@ if (currentUserId && userResultPulled) {
       const pinQuestionCheckbox = document.getElementById("pinQuestionColumn");
       const pinBothCheckbox = document.getElementById("pinBothColumns");
 
-      if (pinQuestionCheckbox.checked) {
+      if (pinQuestionCheckbox.checked) { // pinning columns
         pinBothCheckbox.checked = false;
         pinColumn(0, 0);
       } else if (pinBothCheckbox.checked) {

@@ -362,7 +362,7 @@
                     </label>
                     </div>
                 </div>
-                <div>
+                <div class="table-responsive" style="overflow-x: auto; max-width: 100%;"> <!-- Added responsive table -->
                     <table class="table">
                     <thead>
                         <tr>
@@ -912,7 +912,8 @@
                         <option value="Select - Driver List + DNF" ${row.response_type === 'Select - Driver List + DNF' ? 'selected' : ''}>Select - Driver List + DNF</option>
                         <option value="Select - Team List" ${row.response_type === 'Select - Team List' ? 'selected' : ''}>Select - Team List</option>
                         <option value="Select - Name List" ${row.response_type === 'Select - Name List' ? 'selected' : ''}>Select - Name List</option>
-                        <option value="Number - Integer" ${row.response_type === 'Number - Integer' ? 'selected' : ''}>Number - Integer</option>
+                        <option value="Number - Integer (0 - 20)" ${row.response_type === 'Number - Integer (0 - 20)' ? 'selected' : ''}>Number - Integer (0 - 20)</option>
+                        <option value="Number - Integer (0 - 1000)" ${row.response_type === 'Number - Integer (0 - 1000)' ? 'selected' : ''}>Number - Integer (0 - 1000)</option>
                         <option value="Number - Decimal" ${row.response_type === 'Number - Decimal' ? 'selected' : ''}>Number - Decimal</option>
                         <option value="Radio - Yes/No" ${row.response_type === 'Radio - Yes/No' ? 'selected' : ''}>Radio - Yes/No</option>
                         <option value="Radio - Heads/Tails" ${row.response_type === 'Radio - Heads/Tails' ? 'selected' : ''}>Radio - Heads/Tails</option>

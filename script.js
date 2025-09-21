@@ -39,7 +39,6 @@ export async function fetchData(table, fields = '*') {
 }
 
 // Helper function to create a dropdown
-// Helper function to create a dropdown
 function createDropdown(parent, options = [], inputId, defaultText = 'Select an option') {
   const select = document.createElement('select');
   select.id = inputId;
@@ -139,6 +138,44 @@ export function createNumberInput(container, id, isDecimal) {
         if (parts[1].length > 2) {
           input.value = parts[0] + '.' + parts[1].substring(0, 2);
         }
+      }
+    });
+  } else {
+    // Enforce only integers: if a decimal point is entered, remove it and all following characters.
+    input.addEventListener('input', function() {
+      const value = input.value;
+      if (value.includes('.')) {
+        const parts = value.split('.');
+        input.value = parts[0];
+      }
+    });
+  }
+
+  container.appendChild(input);
+}
+
+export function createNumberInput2(container, id, isDecimal) {
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.id = id;
+  input.name = id;
+  input.step = isDecimal ? '1' : '1';
+  input.min = '0';
+  input.max = isDecimal ? '1000' : '1000';
+  input.placeholder = isDecimal 
+    ? 'Enter a number' 
+    : 'Enter a number';
+  
+  // Limit input to 7 characters (note: enforcement may vary for numeric inputs)
+  input.setAttribute('maxlength', '7');
+
+  if (isDecimal) {
+     // Enforce only integers: if a decimal point is entered, remove it and all following characters.
+    input.addEventListener('input', function() {
+      const value = input.value;
+      if (value.includes('.')) {
+        const parts = value.split('.');
+        input.value = parts[0];
       }
     });
   } else {
@@ -334,8 +371,11 @@ export async function generateFormBlocks() {
                     break;
                 }
                 
-                case 'Number - Integer':
+                case 'Number - Integer (0 - 20)':
                     createNumberInput(block, `input-${config.id}`, false);
+                    break;
+                case 'Number - Integer (0 - 1000)':
+                    createNumberInput2(block, `input-${config.id}`, false);
                     break;
                 case 'Number - Decimal':
                     createNumberInput(block, `input-${config.id}`, true);
