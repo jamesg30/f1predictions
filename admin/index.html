@@ -803,7 +803,7 @@
 </main>
 
 <footer class="bg-light text-black text-center py-1 body-text-xs">
-    <p>&copy; 2025 F1 Predictions Form | Build 236</p>
+    <p>&copy; 2025 F1 Predictions Form | Build 237</p>
   </footer>
 
 <script src="/js/bootstrap.bundle.min.js"></script>
@@ -2574,37 +2574,37 @@ document.getElementById('main-page-alert-type-select').addEventListener('change'
                 switch (scoringType) {
                     case 'Off (0)':
                         return 0;
-                    case 'P1 Type (3)':
+                    case 'P1 Type (3)': // form_id_2 | -,3 | -,4 | -,5 |
                         if (response === result) return 3;
                         if (response === results.form_id_3) return 1.5;
                         if (response === results.form_id_4) return 1;
                         if (response === results.form_id_5) return 0.5;
                         return 0;
-                    case 'P2 Type (2)':
+                    case 'P2 Type (2)': // form_id_3 | 2,4 | -,5 | -,6 |
                         if (response === result) return 2;
                         if (response === results.form_id_2 || response === results.form_id_4) return 1.5;
                         if (response === results.form_id_5) return 1;
                         if (response === results.form_id_6) return 0.5;
                         return 0;
-                    case 'P3 Type (2)':
+                    case 'P3 Type (2)': // form_id_4 | 3,5 | 2,6 | -,7 |
                         if (response === result) return 2;
                         if (response === results.form_id_3 || response === results.form_id_5) return 1.5;
-                        if (response === results.form_id_6) return 1;
-                        if (response === results.form_id_2 || response === results.form_id_7) return 1;
+                        if (response === results.form_id_6 || response === results.form_id_2 ) return 1;
+                        if (response === results.form_id_7) return 0.5;
                         return 0;
-                    case 'P4 Type (2)':
+                    case 'P4 Type (2)': // form_id_5 | 4,6 | 3,7 | 2,- |
                         if (response === result) return 2;
                         if (response === results.form_id_4 || response === results.form_id_6) return 1.5;
-                        if (response === results.form_id_7) return 1;
-                        if (response === results.form_id_3 || response === results.form_id_2) return 1;
+                        if (response === results.form_id_3 || response === results.form_id_7) return 1;
+                        if (response === results.form_id_2) return 0.5;
                         return 0;
-                    case 'P5 Type (2)':
+                    case 'P5 Type (2)': // form_id_6 | 5,7 | 4,- | 3,- |
                         if (response === result) return 2;
                         if (response === results.form_id_5 || response === results.form_id_7) return 1.5;
                         if (response === results.form_id_4) return 1;
                         if (response === results.form_id_3) return 0.5;
                         return 0;
-                    case 'P6 Type (2)':
+                    case 'P6 Type (2)': // form_id_7 | 6,- | 5,- | 4,- |
                         if (response === result) return 2;
                         if (response === results.form_id_6) return 1.5;
                         if (response === results.form_id_5) return 1;
