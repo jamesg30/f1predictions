@@ -803,7 +803,7 @@
 </main>
 
 <footer class="bg-light text-black text-center py-1 body-text-xs">
-    <p>&copy; 2025 F1 Predictions Form | Build 237</p>
+    <p>&copy; 2025 F1 Predictions Form | Build 238</p>
   </footer>
 
 <script src="/js/bootstrap.bundle.min.js"></script>
@@ -904,7 +904,7 @@
                     </div>
                     </td>
                     <td>
-                    <input type="text" class="form-control" id="text${row.id}" value="${row.text}" ${disableAttr}>
+                        <textarea class="form-control" id="text${row.id}" ${disableAttr} rows="2" style="white-space: pre-wrap;">${row.text}</textarea>
                     </td>
                     <td>
                     <select class="form-select" id="responseType${row.id}" ${disableAttr}>
