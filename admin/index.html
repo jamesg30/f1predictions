@@ -3669,7 +3669,9 @@ document.getElementById('main-page-alert-type-select').addEventListener('change'
             card_report_details,
             card_swap_applied,
             card_swap_playedcol,
-            card_swap_details
+            card_swap_details,
+            card_safetycar_applied,
+            card_safetycar_playedcol
             });
 
             // Collect swap requests (if any)
@@ -3717,57 +3719,89 @@ document.getElementById('main-page-alert-type-select').addEventListener('change'
 
         updateProgressSeasonTeam("=== APPLYING SAFETY CAR CARD ===");
 
-        // We apply safety car effects progressively from rank 1 → last
-        for (let i = 0; i < teamScoringData.length; i++) {
+        // Always start from a clean, sorted state
+        teamScoringData.sort((a, b) => b.grandTotal - a.grandTotal);
 
-            // Re-sort every iteration so rankings reflect previous safety car changes
+        let currentRank = 1;
+
+        while (true) {
+
+            // Re-sort before each rank evaluation
             teamScoringData.sort((a, b) => b.grandTotal - a.grandTotal);
 
-            const currentTeam = teamScoringData[i];
+            // Get all teams at this rank
+            const currentRankTeams = [];
+            const currentScore = teamScoringData[currentRank - 1]?.grandTotal;
 
-            // First-place team: card is consumed but has no effect
-            if (i === 0) {
-                if (currentTeam.card_safetycar_playedcol === 1) {
-                    currentTeam.card_safetycar_applied = 1;
-                    updateProgressSeasonTeam(
-                        `Safety Car: ${currentTeam.teamName} is P1 — card consumed, no adjustment.`
-                    );
+            if (currentScore === undefined) break;
+
+            for (const team of teamScoringData) {
+                const EPSILON = 0.0001;
+
+                if (Math.abs(team.grandTotal - currentScore) < EPSILON) {
+                    currentRankTeams.push(team);
                 }
-                continue;
             }
-
-            // If this team did not play Safety Car, skip
-            if (currentTeam.card_safetycar_playedcol !== 1) {
-                continue;
-            }
-
-            const teamAhead = teamScoringData[i - 1];
-
-            const gap = teamAhead.grandTotal - currentTeam.grandTotal;
 
             updateProgressSeasonTeam(
-                `Safety Car check: ${currentTeam.teamName} gap to ${teamAhead.teamName} = ${gap}`
+                `Rank ${currentRank}: ${currentRankTeams.map(t => t.teamName).join(", ")}`
             );
 
-            // If already within 0.5, do nothing
-            if (gap <= 0.5) {
+            // Rank 1: consume cards but do nothing
+            if (currentRank === 1) {
+                currentRankTeams.forEach(team => {
+                    if (team.card_safetycar_playedcol === 1) {
+                        team.card_safetycar_applied = 1;
+                        updateProgressSeasonTeam(
+                            `Safety Car: ${team.teamName} is P1 — card consumed, no adjustment.`
+                        );
+                    }
+                });
+                currentRank += currentRankTeams.length;
+                continue;
+            }
+
+            // Find the team immediately ahead (post-adjustment)
+            const teamAhead = teamScoringData[currentRank - 2];
+
+            for (const team of currentRankTeams) {
+
+                if (team.card_safetycar_playedcol !== 1) continue;
+
+                const gap = teamAhead.grandTotal - team.grandTotal;
+
                 updateProgressSeasonTeam(
-                    `Safety Car: ${currentTeam.teamName} already within 0.5 — no change.`
+                    `Safety Car check: ${team.teamName} gap to ${teamAhead.teamName} = ${gap}`
                 );
-                currentTeam.card_safetycar_applied = 1;
-                continue;
+
+                if (gap <= 0.5) {
+                    updateProgressSeasonTeam(
+                        `Safety Car: ${team.teamName} already within 0.5 — no change.`
+                    );
+                    team.card_safetycar_applied = 1;
+                    continue;
+                }
+
+                const delta = gap - 0.5;
+
+                team.cardPointsDelta += delta;
+                team.grandTotal += delta;
+                team.card_safetycar_applied = 1;
+
+                updateProgressSeasonTeam(
+                    `Safety Car applied: ${team.teamName} gains +${delta}, now ${team.grandTotal}`
+                );
             }
 
-            // Bring team to 0.5 behind the team ahead
-            const delta = gap - 0.5;
+            // Move to next rank block
+            currentRank += currentRankTeams.length;
 
-            currentTeam.cardPointsDelta += delta;
-            currentTeam.grandTotal += delta;
-            currentTeam.card_safetycar_applied = 1;
-
-            updateProgressSeasonTeam(
-                `Safety Car applied: ${currentTeam.teamName} gains +${delta}, now ${currentTeam.grandTotal}`
-            );
+            if (currentRankTeams.length === 0) {
+                updateProgressSeasonTeam(
+                    `⚠️ Safety Car aborted: no teams found at rank index ${currentRank}`
+                );
+                break;
+            }
         }
 
         // Part 2: Apply the report card and update the total.

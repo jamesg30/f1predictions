@@ -772,7 +772,7 @@
       while ((match = regex.exec(raw)) !== null) {
         const tag = match[1].toLowerCase();
         // Recognize these tags, including the "casino" tag.
-        if (["aero", "double", "halo", "report", "swap", "casino"].includes(tag)) {
+        if (["aero", "double","safetycar", "halo", "report", "swap", "casino"].includes(tag)) {
           cardTags.push(tag);
         }
       }
@@ -1514,6 +1514,11 @@
                 cardsHTML += `<img src="/media/cards/card_report.png" style="float:left; width:45px; height:61px;">`;
               }
             }
+            if (team.card_safetycar_applied && team.card_safetycar_applied > 0) {
+              for (let i = 0; i < team.card_safetycar_applied; i++) {
+                cardsHTML += `<img src="/media/cards/card_safetycar.png" style="float:left; width:45px; height:61px;">`;
+              }
+            }
             if (team.card_swap_applied && team.card_swap_applied > 0) {
               for (let i = 0; i < team.card_swap_applied; i++) {
                 cardsHTML += `<img src="/media/cards/card_swap.png" style="float:left; width:45px; height:61px;">`;
@@ -1532,6 +1537,11 @@
             if (team.card_halo_playedcol && team.card_halo_playedcol > 0) {
               
                 cardsplayedHTML += `<img src="/media/cards/card_halo.png" style="float:left; width:45px; height:61px;">`;
+              
+            }
+            if (team.card_safetycar_playedcol && team.card_safetycar_playedcol > 0) {
+              
+                cardsplayedHTML += `<img src="/media/cards/card_safetycar.png" style="float:left; width:45px; height:61px;">`;
               
             }
             if (team.card_report_playedcol && team.card_report_playedcol > 0) {
