@@ -803,7 +803,7 @@
 </main>
 
 <footer class="bg-light text-black text-center py-1 body-text-xs">
-    <p>&copy; 2025 F1 Predictions Form | Build 237</p>
+    <p>&copy; 2025 F1 Predictions Form | Build 239</p>
   </footer>
 
 <script src="/js/bootstrap.bundle.min.js"></script>
@@ -3594,6 +3594,8 @@ document.getElementById('main-page-alert-type-select').addEventListener('change'
             let card_report_details = '';
             let card_swap_applied = 0;
             let card_swap_details = '';
+            let card_safetycar_applied = 0;
+            let card_safetycar_playedcol = 0;
             // Card Played Column Code
             let card_aero_playedcol = 0;
             let card_double_playedcol = 0;
@@ -3607,6 +3609,11 @@ document.getElementById('main-page-alert-type-select').addEventListener('change'
             card_halo_applied = 1;
             card_halo_playedcol = 1;
             updateProgressSeasonTeam(`Halo card is recorded for ${teamName}.`);
+            }
+
+            if (team.card_safetycar_played) {
+                card_safetycar_playedcol = 1;
+                updateProgressSeasonTeam(`Safety Car card recorded for ${teamName}.`);
             }
 
             // Process the double card (only if halo was not played)
@@ -3673,6 +3680,94 @@ document.getElementById('main-page-alert-type-select').addEventListener('change'
                 swapTime: team.card_swap_time
             });
             }
+        }
+
+        // Apply Safety Car Card (Part 1.5)
+        // At this point, the team's scores have all been calculated.
+        // Rules for safety car car
+        // They are applied from 1st to Last
+        // 1. Order all the teams. 
+        // 2. For each team, check if they have card_safetycar_played = 1.
+        // 3a. For the team in first, consume the card and do nothing
+        // 3b. For all other teams, calculate the gap to the team ranked  above them.
+        // 3c. If no card was played, continue
+        // 4. If the team infront had played a safety car, it should compare against that team's old total + the added points delta from the safety car
+        // E.g. lets say we have four teams
+        // Team A scores 25 and plays safety car
+        // Team B scores 19 and does not play safety car
+        // Team C scores 17 and plays safety car
+        // Team D scores 15 and plays safety car
+        // The scores apply one by one so
+        // [Apply to Rank 1 team - SC Played] A = 25, B = 19, C = 17, D = 15
+        // [Apply to Rank 2 team - No SC Played] A = 25, B = 19, C = 17, D = 15
+        // [Apply to Rank 3 team - SC Played] A = 25, B = 19, C = 18.5, D = 15 (adjusts team C score to 0.5 points behind the team in front)
+        // [Apply to Rank 4 team - SC Played] A = 25, B = 19, C = 18.5, D = 18 (adjusts team D score to 0.5 points behind the team in front)
+        // As with a real F1 race, the safety car can bunch people up. The score needs to reflect the effect on post-safety car adjustments
+
+        // E.g. lets say we have four teams with different scores
+        // Team A scores 25 and plays safety car
+        // Team B scores 19 and does not play safety car
+        // Team C scores 17 and plays safety car
+        // Team D scores 17 and plays safety car (is tied with Team C)
+        // The scores apply one by one so
+        // [Apply to Rank 1 team - SC Played] A = 25, B = 19, C = 17, D = 17
+        // [Apply to Rank 2 team - No SC Played] A = 25, B = 19, C = 17, D = 17
+        // [Apply to Rank 3 team - SC Played] A = 25, B = 19, C = 18.5, D = 18.5 (adjusts BOTH team C and D score to 0.5 points behind the team in front)
+        // When there is a tied ranking, they should be applied at the same time
+
+        updateProgressSeasonTeam("=== APPLYING SAFETY CAR CARD ===");
+
+        // We apply safety car effects progressively from rank 1 → last
+        for (let i = 0; i < teamScoringData.length; i++) {
+
+            // Re-sort every iteration so rankings reflect previous safety car changes
+            teamScoringData.sort((a, b) => b.grandTotal - a.grandTotal);
+
+            const currentTeam = teamScoringData[i];
+
+            // First-place team: card is consumed but has no effect
+            if (i === 0) {
+                if (currentTeam.card_safetycar_playedcol === 1) {
+                    currentTeam.card_safetycar_applied = 1;
+                    updateProgressSeasonTeam(
+                        `Safety Car: ${currentTeam.teamName} is P1 — card consumed, no adjustment.`
+                    );
+                }
+                continue;
+            }
+
+            // If this team did not play Safety Car, skip
+            if (currentTeam.card_safetycar_playedcol !== 1) {
+                continue;
+            }
+
+            const teamAhead = teamScoringData[i - 1];
+
+            const gap = teamAhead.grandTotal - currentTeam.grandTotal;
+
+            updateProgressSeasonTeam(
+                `Safety Car check: ${currentTeam.teamName} gap to ${teamAhead.teamName} = ${gap}`
+            );
+
+            // If already within 0.5, do nothing
+            if (gap <= 0.5) {
+                updateProgressSeasonTeam(
+                    `Safety Car: ${currentTeam.teamName} already within 0.5 — no change.`
+                );
+                currentTeam.card_safetycar_applied = 1;
+                continue;
+            }
+
+            // Bring team to 0.5 behind the team ahead
+            const delta = gap - 0.5;
+
+            currentTeam.cardPointsDelta += delta;
+            currentTeam.grandTotal += delta;
+            currentTeam.card_safetycar_applied = 1;
+
+            updateProgressSeasonTeam(
+                `Safety Car applied: ${currentTeam.teamName} gains +${delta}, now ${currentTeam.grandTotal}`
+            );
         }
 
         // Part 2: Apply the report card and update the total.
@@ -3772,6 +3867,8 @@ document.getElementById('main-page-alert-type-select').addEventListener('change'
             card_report_details: teamData.card_report_details,
             card_swap_applied: teamData.card_swap_applied,
             card_swap_details: teamData.card_swap_details,
+            card_safetycar_applied: teamData.card_safetycar_applied,
+            card_safetycar_playedcol: teamData.card_safetycar_playedcol,
             card_aero_playedcol: teamData.card_aero_playedcol,
             card_double_playedcol: teamData.card_double_playedcol,
             card_halo_playedcol: teamData.card_halo_playedcol,
@@ -3873,6 +3970,7 @@ document.getElementById('main-page-alert-type-select').addEventListener('change'
             card_halo_played: 0,
             card_report_played: 0,
             card_swap_played: 0,
+            card_safetycar_played: 0,
             card_report_team_selected: null,
             card_swap_team_selected: null,
             card_swap_time: null
@@ -4251,6 +4349,9 @@ document.getElementById('main-page-alert-type-select').addEventListener('change'
             if (record.card_swap_applied && record.card_swap_applied > 0) {
             for (let i = 0; i < record.card_swap_applied; i++) {
                 tags += "(swap)";
+            }
+            if (record.card_safetycar_applied && record.card_safetycar_applied > 0) {
+                tags += "(safetycar)";
             }
             }
             // Append the casino tag if any casino bet was placed.
