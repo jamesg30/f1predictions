@@ -263,8 +263,9 @@
                         <li>
                             Each team is given:<br>
                             <ul>
-                                <li>1x Aero</li>
+                                <li>1x Slipstream</li>
                                 <li>1x Double</li>
+                                <li>1x Safety Car</li>
                                 <li>3x Halo</li>
                                 <li>1x Report</li>
                                 <li>1x Swap</li>
@@ -284,11 +285,15 @@
                     <ul class="list-group">
                         <li class="list-group-item">
                             <img src="/media/cards/card_aero.png" style="float:left; width: 45px; height: 61px; margin-right: 10px">
-                            Aero Upgrade: Both drivers will receive the higher of their 2 scores (e.g. if they score 14 & 22, team score will be 22 + 22 = 44)
+                            Slipstream: Help your teammate by giving them a slipstream. Both drivers will receive the higher of their 2 scores (e.g. if they score 14 & 22, team score will be 22 + 22 = 44)
                         </li>
                         <li class="list-group-item">
                             <img src="/media/cards/card_double.png" style="float:left; width: 45px; height: 61px; margin-right: 10px">
                             Double Points: The points of the highest scoring team member is doubled (e.g if they score 14 & 22, team score will be 14 + (2 x 22) = 14 + 44 = 58)
+                        </li>
+                        <li class="list-group-item">
+                            <img src="/media/cards/card_safetycar.png" style="float:left; width: 45px; height: 61px; margin-right: 10px">
+                            Safety Car: Deploy a safety car to catch up to the team ahead of you this race! Your score will be increased to 0.5 points behind the team ranked in front of you. (e.g. If your team finishes 4th this race with total of 23 points, and the team in 3rd has 26 points, your score will be increased to 25.5 points)
                         </li>
                         <li class="list-group-item">
                             <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px; margin-right: 10px">
@@ -307,8 +312,10 @@
                     </ul>
                 </div>
                 <div class="mb-3">
-                    Cards will be applied in the following order:<br>
-                    Aero, Double, Halo, Report, Swap.<br>
+                    Cards are applied by adding a points delta in the following order:<br>
+                    Splistream, Double, Safety Car, Halo, Report, Swap.<br><br>
+                    The Slipstream and Double cards are applied first. Then, a temporary ranking is created. The safety car card is then applied based off this temporary ranking.<br>
+                    After the Safety Car card is applied, the Halo will be applied to protect the relevant teams from Report and Swap attempts. Report cards will then be applied, followed by Swap cards.<br>
                 </div>
                 <div>
                     <h5 class="mb-3 heading-text-3">Casino</h5>

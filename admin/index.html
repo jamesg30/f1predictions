@@ -2568,9 +2568,12 @@ document.getElementById('main-page-alert-type-select').addEventListener('change'
             let progressUpdates = document.getElementById('progressUpdates');
             let scoreTable = document.getElementById('scoreTable');
             let scoreRoundButton = document.getElementById('scoreRoundButton');
+            
+            // Player ID = -1: Question Labels
+            // Player ID = 0: Results
 
             // Step 3: Create Scoring Function
-            function calculateScore(response, result, scoringType, results) {
+            function calculateScore(response, result, scoringType, results, currentQuestionID) {
                 switch (scoringType) {
                     case 'Off (0)':
                         return 0;
@@ -2624,17 +2627,16 @@ document.getElementById('main-page-alert-type-select').addEventListener('change'
                     case 'Plus Minus One (2)':
                         return response === result ? 2 : Math.abs(response - result) === 1 ? 1 : 0;
                     case 'Closest (1)':
-                        // Calculate closest score for form_id_28
-                        const resultNumber = Number(results.form_id_28);
-
-                        // Filter player responses for form_id_28 and convert them to numbers
-                        const playerResponsesFor28 = formRaw
+                        // Calculate closest score for any question
+                        const playerResponsesForAnyQuestion = formRaw
                             .filter(response => response.race_number === relevantRaceNumber && response.player_id !== 0 && response.player_id !== -1 )
-                            .map(response => Number(response.form_id_28));
+                            .map(response => Number(response[`form_id_${currentQuestionID}`]));
+
+                        const resultNumber = Number(results[`form_id_${currentQuestionID}`]);
 
                         // Find the closest difference
                         let closestDifference = Infinity;
-                        playerResponsesFor28.forEach(playerResponse => {
+                        playerResponsesForAnyQuestion.forEach(playerResponse => {
                             const difference = Math.abs(playerResponse - resultNumber);
                             if (difference < closestDifference) {
                                 closestDifference = difference;
@@ -2657,10 +2659,11 @@ document.getElementById('main-page-alert-type-select').addEventListener('change'
 
             let scores = { form_id_1_score: 0 }; // Ensure form_id_1_score is always 0
             formConfig.forEach(question => {
+                let currentQuestionID = question.id
                 if (question.id !== 1 && question.enabled) {
                     let response = playerResponses[`form_id_${question.id}`];
                     let result = results[`form_id_${question.id}`];
-                    scores[`form_id_${question.id}_score`] = calculateScore(response, result, question.scoring_type, results);
+                    scores[`form_id_${question.id}_score`] = calculateScore(response, result, question.scoring_type, results, currentQuestionID);
                 } else if (question.id !== 1) {
                     scores[`form_id_${question.id}_score`] = 0;
                 }

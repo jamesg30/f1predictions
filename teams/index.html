@@ -228,6 +228,12 @@
                         </label>
                     </li>
                     <li class="list-group-item">
+                        <input class="form-check-input me-1 card-option" type="radio" name="card" value="safetycar" id="card-safetycar" disabled>
+                        <label class="form-check-label stretched-link" for="card-safetycar">
+                            <img src="/media/cards/card_safetycar.png" style="float:left; width: 45px; height: 61px;">
+                        </label>
+                    </li>
+                    <li class="list-group-item">
                         <input class="form-check-input me-1 card-option" type="radio" name="card" value="halo" id="card-halo" disabled>
                         <label class="form-check-label stretched-link" for="card-halo">
                             <img src="/media/cards/card_halo.png" style="float:left; width: 45px; height: 61px;">
@@ -254,7 +260,7 @@
                 </ul>
 
                 <div class="mb-3" id="select-team-container" style="display: none;">
-                    <label for="card-select" class="form-label">(for Report/Swap only) Select team to report/swap:</label>
+                    <label for="card-select" class="form-label">(for Report/Swap only) Select team to report or swap:</label>
                     <select id="card-select" class="form-select"></select> <!-- SELECT TEAM TO REPORT OR SWAP -->
                 </div>
 
@@ -488,6 +494,7 @@
         const cardTypes = [
           { name: 'double', src: '/media/cards/card_double.png' },
           { name: 'aero', src: '/media/cards/card_aero.png' },
+          { name: 'safetycar', src: '/media/cards/card_safetycar.png' },
           { name: 'halo', src: '/media/cards/card_halo.png' },
           { name: 'report', src: '/media/cards/card_report.png' },
           { name: 'swap', src: '/media/cards/card_swap.png' }
@@ -752,6 +759,7 @@ function updateTeamCardStock() {
   const cardStock = {
     aero: (Number(team.card_aero_unplayed) || 0) + (Number(team.card_aero_played) || 0),
     double: (Number(team.card_double_unplayed) || 0) + (Number(team.card_double_played) || 0),
+    safetycar: (Number(team.card_safetycar_unplayed) || 0) + (Number(team.card_safetycar_played) || 0),
     halo: (Number(team.card_halo_unplayed) || 0) + (Number(team.card_halo_played) || 0),
     report: (Number(team.card_report_unplayed) || 0) + (Number(team.card_report_played) || 0),
     swap: (Number(team.card_swap_unplayed) || 0) + (Number(team.card_swap_played) || 0)
@@ -762,8 +770,9 @@ function updateTeamCardStock() {
   stockEl.innerHTML = `
     <p><strong>Team Card Stock (as of last round):</strong></p>
     <ul>
-      <li>Aero: ${cardStock.aero}</li>
+      <li>Slipstream: ${cardStock.aero}</li>
       <li>Double: ${cardStock.double}</li>
+      <li>Safety Car: ${cardStock.safetycar}</li>
       <li>Halo: ${cardStock.halo}</li>
       <li>Report: ${cardStock.report}</li>
       <li>Swap: ${cardStock.swap}</li>
@@ -774,6 +783,7 @@ function updateTeamCardStock() {
   const cardOptions = {
     aero: cardStock.aero,
     double: cardStock.double,
+    safetycar: cardStock.safetycar,
     halo: cardStock.halo,
     report: cardStock.report,
     swap: cardStock.swap
@@ -876,21 +886,21 @@ async function submitCards() {
     showCustomAlert("Please select a card option.");
     return;
   }
-  const selectedCard = selectedCardRadio.value; // e.g., 'aero', 'double', 'halo', 'report', 'swap', or 'play-no-cards'
+  const selectedCard = selectedCardRadio.value; // e.g., 'aero', 'double', 'safety car', 'halo', 'report', 'swap', or 'play-no-cards'
   
   // For report or swap, get the target team from the dropdown.
   let targetTeamId = null;
   if (selectedCard === "report" || selectedCard === "swap") {
     targetTeamId = document.getElementById("card-select").value;
     if (!targetTeamId) {
-      showCustomAlert("Please select a team to report or swap.");
+      showCustomAlert("Please select a team to report or swap");
       return;
     }
   }
   
   // Prepare new card values:
   // Reset: for each card type, new_unplayed = current_unplayed + played; played = 0.
-  const cardTypes = ["aero", "double", "halo", "report", "swap"];
+  const cardTypes = ["aero", "double","safetycar", "halo", "report", "swap"];
   const updatedValues = {};
   cardTypes.forEach(card => {
     const unplayedCol = `card_${card}_unplayed`;
@@ -976,7 +986,7 @@ function prefillCardSelection() {
   if (!team) return;
 
   // Determine which card was played by checking each card's played count.
-  const cardTypes = ['aero', 'double', 'halo', 'report', 'swap'];
+  const cardTypes = ['aero', 'double','safetycar', 'halo', 'report', 'swap'];
   let selectedCard = 'play-no-cards'; // default if no card is played
   for (const card of cardTypes) {
     const playedCol = `card_${card}_played`;
