@@ -270,6 +270,22 @@ color: white;
 #standings-table td {
   vertical-align: middle;
 }
+
+
+#mainResultsTable {
+  border-collapse: separate !important;
+  border-spacing: 0;
+}
+
+#mainResultsTable .pinned {
+  border-right: 2px solid #000 !important; /* or whatever colour fits your theme */
+}
+
+#mainResultsTable th,
+#mainResultsTable td {
+  border: 1px solid #444444 !important; /* matches Bootstrap's default border colour */
+}
+
 /* RESULTS PAGE STYLING */
 /* First three columns styling for both tables */
 #full-season-table td:first-child,

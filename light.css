@@ -122,6 +122,20 @@ footer {
   min-width: 20ch !important;
 }
 
+#mainResultsTable {
+  border-collapse: separate !important;
+  border-spacing: 0;
+}
+
+#mainResultsTable .pinned {
+  border-right: 2px solid #fff !important; /* or whatever colour fits your theme */
+}
+
+#mainResultsTable th,
+#mainResultsTable td {
+  border: 1px solid #dee2e6 !important; /* matches Bootstrap's default border colour */
+}
+
 
 /* RESULTS PAGE STYLING */
 /* First three columns styling for both tables */
