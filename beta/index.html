@@ -648,14 +648,14 @@
                 <div class="form-check" style="margin-top: 5px; margin-bottom: 5px">
                   <input class="form-check-input" type="checkbox" id="pinQuestionColumn">
                   <label class="form-check-label" for="pinQuestionColumn">
-                    Pin Questions
+                    Pin Questions and Results
                   </label>
                 </div>
                 
                 <div class="form-check" style="margin-top: 5px; margin-bottom: 5px">
                   <input class="form-check-input" type="checkbox" id="pinBothColumns">
                   <label class="form-check-label" for="pinBothColumns">
-                    Pin Questions & My Results
+                    Pin Questions, Results and My Responses
                   </label>
                 </div>
               
@@ -1650,6 +1650,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       const user = await getCurrentUser();
       if (user) {
         applyHeaderColor(user.name, user.avatar_settings);
+        const currentUserId = getCookie("playerId");
+        highlightPlayerStandingsFirstColumn(players, currentUserId);
+        highlightTeamStandingsFirstColumn(players, currentUserId);
       } else {
         console.warn("loadResultsPredictions: No user data available to apply header color.");
     }
@@ -2063,23 +2066,32 @@ if (currentUserId && userResultPulled) {
 
     // Move updatePinnedColumns OUTSIDE so it’s globally accessible
     function updatePinnedColumns() {
-      if (!tableReady) {
-        console.log("Table not ready yet, skipping pinning...");
-        return; // Don't pin until the table is fully created
-      }
-      console.log("Pinning columns...");
-      resetPinnedStyles();
-      
-      const pinQuestionCheckbox = document.getElementById("pinQuestionColumn");
-      const pinBothCheckbox = document.getElementById("pinBothColumns");
+      if (!tableReady) return;
 
-      if (pinQuestionCheckbox.checked) { // pinning columns
-        pinBothCheckbox.checked = false;
-        pinColumn(0, 0);
-      } else if (pinBothCheckbox.checked) {
-        pinQuestionCheckbox.checked = false;
-        pinColumn(0, 0);
-        pinColumn(1, getColumnWidth(0) - 1);
+      resetPinnedStyles();
+
+      const pinQR = document.getElementById("pinQuestionColumn");
+      const pinQRMe = document.getElementById("pinBothColumns");
+
+      // Decide how many columns to pin
+      let pinCount = 0;
+
+      if (pinQRMe.checked) {
+        pinCount = 5; // Name, spacer, Results, spacer, Your response
+      } else if (pinQR.checked) {
+        pinCount = 4; // Name, spacer, Results, spacer
+      } else {
+        return;
+      }
+
+      const headerRow = document.querySelector("#mainResultsTable thead tr");
+      if (!headerRow) return;
+
+      let offsetLeft = 0;
+
+      for (let i = 0; i < pinCount; i++) {
+        pinColumn(i, offsetLeft);
+        offsetLeft += headerRow.children[i].offsetWidth;
       }
     }
 
@@ -2395,6 +2407,10 @@ function displayLocalRaceTime(raceUTCDate, timeElementId, locationElementId) {
         document.querySelector("#standings-table tbody").innerHTML =
         `<tr><td colspan="3">Error loading standings: ${err.message}</td></tr>`;
     }
+
+    const currentUser = await getCurrentUser();
+    highlightPlayerStandingsNameCell(currentUser);
+
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -2538,7 +2554,7 @@ function displayLocalRaceTime(raceUTCDate, timeElementId, locationElementId) {
             movement = "(=)";
             }
         }
-        html += `<tr>
+        html += `<tr data-team-id="${team.team_id}">
                     <td>${currRank} ${movement}</td>
                     <td><b>${team.team_name}</b>${playerNames ? '<br>' + playerNames : ''}</td>
                     <td>${team.total}</td>
@@ -2550,6 +2566,10 @@ function displayLocalRaceTime(raceUTCDate, timeElementId, locationElementId) {
         document.querySelector("#standings-team-table tbody").innerHTML =
         `<tr><td colspan="3">Error loading team standings: ${err.message}</td></tr>`;
     }
+
+    const currentUser = await getCurrentUser();
+    highlightTeamStandingsNameCell(currentUser);
+
     }
 
     // --- Initialize Team Standings on DOMContentLoaded ---
@@ -2586,6 +2606,83 @@ function displayLocalRaceTime(raceUTCDate, timeElementId, locationElementId) {
 
   // Run the function when the DOM is fully loaded
   document.addEventListener('DOMContentLoaded', updateFormStatusText);
+
+  // highlight player names
+
+  function getUserAccentColor(avatarSettings) {
+    if (!avatarSettings) return null;
+
+    try {
+      const settings = typeof avatarSettings === "string"
+        ? JSON.parse(avatarSettings)
+        : avatarSettings;
+
+      return settings?.background_colour || null;
+    } catch (e) {
+      console.warn("Invalid avatar_settings:", avatarSettings);
+      return null;
+    }
+  }
+
+  function normalizeAvatarSettings(avatar_settings) {
+  if (!avatar_settings) return null;
+  if (typeof avatar_settings === "string") {
+    try { return JSON.parse(avatar_settings); } catch { return null; }
+  }
+  return avatar_settings;
+}
+
+  function highlightPlayerStandingsNameCell(currentUser) {
+    if (!currentUser) return;
+
+    const avatar = normalizeAvatarSettings(currentUser.avatar_settings);
+    const bg = getUserBackgroundColor(currentUser.name, avatar);
+    const fg = getContrastTextColor(bg);
+
+    const table = document.getElementById("standings-table");
+    if (!table) return;
+
+    table.querySelectorAll("tbody tr").forEach(row => {
+      const nameCell = row.children[1]; // ✅ name is column 2
+      if (!nameCell) return;
+
+      // Your rendered HTML puts the name in a <span> inside this cell
+      const span = nameCell.querySelector("span");
+      const renderedName = (span?.textContent || nameCell.textContent || "").trim();
+
+      if (renderedName === currentUser.name) {
+        nameCell.style.backgroundColor = bg;
+        nameCell.style.color = fg;
+        nameCell.style.fontWeight = "600";
+      }
+    });
+  }
+
+  function highlightTeamStandingsNameCell(currentUser) {
+    if (!currentUser?.participant_team_id) return;
+
+    const avatar = normalizeAvatarSettings(currentUser.avatar_settings);
+    const bg = getUserBackgroundColor(currentUser.name, avatar);
+    const fg = getContrastTextColor(bg);
+
+    const table = document.getElementById("standings-team-table");
+    if (!table) return;
+
+    table.querySelectorAll("tbody tr").forEach(row => {
+      const teamCell = row.children[1]; // ✅ team name column
+      if (!teamCell) return;
+
+      if (Number(row.dataset.teamId) === Number(currentUser.participant_team_id)) {
+        teamCell.style.backgroundColor = bg;
+        teamCell.style.color = fg;
+        // teamCell.style.fontWeight = "600";
+      }
+    });
+  }
+
+
+
+
 
   // =========================
   // === PLAYER LINE CHART ===

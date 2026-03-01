@@ -832,6 +832,12 @@ function updateTeamDropdownForSpecialCards(storedTeamId = null) {
     }
   } else {
     selectTeamContainer.style.display = "none";
+
+    // Clear any previously selected target team to avoid stale UI state
+    if (cardSelect) {
+      cardSelect.value = "";
+      cardSelect.disabled = true;
+    }
   }
   updateSubmitCardButtonState();
 }
@@ -909,6 +915,10 @@ async function submitCards() {
     const played = Number(team[playedCol]) || 0;
     updatedValues[unplayedCol] = unplayed + played;
     updatedValues[playedCol] = 0;
+    // Always clear special-card metadata by default
+    updatedValues.card_report_team_selected = null;
+    updatedValues.card_swap_team_selected = null;
+    updatedValues.card_swap_time = null;
   });
   
   if (selectedCard !== "play-no-cards") {

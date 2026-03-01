@@ -4381,12 +4381,13 @@ document.getElementById('main-page-alert-type-select').addEventListener('change'
             }
             }
             if (record.card_swap_applied && record.card_swap_applied > 0) {
-            for (let i = 0; i < record.card_swap_applied; i++) {
-                tags += "(swap)";
+                for (let i = 0; i < record.card_swap_applied; i++) {
+                    tags += "(swap)";
+                }
             }
+
             if (record.card_safetycar_applied && record.card_safetycar_applied > 0) {
                 tags += "(safetycar)";
-            }
             }
             // Append the casino tag if any casino bet was placed.
             if (record.casino_details && record.casino_details.trim() !== "") {
