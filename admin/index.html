@@ -75,6 +75,14 @@
             white-space: pre-wrap;
             word-break: break-all;
         }
+        /* Auto-expanding textareas */
+        textarea.auto-expand {
+            resize: none;
+            overflow: hidden;
+            min-height: 38px;
+            line-height: 1.5;
+            padding: 6px 12px;
+        }
         /* Data freshness badge */
         .data-freshness {
             font-size: 0.75rem;
@@ -195,7 +203,7 @@
                         <input class="form-check-input" type="checkbox" id="main-page-alert-enabled">
                         <label class="form-check-label" for="main-page-alert-enabled" id="main-page-alert-enabled-label">Loading...</label>
                       </div>
-                      <input type="text" class="form-control" id="main-page-alert-text-input" placeholder="Enter main page alert HTML">
+                      <textarea class="form-control auto-expand" id="main-page-alert-text-input" rows="1" placeholder="Enter main page alert HTML"></textarea>
                     </div>
                     <div class="col-md-6">
                       <label for="main-page-alert-type-select" class="form-label">Main Page Alert Type</label>
@@ -443,9 +451,6 @@
                     <button class="btn btn-sm btn-outline-secondary ms-2" id="season-team-refresh-btn">Refresh</button>
                 </div>
                 <div class="container">
-                <div class="alert alert-warning">
-                    <p class="mb-0">Ensure you have double checked the selected race.</p>
-                </div>
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="current-year-season-team" class="form-label">Year</label>
@@ -813,6 +818,26 @@
     }
 
     // ============================================================
+    // === AUTO-EXPANDING TEXTAREAS
+    // ============================================================
+
+    function initAutoExpand(el) {
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+    }
+    document.addEventListener('input', e => {
+        if (e.target.classList.contains('auto-expand')) initAutoExpand(e.target);
+    });
+    // Expand any textareas already in the DOM on load
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('textarea.auto-expand').forEach(initAutoExpand);
+    });
+    // Also expand dynamically injected textareas (form config rows) when rendered
+    function expandNewTextareas(container) {
+        container.querySelectorAll('textarea.auto-expand').forEach(initAutoExpand);
+    }
+
+    // ============================================================
     // === AUTO LOGIN / PASSWORD
     // ============================================================
 
@@ -867,7 +892,7 @@
                     <input class="form-check-input" type="checkbox" role="switch" id="enabledSwitch${row.id}" ${row.enabled ? 'checked' : ''} ${disableAttr}>
                 </div>
                 </td>
-                <td><input type="text" class="form-control" id="text${row.id}" value="${row.text}" ${disableAttr}></td>
+                <td><textarea class="form-control auto-expand" id="text${row.id}" rows="1" ${disableAttr}>${row.text}</textarea></td>
                 <td>
                 <select class="form-select" id="responseType${row.id}" ${disableAttr}>
                     <option value="Select - Driver List" ${row.response_type === 'Select - Driver List' ? 'selected' : ''}>Select - Driver List</option>
@@ -898,6 +923,8 @@
                 </td>
             </tr>`;
         });
+        // Size any auto-expand textareas that were just injected
+        expandNewTextareas(rowsContainer);
     }
 
     document.addEventListener('DOMContentLoaded', fetchAndRenderFormConfiguration);
@@ -926,7 +953,7 @@
                 return {
                     id,
                     enabled: row.querySelector('input[type="checkbox"]').checked,
-                    text: row.querySelector('input[type="text"]').value.trim(),
+                    text: row.querySelector('textarea').value.trim(),
                     response_type: row.querySelector('td:nth-child(4) select').value,
                     scoring_type: row.querySelector('td:nth-child(5) select').value,
                 };
@@ -1055,7 +1082,6 @@
                 const val = resultRow[`form_id_${i}`];
                 if (val === null || val === undefined) continue;
 
-                // Try to find by name attribute first, then by id
                 const inputName = `input-${i}`;
                 const inputs = form.querySelectorAll(`[name="${inputName}"]`);
 
@@ -1063,15 +1089,20 @@
                     const el = inputs[0];
                     if (el.tagName === 'SELECT') {
                         el.value = val;
-                    } else if (el.type === 'radio') {
-                        // handled below
+                        // Fire change event so colour styling (applied by generateFormBlocks) triggers
+                        el.dispatchEvent(new Event('change', { bubbles: true }));
                     } else {
                         el.value = val;
+                        el.dispatchEvent(new Event('input', { bubbles: true }));
                     }
                 } else if (inputs.length > 1) {
                     // Radio buttons
                     inputs.forEach(radio => {
-                        if (radio.value === val) radio.checked = true;
+                        if (radio.value === val) {
+                            radio.checked = true;
+                            // Fire change so any styling listeners on the radio group activate
+                            radio.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
                     });
                 }
             }
@@ -1920,6 +1951,7 @@
         }
 
         stScoringProgress.done('Team Scoring complete.');
+        await refreshSeasonTeamData();
         showCustomAlert('Team scoring complete!');
     }
 
@@ -2007,6 +2039,7 @@
         else stScoringProgress.log('Casino bets reset.');
 
         stScoringProgress.done('Casino Team Scoring complete.');
+        await refreshSeasonTeamData();
         showCustomAlert('Casino team scoring complete!');
     }
 
@@ -2134,6 +2167,7 @@
         }
 
         stSummaryProgress.done('Season Team Summary complete.');
+        await refreshSeasonTeamData();
         showCustomAlert('Season Team Summary update complete!');
     }
 

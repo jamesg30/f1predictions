@@ -1,559 +1,231 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Page Details 1 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Stylesheets -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <script>
       (function() {
         const darkMode = localStorage.getItem('darkMode') === 'true';
         const cssFile = darkMode ? '/dark.css' : '/light.css';
-        // Create a new link element
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = cssFile;
         link.id = 'themeStylesheet';
-    
-        // Append it to the head after existing styles
         document.head.appendChild(link);
-    
         console.log(`Loaded: ${cssFile}`);
-    
-        // Set chart colors based on theme
-        const chartTextColor = darkMode ? '#ffffff' : '#000000';  // White for dark mode, black for light mode
-        const chartLineColor = darkMode ? '#ffffff' : '#000000';  // White for dark mode, black for light mode
-        const chartBackgroundColor = darkMode ? '#222222' : '#ffffff';  // Dark background for dark mode, light for light mode
-        const chartGridColor = darkMode ? '#444444' : '#cccccc';  // Darker grid for dark mode, lighter for light mode
-    
-        // Add these variables to the window object for later use in your chart
-        window.chartTheme = {
-          chartTextColor,
-          chartLineColor,
-          chartBackgroundColor,
-          chartGridColor
-        };
+        const chartTextColor = darkMode ? '#ffffff' : '#000000';
+        const chartLineColor = darkMode ? '#ffffff' : '#000000';
+        const chartBackgroundColor = darkMode ? '#222222' : '#ffffff';
+        const chartGridColor = darkMode ? '#444444' : '#cccccc';
+        window.chartTheme = { chartTextColor, chartLineColor, chartBackgroundColor, chartGridColor };
       })();
     </script>
-    
-    <!-- Page Details 2 -->
     <title>F1 Predictions</title>
     <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
-    <!-- Apple Touch Icon: used when bookmarking or adding to home screen on iOS -->
-  <link rel="apple-touch-icon" sizes="180x180" href="/media/f1_predictions_logo.png">
-
-    <style> 
-        /* Container for the image and overlay */
-        .full-width-image-container {
-            position: relative;
-            width: 100%;
-            height: 200px;
-            overflow: hidden;
-
-            -webkit-user-select: none; /* Safari, Chrome, older browsers */
-            -moz-user-select: none;    /* Firefox */
-            -ms-user-select: none;     /* IE 10+ */
-            user-select: none;         /* Standard syntax */
-        }
-
-        /* Image styling */
-        .full-width-image {
-            width: 100%;        /* Full width of the container */
-            height: 100%;       /* Full height of the container */
-            object-fit: cover;  /* Ensures the image scales proportionally and fills the container */
-        }
-
-        /* Transparent overlay styling */
-        .overlay {
-            position: absolute;   /* Positioned relative to the parent container */
-            top: 0;               /* Start at the top of the container */
-            left: 0;              /* Start at the left of the container */
-            width: 100%;          /* Full width of the container */
-            height: 100%;         /* Full height of the container (200px) */
-            background-color: rgba(0, 0, 0, 0.4); /* Transparent black overlay */
-        }
-
-        .placeholder-glow {
-            width: 100%;
-            height: 300px; /* Adjust as needed */
-            background-color: #ccc;
-            animation: pulse 1.5s infinite ease-in-out;
-        }
-
-        .placeholder-16by9 {
+    <link rel="apple-touch-icon" sizes="180x180" href="/media/f1_predictions_logo.png">
+    <style>
+        .full-width-image-container { position: relative; width: 100%; height: 200px; overflow: hidden; user-select: none; }
+        .full-width-image { width: 100%; height: 100%; object-fit: cover; }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); }
+        .placeholder-glow { width: 100%; height: 300px; background-color: #ccc; animation: pulse 1.5s infinite ease-in-out; }
+        .placeholder-16by9 { width: 100%; padding-top: 56.25%; border-radius: 0.25rem; animation: glow 1.5s ease-in-out infinite; background-color: #ccc; }
+        @keyframes pulse { 0%{opacity:0.6} 50%{opacity:1} 100%{opacity:0.6} }
+        @keyframes glow  { 0%{opacity:0.5} 50%{opacity:1} 100%{opacity:0.5} }
+        .hidden { display: none; }
+        .chart-wrapper      { width:100%; max-width:900px; height:400px; margin:0 auto; padding:0 20px; }
+        .chart-wrapper-tall { width:100%; max-width:900px; height:650px; margin:0 auto; padding:0 20px; }
+        .flag-img { height:36px; border-radius:0.2rem; }
+        .flag-placeholder { width:70px; height:36px; background-color:#ccc; animation:glow 1.5s ease-in-out infinite; display:inline-block; border-radius:0.2rem; }
+        .loading-text-placeholder { display:inline-block; width:80%; height:1.6em; background-color:#ccc; border-radius:0.25rem; animation:glow 1.5s ease-in-out infinite; }
+        .track-img { height:200px !important; max-height:200px !important; }
+        @media (min-width:576px) { .track-img { height:250px !important; max-height:250px !important; } }
+        @media (min-width:992px) { .track-img { height:300px !important; max-height:300px !important; } }
+        @media (max-width:768px) { .chart-wrapper { height:500px; padding:0 10px; } .chart-wrapper-tall { height:750px; padding:0 10px; } }
+        .podium-container { display:flex; justify-content:center; align-items:flex-end; gap:10px; margin:20px; }
+        .podium-box { display:flex; flex-direction:column; align-items:center; width:150px; }
+        .podium-box .player-names { margin-bottom:5px; text-align:center; font-weight:bold; }
+        .player-info { display:inline-flex; align-items:center; gap:5px; flex-wrap:wrap; }
+        .icons { display:inline-flex; align-items:center; }
+        .player-name { flex:1 1 auto; white-space:normal; word-break:break-word; }
+        .podium-block { display:flex; align-items:center; justify-content:center; width:100%; border:2px solid #999; border-radius:4px 4px 0 0; font-size:24px; font-weight:bold; color:#333; }
+        .podium-box.first  .podium-block { height:90px; background-color:rgba(255,215,0,0.2); }
+        .podium-box.second .podium-block { height:70px; background-color:rgba(192,192,192,0.2); }
+        .podium-box.third  .podium-block { height:60px; background-color:rgba(205,127,50,0.2); }
+        .rank-score { font-size:0.7em; color:#333; margin-top:4px; }
+        .podium-content { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; }
+        @media (max-width:400px) { .player-name { font-size:1em; } .podium-box { width:90px; } }
+        .your-results-box {
+          margin-top: 20px;
+          margin-bottom: 20px;
           width: 100%;
-          padding-top: 56.25%; /* 16:9 aspect ratio */
-          border-radius: 0.25rem;
-          animation: glow 1.5s ease-in-out infinite;
-          background-color: #ccc;
         }
 
-
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
+        .your-results-box h3 {
+          margin-top: 0;
         }
 
-        .hidden {
-            display: none;
+        .your-results-box table {
+          width: 100%;
+          table-layout: auto;
+          border-collapse: collapse;
         }
 
-
-        .chart-wrapper {
-            width: 100%; /* Let it fill the width */
-            max-width: 900px; /* Prevent it from becoming too wide */
-            height: 400px; /* Fixed height */
-            margin: 0 auto; /* Center it */
-            padding: 0 20px; /* Add padding on desktop */
+        .your-results-box td {
+          border: 1px solid #ddd;
+          max-width: 10ch;
+          word-wrap: break-word;
+          white-space: normal;
+          padding: 1px;
+          text-align: center;
+          vertical-align: middle;
         }
 
-        .chart-wrapper-tall {
-            width: 100%; /* Let it fill the width */
-            max-width: 900px; /* Prevent it from becoming too wide */
-            height: 650px; /* Fixed height */
-            margin: 0 auto; /* Center it */
-            padding: 0 20px; /* Add padding on desktop */
+        .your-results-box td:first-child{
+          background-color: #eeeeee;
+          min-width: 3ch
         }
 
-        .flag-img {
-          height: 36px;
-          border-radius: 0.2rem; /* optional: slightly rounded corners */
+        .your-results-box td:nth-child(2){
+          text-align: left;
+          padding-left: 8px;
+          padding-top: 5px;
         }
 
-        .flag-placeholder {
-          width: 70px;       /* adjust width as needed */
-          height: 36px;      /* adjust height for desired flag ratio (e.g., 3:2) */
-          background-color: #ccc;
-          animation: glow 1.5s ease-in-out infinite;
-          display: inline-block;
-          border-radius: 0.2rem; /* optional: slightly rounded corners */
-        }
-
-        .loading-text-placeholder {
-          display: inline-block;
-          width: 80%;   /* Adjust width as needed */
-          height: 1.6em;    /* Adjust height as needed */
-          background-color: #ccc;
-          border-radius: 0.25rem;
-          animation: glow 1.5s ease-in-out infinite;
-        }
-
-        @keyframes glow {
-          0% { opacity: 0.5; }
-          50% { opacity: 1; }
-          100% { opacity: 0.5; }
-        }
-
-        /* Default height for small devices */
-        .track-img {
-          height: 200px !important;
-          max-height: 200px !important;
-        }
-
-        /* Medium screens (tablets, small laptops) - 250px */
-        @media (min-width: 576px) {
-          .track-img {
-            height: 250px !important;
-            max-height: 250px !important;
-          }
-        }
-
-    /* Larger screens (laptops, desktops) - 300px */
-    @media (min-width: 992px) {
-      .track-img {
-        height: 300px !important;
-        max-height: 300px !important;
-      }
-    }
-
-        
-        @media (max-width: 768px) {
-            .chart-wrapper {
-                height: 500px; /* Increase height on smaller screens */
-                padding: 0 10px; /* Reduce padding */
-            }
-        }
-
-        @media (max-width: 768px) {
-            .chart-wrapper-tall {
-                height: 750px; /* Increase height on smaller screens */
-                padding: 0 10px; /* Reduce padding */
-            }
-        }
-/* Podium container */
-.podium-container {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  gap: 10px;
-  margin: 20px;
-}
-
-/* Each podium box */
-.podium-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 150px; /* default width for mobile */
-}
-
-/* On desktop, make the podium slightly wider */
-@media (min-width: 768px) {
-  .podium-box {
-    width: 150px;
-  }
-}
-
-/* Container for player info above each box */
-.podium-box .player-names {
-  margin-bottom: 5px;
-  text-align: center;
-  font-weight: bold;
-}
-
-/* Player info: inline-flex so items try to stay on one line,
-   but with wrapping allowed if the name overflows */
-.player-info {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  flex-wrap: wrap;
-}
-
-/* Icon container: never wraps */
-/* Ensure all elements inside the icons container align vertically in the center */
-.icons {
-  display: inline-flex;
-  align-items: center;
-}
-
-/* Player name: by default on the same line but will wrap if needed */
-.player-name {
-  flex: 1 1 auto;
-  white-space: normal;
-  word-break: break-word;
-}
-
-/* Podium block with centered rank number */
-.podium-block {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  border: 2px solid #999;
-  border-radius: 4px 4px 0 0;
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
-}
-
-/* Different heights and subtle accent colors */
-.podium-box.first .podium-block {
-  height: 90px;
-  background-color: rgba(255, 215, 0, 0.2); /* gold accent */
-}
-.podium-box.second .podium-block {
-  height: 70px;
-  background-color: rgba(192, 192, 192, 0.2); /* silver accent */
-}
-.podium-box.third .podium-block {
-  height: 60px;
-  background-color: rgba(205, 127, 50, 0.2); /* bronze accent */
-}
-
-.rank-score {
-  font-size: 0.7em;
-  color: #333;
-  margin-top: 4px;
-}
-
-.podium-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-}
-
-/* Rank number styling -- no absolute positioning needed now */
-.rank-number {
-  font-family: 'Montserrat'
-  /* Centered by the flex container */
-}
-
-.player-name {
-  white-space: normal;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-@media (max-width: 400px) {
-  .player-name {
-    font-size: 1em;
-  }
-  .podium-box {
-    width: 90px;
-  }
-}
-
-.your-results-box {
-  margin-top: 20px;
-  width: 100%;
-}
-
-.your-results-box h3 {
-  margin-top: 0;
-}
-
-.your-results-box table {
-  width: 100%;
-  table-layout: auto;
-  border-collapse: collapse;
-}
-
-.your-results-box td {
-  border: 1px solid #ddd;
-  max-width: 10ch;
-  word-wrap: break-word;
-  white-space: normal;
-  padding: 1px;
-  text-align: center;
-  vertical-align: middle;
-}
-
-.your-results-box td:first-child{
-  background-color: #eeeeee;
-  min-width: 3ch
-}
-
-.your-results-box td:nth-child(2){
-  text-align: left;
-  padding-left: 8px;
-  padding-top: 5px;
-}
-
+        /* ── Team results collapse panel ── */
+        #team-results-toggle { cursor:pointer; user-select:none; }
+        #team-results-toggle .toggle-icon { display:inline-block; transition:transform 0.2s ease; font-style:normal; }
+        #team-results-toggle.open .toggle-icon { transform:rotate(90deg); }
+        #team-results-body { display:none; margin-top:0.75rem; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Initialize Supabase globally
         const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ieWhsZWZ4bmpqem1pd3N2bmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzODQwOTgsImV4cCI6MjA0OTk2MDA5OH0.4gcUcOfhyTspbcDn6gPxBKFSTu3zUbkBdNEhMq9MdnY';
         var supabase = supabase.createClient(supabaseUrl, supabaseKey);
     </script>
-    <!-- Encryption Script -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <!-- script.js import -->
     <script type="module" src="/script.js"></script>
 </head>
 <body>
-    <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999;"></div>
-   <!-- HEADER -->
-   <!-- HEADER -->
-<header>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
-    <div class="container-fluid d-flex flex-wrap flex-lg-nowrap align-items-center">
-      
-      <!-- Toggler (Visible on mobile only) -->
-      <button
-        class="navbar-toggler d-lg-none order-1"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarNavDropdown"
-        aria-controls="navbarNavDropdown"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <!-- Custom animated burger icon replacing Bootstrap’s default icon -->
-        <span class="burger">
-          <span></span>
-          <span></span>
-          <span></span>
-        </span>
-      </button>
-      
-      <!-- Brand / Logo -->
-      <!-- On mobile: centered via flex centering; on desktop: left aligned (mx-lg-0) -->
-      <a class="navbar-brand mx-auto mx-lg-0 order-2 order-lg-1" href="/">
-        <img src="/media/f1_predictions_logo.png" alt="Logo" width="45" height="45" class="me-2">
-        <span class="fs-5 d-none d-lg-inline heading-text-11" style="margin-right: 8px">F1 Predictions</span>
-      </a>
-      
-      <!-- Shared Account Controls -->
-      <div class="d-flex align-items-center order-3 order-lg-3 ms-lg-auto account-controls">
-        <!-- Avatar Dropdown (default: always rendered as grey box) -->
-        <div class="dropdown" id="avatarDropdownContainer">
-          <a
-            href="#"
-            id="userDropdown"
-            class="d-flex align-items-center text-decoration-none"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-            <!-- Default grey avatar placeholder -->
-            <div id="user-avatar" class="user-avatar" style="background-color: #ccc;"></div>
+    <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index:9999;"></div>
+    <header>
+      <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+        <div class="container-fluid d-flex flex-wrap flex-lg-nowrap align-items-center">
+          <button class="navbar-toggler d-lg-none order-1" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="burger"><span></span><span></span><span></span></span>
+          </button>
+          <a class="navbar-brand mx-auto mx-lg-0 order-2 order-lg-1" href="/">
+            <img src="/media/f1_predictions_logo.png" alt="Logo" width="45" height="45" class="me-2">
+            <span class="fs-5 d-none d-lg-inline heading-text-11" style="margin-right:8px">F1 Predictions</span>
           </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" id="logoutMenuItem">
-            <li id="loggedInUserDisplay" class="dropdown-item-text body-text" style="color: darkgrey;">
-              Logged in as <br><strong></strong>
-            </li>
-            <li><a class="dropdown-item body-text-xs" href="/account">Account</a></li>
-            <li>
-              <!-- Dark Mode Toggle without highlight -->
-              <div class="dropdown-item no-highlight">
-                <div class="form-check form-switch" style="line-height: 2; vertical-align: middle;">
-                  <input class="form-check-input" type="checkbox" id="darkModeToggle" style="margin-top: 0.5rem">
-                  <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
-                </div>
-              </div>
-            </li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item body-text-xs" href="#" id="logoutBtn">Log Out</a></li>
-          </ul>
+          <div class="d-flex align-items-center order-3 order-lg-3 ms-lg-auto account-controls">
+            <div class="dropdown" id="avatarDropdownContainer">
+              <a href="#" id="userDropdown" class="d-flex align-items-center text-decoration-none"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                <div id="user-avatar" class="user-avatar" style="background-color:#ccc;"></div>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" id="logoutMenuItem">
+                <li id="loggedInUserDisplay" class="dropdown-item-text body-text" style="color:darkgrey;">Logged in as <br><strong></strong></li>
+                <li><a class="dropdown-item body-text-xs" href="/account">Account</a></li>
+                <li>
+                  <div class="dropdown-item no-highlight">
+                    <div class="form-check form-switch" style="line-height:2; vertical-align:middle;">
+                      <input class="form-check-input" type="checkbox" id="darkModeToggle" style="margin-top:0.5rem">
+                      <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
+                    </div>
+                  </div>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item body-text-xs" href="#" id="logoutBtn">Log Out</a></li>
+              </ul>
+            </div>
+            <button id="loginButton" type="button" class="btn btn-outline-dark ms-2 text-nowrap d-none"
+              data-bs-toggle="modal" data-bs-target="#loginModal">Log In</button>
+          </div>
+          <div class="collapse navbar-collapse order-4 w-100 order-lg-2 w-lg-auto" id="navbarNavDropdown">
+            <ul class="navbar-nav mx-auto mx-lg-0">
+              <li class="nav-item"><a class="nav-link body-text-xs" href="/form">Form</a></li>
+              <li class="nav-item"><a class="nav-link body-text-xs" href="/teams">Teams</a></li>
+              <li class="nav-item"><a class="nav-link body-text-xs" href="/results">Results</a></li>
+              <li class="nav-item"><a class="nav-link body-text-xs" href="/register">Register</a></li>
+              <li class="nav-item"><a class="nav-link body-text-xs" href="/feedback">Feedback</a></li>
+              <li class="nav-item"><a class="nav-link body-text-xs" href="/info">Info</a></li>
+              <li class="nav-item"><a class="nav-link body-text-xs" href="/minigames">Minigames</a></li>
+            </ul>
+          </div>
         </div>
-        <!-- Log In Button (default: hidden) -->
-        <button
-          id="loginButton"
-          type="button"
-          class="btn btn-outline-dark ms-2 text-nowrap d-none"
-          data-bs-toggle="modal"
-          data-bs-target="#loginModal"
-        >
-          Log In
-        </button>
-      </div>
-      
-      <!-- Navigation Links -->
-      <!-- On mobile: full-width collapse; on desktop: inline between brand and account controls -->
-      <div class="collapse navbar-collapse order-4 w-100 order-lg-2 w-lg-auto" id="navbarNavDropdown">
-        <ul class="navbar-nav mx-auto mx-lg-0">
-          <li class="nav-item">
-            <a class="nav-link body-text-xs" href="/form">Form</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link body-text-xs" href="/teams">Teams</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link body-text-xs" href="/results">Results</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link body-text-xs" href="/register">Register</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link body-text-xs" href="/feedback">Feedback</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link body-text-xs" href="/info">Info</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link body-text-xs" href="/minigames">Minigames</a>
-          </li>
-        </ul>
-      </div>
-      
-    </div>
-  </nav>
-</header>
-  
-  
-  
-     
+      </nav>
+    </header>
 
-    <!-- Full-Width Image Section with Centered Text -->
     <section class="full-width-image-container">
-      <!-- Placeholder div with glow effect -->
       <div id="image-placeholder" class="placeholder-glow"></div>
-  
-      <!-- Actual image, hidden initially -->
       <img id="background-image" src="" alt="Full Width Image" class="full-width-image hidden">
-      
-      <!-- Transparent overlay -->
       <div class="overlay"></div>
-  
-      <!-- Centered Text -->
       <h1 class="heading-text-1">F1 Predictions Form</h1>
-  </section>
-  
-    
+    </section>
 
     <main class="container my-5">
         <div class="container">
           <div class="row">
-            <!-- 1st Column -->
             <div class="col-sm">
               <div class="mb-3 text-center">
                 <h5 class="mb-3 body-text-emph">Latest Form:</h5>
                 <a id="latest-form-link">
                     <button id="latest-form-button" type="button" class="btn btn-dark" disabled>Loading...</button>
                 </a>
-                <div id="formPreviousSubmissionContainer" style="display: none; margin-top: 10px;">
+                <div id="formPreviousSubmissionContainer" style="display:none; margin-top:10px;">
                   <span id="formPreviousSubmissionText" class="badge bg-success">Predictions Submitted</span>
                 </div>
-                <div id="teamMateAlertContainer" style="display: none; margin-top: 10px;">
+                <div id="teamMateAlertContainer" style="display:none; margin-top:10px;">
                   <span id="formTeammateSubmissionText" class="badge bg-dark">Teammate Submitted</span>
-                </div>                
-                <div id="formStatusContainer" style="display: none; margin-top: 15px">
+                </div>
+                <div id="formStatusContainer" style="display:none; margin-top:15px">
                     <i id="formStatusText" class="mb-3"></i>
                 </div>
               </div>
             </div>
-
-            <!-- 2nd Column -->
             <div class="col-sm mb-3 text-center">
               <div id="next-race-info">
                 <h5 class="mb-3 body-text-emph">Next Race:</h5>
                 <div class="row align-items-center justify-content-center">
                   <div class="col-6 text-center">
-                    <div class="mb-2">
-                      <div class="flag-placeholder"></div>
-                    </div>
-                    <span class="loading-text-placeholder" style="height: 1.2em; margin-top: -5px"></span>
+                    <div class="mb-2"><div class="flag-placeholder"></div></div>
+                    <span class="loading-text-placeholder" style="height:1.2em; margin-top:-5px"></span>
                   </div>
                   <div class="col-6 text-center">
                     <div id="weather-forecast">
-                      <div class="flag-placeholder" style="margin-top: -10px;margin-bottom: -5px; height: 64px; width: 64px"></div>
-                      <span class="loading-text-placeholder" style="height: 1.2em; margin-top: 5px"></span>
+                      <div class="flag-placeholder" style="margin-top:-10px; margin-bottom:-5px; height:64px; width:64px"></div>
+                      <span class="loading-text-placeholder" style="height:1.2em; margin-top:5px"></span>
                     </div>
                   </div>
                 </div>
-                
                 <h6 class="body-text" id="race-title"></h6>
-                <div id="countdown-timer" class="mt-2">
-                  <strong>Time left:</strong> <span id="countdown"></span>
-                </div>
+                <div id="countdown-timer" class="mt-2"><strong>Time left:</strong> <span id="countdown"></span></div>
               </div>
             </div>
-
-            <!-- 3rd Column -->
             <div class="col-sm mb-3 text-center" id="track-race-info">
               <div class="card-img-top placeholder-16by9"></div>
               <div>
-                <span class="loading-text-placeholder" style="height: 2em; margin-top: 5px"></span>
-                <span class="loading-text-placeholder" style="margin-top: -2px"></span>
+                <span class="loading-text-placeholder" style="height:2em; margin-top:5px"></span>
+                <span class="loading-text-placeholder" style="margin-top:-2px"></span>
               </div>
             </div>
           </div>
         </div>
-    
-    <!-- Next Race Section -->
-     <!-- Main page alert container (initially hidden) -->
-<div id="main-page-alert-container" style="display: none;"></div>
+
+        <div id="main-page-alert-container" style="display:none;"></div>
 
         <div class="text-center">
           <h5 class="mb-3">Quick Links:</h5>
-          <!-- Add flex-wrap to allow items to wrap onto a new line -->
           <div class="d-flex flex-row flex-wrap justify-content-center gap-3">
-            <a href="/teams">
-              <button type="button" class="btn btn-dark">Teams</button>
-            </a>
-            <a href="/results">
-              <button type="button" class="btn btn-dark">Results</button>
-            </a>
+            <a href="/teams"><button type="button" class="btn btn-dark">Teams</button></a>
+            <a href="/results"><button type="button" class="btn btn-dark">Results</button></a>
             <a href="https://www.formula1.com/en/latest/tags/analysis.3HkjTN75peeCOsSegCyOWi?articleFilters=&page=1">
               <button type="button" class="btn btn-dark">
-                <img src="/media/symbols/external_link.png" style="height: 0.9rem; margin-right: 8px; margin-bottom: 2px;">F1.com Analysis
+                <img src="/media/symbols/external_link.png" style="height:0.9rem; margin-right:8px; margin-bottom:2px;">F1.com Analysis
               </button>
             </a>
           </div>
@@ -561,226 +233,153 @@
 
         <hr>
 
-        <!-- Loading Indicator for Scored Results -->
         <div id="loadingPlaceholderBar" class="loading-indicator mb-3 heading-text-3">
-            <div class="container my-3 d-flex justify-content-left">
-                <h4 class="mb-3 heading-text-2">Loading...</h4>
-            </div>
-            Loading...
-            <div class="loading-bar"></div>
+            <div class="container my-3 d-flex justify-content-left"><h4 class="mb-3 heading-text-2">Loading...</h4></div>
+            Loading...<div class="loading-bar"></div>
         </div>
-        <!-- Scored Results Section -->
-        <div id="scoredResults" style="display: none;"> <!-- Scored Results Placeholder -->
+
+        <!-- Scored Results -->
+        <div id="scoredResults" style="display:none;">
             <div class="container my-3 d-flex justify-content-left">
                 <h4 class="mb-3 heading-text-2">Latest Results</h4>
             </div>
             <div class="container my-4">
-                <h5 id="raceTitle" class="mb-3 heading-text-3" style="text-align: center"></h5>
-                <!-- Loading Indicator for Scored Results -->
-                <div id="scoredLoading" class="loading-indicator mb-3 heading-text-3">
-                    Results loading...
-                    <div class="loading-bar"></div>
-                </div>
+                <h5 id="raceTitle" class="mb-3 heading-text-3" style="text-align:center"></h5>
+                <div id="scoredLoading" class="loading-indicator mb-3 heading-text-3">Results loading...<div class="loading-bar"></div></div>
+
                 <div id="topPlayersContainer" class="podium-container">
-                  <!-- Second Place -->
                   <div class="podium-box second">
-                    <div class="player-names" id="secondNames">
-                      <!-- 2nd place player names injected here -->
-                    </div>
-                    <div class="podium-block">
-                      <div class="podium-content">
-                        <div class="rank-number" style="color: rgba(192, 192, 192, 0.9); /* subtle silver accent */">2</div>
-                        <div class="rank-score" style="color: rgba(192, 192, 192, 0.9); /* subtle silver accent */  margin-top: -5px" id="secondScore"></div>
-                      </div>
-                    </div>
+                    <div class="player-names" id="secondNames"></div>
+                    <div class="podium-block"><div class="podium-content">
+                      <div class="rank-number" style="color:rgba(192,192,192,0.9);">2</div>
+                      <div class="rank-score" style="color:rgba(192,192,192,0.9); margin-top:-5px" id="secondScore"></div>
+                    </div></div>
                   </div>
-                
-                  <!-- First Place -->
                   <div class="podium-box first">
-                    <div class="player-names" id="firstNames">
-                      <!-- 1st place player names injected here -->
-                    </div>
-                    <div class="podium-block">
-                      <div class="podium-content">
-                        <div class="rank-number" style="color: rgba(255, 215, 0, 0.9); /* subtle gold accent */">1</div>
-                        <div class="rank-score" style="color: rgba(255, 215, 0, 0.9); /* subtle gold accent */  margin-top: -5px" id="firstScore"></div>
-                      </div>
-                    </div>
+                    <div class="player-names" id="firstNames"></div>
+                    <div class="podium-block"><div class="podium-content">
+                      <div class="rank-number" style="color:rgba(255,215,0,0.9);">1</div>
+                      <div class="rank-score" style="color:rgba(255,215,0,0.9); margin-top:-5px" id="firstScore"></div>
+                    </div></div>
                   </div>
-                
-                  <!-- Third Place -->
                   <div class="podium-box third">
-                    <div class="player-names" id="thirdNames">
-                      <!-- 3rd place player names injected here -->
-                    </div>
-                    <div class="podium-block">
-                      <div class="podium-content">
-                        <div class="rank-number" style="color: rgba(205, 127, 50, 0.9); /* subtle bronze accent */">3</div>
-                        <div class="rank-score" style="color: rgba(205, 127, 50, 0.9); /* subtle bronze accent */ margin-top: -5px" id="thirdScore"></div>
-                      </div>
-                    </div>
+                    <div class="player-names" id="thirdNames"></div>
+                    <div class="podium-block"><div class="podium-content">
+                      <div class="rank-number" style="color:rgba(205,127,50,0.9);">3</div>
+                      <div class="rank-score" style="color:rgba(205,127,50,0.9); margin-top:-5px" id="thirdScore"></div>
+                    </div></div>
                   </div>
                 </div>
 
-                <div id="yourResultsBox" style="display: none;" class="your-results-box">
-                  <h3 class="heading-text-3" style="font-size: 1.2rem !important">Your results</h3>
-                  <table>
-                    <tbody id="yourResultsContent"></tbody>
-                  </table>
-                  <di style="margin-bottom: 5px"></div>
+                <div id="yourResultsBox" style="display:none;" class="your-results-box">
+                  <h3 class="heading-text-3" style="font-size:1.2rem !important;">Your results</h3>
+                  <table><tbody id="yourResultsContent"></tbody></table>
+                  <div style="margin-bottom:5px"></div>
                 </div>
-            
-                <!-- Scrollable container for main results table -->
-                <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
+
+                <div class="table-responsive" style="overflow-x:auto; max-width:100%;">
                     <table id="mainResultsTable" class="table table-sm table-bordered">
-                        <thead id="tableHeader">
-                            <!-- Header row will be inserted here -->
-                        </thead>
-                        <tbody id="tableBody">
-                            <!-- Data rows will be inserted here -->
-                        </tbody>
+                        <thead id="tableHeader"></thead>
+                        <tbody id="tableBody"></tbody>
                     </table>
                 </div>
-                <div class="form-check form-switch" style="margin-top: 5px; margin-bottom: 5px">
+                <div class="form-check form-switch" style="margin-top:5px; margin-bottom:5px">
                     <label class="form-check-label" for="toggleScores">Show Detailed Scoring</label>
                     <input class="form-check-input form-switch-input" type="checkbox" id="toggleScores">
                 </div>
-                <div class="form-check" style="margin-top: 5px; margin-bottom: 5px">
+                <div class="form-check" style="margin-top:5px; margin-bottom:5px">
                   <input class="form-check-input" type="checkbox" id="pinQuestionColumn">
-                  <label class="form-check-label" for="pinQuestionColumn">
-                    Pin Questions and Results
-                  </label>
+                  <label class="form-check-label" for="pinQuestionColumn">Pin Questions and Results</label>
                 </div>
-                
-                <div class="form-check" style="margin-top: 5px; margin-bottom: 5px">
+                <div class="form-check" style="margin-top:5px; margin-bottom:5px">
                   <input class="form-check-input" type="checkbox" id="pinBothColumns">
-                  <label class="form-check-label" for="pinBothColumns">
-                    Pin Questions, Results and My Responses
-                  </label>
+                  <label class="form-check-label" for="pinBothColumns">Pin Questions, Results and My Responses</label>
                 </div>
-              
-                <div id="lowestScores" class="mt-3" style="margin-top: 5px">
-                    <!-- Lowest scores will be displayed here -->
+                <div id="lowestScores" class="mt-3" style="margin-top:5px"></div>
+
+                <!-- Team Results collapse panel (hidden until scored results load) -->
+                <div id="team-results-section" class="mt-4" style="display:none;">
+                    <div id="team-results-toggle" class="d-inline-flex align-items-center gap-2">
+                        <button class="btn btn-dark btn-sm px-3">
+                            <i class="toggle-icon">▶</i>&nbsp; Show Team Results
+                        </button>
+                    </div>
+                    <div id="team-results-body">
+                        <div id="team-results-loading" class="loading-indicator mt-2 mb-2 heading-text-3" style="display:none;">
+                            Loading team results...<div class="loading-bar"></div>
+                        </div>
+                        <div class="table-responsive mt-2">
+                            <table id="home-team-results-table" class="table table-sm table-bordered"></table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-    <!-- Unscored Predictions Section -->
-        <div id="unscoredPredictions" style="display: none;"> <!-- Unscored Predictions Placeholder -->
+        <!-- Unscored Predictions -->
+        <div id="unscoredPredictions" style="display:none;">
             <div class="container my-3 d-flex justify-content-left">
                 <h4 class="mb-3 heading-text-2">Unscored Predictions</h4>
             </div>
             <div class="container my-4">
                 <h5 id="unscoredRaceTitle" class="mb-3 heading-text-3"></h5>
-                <!-- Loading Indicator for Unscored Predictions -->
-                <div id="unscoredLoading" class="loading-indicator mb-3 heading-text-3">
-                    Predictions loading...
-                    <div class="loading-bar"></div>
-                </div>
-                <!-- Scrollable container for unscored results table -->
-                <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
+                <div id="unscoredLoading" class="loading-indicator mb-3 heading-text-3">Predictions loading...<div class="loading-bar"></div></div>
+                <div class="table-responsive" style="overflow-x:auto; max-width:100%;">
                     <table id="unscoredResultsTable" class="table table-sm table-bordered">
-                        <thead id="unscoredTableHeader">
-                            <!-- Header row will be inserted here -->
-                        </thead>
-                        <tbody id="unscoredTableBody">
-                            <!-- Data rows will be inserted here -->
-                        </tbody>
+                        <thead id="unscoredTableHeader"></thead>
+                        <tbody id="unscoredTableBody"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-    <!-- No Display Section -->
-        <div id="noDisplay" style="display: none;"> <!-- No Display Placeholder -->
-            <div class="container my-3 d-flex justify-content-left">
-                <h4 class="mb-3 heading-text-2">Results Display Disabled</h4>
-            </div>
-            <div class="container my-3 d-flex justify-content-left">
-                <h4 class="mb-3 heading-text-3">No results to display</h4>
-            </div>
+        <!-- No Display -->
+        <div id="noDisplay" style="display:none;">
+            <div class="container my-3 d-flex justify-content-left"><h4 class="mb-3 heading-text-2">Results Display Disabled</h4></div>
+            <div class="container my-3 d-flex justify-content-left"><h4 class="mb-3 heading-text-3">No results to display</h4></div>
         </div>
-        
+
         <hr>
-        <h3 class="heading-text-2" style="margin-top: 15px; margin-bottom: 15px">Season Standings</h3>
+        <h3 class="heading-text-2" style="margin-top:15px; margin-bottom:15px">Season Standings</h3>
         <div class="row g-4">
-            <!-- Left Column: Latest Form -->
-            <!-- Left Column: Latest Form / Player Standings -->
-                <div class="col-md-6">
-                    <h5 class="mb-3 heading-text-3">Player Standings</h5>
-                    <table id="standings-table" class="table table-sm table-bordered">
-                    <thead>
-                        <tr>
-                        <th>Rank</th>
-                        <th>Name</th>
-                        <th>Score</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Standings rows will be injected here by JavaScript -->
-                    </tbody>
-                    </table>
-                </div>
-
-            <!-- Right Column: Quick Links -->
+            <div class="col-md-6">
+                <h5 class="mb-3 heading-text-3">Player Standings</h5>
+                <table id="standings-table" class="table table-sm table-bordered">
+                  <thead><tr><th>Rank</th><th>Name</th><th>Score</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+            </div>
             <div class="col-md-6">
                 <h5 class="mb-3 heading-text-3">Team Standings</h5>
                 <table id="standings-team-table" class="table table-sm table-bordered">
-                  <thead>
-                    <tr>
-                      <th>Rank</th>
-                      <th>Team</th>
-                      <th>Score</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <!-- Team standings will be inserted here dynamically -->
-                  </tbody>
+                  <thead><tr><th>Rank</th><th>Team</th><th>Score</th></tr></thead>
+                  <tbody></tbody>
                 </table>
-              </div>
-              <div class="container mt-4">
-
-                
-
-                <div class="chart-wrapper-tall">
-                  <canvas id="standings-line-chart"></canvas>
-                </div>
-
-                <!-- Player chart toggle -->
-                <div id="highlightMyLinePlayerContainer" style="display: none; margin-bottom: 8px;">
+            </div>
+            <div class="container mt-4">
+                <div class="chart-wrapper-tall"><canvas id="standings-line-chart"></canvas></div>
+                <div id="highlightMyLinePlayerContainer" style="display:none; margin-bottom:8px;">
                   <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="highlightMyLinePlayer" checked>
                     <label class="form-check-label" for="highlightMyLinePlayer">Player Standings - Highlight my line</label>
                   </div>
                 </div>
-
-                <div class="chart-wrapper">
-                  <canvas id="standings-team-line-chart"></canvas>
-                </div>
-
-                <!-- Team chart toggle -->
-                <div id="highlightMyLineTeamContainer" style="display: none; margin-bottom: 8px; margin-top: 16px;">
+                <div class="chart-wrapper"><canvas id="standings-team-line-chart"></canvas></div>
+                <div id="highlightMyLineTeamContainer" style="display:none; margin-bottom:8px; margin-top:16px;">
                   <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="highlightMyLineTeam" checked>
                     <label class="form-check-label" for="highlightMyLineTeam">Team Standings - Highlight my line</label>
                   </div>
                 </div>
-
-              </div>
+            </div>
+        </div>
         <hr>
         <div class="container my-5">
-            <pre class="mb-3 heading-text-2"><img src="/media/awards/trophy.png" style="float:left; width: 38px; height: 38px;"> Past Champions</pre>
+            <pre class="mb-3 heading-text-2"><img src="/media/awards/trophy.png" style="float:left; width:38px; height:38px;"> Past Champions</pre>
             <h5 class="mb-3 heading-text-3">Players</h5>
-            <p>
-                2025 - Ethan<br>
-                2024 - James<br>
-                2023 - Ethan<br>
-                2022 - Ethan
-            </p>
+            <p>2025 - Ethan<br>2024 - James<br>2023 - Ethan<br>2022 - Ethan</p>
             <h5 class="mb-3 heading-text-3">Teams</h5>
-            <p>
-                2025 - Dirty Air Dealers (Ethan, James)<br>
-            </p>
+            <p>2025 - Dirty Air Dealers (Ethan, James)<br></p>
         </div>
         <hr>
         <div class="container my-5">
@@ -789,13 +388,13 @@
             <p class="mb-3 body-text">Subscribe to F1 Calendar through this website. You can even customise which sessions you subscribe to (e.g. Races only).</p>
             <a href="https://f1calendar.com">
               <button type="button" class="btn btn-dark">
-                <img src="/media/symbols/external_link.png" style="height: 0.9rem; margin-right: 8px; margin-bottom: 2px;">F1 Calendar
+                <img src="/media/symbols/external_link.png" style="height:0.9rem; margin-right:8px; margin-bottom:2px;">F1 Calendar
               </button>
             </a>
         </div>
 
 <!-- LOGIN MODAL -->
-<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+<div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -806,33 +405,24 @@
         <form id="login-form">
           <div class="mb-3">
             <label for="login-player-name" class="form-label">Name:</label>
-            <!-- Use an input with a datalist for suggestions -->
             <input list="players-list" id="login-player-name" class="form-control" required />
-            <datalist id="players-list">
-              <!-- Options will be populated dynamically -->
-            </datalist>
+            <datalist id="players-list"></datalist>
           </div>
           <div class="mb-3">
             <label for="login-pin" class="form-label">PIN:</label>
             <input type="password" id="login-pin" class="form-control" maxlength="4" pattern="\d*" inputmode="numeric" required />
           </div>
-          
           <div class="mb-3">
             <label for="rememberMe" class="form-check-label">
-              <input type="checkbox" id="rememberMe" class="form-check-input" />
-              Keep me logged in for 30 days
+              <input type="checkbox" id="rememberMe" class="form-check-input" /> Keep me logged in for 30 days
             </label>
           </div>
           <div class="d-grid gap-2 col-6 mx-auto">
               <button type="submit" class="btn btn-primary" disabled>Log In</button>
           </div>
           <hr>
-          <div class="mb-3">
-             Create an account on the <a href="/register">Register Page</a>.
-          </div>
-          <div class="mb-3">
-            Forgot password? Visit the <a href="/account">Account Page</a>.
-          </div>
+          <div class="mb-3">Create an account on the <a href="/register">Register Page</a>.</div>
+          <div class="mb-3">Forgot password? Visit the <a href="/account">Account Page</a>.</div>
         </form>
       </div>
     </div>
@@ -840,16 +430,14 @@
 </div>
 
 <!-- Custom Confirm Modal -->
-<div class="modal fade" id="customConfirmModal" tabindex="-1" aria-labelledby="customConfirmModalLabel" aria-hidden="true">
+<div class="modal fade" id="customConfirmModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="customConfirmModalLabel">Confirm</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-        <!-- Confirm message will be injected here -->
-      </div>
+      <div class="modal-body"></div>
       <div class="modal-footer">
         <button type="button" class="btn btn-dark" id="customConfirmCancel" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-primary" id="customConfirmOk">OK</button>
@@ -857,2227 +445,1000 @@
     </div>
   </div>
 </div>
-
     </main>
- 
+
     <footer class="bg-light text-black text-center py-1 body-text-xs">
       <p>&copy; 2025 F1 Predictions Form</p>
-      <small><div id="userLocationDisplay" style="margin-top: -20px; color: #838383"></div></small>
+      <small><div id="userLocationDisplay" style="margin-top:-20px; color:#838383"></div></small>
     </footer>
 
-<!-- Bootstrap JS Bundle (Local) -->
 <script src="/js/bootstrap.bundle.min.js"></script>
-
 <script type="module">
   import { getCookie, getColorForLetter, renderAvatar, darkenColor, createSmallAvatarHTML } from '/script.js';
-  // =========================
-  // === HEADER IMAGE CODE ===
-  // =========================
-    async function updateDashboardBackground() {
-    // Get the actual image element and the placeholder element
+
+  // ============================================================
+  // === SHARED HELPERS
+  // ============================================================
+
+  function hexToRgb(hex) {
+    hex = hex.replace(/^#/, '');
+    if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
+    const bigint = parseInt(hex, 16);
+    return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
+  }
+
+  function getContrastTextColor(backgroundColor) {
+    const { r, g, b } = hexToRgb(backgroundColor);
+    return (r * 299 + g * 587 + b * 114) / 1000 > 128 ? '#000' : '#fff';
+  }
+
+  function getUserBackgroundColor(name, avatar_settings) {
+    if (avatar_settings?.backgroundColor) return avatar_settings.backgroundColor;
+    if (!name?.length) return '#52c1fa';
+    return getColorForLetter(name.charAt(0).toUpperCase());
+  }
+
+  function normalizeAvatarSettings(avatar_settings) {
+    if (!avatar_settings) return null;
+    if (typeof avatar_settings === 'string') { try { return JSON.parse(avatar_settings); } catch { return null; } }
+    return avatar_settings;
+  }
+
+  async function getCurrentUser() {
+    const playerId = getCookie('playerId');
+    if (!playerId) return null;
+    const { data, error } = await supabase.from('players').select('*').eq('id', playerId).single();
+    if (error) return null;
+    return data;
+  }
+
+  function applyHeaderColor(name, avatar_settings) {
+    const el = document.querySelector('th.your-results-header');
+    if (!el) return;
+    const bg = getUserBackgroundColor(name, normalizeAvatarSettings(avatar_settings));
+    el.style.backgroundColor = bg;
+    el.style.color = getContrastTextColor(bg);
+  }
+
+  function displayLocalRaceTime(raceUTCDate, timeElementId, locationElementId) {
+    const timeEl = document.getElementById(timeElementId);
+    const locEl  = document.getElementById(locationElementId);
+    if (!timeEl || !locEl) return;
+    timeEl.textContent = `Race Start: ${raceUTCDate.toLocaleString(undefined, { hour:'numeric', minute:'2-digit', weekday:'short', day:'numeric', month:'short' })}`;
+    locEl.textContent  = `Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone.replaceAll('_', ' ')}`;
+  }
+
+  async function getTable(tableName) {
+    const { data, error } = await supabase.from(tableName).select('*');
+    if (error) { console.error(`Error fetching ${tableName}:`, error); throw error; }
+    return data;
+  }
+
+  // ============================================================
+  // === HEADER IMAGE
+  // ============================================================
+
+  async function updateDashboardBackground() {
     const imageEl = document.getElementById('background-image');
     const placeholderEl = document.getElementById('image-placeholder');
-    if (!imageEl || !placeholderEl) {
-      console.warn("Background image or placeholder element not found.");
-      return;
-    }
-
-    // Ensure the placeholder is visible and the image is hidden while loading
     placeholderEl.classList.remove('hidden');
     imageEl.classList.add('hidden');
-
     try {
-      // Fetch the background image filename from form_details table
-      const { data: formDetails, error } = await supabase
-        .from('form_details')
-        .select('background_image')
-        .eq('id', 1)
-        .single();
-
-      let bgFilename = "background_ferrari.png"; // Default
-
-      if (error) {
-        console.error("Error fetching background image:", error.message);
-      } else if (formDetails.background_image && formDetails.background_image.trim() !== "") {
-        bgFilename = formDetails.background_image;
-      }
-
-      // Preload the image using a temporary Image object
+      const { data, error } = await supabase.from('form_details').select('background_image').eq('id', 1).single();
+      const bgFilename = (!error && data.background_image?.trim()) ? data.background_image : 'background_ferrari.png';
       const tempImage = new Image();
       tempImage.src = `/media/backgrounds/${bgFilename}`;
-
-      // When the image loads, update the src, hide the placeholder, and show the image
-      tempImage.onload = () => {
-        imageEl.src = tempImage.src;
-        placeholderEl.classList.add('hidden');
-        imageEl.classList.remove('hidden');
-        console.log("Dashboard background loaded:", imageEl.src);
-      };
-
-      // If image fails to load, fallback to default
-      tempImage.onerror = () => {
-        console.error(`Error loading ${bgFilename}, falling back to background_ferrari.png`);
-        imageEl.src = `/media/backgrounds/background_ferrari.png`;
-        placeholderEl.classList.add('hidden');
-        imageEl.classList.remove('hidden');
-      };
-
-      } catch (err) {
-        console.error("Unexpected error fetching background:", err);
-        imageEl.src = `/media/backgrounds/background_ferrari.png`;
-        placeholderEl.classList.add('hidden');
-        imageEl.classList.remove('hidden');
-      }
+      tempImage.onload = () => { imageEl.src = tempImage.src; placeholderEl.classList.add('hidden'); imageEl.classList.remove('hidden'); };
+      tempImage.onerror = () => { imageEl.src = '/media/backgrounds/background_ferrari.png'; placeholderEl.classList.add('hidden'); imageEl.classList.remove('hidden'); };
+    } catch {
+      imageEl.src = '/media/backgrounds/background_ferrari.png'; placeholderEl.classList.add('hidden'); imageEl.classList.remove('hidden');
     }
+  }
+  document.addEventListener('DOMContentLoaded', updateDashboardBackground);
 
-  document.addEventListener('DOMContentLoaded', () => {
-    updateDashboardBackground();
-  });
+  // ============================================================
+  // === RACE DETAILS / FORM BUTTON
+  // ============================================================
 
-  // ==========================
-  // === FETCH RACE DETAILS ===
-  // ==========================
+  async function fetchRaceDetails() {
+    try {
+      const { data: fd } = await supabase.from('form_details').select('race_number').eq('id', 1).single();
+      const { data: rd } = await supabase.from('calendar').select('*').eq('race_number', fd.race_number).single();
+      return rd;
+    } catch { return null; }
+  }
 
-    // Fetch the race details from form_details and calendar tables
-    async function fetchRaceDetails() {
-      try {
-        // Fetch the race number from form_details
-        const { data: formDetails, error: formDetailsError } = await supabase
-            .from('form_details')
-            .select('race_number')
-            .eq('id', 1)
-            .single();
-
-        if (formDetailsError) {
-            console.error('Error fetching form details:', formDetailsError);
-            return null;
-        }
-
-        const raceNumber = formDetails.race_number;
-
-        // Fetch the race details from the calendar table
-        const { data: raceDetails, error: raceDetailsError } = await supabase
-            .from('calendar')
-            .select('*')
-            .eq('race_number', raceNumber)
-            .single();
-
-        if (raceDetailsError) {
-            console.error('Error fetching race details:', raceDetailsError);
-            return null;
-        }
-
-        return raceDetails;
-      } catch (error) {
-          console.error('Error fetching race details:', error);
-          return null;
-      }
-    }
-
-    // Update the latest form button with the current race name
-    async function updateLatestFormButton(raceDetails) {
-      if (raceDetails) {
-        document.getElementById("latest-form-button").textContent = `${raceDetails.name} GP Form`;
-      } else {
-        document.getElementById("latest-form-button").textContent = "Error loading form";
-      }
-    }
-
-    async function updateNextRaceInfo(raceDetails) {
-    if (!raceDetails) {
-        document.getElementById("next-race-info").innerHTML = "<p>Error loading next race.</p>";
-        return;
-    }
-
+  async function updateNextRaceInfo(raceDetails) {
+    if (!raceDetails) { document.getElementById('next-race-info').innerHTML = '<p>Error loading next race.</p>'; return; }
     const raceDate = new Date(raceDetails.date);
-    if (isNaN(raceDate)) {
-        console.error("Invalid date format for next race:", raceDetails.date);
-        document.getElementById("next-race-info").innerHTML = "<p>Invalid race date.</p>";
-        return;
-    }
-
+    if (isNaN(raceDate)) return;
     const flagUrl = `/media/flags/${raceDetails.country.toLowerCase()}.png`;
-
-    // Set the new structured layout
-    document.getElementById("next-race-info").innerHTML = `
+    document.getElementById('next-race-info').innerHTML = `
       <h5 class="mb-3 body-text-emph text-center">Next Race:</h5>
       <div class="row align-items-center justify-content-center">
         <div class="col-6 text-center">
-          <div class="mb-2">
-            <img src="${flagUrl}" alt="${raceDetails.country} Flag" class="flag-img">
-          </div>
+          <div class="mb-2"><img src="${flagUrl}" alt="${raceDetails.country} Flag" class="flag-img"></div>
           <h6 class="body-text">${raceDetails.name} GP</h6>
         </div>
         <div class="col-6 text-center">
           <div id="weather-forecast">
-              <div id="weather-icon" class="flag-placeholder align-items-center justify-content-center invert-icon" style="display: block; margin: 0 auto; margin-top: -10px; margin-bottom: 0px; height: 64px; width: 64px"></div>
-              <span id="weather-summary" class="loading-text-placeholder center" style="height: 1.2em; margin-top: 5px"></span>
+            <div id="weather-icon" class="flag-placeholder align-items-center justify-content-center invert-icon"
+              style="display:block; margin:0 auto; margin-top:-10px; margin-bottom:0; height:64px; width:64px"></div>
+            <span id="weather-summary" class="loading-text-placeholder" style="height:1.2em; margin-top:5px"></span>
           </div>
         </div>
       </div>
-      <div id="countdown-timer" class="mt-3 text-center">
-        <strong>Time left:</strong> <span id="countdown"></span>
-      </div>
-      <div id="raceTimeDisplay" class="mt-2 text-center"></div>
-    `;
+      <div id="countdown-timer" class="mt-3 text-center"><strong>Time left:</strong> <span id="countdown"></span></div>
+      <div id="raceTimeDisplay" class="mt-2 text-center"></div>`;
 
-    // Start countdown
-    document.getElementById("countdown-timer").style.display = "block";
-    startGenericCountdown(raceDate, "countdown", () => {
-        const countdownEl = document.getElementById("countdown");
-        countdownEl.textContent = "Race started!";
-    });
+    startGenericCountdown(raceDate, 'countdown', () => { document.getElementById('countdown').textContent = 'Race started!'; });
 
-    // Fetch track details
-    const { data: trackDetails, error: trackDetailsError } = await supabase
-        .from('tracks')
-        .select('*')
-        .eq('name', raceDetails.name)
-        .single();
+    const { data: trackDetails } = await supabase.from('tracks').select('*').eq('name', raceDetails.name).single();
+    if (!trackDetails) return;
 
-    if (trackDetailsError) {
-        console.error('Error fetching track details:', trackDetailsError);
-        return;
-    }
-
-    // Set track image and stats
-    const trackUrl = `/media/tracks/${trackDetails.track_image_name}.png`;
-    document.getElementById("track-race-info").innerHTML = `
+    document.getElementById('track-race-info').innerHTML = `
       <div class="image-placeholder-container">
-        <div id="track-placeholder" class="placeholder-16by9"></div> 
-        <img id="track-image" src="${trackUrl}" class="card-img-top hidden" alt="${raceDetails.name} Track Image">
+        <div id="track-placeholder" class="placeholder-16by9"></div>
+        <img id="track-image" src="/media/tracks/${trackDetails.track_image_name}.png" class="card-img-top hidden" alt="${raceDetails.name} Track">
       </div>
       <div>
         <h5 class="body-text-emph mt-2">${trackDetails.circuit_name}</h5>
         <p class="body-text">Laps: ${trackDetails.number_of_laps}, Distance: ${trackDetails.circuit_length} km</p>
-      </div>
-    `;
+      </div>`;
 
-    // Handle image loading (including cache case)
     const trackImage = document.getElementById('track-image');
-    const trackPlaceholder = document.getElementById('track-placeholder');
-    const showTrackImage = () => {
-        if (trackPlaceholder && trackImage) {
-            trackPlaceholder.classList.add('hidden');
-            trackImage.classList.remove('hidden');
-        }
-    };
+    const showTrackImage = () => { document.getElementById('track-placeholder')?.classList.add('hidden'); trackImage.classList.remove('hidden'); };
     trackImage.addEventListener('load', showTrackImage);
     if (trackImage.complete) showTrackImage();
 
-    // === WEATHER ===
     const weatherData = await fetchWeatherForecast(trackDetails.lat, trackDetails.lon, raceDate);
-    const iconContainer = document.getElementById("weather-icon");
-    const summaryContainer = document.getElementById("weather-summary");
-
+    const iconEl    = document.getElementById('weather-icon');
+    const summaryEl = document.getElementById('weather-summary');
     if (weatherData?.tooFar) {
-        iconContainer.innerHTML = "";
-        summaryContainer.textContent = "No forecast available";
-        iconContainer.classList.remove("flag-placeholder");
-        summaryContainer.classList.remove("loading-text-placeholder");
+      iconEl.innerHTML = ''; summaryEl.textContent = 'No forecast available';
+      iconEl.classList.remove('flag-placeholder'); summaryEl.classList.remove('loading-text-placeholder');
     } else if (weatherData) {
-      const { maxTemp, minTemp, weatherCode } = weatherData;
-      const desc = getWeatherDescription(weatherCode);
-      iconContainer.classList.remove("flag-placeholder");
-      iconContainer.innerHTML = `<img src="/media/weather/${weatherCode}.svg" alt="${desc}" width="64" height="64">`;
-      summaryContainer.classList.remove("loading-text-placeholder");
-      summaryContainer.textContent = `↑ ${Math.round(maxTemp)}ºC ↓ ${Math.round(minTemp)}ºC, ${desc}`;
+      const desc = getWeatherDescription(weatherData.weatherCode);
+      iconEl.classList.remove('flag-placeholder');
+      iconEl.innerHTML = `<img src="/media/weather/${weatherData.weatherCode}.svg" alt="${desc}" width="64" height="64">`;
+      summaryEl.classList.remove('loading-text-placeholder');
+      summaryEl.textContent = `↑ ${Math.round(weatherData.maxTemp)}ºC ↓ ${Math.round(weatherData.minTemp)}ºC, ${desc}`;
     } else {
-      iconContainer.classList.remove("flag-placeholder");
-      summaryContainer.classList.remove("loading-text-placeholder");  
-      iconContainer.innerHTML = "";
-      summaryContainer.textContent = "Weather unavailable";  
+      iconEl.classList.remove('flag-placeholder'); summaryEl.classList.remove('loading-text-placeholder');
+      iconEl.innerHTML = ''; summaryEl.textContent = 'Weather unavailable';
     }
-}
-    
-    // Start countdown
-      function startGenericCountdown(targetDate, countdownElementId, onEnd) {
-      const countdownElement = document.getElementById(countdownElementId);
-      if (!countdownElement) {
-          console.error(`Element with id "${countdownElementId}" not found.`);
-          return;
-      }
-      
-      // ALSO trigger the display update here, using the same date
-      displayLocalRaceTime(targetDate, "raceTimeDisplay", "userLocationDisplay");
+  }
 
-      let timer;
-      
-      function updateCountdown() {
-          const now = new Date();
-          const timeLeft = targetDate - now;
-          
-          if (timeLeft <= 0) {
-          clearInterval(timer);
-          countdownElement.textContent = "Race started!";
-          if (typeof onEnd === "function") {
-              onEnd();
-          }
-          return;
-          }
-          
-          const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-          
-          let countdownStr = "";
-          if (days > 0) {
-          countdownStr += `${days}d `;
-          }
-          countdownStr += `${hours}h ${minutes}m ${seconds}s`;
-          
-          countdownElement.textContent = countdownStr;
-      }
-      
-      updateCountdown();
-      timer = setInterval(updateCountdown, 1000);
-      }
-
-                
-      // Fetch the form status from form_details table
-      async function fetchFormStatus() {
-          try {
-              const { data: formDetails, error: formDetailsError } = await supabase
-                  .from('form_details')
-                  .select('form_enabled')
-                  .eq('id', 1)
-                  .single();
-
-              if (formDetailsError) {
-                  console.error('Error fetching form status:', formDetailsError);
-                  return false;
-              }
-
-              return formDetails.form_enabled;
-          } catch (error) {
-              console.error('Error fetching form status:', error);
-              return false;
-          }
-      }
-
-      // Update the latest form button based on form status and race start time
-      async function updateFormButtonStatus(raceDetails) {
-      const formEnabled = await fetchFormStatus();
-      const formButton = document.getElementById('latest-form-button');
-
-      // If raceDetails is available, determine if the race has started.
-      if (raceDetails) {
-          const raceStart = new Date(raceDetails.date);
-          const raceHasStarted = new Date() >= raceStart;
-          // Disable the button if the form is not enabled or if the race has started.
-          if (!formEnabled || raceHasStarted) {
-          formButton.disabled = true;
-          return;
-          }
-      }
-      // Otherwise, enable the button (if formEnabled is true).
-      formButton.disabled = !formEnabled;
-      }
-
-      document.addEventListener('DOMContentLoaded', async () => {
-      // Fetch race details
-      const raceDetails = await fetchRaceDetails();
-
-      // Update the latest form button with the current race name
-      await updateLatestFormButton(raceDetails);
-
-      // Update the next race info and initialize the countdown
-      await updateNextRaceInfo(raceDetails);
-
-      // Update the form button status based on form_enabled and race start
-      await updateFormButtonStatus(raceDetails);
-
-      // Add event listener to the form button
-      const formButton = document.getElementById('latest-form-button');
-      const formLink = document.getElementById('latest-form-link');
-
-      formButton.addEventListener('click', (event) => {
-          if (formButton.disabled) {
-          event.preventDefault();
-          } else {
-          formLink.href = '/form';
-          }
-      });
-      });
-
-      async function fetchWeatherForecast(lat, lon, raceDateUTC) {
-    const now = new Date();
-    const diffHours = (raceDateUTC - now) / (1000 * 60 * 60);
-
-    if (diffHours > 15 * 24) {
-        return { tooFar: true };
+  function startGenericCountdown(targetDate, elementId, onEnd) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    displayLocalRaceTime(targetDate, 'raceTimeDisplay', 'userLocationDisplay');
+    const timer = setInterval(() => {
+      const left = targetDate - new Date();
+      if (left <= 0) { clearInterval(timer); el.textContent = 'Race started!'; if (onEnd) onEnd(); return; }
+      const d = Math.floor(left / 86400000), h = Math.floor((left % 86400000) / 3600000),
+            m = Math.floor((left % 3600000) / 60000), s = Math.floor((left % 60000) / 1000);
+      el.textContent = (d > 0 ? `${d}d ` : '') + `${h}h ${m}m ${s}s`;
+    }, 1000);
+    // run once immediately
+    const left = targetDate - new Date();
+    if (left <= 0) { el.textContent = 'Race started!'; clearInterval(timer); if (onEnd) onEnd(); }
+    else {
+      const d = Math.floor(left / 86400000), h = Math.floor((left % 86400000) / 3600000),
+            m = Math.floor((left % 3600000) / 60000), s = Math.floor((left % 60000) / 1000);
+      el.textContent = (d > 0 ? `${d}d ` : '') + `${h}h ${m}m ${s}s`;
     }
+  }
 
-    const isoDate = raceDateUTC.toISOString().split("T")[0]; // YYYY-MM-DD
-
-    console.log(`Requesting weather forecast for coordinates (Lat: ${lat}, Lon: ${lon}) on ${isoDate}`);
-
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=UTC&start_date=${isoDate}&end_date=${isoDate}`;
-
+  async function fetchWeatherForecast(lat, lon, raceDateUTC) {
+    if ((raceDateUTC - new Date()) / 3600000 > 360) return { tooFar: true };
+    const isoDate = raceDateUTC.toISOString().split('T')[0];
     try {
-        const response = await fetch(url);
-        const data = await response.json();
-
-        console.log("Weather forecast data received:", data); // Log the received data
-
-        const tempsMax = data.daily.temperature_2m_max;
-const tempsMin = data.daily.temperature_2m_min;
-const codes = data.daily.weathercode;
-
-return {
-    maxTemp: tempsMax[0],
-    minTemp: tempsMin[0],
-    weatherCode: codes[0], // Most significant weather code for the day
-};
-
-    } catch (err) {
-        console.error("Error fetching weather:", err);
-        return null;
-    }
-}
-
-      function getWeatherDescription(code) {
-    const descriptions = {
-        0: "Clear",
-        1: "Mainly Clear",
-        2: "Partly Cloudy",
-        3: "Overcast",
-        45: "Fog",
-        48: "Depositing Rime Fog",
-        51: "Light Drizzle",
-        53: "Moderate Drizzle",
-        55: "Dense Drizzle",
-        61: "Slight Rain",
-        63: "Moderate Rain",
-        65: "Heavy Rain",
-        80: "Rain Showers",
-        95: "Thunderstorm",
-        96: "Thunderstorm",
-        99: "Thunderstorm",
-    };
-    return descriptions[code] || "Unknown";
-}
-
-
-       // ============================
-  // === MAIN PAGE ALERT CODE ===
-  // ============================
-      async function updateMainPageAlert() {
-  // Fetch main page alert settings from form_details table
-  const { data, error } = await supabase
-    .from('form_details')
-    .select('main_page_alert_text, main_page_alert_enabled, main_page_alert_type')
-    .eq('id', 1)
-    .single();
-
-  if (error) {
-    console.error('Error fetching main page alert settings:', error);
-    return;
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=UTC&start_date=${isoDate}&end_date=${isoDate}`);
+      const data = await res.json();
+      return { maxTemp: data.daily.temperature_2m_max[0], minTemp: data.daily.temperature_2m_min[0], weatherCode: data.daily.weathercode[0] };
+    } catch { return null; }
   }
 
-  const alertContainer = document.getElementById('main-page-alert-container');
-
-  // If enabled, render the alert with the chosen Bootstrap alert type; otherwise, hide the container.
-  if (data.main_page_alert_enabled) {
-    alertContainer.innerHTML = `
-      <div class="alert alert-${data.main_page_alert_type}" style="text-align: left;">
-        ${data.main_page_alert_text}
-      </div>
-    `;
-    alertContainer.style.display = 'block';
-  } else {
-    alertContainer.style.display = 'none';
-  }
-}
-
-// Call this function after the DOM loads.
-document.addEventListener('DOMContentLoaded', updateMainPageAlert);
-
-// Declare it globally so it's accessible across functions
-let hasFormPreviousSubmission = false;
-
-// Update the form previous submission status display on the home page.
-function updateFormPreviousSubmissionHomePageStatus() {
-  const formPreviousSubmissionContainer = document.getElementById('formPreviousSubmissionContainer');
-  const formPreviousSubmissionText = document.getElementById('formPreviousSubmissionText');
-
-  if (!formPreviousSubmissionContainer) {
-    console.warn("Warning: formPreviousSubmissionContainer not found in DOM.");
-    return;
+  function getWeatherDescription(code) {
+    return ({0:'Clear',1:'Mainly Clear',2:'Partly Cloudy',3:'Overcast',45:'Fog',48:'Depositing Rime Fog',
+      51:'Light Drizzle',53:'Moderate Drizzle',55:'Dense Drizzle',61:'Slight Rain',63:'Moderate Rain',
+      65:'Heavy Rain',80:'Rain Showers',95:'Thunderstorm',96:'Thunderstorm',99:'Thunderstorm'})[code] || 'Unknown';
   }
 
-  if (hasFormPreviousSubmission) {
-    formPreviousSubmissionContainer.style.display = 'block'; // Show the tag
-  } else {
-    formPreviousSubmissionContainer.style.display = 'none'; // Hide the tag on logout or no submission
-  }
-}
+  document.addEventListener('DOMContentLoaded', async () => {
+    const raceDetails = await fetchRaceDetails();
+    document.getElementById('latest-form-button').textContent = raceDetails ? `${raceDetails.name} GP Form` : 'Error loading form';
+    await updateNextRaceInfo(raceDetails);
+    // Form button enable/disable
+    const { data: fd } = await supabase.from('form_details').select('form_enabled').eq('id', 1).single();
+    const formButton = document.getElementById('latest-form-button');
+    const raceHasStarted = raceDetails && new Date() >= new Date(raceDetails.date);
+    formButton.disabled = !fd?.form_enabled || raceHasStarted;
+    const formLink = document.getElementById('latest-form-link');
+    formButton.addEventListener('click', e => { if (formButton.disabled) e.preventDefault(); else formLink.href = '/form'; });
+  });
 
-// Loads existing submissions for the form previous submission home page.
-async function loadFormPreviousSubmissionHomePage() {
-  try {
-    // Get the current race number
-    const { data: formDetails, error: formDetailsError } = await supabase
-      .from('form_details')
-      .select('race_number')
-      .eq('id', 1)
-      .single();
-    if (formDetailsError) {
-      console.error('Error fetching form details:', formDetailsError);
-      return;
-    }
-    const raceNumber = formDetails.race_number;
-    
-    // Get the playerId from cookie and cast to Number
-    const playerIdStr = getCookie("playerId");
-    if (!playerIdStr) {
-      console.warn("No player logged in. Skipping loadFormPreviousSubmissionHomePage.");
-      window.formPreviousSubmissionData = {};
-      hasFormPreviousSubmission = false;
-      updateFormPreviousSubmissionHomePageStatus(); // 🔹 Ensure tag is hidden on logout
-      return;
-    }
-    
+  // ============================================================
+  // === MAIN PAGE ALERT
+  // ============================================================
+
+  async function updateMainPageAlert() {
+    const { data, error } = await supabase.from('form_details')
+      .select('main_page_alert_text, main_page_alert_enabled, main_page_alert_type').eq('id', 1).single();
+    if (error) return;
+    const container = document.getElementById('main-page-alert-container');
+    if (data.main_page_alert_enabled) {
+      container.innerHTML = `<div class="alert alert-${data.main_page_alert_type}" style="text-align:left;">${data.main_page_alert_text}</div>`;
+      container.style.display = 'block';
+    } else { container.style.display = 'none'; }
+  }
+  document.addEventListener('DOMContentLoaded', updateMainPageAlert);
+
+  // ============================================================
+  // === FORM SUBMISSION STATUS
+  // ============================================================
+
+  let hasFormPreviousSubmission = false;
+
+  function updateFormPreviousSubmissionStatus() {
+    document.getElementById('formPreviousSubmissionContainer').style.display = hasFormPreviousSubmission ? 'block' : 'none';
+  }
+
+  async function loadFormPreviousSubmissionHomePage() {
+    try {
+      const { data: fd } = await supabase.from('form_details').select('race_number').eq('id', 1).single();
+      const playerIdStr = getCookie('playerId');
+      if (!playerIdStr) { hasFormPreviousSubmission = false; updateFormPreviousSubmissionStatus(); return; }
+      const { data, error } = await supabase.from('form_raw').select('*').eq('race_number', fd.race_number).eq('player_id', Number(playerIdStr)).single();
+      hasFormPreviousSubmission = !error && !!data;
+      updateFormPreviousSubmissionStatus();
+    } catch { }
+  }
+
+  async function updateTeamMateSubmissionAlert() {
+    const playerIdStr = getCookie('playerId');
+    if (!playerIdStr) { document.getElementById('teamMateAlertContainer').style.display = 'none'; return; }
     const playerId = Number(playerIdStr);
-    
-    // Query for an existing submission for this race and player.
-    const { data: previousResponses, error: responsesError } = await supabase
-      .from('form_raw')
-      .select('*')
-      .eq('race_number', raceNumber)
-      .eq('player_id', playerId)
-      .single();
-      
-    if (responsesError) {
-      // If no submission exists, Supabase returns an error with code "PGRST116".
-      if (responsesError.code === "PGRST116") {
-        window.formPreviousSubmissionData = {};
-        hasFormPreviousSubmission = false;
-      } else {
-        console.error('Error fetching previous responses:', responsesError);
+    const { data: pd } = await supabase.from('players').select('participant_team_id').eq('id', playerId).single();
+    if (!pd?.participant_team_id) { document.getElementById('teamMateAlertContainer').style.display = 'none'; return; }
+    const { data: tp } = await supabase.from('players').select('id').eq('participant_team_id', pd.participant_team_id);
+    const teammate = (tp || []).find(p => p.id !== playerId);
+    if (!teammate) { document.getElementById('teamMateAlertContainer').style.display = 'none'; return; }
+    const { data: fd } = await supabase.from('form_details').select('race_number').eq('id', 1).single();
+    const { data: subs } = await supabase.from('form_raw').select('player_id').eq('race_number', fd.race_number);
+    document.getElementById('teamMateAlertContainer').style.display =
+      (subs || []).some(s => s.player_id === teammate.id) ? 'block' : 'none';
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadFormPreviousSubmissionHomePage();
+    await updateTeamMateSubmissionAlert();
+  });
+
+  // ============================================================
+  // === RESULTS DISPLAY
+  // ============================================================
+
+  async function loadResultsPredictions() {
+    document.getElementById('loadingPlaceholderBar').style.display = 'block';
+
+    const { data: formDetails } = await supabase.from('form_details').select('*').eq('id', 1).single();
+    const { results_display_race_number, results_display_type, current_year } = formDetails;
+
+    const { data: formConfiguration } = await supabase.from('form_configuration').select('*');
+    const { data: raceDetails }       = await supabase.from('calendar').select('*').eq('race_number', results_display_race_number).single();
+    const raceName = `${raceDetails.name} GP`;
+    const { data: drivers }           = await supabase.from('drivers').select('*');
+    const { data: constructors }      = await supabase.from('constructors').select('*');
+    const { data: playersTable }      = await supabase.from('players').select('*');
+
+    function applyDriverConstructorColor(cell, value) {
+      if (/^[A-Z]{3}$/.test(value)) {
+        const driver = drivers.find(d => d.abbreviation === value);
+        if (driver) {
+          const ctor = constructors.find(c => c.id === driver.constructor_id);
+          if (ctor) { cell.style.backgroundColor = ctor.background_colour; cell.style.color = ctor.text_colour; }
+        }
+      } else if (value === 'Yes') { cell.style.color = 'green'; }
+        else if (value === 'No')  { cell.style.color = 'red'; }
+        else {
+        const ctor = constructors.find(c => c.name === value);
+        if (ctor) { cell.style.backgroundColor = ctor.background_colour; cell.style.color = ctor.text_colour; }
       }
-    } else {
-      // If a record was found, save it and set the flag.
-      window.formPreviousSubmissionData = previousResponses;
-      hasFormPreviousSubmission = true;
     }
 
-    // Update UI based on submission status
-    updateFormPreviousSubmissionHomePageStatus();
-    
-  } catch (error) {
-    console.error('Error in loadFormPreviousSubmissionHomePage:', error);
-  }
-}
-
-async function updateTeamMateSubmissionAlert() {
-  // Get current playerId from cookie
-  const playerIdStr = getCookie("playerId");
-  if (!playerIdStr) {
-    document.getElementById('teamMateAlertContainer').style.display = 'none';
-    return;
-  }
-  const playerId = Number(playerIdStr);
-
-  // (a) Retrieve your player record to get your team id.
-  const { data: playerData, error: playerError } = await supabase
-    .from('players')
-    .select('participant_team_id')
-    .eq('id', playerId)
-    .single();
-  if (playerError || !playerData) {
-    console.error("Error fetching current player:", playerError);
-    return;
-  }
-  const teamId = playerData.participant_team_id;
-
-  // (b) If not in a team, hide the alert.
-  if (!teamId) {
-    document.getElementById('teamMateAlertContainer').style.display = 'none';
-    return;
-  }
-
-  // (c) Get your teammate's player id (exclude your own id).
-  const { data: teamPlayers, error: teamPlayersError } = await supabase
-    .from('players')
-    .select('id')
-    .eq('participant_team_id', teamId);
-  if (teamPlayersError) {
-    console.error("Error fetching team players:", teamPlayersError);
-    return;
-  }
-  const teammate = teamPlayers.find(p => p.id !== playerId);
-  if (!teammate) {
-    // No teammate found
-    document.getElementById('teamMateAlertContainer').style.display = 'none';
-    return;
-  }
-  const teammateId = teammate.id;
-
-  // (d) Retrieve the current race number from form_details.
-  const { data: formDetails, error: formDetailsError } = await supabase
-    .from('form_details')
-    .select('race_number')
-    .eq('id', 1)
-    .single();
-  if (formDetailsError) {
-    console.error("Error fetching form details:", formDetailsError);
-    return;
-  }
-  const currentRaceNumber = formDetails.race_number;
-
-  // (e) Get the list of player_ids who submitted predictions for the current race from form_raw.
-  const { data: submissions, error: submissionsError } = await supabase
-    .from('form_raw')
-    .select('player_id')
-    .eq('race_number', currentRaceNumber);
-  if (submissionsError) {
-    console.error("Error fetching submissions:", submissionsError);
-    return;
-  }
-
-  // (f) Check if your teammate's player id is in the submissions list.
-  const teammateSubmitted = submissions.some(sub => sub.player_id === teammateId);
-
-  // (g) Simply show or hide the existing alert element.
-  const teamMateAlertContainer = document.getElementById('teamMateAlertContainer');
-  if (teammateSubmitted) {
-    teamMateAlertContainer.style.display = 'block';
-  } else {
-    teamMateAlertContainer.style.display = 'none';
-  }
-}
-
-
-
-document.addEventListener('DOMContentLoaded', async () => {
-  await loadFormPreviousSubmissionHomePage();
-  await updateTeamMateSubmissionAlert();
-});
-
-
-  // ============================
-  // === RESULTS DISPLAY CODE ===
-  // ============================
-    async function loadResultsPredictions() {
-      document.getElementById('loadingPlaceholderBar').style.display = 'block';
-      // ----- INITIAL DATA FETCHING -----
-
-      // Fetch initial form details
-      const { data: formDetails, error: formDetailsError } = await supabase
-          .from('form_details')
-          .select('*')
-          .eq('id', 1)
-          .single();
-
-      if (formDetailsError) {
-          console.error('Error fetching form details:', formDetailsError.message);
-          return;
-      }
-
-      const { results_display_race_number, results_display_type, current_year } = formDetails;
-
-      // Fetch the entire form configuration.
-      // Each row represents one question. (e.g., id, text, response_type, enabled, etc.)
-      const { data: formConfiguration, error: formConfigurationError } = await supabase
-          .from('form_configuration')
-          .select('*');
-      if (formConfigurationError) {
-          console.error('Error fetching form configuration:', formConfigurationError.message);
-          return;
-      }
-
-      // Fetch race details
-      const { data: raceDetails, error: raceDetailsError } = await supabase
-          .from('calendar')
-          .select('*')
-          .eq('race_number', results_display_race_number)
-          .single();
-
-      if (raceDetailsError) {
-          console.error('Error fetching race details:', raceDetailsError.message);
-          return;
-      }
-      const raceName = `${raceDetails.name} GP`;
-
-      // Fetch drivers and constructors
-      const { data: drivers, error: driversError } = await supabase
-          .from('drivers')
-          .select('*');
-      if (driversError) {
-          console.error('Error fetching drivers:', driversError.message);
-          return;
-      }
-
-      const { data: constructors, error: constructorsError } = await supabase
-          .from('constructors')
-          .select('*');
-      if (constructorsError) {
-          console.error('Error fetching constructors:', constructorsError.message);
-          return;
-      }
-
-      // ----- ADDITIONAL TABLE FETCHES -----
-      // Download the full players table (used for lookups in the conversion function)
-      const { data: playersTable, error: playersTableError } = await supabase
-          .from('players')
-          .select('*');
-      if (playersTableError) {
-          console.error('Error fetching players table:', playersTableError.message);
-          return;
-      }
-
-  // ==============================================
-  // === RESULTS DISPLAY - UNSCORED PREDICTIONS ===
-  // ==============================================
+    // ── UNSCORED PREDICTIONS ──
     if (results_display_type === 'Unscored Predictions') {
-    // Show/hide appropriate sections
-    document.getElementById('unscoredPredictions').style.display = 'block';
-    document.getElementById('scoredResults').style.display = 'none';
-    document.getElementById('noDisplay').style.display = 'none';
+      document.getElementById('unscoredPredictions').style.display = 'block';
+      document.getElementById('scoredResults').style.display = 'none';
+      document.getElementById('noDisplay').style.display = 'none';
+      document.getElementById('unscoredRaceTitle').textContent = `${raceName} ${current_year} - Predictions`;
+      document.getElementById('loadingPlaceholderBar').style.display = 'none';
+      document.getElementById('unscoredLoading').style.display = 'block';
 
-    const unscoredHeader = document.getElementById('unscoredTableHeader');
-    const unscoredBody = document.getElementById('unscoredTableBody');
-    unscoredHeader.innerHTML = '';
-    unscoredBody.innerHTML = '';
+      const { data: formResponses } = await supabase.from('form_raw').select('*').eq('race_number', results_display_race_number);
+      const currentUserId = getCookie('playerId');
+      let responsesOrdered = formResponses.filter(r => r.player_id !== 0);
+      if (currentUserId) {
+        const idx = responsesOrdered.findIndex(r => r.player_id == currentUserId);
+        if (idx !== -1) { const [ur] = responsesOrdered.splice(idx, 1); responsesOrdered.unshift(ur); }
+      }
 
-    // Set race title
-    document.getElementById('unscoredRaceTitle').textContent = `${raceName} ${current_year} - Predictions`;
-
-    // Show loading indicator for Unscored Predictions
-    document.getElementById('loadingPlaceholderBar').style.display = 'none'; // Hide Placeholder Bar
-    document.getElementById('unscoredLoading').style.display = 'block';
-
-    // Fetch form responses from form_raw for the current race
-    const { data: formResponses, error: formResponsesError } = await supabase
-        .from('form_raw')
-        .select('*')
-        .eq('race_number', results_display_race_number);
-    if (formResponsesError) {
-        console.error('Error fetching form responses:', formResponsesError.message);
-        return;
-    }
-
-    // Filter out responses with player_id = 0 (only valid responses)
-    const formResponsePlayers = formResponses.filter(response => response.player_id !== 0);
-
-    // --- Reorder responses so that the logged-in user's response is first ---
-    const currentUserId = getCookie("playerId");
-    let responsesOrdered = [...formResponsePlayers];
-    if (currentUserId) {
-        const userIndex = responsesOrdered.findIndex(response => response.player_id == currentUserId);
-        if (userIndex !== -1) {
-            const [userResponse] = responsesOrdered.splice(userIndex, 1);
-            responsesOrdered.unshift(userResponse);
-        }
-    }
-
-    // --- Define the Conversion Function ---
-    function convertResponseToText(response, responseType) {
-        if (response === null || response === undefined) return '';
+      function convertResponse(response, responseType) {
+        if (response == null) return '';
         switch (responseType) {
-            case 'Select - Name List':
-                return playersTable.find(player => player.id === parseInt(response))?.name || response;
-            case 'Select - Driver List':
-            case 'Select - Driver List + DNF':
-                if (response === 'no-dnf') {
-                    return 'No DNFs';
-                }
-                return drivers.find(driver => driver.id === parseInt(response))?.abbreviation || response;
-            case 'Select - Team List':
-                return constructors.find(constructor => constructor.id === parseInt(response))?.name || response;
-            case 'Radio - Yes/No':
-                return response.toLowerCase() === 'yes' ? 'Yes' : 'No';
-            case 'Radio - Heads/Tails':
-                return response.toLowerCase() === 'heads' ? 'Heads' : 'Tails';
-            default:
-                return response;
+          case 'Select - Name List': return playersTable.find(p => p.id === parseInt(response))?.name || response;
+          case 'Select - Driver List': case 'Select - Driver List + DNF':
+            return response === 'no-dnf' ? 'No DNFs' : (drivers.find(d => d.id === parseInt(response))?.abbreviation || response);
+          case 'Select - Team List': return constructors.find(c => c.id === parseInt(response))?.name || response;
+          case 'Radio - Yes/No': return response.toLowerCase() === 'yes' ? 'Yes' : 'No';
+          case 'Radio - Heads/Tails': return response.toLowerCase() === 'heads' ? 'Heads' : 'Tails';
+          default: return response;
         }
-    }
+      }
 
-    // --- Build the Table Header ---
-    const headerRow = document.createElement('tr');
-    headerRow.classList.add('header');
-    headerRow.innerHTML = '<th>Name</th>';
-    responsesOrdered.forEach(response => {
-        const player = playersTable.find(p => p.id === response.player_id);
+      const headerRow = document.createElement('tr');
+      headerRow.innerHTML = '<th>Name</th>';
+      responsesOrdered.forEach(r => {
+        const player = playersTable.find(p => p.id === r.player_id);
         const th = document.createElement('th');
-        if (currentUserId && response.player_id == currentUserId) {
-            th.textContent = (player?.name || response.player_name || 'Unknown') + "";
-            th.classList.add("your-results-header"); // Add CSS styling as desired
-        } else {
-            th.textContent = player?.name || response.player_name || 'Unknown';
-        }
+        th.textContent = player?.name || r.player_name || 'Unknown';
+        if (currentUserId && r.player_id == currentUserId) th.classList.add('your-results-header');
         headerRow.appendChild(th);
-    });
-    document.getElementById('unscoredTableHeader').appendChild(headerRow);
+      });
+      document.getElementById('unscoredTableHeader').appendChild(headerRow);
 
-    // --- Build the Table Body ---
-    const tableBody = document.getElementById('unscoredTableBody');
-    formConfiguration.forEach(question => {
-        // Only process enabled questions.
-        if (!question.enabled) return;
-        // Skip the question used for the "Name" column (assumed to be id === 1)
-        if (question.id === 1) return;
-
+      const tableBody = document.getElementById('unscoredTableBody');
+      formConfiguration.forEach(q => {
+        if (!q.enabled || q.id === 1) return;
         const row = document.createElement('tr');
-        // First cell: the question text
-        row.innerHTML = `<td>${question.text}</td>`;
-        // For each response in the reordered array, add a cell.
-        responsesOrdered.forEach(response => {
-            const td = document.createElement('td');
-            const rawResponse = response[`form_id_${question.id}`];
-            td.textContent = convertResponseToText(rawResponse, question.response_type);
-            row.appendChild(td);
+        row.innerHTML = `<td>${q.text}</td>`;
+        responsesOrdered.forEach(r => {
+          const td = document.createElement('td');
+          td.textContent = convertResponse(r[`form_id_${q.id}`], q.response_type);
+          row.appendChild(td);
         });
         tableBody.appendChild(row);
-    });
+      });
 
-    // --- Apply Formatting ---
-    const applyFormatting = (cell, value) => {
-        if (/^[A-Z]{3}$/.test(value)) {
-            const driver = drivers.find(driver => driver.abbreviation === value);
-            if (driver) {
-                const constructor = constructors.find(constructor => constructor.id === driver.constructor_id);
-                if (constructor) {
-                    cell.style.backgroundColor = constructor.background_colour;
-                    cell.style.color = constructor.text_colour;
-                }
-            }
-        } else if (/^\d+$/.test(value)) {
-            // Numeric values: no additional formatting.
-        } else if (value === 'Yes') {
-            cell.style.color = 'green';
-        } else if (value === 'No') {
-            cell.style.color = 'red';
-        } else {
-            const constructor = constructors.find(constructor => constructor.name === value);
-            if (constructor) {
-                cell.style.backgroundColor = constructor.background_colour;
-                cell.style.color = constructor.text_colour;
-            }
-        }
-    };
+      tableBody.querySelectorAll('td').forEach(cell => applyDriverConstructorColor(cell, cell.textContent));
+      document.getElementById('unscoredLoading').style.display = 'none';
 
-        document.querySelectorAll('#unscoredTableBody td').forEach(cell => {
-            applyFormatting(cell, cell.textContent);
-        });
-
-        // Hide the loading indicator after the unscored table has been built.
-        document.getElementById('unscoredLoading').style.display = 'none';
-
-        // Apply header color for the logged-in user's column after table is built.
       const user = await getCurrentUser();
-      if (user) {
-        applyHeaderColor(user.name, user.avatar_settings);
-        const currentUserId = getCookie("playerId");
-        highlightPlayerStandingsFirstColumn(players, currentUserId);
-        highlightTeamStandingsFirstColumn(players, currentUserId);
-      } else {
-        console.warn("loadResultsPredictions: No user data available to apply header color.");
-    }
-  }
-  // ========================================
-  // === RESULTS DISPLAY - SCORED RESULTS ===
-  // ========================================
-  else if (results_display_type === 'Scored Results') { 
-    document.getElementById('unscoredPredictions').style.display = 'none';
-    document.getElementById('scoredResults').style.display = 'block';
-    document.getElementById('noDisplay').style.display = 'none';
-
-
-    const scoredHeader = document.getElementById('tableHeader');
-    const scoredBody = document.getElementById('tableBody');
-    scoredHeader.innerHTML = '';
-    scoredBody.innerHTML = '';
-
-    // Set race title
-    document.getElementById('raceTitle').textContent = `${raceName} ${current_year} - Results`;
-
-    // Show loading indicator for Scored Results
-    document.getElementById('loadingPlaceholderBar').style.display = 'none'; // Hide Placeholder Bar
-    document.getElementById('scoredLoading').style.display = 'block';
-
-    // Fetch form responses from form_responses_{current_year}
-    const { data: formResponses, error: formResponsesError } = await supabase
-        .from(`form_responses_${current_year}`)
-        .select('*')
-        .eq('race_number', results_display_race_number);
-    if (formResponsesError) {
-        console.error('Error fetching form responses:', formResponsesError.message);
-        return;
+      if (user) applyHeaderColor(user.name, user.avatar_settings);
     }
 
-    // Process form responses
-    const questions = formResponses.find(response => response.entry_type === 'questions');
-    const results = formResponses.find(response => response.entry_type === 'results');
-    // Filter out the player responses.
-    let players = formResponses.filter(response => response.entry_type === 'player');
-    const lowestScores = formResponses.filter(response => response.entry_type === 'player_lowest_score');
+    // ── SCORED RESULTS ──
+    else if (results_display_type === 'Scored Results') {
+      document.getElementById('unscoredPredictions').style.display = 'none';
+      document.getElementById('scoredResults').style.display = 'block';
+      document.getElementById('noDisplay').style.display = 'none';
+      document.getElementById('raceTitle').textContent = `${raceName} ${current_year} - Results`;
+      document.getElementById('loadingPlaceholderBar').style.display = 'none';
+      document.getElementById('scoredLoading').style.display = 'block';
+      document.getElementById('tableHeader').innerHTML = '';
+      document.getElementById('tableBody').innerHTML = '';
 
-    // Reorder players so that the logged-in user's result is first.
-    const currentUserId = getCookie("playerId");
-    let userResultPulled = false;
-    if (currentUserId) {
-        const userIndex = players.findIndex(player => player.player_id == currentUserId);
-        if (userIndex !== -1) {
-            userResultPulled = true;
-            const [userPlayer] = players.splice(userIndex, 1);
-            players.unshift(userPlayer);
-        }
-    }
+      const { data: formResponses } = await supabase
+        .from(`form_responses_${current_year}`).select('*').eq('race_number', results_display_race_number);
 
-    // --- MERGE CUSTOM AVATAR SETTINGS ---
-    const { data: playersData, error: playersError } = await supabase
-        .from('players')
-        .select('id, avatar_settings, name');
-    if (playersError) {
-        console.error("Error fetching players custom data:", playersError.message);
-    }
-    const playersMap = {};
-    if (playersData) {
-        playersData.forEach(player => {
-            playersMap[player.id] = player;
-        });
-    }
-    // Merge custom avatar data into each player object in the players array.
-    players = players.map(player => ({ ...player, ...playersMap[player.player_id] }));
+      const questions    = formResponses.find(r => r.entry_type === 'questions');
+      const results      = formResponses.find(r => r.entry_type === 'results');
+      let players        = formResponses.filter(r => r.entry_type === 'player');
+      const lowestScores = formResponses.filter(r => r.entry_type === 'player_lowest_score');
 
-    // Enable or disable the "pin both" checkbox based on the flag.
-    const pinBothCheckbox = document.getElementById('pinBothColumns');
-    if (userResultPulled) {
-        pinBothCheckbox.disabled = false;
-    } else {
-        pinBothCheckbox.disabled = true;
-    }
+      const currentUserId = getCookie('playerId');
+      let userResultPulled = false;
+      if (currentUserId) {
+        const idx = players.findIndex(p => p.player_id == currentUserId);
+        if (idx !== -1) { userResultPulled = true; const [up] = players.splice(idx, 1); players.unshift(up); }
+      }
 
-    // Create header row for scored results
-    const headerRow = document.createElement('tr');
-    headerRow.classList.add('header');
-    headerRow.innerHTML = '<th>Name</th>';
-    headerRow.innerHTML += '<th>Results</th>';
-    players.forEach(player => {
+      const { data: playersData } = await supabase.from('players').select('id, avatar_settings, name');
+      const playersMap = {};
+      (playersData || []).forEach(p => { playersMap[p.id] = p; });
+      players = players.map(p => ({ ...p, ...playersMap[p.player_id] }));
+
+      document.getElementById('pinBothColumns').disabled = !userResultPulled;
+
+      const headerRow = document.createElement('tr');
+      headerRow.innerHTML = '<th>Name</th><th>Results</th>';
+      players.forEach(player => {
         const th = document.createElement('th');
-        // Tag the header if this is the logged-in user.
-        if (currentUserId && player.player_id == currentUserId) {
-            th.textContent = player.player_name + "";
-            th.classList.add('your-results-header'); // Optional CSS class for extra styling
-        } else {
-            th.textContent = player.player_name;
-        }
+        th.textContent = player.player_name;
+        if (currentUserId && player.player_id == currentUserId) th.classList.add('your-results-header');
         headerRow.appendChild(th);
-    });
-    document.getElementById('tableHeader').appendChild(headerRow);
-
-    // Create data rows for scored results
-    const tableBody = document.getElementById('tableBody');
-    const createRow = (id, label) => {
-        const isTotalColumn = ['subtotal_1', 'subtotal_2', 'subtotal_3', 'subtotal_4', 'grand_total'].includes(id);
-        if (isTotalColumn) {
-            const row = document.createElement('tr');
-            row.innerHTML = `<td>${label}</td>`;
-            row.innerHTML += `<td></td>`; // added spacer
-            players.forEach(player => {
-                const td = document.createElement('td');
-                td.textContent = player[id];
-                td.className = `${id}_score`;
-                td.dataset.playerId = player.player_id;
-                row.appendChild(td);
-            });
-            
-            tableBody.appendChild(row);
-        } else {
-            if (results[`form_id_${id}`] !== null) {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${label}</td><td>${results[`form_id_${id}`]}</td>`;
-                players.forEach(player => {
-                    const td = document.createElement('td');
-                    td.textContent = player[`form_id_${id}`];
-                    td.className = `form_id_${id}_score`;
-                    td.dataset.playerId = player.player_id;
-                    row.appendChild(td);
-                });
-                
-                tableBody.appendChild(row);
-            }
-        }
-    };
-
-    // Add question rows for scored results
-    for (let i = 2; i <= 7; i++) {
-        createRow(i, questions[`form_id_${i}`]);
-    }
-    createRow('subtotal_2', 'Subtotal');
-    tableBody.innerHTML += '<tr class="spacer-row"><td colspan="100%"></td></tr>';
-    for (let i = 8; i <= 27; i++) {
-        createRow(i, questions[`form_id_${i}`]);
-    }
-    createRow('subtotal_3', 'Subtotal');
-    tableBody.innerHTML += '<tr class="spacer-row"><td colspan="100%"></td></tr>';
-    createRow(28, questions[`form_id_28`]);
-    tableBody.innerHTML += '<tr class="spacer-row"><td colspan="100%"></td></tr>';
-    createRow('grand_total', 'Grand Total');
-
-    // Apply formatting for scored results
-    const applyFormattingScored = (cell, value) => {
-        if (/^[A-Z]{3}$/.test(value)) {
-            const driver = drivers.find(driver => driver.abbreviation === value);
-            if (driver) {
-                const constructor = constructors.find(constructor => constructor.id === driver.constructor_id);
-                if (constructor) {
-                    cell.style.backgroundColor = constructor.background_colour;
-                    cell.style.color = constructor.text_colour;
-                }
-            }
-        } else if (/^\d+$/.test(value)) {
-            // No additional formatting for numeric values.
-        } else if (value === 'Yes') {
-            cell.style.color = 'green';
-        } else if (value === 'No') {
-            cell.style.color = 'red';
-        } else {
-            const constructor = constructors.find(constructor => constructor.name === value);
-            if (constructor) {
-                cell.style.backgroundColor = constructor.background_colour;
-                cell.style.color = constructor.text_colour;
-            }
-        }
-    };
-
-    document.querySelectorAll('#mainResultsTable tbody td').forEach(cell => {
-        applyFormattingScored(cell, cell.textContent);
-    });
-
-    // Highlight highest scores, closest scores, and display top scorers
-    const highlightHighest = (selector, colors) => {
-      // Gather cells with their numeric values
-      const cells = Array.from(document.querySelectorAll(selector)).map(cell => ({
-        cell,
-        value: parseFloat(cell.textContent)
-      })).filter(item => !isNaN(item.value));
-
-      // Sort by value descending
-      cells.sort((a, b) => b.value - a.value);
-
-      // Compute competition ranks
-      let rank = 1;
-      let prevValue = null;
-      let count = 0;
-      cells.forEach(item => {
-        if (prevValue !== null && item.value !== prevValue) {
-          rank = count + 1;
-        }
-        item.rank = rank;
-        prevValue = item.value;
-        count++;
       });
-
-      // Highlight cells with a rank within the podium range
-      cells.forEach(item => {
-        if (item.rank <= colors.length) {
-          item.cell.style.backgroundColor = colors[item.rank - 1];
-          item.cell.style.color = 'black';
-        }
-      });
-    };
-
-
-    const highlightClosestScore = (selector, color) => {
-        const cells = Array.from(document.querySelectorAll(selector));
-        cells.forEach(cell => {
-            const playerId = cell.dataset.playerId;
-            const player = players.find(player => player.player_id == playerId);
-            const playerScore = player ? player.form_id_28_score : null;
-            if (playerScore === 1) {
-                cell.style.backgroundColor = color;
-                cell.style.color = 'black';
-            } else {
-                cell.style.backgroundColor = '';
-                cell.style.color = '';
-            }
-        });
-    };
-
-    highlightHighest('td.subtotal_2_score', ['lightyellow']);
-    highlightHighest('td.subtotal_3_score', ['lightyellow']);
-    highlightHighest('td.grand_total_score', ['gold', 'silver', '#cd7f32']);
-    highlightClosestScore('td.form_id_28_score', 'lightyellow');
-
-    const grandTotals = players.map(player => ({
-    id: player.player_id,
-    name: player.player_name,
-    total: parseFloat(player.grand_total),
-    avatar_settings: player.avatar_settings || null
-})).sort((a, b) => b.total - a.total);
-const getMedalIcon = (rank) => {
-    if (rank === 1) return '<img src="/media/awards/medal_first.png" class="medal-icon">';
-    if (rank === 2) return '<img src="/media/awards/medal_second.png" class="medal-icon">';
-    if (rank === 3) return '<img src="/media/awards/medal_third.png" class="medal-icon">';
-    return ''; // No medal for other ranks
-};
-
-let topPlayers = [];
-let rank = 1, prevScore = null, count = 0, lastValidRank = 1;
-
-for (let i = 0; i < grandTotals.length; i++) {
-    const player = grandTotals[i];
-
-    if (prevScore !== null && player.total !== prevScore) {
-        rank = count + 1; // Move to next rank
-        if (rank > 3 && lastValidRank !== 3) break; // Stop beyond 3rd place
-        lastValidRank = rank;
-    }
-
-    if (rank <= 3) {
-        topPlayers.push({ ...player, rank });
-    } else {
-        break; 
-    }
-
-    prevScore = player.total;
-    count++;
-}
-
-
-// Group players by rank for podium display
-const podiumGroups = { 1: [], 2: [], 3: [] };
-
-topPlayers.forEach(player => {
-    if (podiumGroups[player.rank]) {
-        podiumGroups[player.rank].push(player);
-    }
-});
-
-const firstPlayer = podiumGroups[1][0];
-const secondPlayer = podiumGroups[2][0];
-const thirdPlayer = podiumGroups[3][0];
-
-if (firstPlayer) {
-    document.getElementById('firstScore').textContent = `${firstPlayer.total} pts`;
-}
-if (secondPlayer) {
-    document.getElementById('secondScore').textContent = `${secondPlayer.total} pts`;
-}
-if (thirdPlayer) {
-    document.getElementById('thirdScore').textContent = `${thirdPlayer.total} pts`;
-}
-
-// Helper function to generate HTML for player info,
-// placing medal and avatar in an icons container and the name beside them.
-// If the name is too long, it will wrap underneath.
-function generatePlayerNamesHTML(players) {
-    return players.map(player => `
-      <div class="player-info">
-         <div class="icons">
-            ${getMedalIcon(player.rank)}
-            ${createSmallAvatarHTML(player)}
-         </div>
-         <div class="player-name">${player.name}</div>
-      </div>
-    `).join('');
-}
-
-// Render the names in their respective podium boxes
-document.getElementById('firstNames').innerHTML = generatePlayerNamesHTML(podiumGroups[1]);
-document.getElementById('secondNames').innerHTML = generatePlayerNamesHTML(podiumGroups[2]);
-document.getElementById('thirdNames').innerHTML = generatePlayerNamesHTML(podiumGroups[3]);
-
-// === DISPLAY "YOUR RESULTS" BOX IF LOGGED IN ===
-if (currentUserId && userResultPulled) {
-    const userPlayer = players.find(p => p.player_id == currentUserId);
-    const userRank = grandTotals.findIndex(p => p.id == currentUserId) + 1;
-
-    if (userPlayer) {
-        const yourResultsBox = document.getElementById('yourResultsBox');
-        const yourResultsContent = document.getElementById('yourResultsContent');
-
-        yourResultsBox.style.display = 'block';
-
-        const row = document.createElement('tr');
-
-        // Create avatar HTML
-        const avatarCell = document.createElement('td');
-        avatarCell.colSpan = 1;
-        avatarCell.innerHTML = `
-            <div class="player-info">
-                <div class="icons">
-                    ${createSmallAvatarHTML(userPlayer)}
-                </div>
-                <div class="player-name">${userPlayer.name}</div>
-            </div>
-        `;
-
-        row.innerHTML = `
-            <td><strong>${userRank}</strong></td>
-            <td>${avatarCell.innerHTML}</td>
-            <td>${userPlayer.grand_total ?? 0} pts</td>
-        `;
-        yourResultsContent.innerHTML = '';
-        yourResultsContent.appendChild(row);
-    }
-}
-
-    document.getElementById('toggleScores').addEventListener('change', (event) => {
-    const showScores = event.target.checked;
-    
-    document.querySelectorAll('#mainResultsTable tbody td').forEach(cell => {
-        const idMatch = cell.className.match(/form_id_(\d+)_score/);
-        if (idMatch) {
-            const scoreId = `form_id_${idMatch[1]}_score`;
-            const playerId = cell.dataset.playerId;
-            const player = players.find(player => player.player_id == playerId);
-            const playerScore = player ? player[scoreId] : null;
-            
-            if (playerScore !== null) {
-                // Ensure we only keep the player's name and avoid stacking scores
-                const baseText = cell.dataset.baseText || cell.textContent.split(' (')[0];
-                cell.dataset.baseText = baseText; // Store the clean name once
-                
-                cell.textContent = showScores ? `${baseText} (${playerScore})` : baseText;
-            }
-        }
-    });
-  });
-
-    const lowestScoresDiv = document.getElementById('lowestScores');
-    if (lowestScores.length > 0) {
-        const lowestScoresText = lowestScores.map(player => player.player_name).join(', ');
-        lowestScoresDiv.textContent = `Did not play (receives lowest score): ${lowestScoresText}`;
-    }
-
-    // Hide the loading indicator after the scored results table is built.
-    document.getElementById('scoredLoading').style.display = 'none';
-
-  markTableAsReady();
-
-  // Apply header color for the logged-in user's column after table is built.
-  const user = await getCurrentUser();
-  if (user) {
-    applyHeaderColor(user.name, user.avatar_settings);
-  } else {
-    console.warn("loadResultsPredictions: No user data available to apply header color.");
-}
-}
-  // ====================================
-  // === RESULTS DISPLAY - NO RESULTS ===
-  // ====================================
-  else if (results_display_type === 'No Display') {
-        document.getElementById('loadingPlaceholderBar').style.display = 'none'; // Hide Placeholder Bar
-        document.getElementById('unscoredPredictions').style.display = 'none';
-        document.getElementById('scoredResults').style.display = 'none';
-        document.getElementById('noDisplay').style.display = 'block';
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", loadResultsPredictions);
-
-    document.addEventListener("loginStateChanged", async (event) => {
-  // Reload results and predictions
-    await loadResultsPredictions();
-    await loadFormPreviousSubmissionHomePage()
-  });
-
-  // ===========================================
-  // === PINNING COLUMNS & COLOURING HEADERS ===
-  // ===========================================
-    // Global flag to track when the table is ready
-    let tableReady = false;
-
-    // Move updatePinnedColumns OUTSIDE so it’s globally accessible
-    function updatePinnedColumns() {
-      if (!tableReady) return;
-
-      resetPinnedStyles();
-
-      const pinQR = document.getElementById("pinQuestionColumn");
-      const pinQRMe = document.getElementById("pinBothColumns");
-
-      // Decide how many columns to pin
-      let pinCount = 0;
-
-      if (pinQRMe.checked) {
-        pinCount = 3; // Name, spacer, Results, spacer, Your response
-      } else if (pinQR.checked) {
-        pinCount = 2; // Name, spacer, Results, spacer
-      } else {
-        return;
-      }
-
-      const headerRow = document.querySelector("#mainResultsTable thead tr");
-      if (!headerRow) return;
-
-      let offsetLeft = 0;
-
-      for (let i = 0; i < pinCount; i++) {
-        pinColumn(i, offsetLeft);
-        offsetLeft += headerRow.children[i].offsetWidth;
-      }
-    }
-
-    function pinColumn(index, offsetLeft) {
-      document.querySelectorAll("#mainResultsTable thead tr, #mainResultsTable tbody tr").forEach(row => {
-        const cell = row.children[index];
-        if (cell) {
-          cell.classList.add("pinned");
-          cell.style.left = `${offsetLeft}px`;
-        }
-      });
-    }
-
-    function getColumnWidth(index) {
-      const headerRow = document.querySelector("#mainResultsTable thead tr");
-      return headerRow ? headerRow.children[index].offsetWidth : 0;
-    }
-
-    function resetPinnedStyles() {
-      document.querySelectorAll("#mainResultsTable .pinned").forEach(cell => {
-        cell.classList.remove("pinned");
-        cell.style.left = "";
-      });
-    }
-
-    function markTableAsReady() {
-      console.log("Table creation complete. Pinning columns...");
-      tableReady = true; // 🚩 Set the flag
-      updatePinnedColumns(); // 🏁 Run pinning once table is created
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      console.log("DOM Loaded, waiting for table creation...");
-
-      const pinQuestionCheckbox = document.getElementById("pinQuestionColumn");
-      const pinBothCheckbox = document.getElementById("pinBothColumns");
-
-      pinQuestionCheckbox.checked = true; // ✅ Default: Pin the question column
-
-      // Keep checkboxes mutually exclusive
-      pinQuestionCheckbox.addEventListener("change", () => {
-        pinBothCheckbox.checked = false;
-        updatePinnedColumns();
-      });
-
-      pinBothCheckbox.addEventListener("change", () => {
-        pinQuestionCheckbox.checked = false;
-        updatePinnedColumns();
-      });
-    });
-
-    // Colouring Column Header
-
-    // Converts a hex color string to an RGB object.
-    function hexToRgb(hex) {
-      hex = hex.replace(/^#/, '');
-      if (hex.length === 3) {
-        hex = hex.split('').map(x => x + x).join('');
-      }
-      const bigint = parseInt(hex, 16);
-      const r = (bigint >> 16) & 255;
-      const g = (bigint >> 8) & 255;
-      const b = bigint & 255;
-      return { r, g, b };
-    }
-
-// Given a background color, returns either black or white for optimal contrast.
-function getContrastTextColor(backgroundColor) {
-  const { r, g, b } = hexToRgb(backgroundColor);
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  const result = brightness > 128 ? '#000' : '#fff';
-  console.log(`getContrastTextColor: background ${backgroundColor}, brightness ${brightness}, text ${result}`);
-  return result;
-}
-
-// Determines the user's background color.
-function getUserBackgroundColor(name, avatar_settings) {
-  if (avatar_settings && avatar_settings.backgroundColor) {
-    return avatar_settings.backgroundColor;
-  }
-console.log(name)
-  if (!name || name.length === 0) {
-    return '#52c1fa'; // Default fallback color (light blue)
-  }
-
-  const firstLetter = name.charAt(0).toUpperCase();
-  return getColorForLetter(firstLetter);
-}
-
-// Applies the computed background and text colors to the header cell.
-function applyHeaderColor(name, avatar_settings) {
-  const headerElement = document.querySelector("th.your-results-header");
-  if (headerElement) {
-    const bgColor = getUserBackgroundColor(name, avatar_settings);
-    const textColor = getContrastTextColor(bgColor);
-    headerElement.style.backgroundColor = bgColor;
-    headerElement.style.color = textColor;
-    console.log(`applyHeaderColor: Applied bgColor ${bgColor} and textColor ${textColor} to header cell`, headerElement);
-  } else {
-    console.warn("applyHeaderColor: No element with class 'your-results-header' found.");
-  }
-}
-
-// Updated getCurrentUser: gets user from cookie and fetches details from the "players" table.
-async function getCurrentUser() {
-  const playerId = getCookie("playerId");
-  console.log("getCurrentUser: Cookie playerId =", playerId);
-  if (!playerId) {
-    console.warn("getCurrentUser: No playerId cookie found.");
-    return null;
-  }
-  const { data, error } = await supabase
-    .from('players')
-    .select('*')
-    .eq('id', playerId)
-    .single();
-  if (error) {
-    console.error("Error fetching current user:", error.message);
-    return null;
-  }
-  console.log("getCurrentUser: Fetched user data:", data);
-  return data;
-}
-
-function displayLocalRaceTime(raceUTCDate, timeElementId, locationElementId) {
-  const timeElement = document.getElementById(timeElementId);
-  const locationElement = document.getElementById(locationElementId);
-
-  if (!timeElement || !locationElement) return;
-
-  // Format local time
-  const options = {
-    hour: "numeric",
-    minute: "2-digit",
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  };
-  const localTimeStr = raceUTCDate.toLocaleString(undefined, options);
-
-  timeElement.textContent = `Race Start: ${localTimeStr}`;
-
-  // Display timezone
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  locationElement.textContent = `Timezone: ${timeZone.replaceAll("_", " ")}`;
-}
-
-  // ===============================
-  // === PLAYER STANDINGS TABLES ===
-  // ===============================
-    async function getTable(tableName) {
-    const { data, error } = await supabase.from(tableName).select('*');
-    if (error) {
-        console.error(`Error fetching ${tableName}:`, error);
-        throw error;
-    }
-    return data;
-    }
-
-    async function loadHomeStandings() {
-    try {
-        // 1. Retrieve the current year from form_details.
-        const formDetails = await getTable('form_details');
-        if (!formDetails || formDetails.length === 0) {
-        console.error("No form_details found.");
-        return;
-        }
-        const currentYear = formDetails[0].current_year;
-        //console.log("Current Year:", currentYear);
-
-        // 2. Retrieve the full season_player_{year} table.
-        const seasonTableName = `season_player_${currentYear}`;
-        const seasonData = await getTable(seasonTableName);
-        //console.log("Season Data:", seasonData);
-
-        if (!seasonData || seasonData.length === 0) {
-        document.querySelector("#standings-table tbody").innerHTML =
-            "<tr><td colspan='3'>No season data available.</td></tr>";
-        return;
-        }
-
-        // 3. Exclude the special "Race Names" row (player_id === 0).
-        const playerRows = seasonData.filter(row => row.player_id !== 0);
-        if (playerRows.length === 0) {
-        document.querySelector("#standings-table tbody").innerHTML =
-            "<tr><td colspan='3'>No player data available.</td></tr>";
-        return;
-        }
-
-        // 4. Determine the last race that has been scored.
-        let lastRace = 0;
-        const raceNamesRow = seasonData.find(row => row.player_id === 0);
-        if (raceNamesRow) {
-        // Assume columns are named race_1, race_2, ..., race_32.
-        for (let i = 1; i <= 32; i++) {
-            const col = `race_${i}`;
-            if (raceNamesRow[col] !== null && raceNamesRow[col] !== "") {
-            lastRace = i;
-            } else {
-            break;
-            }
-        }
-        }
-        //console.log("Last race with data:", lastRace);
-        if (lastRace === 0) {
-        document.querySelector("#standings-table tbody").innerHTML =
-            "<tr><td colspan='3'>No race scores available yet.</td></tr>";
-        return;
-        }
-
-        // 5. Compute current total scores (summing races 1 to lastRace) for each player.
-        const standings = playerRows.map(row => {
-        let total = 0;
-        let prevTotal = 0;
-        for (let i = 1; i <= lastRace; i++) {
-            const col = `race_${i}`;
-            const rawVal = row[col];
-            if (rawVal !== null && rawVal !== "") {
-            // Remove any "(LS)" suffix and trim.
-            const numStr = rawVal.replace(/\(LS\)/, "").trim();
-            const num = parseFloat(numStr);
-            if (!isNaN(num)) {
-                total += num;
-                if (i < lastRace) {
-                prevTotal += num;
-                }
-            }
-            }
-        }
-        return {
-            player_id: row.player_id,
-            player_name: row.player_name,
-            total: total,
-            prevTotal: prevTotal
-        };
-        });
-
-        // 6. Sort standings descending by current total score.
-        standings.sort((a, b) => b.total - a.total);
-
-        // 7. Assign current ranks with ties receiving the same rank.
-        let currentRank = 1;
-        let prevScore = null;
-        const currentRankMap = {};
-        standings.forEach((player, index) => {
-        if (prevScore === null || player.total !== prevScore) {
-            currentRank = index + 1;
-        }
-        currentRankMap[player.player_id] = currentRank;
-        prevScore = player.total;
-        });
-
-        // 8. Compute previous standings if lastRace > 1.
-        const prevRankMap = {};
-        if (lastRace > 1) {
-        const prevStandings = [...standings].sort((a, b) => b.prevTotal - a.prevTotal);
-        let prevRank = 1;
-        let prevPrevScore = null;
-        prevStandings.forEach((player, index) => {
-            if (prevPrevScore === null || player.prevTotal !== prevPrevScore) {
-            prevRank = index + 1;
-            }
-            prevRankMap[player.player_id] = prevRank;
-            prevPrevScore = player.prevTotal;
-        });
-        }
-
-        // Fetch all players data (id, name, avatar_settings) for avatars.
-        const { data: playersData, error: playersError } = await supabase
-          .from('players')
-          .select('id, avatar_settings, name');
-        if (playersError) {
-          console.error("Error fetching players data for avatars:", playersError);
-        }
-        const playersMap = {};
-        if (playersData) {
-          playersData.forEach(player => {
-            playersMap[player.id] = player;
+      document.getElementById('tableHeader').appendChild(headerRow);
+
+      const tableBody = document.getElementById('tableBody');
+      const createRow = (id, label) => {
+        const isTotalCol = ['subtotal_1','subtotal_2','subtotal_3','subtotal_4','grand_total'].includes(id);
+        if (isTotalCol) {
+          const row = document.createElement('tr');
+          row.innerHTML = `<td>${label}</td><td></td>`;
+          players.forEach(p => {
+            const td = document.createElement('td');
+            td.textContent = p[id]; td.className = `${id}_score`; td.dataset.playerId = p.player_id;
+            row.appendChild(td);
           });
+          tableBody.appendChild(row);
+        } else if (results[`form_id_${id}`] !== null) {
+          const row = document.createElement('tr');
+          row.innerHTML = `<td>${label}</td><td>${results[`form_id_${id}`]}</td>`;
+          players.forEach(p => {
+            const td = document.createElement('td');
+            td.textContent = p[`form_id_${id}`]; td.className = `form_id_${id}_score`; td.dataset.playerId = p.player_id;
+            row.appendChild(td);
+          });
+          tableBody.appendChild(row);
         }
+      };
 
-        // 9. Build HTML rows.
-        let html = "";
-        standings.forEach(player => {
-  const currRank = currentRankMap[player.player_id];
-  let movement = "";
-  if (lastRace > 1 && prevRankMap[player.player_id] !== undefined) {
-    const diff = prevRankMap[player.player_id] - currRank;
-    if (diff > 0) {
-      movement = `(+${diff})`;
-    } else if (diff < 0) {
-      movement = `(${diff})`;
-    } else {
-      movement = "(=)";
-    }
-  }
-  // Lookup the full player data from playersMap. Fall back to season data if not found.
-  const fullPlayerData = playersMap[player.player_id] || { name: player.player_name };
-  html += `<tr>
-            <td>${currRank} ${movement}</td>
-            <td>
-              <div class="d-flex align-items-center">
-                ${createSmallAvatarHTML(fullPlayerData)}
-                <span>${fullPlayerData.name}</span>
-              </div>
-            </td>
-            <td>${player.total}</td>
-          </tr>`;
-});
-        document.querySelector("#standings-table tbody").innerHTML = html;
-    } catch (err) {
-        console.error("loadHomeStandings error:", err);
-        document.querySelector("#standings-table tbody").innerHTML =
-        `<tr><td colspan="3">Error loading standings: ${err.message}</td></tr>`;
-    }
+      for (let i = 2; i <= 7; i++) createRow(i, questions[`form_id_${i}`]);
+      createRow('subtotal_2', 'Subtotal');
+      tableBody.innerHTML += '<tr class="spacer-row"><td colspan="100%"></td></tr>';
+      for (let i = 8; i <= 27; i++) createRow(i, questions[`form_id_${i}`]);
+      createRow('subtotal_3', 'Subtotal');
+      tableBody.innerHTML += '<tr class="spacer-row"><td colspan="100%"></td></tr>';
+      createRow(28, questions[`form_id_28`]);
+      tableBody.innerHTML += '<tr class="spacer-row"><td colspan="100%"></td></tr>';
+      createRow('grand_total', 'Grand Total');
 
-    const currentUser = await getCurrentUser();
-    highlightPlayerStandingsNameCell(currentUser);
+      tableBody.querySelectorAll('td').forEach(cell => applyDriverConstructorColor(cell, cell.textContent));
 
-    }
+      const highlightHighest = (selector, colors) => {
+        const cells = Array.from(document.querySelectorAll(selector))
+          .map(c => ({ cell: c, value: parseFloat(c.textContent) })).filter(i => !isNaN(i.value));
+        cells.sort((a, b) => b.value - a.value);
+        let rank = 1, prev = null, cnt = 0;
+        cells.forEach(i => { if (prev !== null && i.value !== prev) rank = cnt + 1; i.rank = rank; prev = i.value; cnt++; });
+        cells.forEach(i => { if (i.rank <= colors.length) { i.cell.style.backgroundColor = colors[i.rank-1]; i.cell.style.color = 'black'; } });
+      };
+      highlightHighest('td.subtotal_2_score', ['lightyellow']);
+      highlightHighest('td.subtotal_3_score', ['lightyellow']);
+      highlightHighest('td.grand_total_score', ['gold','silver','#cd7f32']);
+      document.querySelectorAll('td.form_id_28_score').forEach(cell => {
+        const p = players.find(p => p.player_id == cell.dataset.playerId);
+        if (p?.form_id_28_score === 1) { cell.style.backgroundColor = 'lightyellow'; cell.style.color = 'black'; }
+      });
 
-    document.addEventListener("DOMContentLoaded", () => {
-    loadHomeStandings();
-    });
+      // Podium
+      const grandTotals = players.map(p => ({ id: p.player_id, name: p.player_name, total: parseFloat(p.grand_total), avatar_settings: p.avatar_settings })).sort((a,b) => b.total - a.total);
+      const getMedalIcon = r => r===1 ? '<img src="/media/awards/medal_first.png" class="medal-icon">' : r===2 ? '<img src="/media/awards/medal_second.png" class="medal-icon">' : r===3 ? '<img src="/media/awards/medal_third.png" class="medal-icon">' : '';
+      let topPlayers = [], rank = 1, prevScore = null, cnt = 0, lastValidRank = 1;
+      for (let i = 0; i < grandTotals.length; i++) {
+        const p = grandTotals[i];
+        if (prevScore !== null && p.total !== prevScore) { rank = cnt + 1; if (rank > 3 && lastValidRank !== 3) break; lastValidRank = rank; }
+        if (rank <= 3) topPlayers.push({ ...p, rank }); else break;
+        prevScore = p.total; cnt++;
+      }
+      const podiumGroups = { 1:[], 2:[], 3:[] };
+      topPlayers.forEach(p => { if (podiumGroups[p.rank]) podiumGroups[p.rank].push(p); });
+      if (podiumGroups[1][0]) document.getElementById('firstScore').textContent  = `${podiumGroups[1][0].total} pts`;
+      if (podiumGroups[2][0]) document.getElementById('secondScore').textContent = `${podiumGroups[2][0].total} pts`;
+      if (podiumGroups[3][0]) document.getElementById('thirdScore').textContent  = `${podiumGroups[3][0].total} pts`;
+      const genPodiumHTML = pl => pl.map(p => `<div class="player-info"><div class="icons">${getMedalIcon(p.rank)}${createSmallAvatarHTML(p)}</div><div class="player-name">${p.name}</div></div>`).join('');
+      document.getElementById('firstNames').innerHTML  = genPodiumHTML(podiumGroups[1]);
+      document.getElementById('secondNames').innerHTML = genPodiumHTML(podiumGroups[2]);
+      document.getElementById('thirdNames').innerHTML  = genPodiumHTML(podiumGroups[3]);
 
-  // =============================
-  // === TEAM STANDINGS TABLES ===
-  // =============================
-    async function loadHomeTeamStandings() {
-    try {
-        // 1. Retrieve the current year from form_details.
-        const formDetails = await getTable('form_details');
-        if (!formDetails || formDetails.length === 0) {
-        console.error("No form_details found.");
-        return;
+      // Your results box
+      if (currentUserId && userResultPulled) {
+        const userPlayer = players.find(p => p.player_id == currentUserId);
+        const userRank = grandTotals.findIndex(p => p.id == currentUserId) + 1;
+        if (userPlayer) {
+          document.getElementById('yourResultsBox').style.display = 'block';
+          const row = document.createElement('tr');
+          row.innerHTML = `<td><strong>${userRank}</strong></td>
+            <td><div class="player-info"><div class="icons">${createSmallAvatarHTML(userPlayer)}</div><div class="player-name">${userPlayer.name}</div></div></td>
+            <td>${userPlayer.grand_total ?? 0} pts</td>`;
+          document.getElementById('yourResultsContent').innerHTML = '';
+          document.getElementById('yourResultsContent').appendChild(row);
         }
-        const currentYear = formDetails[0].current_year;
-        //console.log("Current Year:", currentYear);
-
-        // 2. Retrieve the full season_team_{year} table.
-        const seasonTeamTable = `season_team_${currentYear}`;
-        const seasonTeamData = await getTable(seasonTeamTable);
-        //console.log("Season Team Data:", seasonTeamData);
-
-        if (!seasonTeamData || seasonTeamData.length === 0) {
-        document.querySelector("#standings-team-table tbody").innerHTML =
-            "<tr><td colspan='3'>No season team data available.</td></tr>";
-        return;
-        }
-
-        // 3. Exclude the special "Race Names" row (team_id === 0).
-        const teamRows = seasonTeamData.filter(row => row.team_id !== 0);
-        if (teamRows.length === 0) {
-        document.querySelector("#standings-team-table tbody").innerHTML =
-            "<tr><td colspan='3'>No team data available.</td></tr>";
-        return;
-        }
-
-        // 4. Determine the last race that has been scored using the Race Names row.
-        let lastRace = 0;
-        const raceNamesRow = seasonTeamData.find(row => row.team_id === 0);
-        if (raceNamesRow) {
-        // Assume race columns are named race_1, race_2, ..., race_32.
-        for (let i = 1; i <= 32; i++) {
-            const col = `race_${i}`;
-            if (raceNamesRow[col] !== null && raceNamesRow[col] !== "") {
-            lastRace = i;
-            } else {
-            break;
-            }
-        }
-        }
-        //console.log("Last race with data:", lastRace);
-        if (lastRace === 0) {
-        document.querySelector("#standings-team-table tbody").innerHTML =
-            "<tr><td colspan='3'>No race scores available yet.</td></tr>";
-        return;
-        }
-
-        // 5. Compute current total scores (summing races 1 to lastRace) for each team.
-        //    We strip any extra tags (e.g. "(double)") using a regex that removes text within parentheses.
-        const standings = teamRows.map(row => {
-        let total = 0;
-        let prevTotal = 0;
-        for (let i = 1; i <= lastRace; i++) {
-            const col = `race_${i}`;
-            const rawVal = row[col];
-            if (rawVal !== null && rawVal !== "") {
-            // Remove any tags such as "(double)" or "(aero)".
-            const numStr = rawVal.replace(/\(.*?\)/g, "").trim();
-            const num = parseFloat(numStr);
-            if (!isNaN(num)) {
-                total += num;
-                if (i < lastRace) {
-                prevTotal += num;
-                }
-            }
-            }
-        }
-        return {
-            team_id: row.team_id,
-            team_name: row.team_name,
-            total: total,
-            prevTotal: prevTotal
-        };
-        });
-
-        // 6. Sort standings descending by current total score.
-        standings.sort((a, b) => b.total - a.total);
-
-        // 7. Assign current ranks with ties receiving the same rank.
-        let currentRank = 1;
-        let prevScore = null;
-        const currentRankMap = {};
-        standings.forEach((team, index) => {
-        if (prevScore === null || team.total !== prevScore) {
-            currentRank = index + 1;
-        }
-        currentRankMap[team.team_id] = currentRank;
-        prevScore = team.total;
-        });
-        
-        const { data: players, error: playerError } = await supabase
-            .from('players')
-            .select('id, name, participant_team_id');
-        if (playerError) {
-            console.error("Error fetching players:", playerError);
-        }
-        
-        // 8. Compute previous standings if lastRace > 1.
-        const prevRankMap = {};
-        if (lastRace > 1) {
-        // Create a copy and sort by the total up to race lastRace-1.
-        const prevStandings = [...standings].sort((a, b) => b.prevTotal - a.prevTotal);
-        let prevRank = 1;
-        let prevPrevScore = null;
-        prevStandings.forEach((team, index) => {
-            if (prevPrevScore === null || team.prevTotal !== prevPrevScore) {
-            prevRank = index + 1;
-            }
-            prevRankMap[team.team_id] = prevRank;
-            prevPrevScore = team.prevTotal;
-        });
-        }
-
-        // 9. Build HTML rows for each team.
-        let html = "";
-        standings.forEach(team => {
-        const currRank = currentRankMap[team.team_id];
-        const teamPlayers = players ? players.filter(player => player.participant_team_id === team.team_id) : [];
-        const playerNames = teamPlayers.map(player => player.name).join(', ');
-        let movement = "";
-        if (lastRace > 1 && prevRankMap[team.team_id] !== undefined) {
-            const diff = prevRankMap[team.team_id] - currRank;
-            if (diff > 0) {
-            movement = `(+${diff})`;
-            } else if (diff < 0) {
-            movement = `(${diff})`;
-            } else {
-            movement = "(=)";
-            }
-        }
-        html += `<tr data-team-id="${team.team_id}">
-                    <td>${currRank} ${movement}</td>
-                    <td><b>${team.team_name}</b>${playerNames ? '<br>' + playerNames : ''}</td>
-                    <td>${team.total}</td>
-                </tr>`;
-        });
-        document.querySelector("#standings-team-table tbody").innerHTML = html;
-    } catch (err) {
-        console.error("loadHomeTeamStandings error:", err);
-        document.querySelector("#standings-team-table tbody").innerHTML =
-        `<tr><td colspan="3">Error loading team standings: ${err.message}</td></tr>`;
-    }
-
-    const currentUser = await getCurrentUser();
-    highlightTeamStandingsNameCell(currentUser);
-
-    }
-
-    // --- Initialize Team Standings on DOMContentLoaded ---
-    document.addEventListener("DOMContentLoaded", () => {
-    loadHomeTeamStandings();
-    });
-
-      async function updateFormStatusText() {
-      // Fetch the form details for id = 1 from Supabase
-      const { data, error } = await supabase
-        .from('form_details')
-        .select('form_status_text, form_status_text_enabled')
-        .eq('id', 1)
-        .single();
-
-      if (error) {
-        console.error('Error fetching form details:', error);
-        return;
       }
 
-      // Select the HTML elements by their IDs
-      const container = document.getElementById('formStatusContainer');
-      const textElement = document.getElementById('formStatusText');
+      document.getElementById('toggleScores').addEventListener('change', e => {
+        const show = e.target.checked;
+        document.querySelectorAll('#mainResultsTable tbody td').forEach(cell => {
+          const m = cell.className.match(/form_id_(\d+)_score/);
+          if (m) {
+            const p = players.find(p => p.player_id == cell.dataset.playerId);
+            const score = p ? p[`form_id_${m[1]}_score`] : null;
+            if (score !== null) {
+              const base = cell.dataset.baseText || cell.textContent.split(' (')[0];
+              cell.dataset.baseText = base;
+              cell.textContent = show ? `${base} (${score})` : base;
+            }
+          }
+        });
+      });
 
-      // If enabled, update the text and show the container
-      if (data.form_status_text_enabled) {
-        textElement.textContent = data.form_status_text;
-        container.style.display = 'block';
+      if (lowestScores.length > 0) {
+        document.getElementById('lowestScores').textContent =
+          `Did not play (receives lowest score): ${lowestScores.map(p => p.player_name).join(', ')}`;
+      }
+
+      document.getElementById('scoredLoading').style.display = 'none';
+      markTableAsReady();
+
+      // Reveal team results toggle
+      await initHomeTeamResultsPanel(current_year, results_display_race_number);
+
+      const user = await getCurrentUser();
+      if (user) applyHeaderColor(user.name, user.avatar_settings);
+    }
+
+    // ── NO DISPLAY ──
+    else {
+      document.getElementById('loadingPlaceholderBar').style.display = 'none';
+      document.getElementById('unscoredPredictions').style.display = 'none';
+      document.getElementById('scoredResults').style.display = 'none';
+      document.getElementById('noDisplay').style.display = 'block';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadResultsPredictions);
+
+  // Re-run everything on login/logout and re-apply highlights
+  document.addEventListener('loginStateChanged', async () => {
+    // Reset team results panel state so it reloads fresh
+    document.getElementById('team-results-body').style.display = 'none';
+    document.getElementById('team-results-toggle').classList.remove('open');
+
+    await loadResultsPredictions();
+    await loadFormPreviousSubmissionHomePage();
+
+    // Re-apply standings highlights (tables already populated)
+    const user = await getCurrentUser();
+    highlightPlayerStandingsNameCell(user);
+    highlightTeamStandingsNameCell(user);
+
+    // Re-render charts so highlight/grey mode reflects login state
+    await renderStandingsLineChart();
+    await renderTeamStandingsLineChart();
+  });
+
+  // ============================================================
+  // === TEAM RESULTS COLLAPSE PANEL
+  // ============================================================
+
+  async function initHomeTeamResultsPanel(currentYear, raceNumber) {
+    const section   = document.getElementById('team-results-section');
+    const toggleBtn = document.getElementById('team-results-toggle');
+    const body      = document.getElementById('team-results-body');
+
+    section.style.display = 'block';
+    let loaded = false;
+
+    // Remove any pre-existing listener by replacing the node
+    const freshToggle = toggleBtn.cloneNode(true);
+    toggleBtn.parentNode.replaceChild(freshToggle, toggleBtn);
+
+    freshToggle.addEventListener('click', async () => {
+      const isOpen = body.style.display !== 'none';
+      if (isOpen) {
+        body.style.display = 'none';
+        freshToggle.classList.remove('open');
       } else {
-        // Otherwise, ensure the container is hidden
-        container.style.display = 'none';
+        body.style.display = 'block';
+        freshToggle.classList.add('open');
+        if (!loaded) {
+          loaded = true;
+          const loadingEl = document.getElementById('team-results-loading');
+          const tableEl   = document.getElementById('home-team-results-table');
+          loadingEl.style.display = 'block';
+          tableEl.innerHTML = '';
+          await buildHomeTeamResultsTable(currentYear, raceNumber, tableEl);
+          loadingEl.style.display = 'none';
+        }
       }
+    });
+  }
+
+  async function buildHomeTeamResultsTable(currentYear, raceNumber, tableEl) {
+    const { data: tsd, error } = await supabase
+      .from(`team_scoring_${currentYear}`).select('*').eq('race_number', raceNumber);
+    if (error || !tsd?.length) {
+      tableEl.innerHTML = '<tr><td class="text-muted p-3">No team scoring data for this race.</td></tr>';
+      return;
     }
 
-  // Run the function when the DOM is fully loaded
-  document.addEventListener('DOMContentLoaded', updateFormStatusText);
+    tsd.sort((a, b) => b.grand_total - a.grand_total);
 
-  // highlight player names
+    let currentRank = 1, prevScore = null;
+    const rankMap = {};
+    tsd.forEach((team, i) => {
+      if (prevScore === null || team.grand_total !== prevScore) currentRank = i + 1;
+      rankMap[team.team_id] = currentRank; prevScore = team.grand_total;
+    });
 
-  function getUserAccentColor(avatarSettings) {
-    if (!avatarSettings) return null;
+    // Podium colour map for grand totals
+    const sortedTotals = [...new Set(tsd.map(t => t.grand_total))].sort((a,b) => b - a);
+    const podiumBg = { [sortedTotals[0]]: 'gold', [sortedTotals[1]]: 'silver', [sortedTotals[2]]: '#cd7f32' };
 
-    try {
-      const settings = typeof avatarSettings === "string"
-        ? JSON.parse(avatarSettings)
-        : avatarSettings;
+    function cardsPlayedHTML(team) {
+      if (team.casino_details?.trim()) return `<img src="/media/casino/casino.png" style="width:38px;height:auto;">`;
+      let h = '';
+      const s = 'float:left;width:38px;height:51px;';
+      if (team.card_aero_playedcol)      h += `<img src="/media/cards/card_aero.png" style="${s}">`;
+      if (team.card_double_playedcol)    h += `<img src="/media/cards/card_double.png" style="${s}">`;
+      if (team.card_halo_playedcol)      h += `<img src="/media/cards/card_halo.png" style="${s}">`;
+      if (team.card_safetycar_playedcol) h += `<img src="/media/cards/card_safetycar.png" style="${s}">`;
+      if (team.card_report_playedcol)    h += `<img src="/media/cards/card_report.png" style="${s}">`;
+      if (team.card_swap_playedcol)      h += `<img src="/media/cards/card_swap.png" style="${s}">`;
+      return h || '—';
+    }
 
-      return settings?.background_colour || null;
-    } catch (e) {
-      console.warn("Invalid avatar_settings:", avatarSettings);
-      return null;
+    function cardsAppliedHTML(team) {
+      if (team.casino_details?.trim()) return `
+        <img src="/media/casino/casino.png" style="display:block;width:80px;height:auto;margin-bottom:4px;">
+        <div style="word-wrap:break-word;white-space:normal;font-size:0.75rem;">${team.casino_details}</div>`;
+      let h = '';
+      const s = 'float:left;width:38px;height:51px;';
+      const append = (n, name) => { for (let i=0;i<(n||0);i++) h+=`<img src="/media/cards/card_${name}.png" style="${s}">`; };
+      append(team.card_aero_applied,'aero');      append(team.card_double_applied,'double');
+      append(team.card_halo_applied,'halo');      append(team.card_report_applied,'report');
+      append(team.card_safetycar_applied,'safetycar'); append(team.card_swap_applied,'swap');
+      if (team.card_report_details) h += `<div style="clear:both;word-wrap:break-word;white-space:normal;font-size:0.75rem;">${team.card_report_details}</div>`;
+      if (team.card_swap_details)   h += `<div style="clear:both;word-wrap:break-word;white-space:normal;font-size:0.75rem;">${team.card_swap_details}</div>`;
+      return h || '—';
+    }
+
+    const delta = t => (t.card_points_delta >= 0 ? '+' : '') + t.card_points_delta;
+
+    let html = `<thead><tr>
+      <th>Rank</th><th>Team</th>
+      <th>Player 1</th><th>P1 Pts</th>
+      <th>Player 2</th><th>P2 Pts</th>
+      <th>Sub-total</th><th>Cards Played</th>
+      <th>Cards Applied / Casino</th>
+      <th>Bonus / Penalty</th><th>Total</th>
+    </tr></thead><tbody>`;
+
+    tsd.forEach(team => {
+      const rank   = rankMap[team.team_id];
+      const bg     = podiumBg[team.grand_total] || '';
+      const totalStyle = bg ? `background-color:${bg};color:black;font-weight:bold;` : 'font-weight:bold;';
+      html += `<tr>
+        <td>${rank}</td>
+        <td><strong>${team.team_name}</strong></td>
+        <td>${team.player_name_1}</td><td>${team.player_points_1}</td>
+        <td>${team.player_name_2}</td><td>${team.player_points_2}</td>
+        <td>${team.subtotal}</td>
+        <td style="white-space:normal;min-width:44px;">${cardsPlayedHTML(team)}</td>
+        <td style="white-space:normal;min-width:80px;">${cardsAppliedHTML(team)}</td>
+        <td>${delta(team)}</td>
+        <td style="${totalStyle}">${team.grand_total}</td>
+      </tr>`;
+    });
+
+    html += '</tbody>';
+    tableEl.innerHTML = html;
+  }
+
+  // ============================================================
+  // === PINNING COLUMNS
+  // ============================================================
+
+  let tableReady = false;
+
+  function updatePinnedColumns() {
+    if (!tableReady) return;
+    resetPinnedStyles();
+    const pinQR   = document.getElementById('pinQuestionColumn');
+    const pinQRMe = document.getElementById('pinBothColumns');
+    const pinCount = pinQRMe.checked ? 3 : pinQR.checked ? 2 : 0;
+    if (!pinCount) return;
+    const headerRow = document.querySelector('#mainResultsTable thead tr');
+    if (!headerRow) return;
+    let offsetLeft = 0;
+    for (let i = 0; i < pinCount; i++) {
+      document.querySelectorAll('#mainResultsTable thead tr, #mainResultsTable tbody tr').forEach(row => {
+        const cell = row.children[i];
+        if (cell) { cell.classList.add('pinned'); cell.style.left = `${offsetLeft}px`; }
+      });
+      offsetLeft += headerRow.children[i].offsetWidth;
     }
   }
 
-  function normalizeAvatarSettings(avatar_settings) {
-  if (!avatar_settings) return null;
-  if (typeof avatar_settings === "string") {
-    try { return JSON.parse(avatar_settings); } catch { return null; }
+  function resetPinnedStyles() {
+    document.querySelectorAll('#mainResultsTable .pinned').forEach(cell => { cell.classList.remove('pinned'); cell.style.left = ''; });
   }
-  return avatar_settings;
-}
+
+  function markTableAsReady() { tableReady = true; updatePinnedColumns(); }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const pinQ  = document.getElementById('pinQuestionColumn');
+    const pinQM = document.getElementById('pinBothColumns');
+    pinQ.checked = true;
+    pinQ.addEventListener('change',  () => { pinQM.checked = false; updatePinnedColumns(); });
+    pinQM.addEventListener('change', () => { pinQ.checked  = false; updatePinnedColumns(); });
+  });
+
+  // ============================================================
+  // === STANDINGS HIGHLIGHT HELPERS
+  // ============================================================
 
   function highlightPlayerStandingsNameCell(currentUser) {
     if (!currentUser) return;
-
-    const avatar = normalizeAvatarSettings(currentUser.avatar_settings);
-    const bg = getUserBackgroundColor(currentUser.name, avatar);
+    const bg = getUserBackgroundColor(currentUser.name, normalizeAvatarSettings(currentUser.avatar_settings));
     const fg = getContrastTextColor(bg);
-
-    const table = document.getElementById("standings-table");
-    if (!table) return;
-
-    table.querySelectorAll("tbody tr").forEach(row => {
-      const nameCell = row.children[1]; // ✅ name is column 2
+    document.getElementById('standings-table')?.querySelectorAll('tbody tr').forEach(row => {
+      const nameCell = row.children[1];
       if (!nameCell) return;
-
-      // Your rendered HTML puts the name in a <span> inside this cell
-      const span = nameCell.querySelector("span");
-      const renderedName = (span?.textContent || nameCell.textContent || "").trim();
-
+      const renderedName = (nameCell.querySelector('span')?.textContent || nameCell.textContent || '').trim();
       if (renderedName === currentUser.name) {
-        nameCell.style.backgroundColor = bg;
-        nameCell.style.color = fg;
-        nameCell.style.fontWeight = "600";
+        nameCell.style.backgroundColor = bg; nameCell.style.color = fg; nameCell.style.fontWeight = '600';
       }
     });
   }
 
   function highlightTeamStandingsNameCell(currentUser) {
     if (!currentUser?.participant_team_id) return;
-
-    const avatar = normalizeAvatarSettings(currentUser.avatar_settings);
-    const bg = getUserBackgroundColor(currentUser.name, avatar);
+    const bg = getUserBackgroundColor(currentUser.name, normalizeAvatarSettings(currentUser.avatar_settings));
     const fg = getContrastTextColor(bg);
-
-    const table = document.getElementById("standings-team-table");
-    if (!table) return;
-
-    table.querySelectorAll("tbody tr").forEach(row => {
-      const teamCell = row.children[1]; // ✅ team name column
+    document.getElementById('standings-team-table')?.querySelectorAll('tbody tr').forEach(row => {
+      const teamCell = row.children[1];
       if (!teamCell) return;
-
       if (Number(row.dataset.teamId) === Number(currentUser.participant_team_id)) {
-        teamCell.style.backgroundColor = bg;
-        teamCell.style.color = fg;
-        // teamCell.style.fontWeight = "600";
+        teamCell.style.backgroundColor = bg; teamCell.style.color = fg;
       }
     });
   }
-// ================================
-// === CHART COLOUR HELPER =======
-// ================================
 
-const chartInstances = {}; // ← ADD THIS LINE
-const FULL_COLORS = [
-  '#e6194b', '#3cb44b', '#ffe119', '#4363d8',
-  '#f58231', '#911eb4', '#46f0f0', '#f032e6',
-  '#bcf60c', '#fabebe', '#008080', '#e6beff',
-  '#9a6324', '#fffac8', '#800000', '#aaffc3',
-  '#808000', '#ffd8b1', '#000075', '#808080'
-];
+  // ============================================================
+  // === PLAYER & TEAM STANDINGS TABLES
+  // ============================================================
 
-const GREY_SHADES = [
-  '#bbbbbb', '#aaaaaa', '#999999', '#888888',
-  '#777777', '#666666', '#b0b0b0', '#c0c0c0',
-  '#a0a0a0', '#909090', '#d0d0d0', '#707070',
-  '#808080', '#606060', '#505050', '#404040',
-  '#c8c8c8', '#d8d8d8', '#787878', '#686868'
-];
+  async function loadHomeStandings() {
+    try {
+      const formDetails = await getTable('form_details');
+      const currentYear = formDetails[0].current_year;
+      const seasonData  = await getTable(`season_player_${currentYear}`);
+      if (!seasonData?.length) { document.querySelector('#standings-table tbody').innerHTML = '<tr><td colspan="3">No data.</td></tr>'; return; }
 
-function getLineColor(highlightMode, isSelf, selfColor, greyIndex, fullColorIndex) {
-  if (!highlightMode) {
-    // Full colour mode - everyone gets a distinct colour
-    return FULL_COLORS[fullColorIndex % FULL_COLORS.length];
+      const playerRows   = seasonData.filter(r => r.player_id !== 0);
+      const raceNamesRow = seasonData.find(r => r.player_id === 0);
+      let lastRace = 0;
+      for (let i = 1; i <= 32; i++) { if (raceNamesRow?.[`race_${i}`]) lastRace = i; else break; }
+      if (!lastRace) { document.querySelector('#standings-table tbody').innerHTML = '<tr><td colspan="3">No race scores yet.</td></tr>'; return; }
+
+      const standings = playerRows.map(row => {
+        let total = 0, prevTotal = 0;
+        for (let i = 1; i <= lastRace; i++) {
+          const num = parseFloat((row[`race_${i}`] || '').replace(/\(LS\)/,'').trim());
+          if (!isNaN(num)) { total += num; if (i < lastRace) prevTotal += num; }
+        }
+        return { player_id: row.player_id, player_name: row.player_name, total, prevTotal };
+      }).sort((a, b) => b.total - a.total);
+
+      let rank = 1, prev = null;
+      const rankMap = {}, prevRankMap = {};
+      standings.forEach((p, i) => { if (prev === null || p.total !== prev) rank = i + 1; rankMap[p.player_id] = rank; prev = p.total; });
+      if (lastRace > 1) {
+        const ps = [...standings].sort((a,b) => b.prevTotal - a.prevTotal);
+        let r = 1, pp = null;
+        ps.forEach((p,i) => { if (pp === null || p.prevTotal !== pp) r = i + 1; prevRankMap[p.player_id] = r; pp = p.prevTotal; });
+      }
+
+      const { data: playersData } = await supabase.from('players').select('id, avatar_settings, name');
+      const pm = {};
+      (playersData||[]).forEach(p => { pm[p.id] = p; });
+
+      let html = '';
+      standings.forEach(p => {
+        const cr = rankMap[p.player_id];
+        const diff = lastRace > 1 && prevRankMap[p.player_id] !== undefined ? prevRankMap[p.player_id] - cr : null;
+        const movement = diff === null ? '' : diff > 0 ? `(+${diff})` : diff < 0 ? `(${diff})` : '(=)';
+        const pd = pm[p.player_id] || { name: p.player_name };
+        html += `<tr><td>${cr} ${movement}</td><td><div class="d-flex align-items-center">${createSmallAvatarHTML(pd)}<span>${pd.name}</span></div></td><td>${p.total}</td></tr>`;
+      });
+      document.querySelector('#standings-table tbody').innerHTML = html;
+    } catch (err) {
+      document.querySelector('#standings-table tbody').innerHTML = `<tr><td colspan="3">Error: ${err.message}</td></tr>`;
+    }
+    highlightPlayerStandingsNameCell(await getCurrentUser());
   }
-  // Highlight mode - self gets avatar colour, others get grey
-  if (isSelf) return selfColor;
-  return GREY_SHADES[greyIndex % GREY_SHADES.length];
-}
 
-// =========================
-// === PLAYER LINE CHART ===
-// =========================
-async function renderStandingsLineChart() {
-  try {
-    const { data: formDetails, error: formDetailsError } = await supabase
-      .from('form_details')
-      .select('current_year')
-      .eq('id', 1)
-      .single();
-    if (formDetailsError) { console.error('Error fetching form details:', formDetailsError); return; }
-    const currentYear = formDetails.current_year;
+  async function loadHomeTeamStandings() {
+    try {
+      const formDetails = await getTable('form_details');
+      const currentYear = formDetails[0].current_year;
+      const seasonTeamData = await getTable(`season_team_${currentYear}`);
+      if (!seasonTeamData?.length) { document.querySelector('#standings-team-table tbody').innerHTML = '<tr><td colspan="3">No data.</td></tr>'; return; }
 
-    const seasonTableName = `season_player_${currentYear}`;
-    const seasonData = await getTable(seasonTableName);
-    if (!seasonData || seasonData.length === 0) { console.error("No season data available."); return; }
+      const teamRows     = seasonTeamData.filter(r => r.team_id !== 0);
+      const raceNamesRow = seasonTeamData.find(r => r.team_id === 0);
+      let lastRace = 0;
+      for (let i = 1; i <= 32; i++) { if (raceNamesRow?.[`race_${i}`]) lastRace = i; else break; }
+      if (!lastRace) { document.querySelector('#standings-team-table tbody').innerHTML = '<tr><td colspan="3">No race scores yet.</td></tr>'; return; }
 
-    const raceNamesRow = seasonData.find(row => row.player_id === 0);
-    if (!raceNamesRow) { console.error("No race names row found."); return; }
-
-    let lastRace = 0;
-    const raceLabels = [];
-    for (let i = 1; i <= 32; i++) {
-      const col = `race_${i}`;
-      let raceName = raceNamesRow[col];
-      if (raceName !== null && raceName !== "") {
-        raceName = raceName.replace(/\(LS\)/g, "").trim();
-        raceLabels.push(raceName);
-        lastRace = i;
-      } else { break; }
-    }
-    if (lastRace === 0) { console.error("No race names available."); return; }
-
-    const playerRows = seasonData.filter(row => row.player_id !== 0);
-    if (!playerRows.length) { console.error("No player data found."); return; }
-
-    // Compute cumulative rankings (same logic as before)
-    const playerCumulativeScores = {};
-    playerRows.forEach(player => {
-      let sum = 0;
-      const cumulative = [];
-      for (let i = 1; i <= lastRace; i++) {
-        let scoreStr = player[`race_${i}`];
-        if (scoreStr !== null && scoreStr !== "") {
-          const score = parseFloat(scoreStr.replace(/\(LS\)/g, "").trim());
-          if (!isNaN(score)) sum += score;
+      const standings = teamRows.map(row => {
+        let total = 0, prevTotal = 0;
+        for (let i = 1; i <= lastRace; i++) {
+          const num = parseFloat((row[`race_${i}`] || '').replace(/\(.*?\)/g,'').trim());
+          if (!isNaN(num)) { total += num; if (i < lastRace) prevTotal += num; }
         }
-        cumulative.push(sum);
-      }
-      playerCumulativeScores[player.player_id] = { player_name: player.player_name, cumulative };
-    });
+        return { team_id: row.team_id, team_name: row.team_name, total, prevTotal };
+      }).sort((a, b) => b.total - a.total);
 
-    const playerRankings = {};
-    playerRows.forEach(player => { playerRankings[player.player_id] = []; });
-    for (let raceIndex = 0; raceIndex < lastRace; raceIndex++) {
-      const scores = playerRows.map(player => ({
-        player_id: player.player_id,
-        score: playerCumulativeScores[player.player_id].cumulative[raceIndex]
-      })).sort((a, b) => b.score - a.score);
-      let rank = 1, prevScore = null;
-      scores.forEach((item, index) => {
-        if (prevScore === null || item.score !== prevScore) rank = index + 1;
-        playerRankings[item.player_id].push(rank);
-        prevScore = item.score;
+      let rank = 1, prev = null;
+      const rankMap = {}, prevRankMap = {};
+      standings.forEach((t,i) => { if (prev===null||t.total!==prev) rank=i+1; rankMap[t.team_id]=rank; prev=t.total; });
+      if (lastRace > 1) {
+        const ps = [...standings].sort((a,b)=>b.prevTotal-a.prevTotal);
+        let r=1, pp=null;
+        ps.forEach((t,i) => { if(pp===null||t.prevTotal!==pp) r=i+1; prevRankMap[t.team_id]=r; pp=t.prevTotal; });
+      }
+
+      const { data: players } = await supabase.from('players').select('id, name, participant_team_id');
+      let html = '';
+      standings.forEach(t => {
+        const cr = rankMap[t.team_id];
+        const diff = prevRankMap[t.team_id] !== undefined ? prevRankMap[t.team_id] - cr : null;
+        const movement = diff===null ? '' : diff>0 ? `(+${diff})` : diff<0 ? `(${diff})` : '(=)';
+        const tp = (players||[]).filter(p => p.participant_team_id === t.team_id).map(p=>p.name).join(', ');
+        html += `<tr data-team-id="${t.team_id}"><td>${cr} ${movement}</td><td><b>${t.team_name}</b>${tp?'<br>'+tp:''}</td><td>${t.total}</td></tr>`;
       });
+      document.querySelector('#standings-team-table tbody').innerHTML = html;
+    } catch (err) {
+      document.querySelector('#standings-team-table tbody').innerHTML = `<tr><td colspan="3">Error: ${err.message}</td></tr>`;
     }
+    highlightTeamStandingsNameCell(await getCurrentUser());
+  }
 
-    // Get current user info for highlighting
-    const currentUser = await getCurrentUser();
-    const currentUserId = currentUser ? currentUser.id : null;
-    const selfColor = currentUser
-      ? getUserBackgroundColor(currentUser.name, normalizeAvatarSettings(currentUser.avatar_settings))
-      : null;
+  document.addEventListener('DOMContentLoaded', () => { loadHomeStandings(); loadHomeTeamStandings(); });
 
-    // Determine whether to show highlight mode
-    // Only relevant if user is logged in
-    const toggleEl = document.getElementById('highlightMyLinePlayer');
-    const highlightMode = currentUserId && toggleEl && toggleEl.checked;
+  // ============================================================
+  // === FORM STATUS TEXT
+  // ============================================================
 
-    // Show/hide the toggle based on login state
-    const toggleContainerPlayer = document.getElementById('highlightMyLinePlayerContainer');
-    if (toggleContainerPlayer) {
-      toggleContainerPlayer.style.display = currentUserId ? 'block' : 'none';
-    }
+  document.addEventListener('DOMContentLoaded', async () => {
+    const { data } = await supabase.from('form_details').select('form_status_text, form_status_text_enabled').eq('id', 1).single();
+    if (!data) return;
+    const container = document.getElementById('formStatusContainer');
+    const textEl    = document.getElementById('formStatusText');
+    if (data.form_status_text_enabled) { textEl.textContent = data.form_status_text; container.style.display = 'block'; }
+    else container.style.display = 'none';
+  });
 
-    // Sort players alphabetically for consistent colour assignment
-    const sortedPlayers = [...playerRows].sort((a, b) =>
-      a.player_name.localeCompare(b.player_name)
-    );
+  // ============================================================
+  // === CHARTS
+  // ============================================================
 
-    let greyIndex = 0;
-    let fullColorIndex = 0;
-    const datasets = sortedPlayers.map(player => {
-      const isSelf = player.player_id === currentUserId;
-      const color = getLineColor(highlightMode, isSelf, selfColor, greyIndex, fullColorIndex);
+  const chartInstances = {};
+  const FULL_COLORS = ['#e6194b','#3cb44b','#ffe119','#4363d8','#f58231','#911eb4','#46f0f0','#f032e6','#bcf60c','#fabebe','#008080','#e6beff','#9a6324','#fffac8','#800000','#aaffc3','#808000','#ffd8b1','#000075','#808080'];
+  const GREY_SHADES = ['#bbbbbb','#aaaaaa','#999999','#888888','#777777','#666666','#b0b0b0','#c0c0c0','#a0a0a0','#909090','#d0d0d0','#707070','#808080','#606060','#505050','#404040','#c8c8c8','#d8d8d8','#787878','#686868'];
 
-      if (!isSelf) greyIndex++;
-      fullColorIndex++;
+  function lineColor(highlightMode, isSelf, selfColor, gi, fi) {
+    return !highlightMode ? FULL_COLORS[fi % FULL_COLORS.length] : isSelf ? selfColor : GREY_SHADES[gi % GREY_SHADES.length];
+  }
 
-      return {
-        label: player.player_name,
-        data: playerRankings[player.player_id],
-        fill: false,
-        borderColor: color,
-        backgroundColor: color,
-        borderWidth: isSelf && highlightMode ? 4 : 2,  // Self line slightly thicker
-        tension: 0,
-        pointStyle: 'circle',
-        pointRadius: isSelf && highlightMode ? 5 : 3,  // Self points slightly larger
-        pointHoverRadius: 5,
-        order: isSelf ? 0 : 1  // Draw self line on top
-      };
-    });
+  async function renderStandingsLineChart() {
+    try {
+      const { data: fd } = await supabase.from('form_details').select('current_year').eq('id', 1).single();
+      const currentYear  = fd.current_year;
+      const seasonData   = await getTable(`season_player_${currentYear}`);
+      if (!seasonData?.length) return;
 
-    const maxRank = playerRows.length;
+      const rnRow = seasonData.find(r => r.player_id === 0);
+      let lastRace = 0; const raceLabels = [];
+      for (let i = 1; i <= 32; i++) { const v = rnRow?.[`race_${i}`]; if (v) { raceLabels.push(v.replace(/\(LS\)/g,'').trim()); lastRace=i; } else break; }
+      if (!lastRace) return;
 
-    const chartKey = 'standings';
-    if (chartInstances[chartKey]) { chartInstances[chartKey].destroy(); }
-
-    const ctx = document.getElementById('standings-line-chart').getContext('2d');
-    chartInstances[chartKey] = new Chart(ctx, {
-      type: 'line',
-      data: { labels: raceLabels, datasets },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        layout: { padding: 10 },
-        plugins: {
-          title: {
-            display: true,
-            text: `Player Standings ${currentYear}`,
-            color: window.chartTheme.chartTextColor,
-            font: { family: 'Helvetica', size: 20 }
-          },
-          legend: {
-            position: 'bottom',
-            labels: {
-              font: { family: 'Helvetica' },
-              color: window.chartTheme.chartTextColor
-            }
-          }
-        },
-        scales: {
-          y: {
-            reverse: true, min: 1, max: maxRank, offset: true,
-            ticks: { stepSize: 1, padding: 10, font: { family: 'Helvetica' }, color: window.chartTheme.chartTextColor },
-            title: { display: true, text: 'Rank', font: { family: 'Helvetica' }, color: window.chartTheme.chartTextColor },
-            grid: { color: window.chartTheme.chartGridColor }
-          },
-          x: {
-            ticks: { font: { family: 'Helvetica' }, color: window.chartTheme.chartTextColor },
-            title: { display: false },
-            grid: { color: window.chartTheme.chartGridColor }
-          }
-        }
-      }
-    });
-
-  } catch (err) { console.error("Error rendering the standings chart:", err); }
-}
-
-// =======================
-// === TEAM LINE CHART ===
-// =======================
-async function renderTeamStandingsLineChart() {
-  try {
-    const { data: formDetails, error: formDetailsError } = await supabase
-      .from('form_details')
-      .select('current_year')
-      .eq('id', 1)
-      .single();
-    if (formDetailsError) { console.error('Error fetching form details:', formDetailsError); return; }
-    const currentYear = formDetails.current_year;
-
-    const seasonTeamTableName = `season_team_${currentYear}`;
-    const seasonTeamData = await getTable(seasonTeamTableName);
-    if (!seasonTeamData || seasonTeamData.length === 0) { console.error("No season team data available."); return; }
-
-    const raceNamesRow = seasonTeamData.find(row => row.team_id === 0);
-    if (!raceNamesRow) { console.error("No race names row found for teams."); return; }
-
-    let lastRace = 0;
-    const raceLabels = [];
-    for (let i = 1; i <= 32; i++) {
-      const col = `race_${i}`;
-      let raceName = raceNamesRow[col];
-      if (raceName !== null && raceName !== "") {
-        raceName = raceName.replace(/\(.*?\)/g, "").trim();
-        raceLabels.push(raceName);
-        lastRace = i;
-      } else { break; }
-    }
-    if (lastRace === 0) { console.error("No race names available for teams."); return; }
-
-    const teamRows = seasonTeamData.filter(row => row.team_id !== 0);
-    if (!teamRows.length) { console.error("No team data found."); return; }
-
-    // Compute cumulative scores and rankings (same logic as before)
-    const teamCumulativeScores = {};
-    teamRows.forEach(team => {
-      let sum = 0;
-      const cumulative = [];
-      for (let i = 1; i <= lastRace; i++) {
-        let scoreStr = team[`race_${i}`];
-        if (scoreStr !== null && scoreStr !== "") {
-          const score = parseFloat(scoreStr.replace(/\(.*?\)/g, "").trim());
-          if (!isNaN(score)) sum += score;
-        }
-        cumulative.push(sum);
-      }
-      teamCumulativeScores[team.team_id] = { team_name: team.team_name, cumulative };
-    });
-
-    const teamRankings = {};
-    teamRows.forEach(team => { teamRankings[team.team_id] = []; });
-    for (let raceIndex = 0; raceIndex < lastRace; raceIndex++) {
-      const scores = teamRows.map(team => ({
-        team_id: team.team_id,
-        score: teamCumulativeScores[team.team_id].cumulative[raceIndex]
-      })).sort((a, b) => b.score - a.score);
-      let rank = 1, prevScore = null;
-      scores.forEach((item, index) => {
-        if (prevScore === null || item.score !== prevScore) rank = index + 1;
-        teamRankings[item.team_id].push(rank);
-        prevScore = item.score;
+      const playerRows = seasonData.filter(r => r.player_id !== 0);
+      const cumScores  = {};
+      playerRows.forEach(p => {
+        let sum = 0; const cum = [];
+        for (let i = 1; i <= lastRace; i++) { const s = parseFloat((p[`race_${i}`]||'').replace(/\(LS\)/g,'').trim()); if (!isNaN(s)) sum += s; cum.push(sum); }
+        cumScores[p.player_id] = { player_name: p.player_name, cumulative: cum };
       });
-    }
 
-    // Get current user and their team
-    const currentUser = await getCurrentUser();
-    const currentUserTeamId = currentUser ? currentUser.participant_team_id : null;
-    const selfColor = currentUser
-      ? getUserBackgroundColor(currentUser.name, normalizeAvatarSettings(currentUser.avatar_settings))
-      : null;
-
-    // Determine highlight mode for teams
-    const toggleEl = document.getElementById('highlightMyLineTeam');
-    const highlightMode = currentUserTeamId && toggleEl && toggleEl.checked;
-
-    // Show/hide the toggle based on whether user is in a team
-    const toggleContainerTeam = document.getElementById('highlightMyLineTeamContainer');
-    if (toggleContainerTeam) {
-      toggleContainerTeam.style.display = currentUserTeamId ? 'block' : 'none';
-    }
-
-    const sortedTeams = [...teamRows].sort((a, b) => a.team_name.localeCompare(b.team_name));
-
-    let greyIndex = 0;
-    let fullColorIndex = 0;
-    const datasets = sortedTeams.map(team => {
-      const isSelf = team.team_id === currentUserTeamId;
-      const color = getLineColor(highlightMode, isSelf, selfColor, greyIndex, fullColorIndex);
-
-      if (!isSelf) greyIndex++;
-      fullColorIndex++;
-
-      return {
-        label: team.team_name,
-        data: teamRankings[team.team_id],
-        fill: false,
-        borderColor: color,
-        backgroundColor: color,
-        borderWidth: isSelf && highlightMode ? 4 : 2,
-        tension: 0,
-        pointStyle: 'circle',
-        pointRadius: isSelf && highlightMode ? 5 : 3,
-        pointHoverRadius: 5,
-        order: isSelf ? 0 : 1
-      };
-    });
-
-    const maxRank = teamRows.length;
-
-    const chartKey = 'teamStandings';
-    if (chartInstances[chartKey]) { chartInstances[chartKey].destroy(); }
-
-    const ctx = document.getElementById('standings-team-line-chart').getContext('2d');
-    chartInstances[chartKey] = new Chart(ctx, {
-      type: 'line',
-      data: { labels: raceLabels, datasets },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        layout: { padding: 10 },
-        plugins: {
-          title: {
-            display: true,
-            text: `Team Standings ${currentYear}`,
-            color: window.chartTheme.chartTextColor,
-            font: { family: 'Helvetica', size: 20 }
-          },
-          legend: {
-            position: 'bottom',
-            labels: {
-              font: { family: 'Helvetica' },
-              color: window.chartTheme.chartTextColor
-            }
-          }
-        },
-        scales: {
-          y: {
-            reverse: true, min: 1, max: maxRank, offset: true,
-            ticks: { stepSize: 1, padding: 10, font: { family: 'Helvetica' }, color: window.chartTheme.chartTextColor },
-            title: { display: true, text: 'Rank', font: { family: 'Helvetica' }, color: window.chartTheme.chartTextColor },
-            grid: { color: window.chartTheme.chartGridColor }
-          },
-          x: {
-            ticks: { font: { family: 'Helvetica' }, color: window.chartTheme.chartTextColor },
-            title: { display: false },
-            grid: { color: window.chartTheme.chartGridColor }
-          }
-        }
+      const rankings = {}; playerRows.forEach(p => { rankings[p.player_id] = []; });
+      for (let ri = 0; ri < lastRace; ri++) {
+        const sorted = playerRows.map(p => ({ player_id: p.player_id, score: cumScores[p.player_id].cumulative[ri] })).sort((a,b) => b.score-a.score);
+        let r=1, prev=null;
+        sorted.forEach((item,i) => { if(prev===null||item.score!==prev) r=i+1; rankings[item.player_id].push(r); prev=item.score; });
       }
-    });
 
-  } catch (err) { console.error("Error rendering the team standings chart:", err); }
-}
+      const user = await getCurrentUser();
+      const uid  = user?.id ?? null;
+      const selfColor = uid ? getUserBackgroundColor(user.name, normalizeAvatarSettings(user.avatar_settings)) : null;
+      const toggleEl  = document.getElementById('highlightMyLinePlayer');
+      const highlight = uid && toggleEl?.checked;
+      document.getElementById('highlightMyLinePlayerContainer').style.display = uid ? 'block' : 'none';
 
-  // ===============================
-  // === STANDINGS CHART LOADING ===
-  // ===============================
-  document.addEventListener("DOMContentLoaded", () => {
-  renderStandingsLineChart();
-  renderTeamStandingsLineChart();
+      const sorted = [...playerRows].sort((a,b) => a.player_name.localeCompare(b.player_name));
+      let gi=0, fi=0;
+      const datasets = sorted.map(p => {
+        const isSelf = p.player_id === uid;
+        const color  = lineColor(highlight, isSelf, selfColor, gi, fi);
+        if (!isSelf) gi++; fi++;
+        return { label: p.player_name, data: rankings[p.player_id], fill:false, borderColor:color, backgroundColor:color, borderWidth: isSelf&&highlight?4:2, tension:0, pointStyle:'circle', pointRadius: isSelf&&highlight?5:3, pointHoverRadius:5, order: isSelf?0:1 };
+      });
 
-  // Re-render charts when toggles are clicked
-  document.getElementById('highlightMyLinePlayer')
-    ?.addEventListener('change', renderStandingsLineChart);
-  document.getElementById('highlightMyLineTeam')
-    ?.addEventListener('change', renderTeamStandingsLineChart);
-});
+      if (chartInstances.standings) chartInstances.standings.destroy();
+      chartInstances.standings = new Chart(document.getElementById('standings-line-chart').getContext('2d'), {
+        type:'line', data:{ labels:raceLabels, datasets },
+        options:{ responsive:true, maintainAspectRatio:false, layout:{padding:10},
+          plugins:{ title:{display:true,text:`Player Standings ${currentYear}`,color:window.chartTheme.chartTextColor,font:{family:'Helvetica',size:20}}, legend:{position:'bottom',labels:{font:{family:'Helvetica'},color:window.chartTheme.chartTextColor}} },
+          scales:{ y:{reverse:true,min:1,max:playerRows.length,offset:true,ticks:{stepSize:1,padding:10,font:{family:'Helvetica'},color:window.chartTheme.chartTextColor},title:{display:true,text:'Rank',font:{family:'Helvetica'},color:window.chartTheme.chartTextColor},grid:{color:window.chartTheme.chartGridColor}}, x:{ticks:{font:{family:'Helvetica'},color:window.chartTheme.chartTextColor},grid:{color:window.chartTheme.chartGridColor}} }
+        }
+      });
+    } catch(e) { console.error('Player chart error:', e); }
+  }
 
-function reRenderCharts() {
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-  window.chartTheme = {
-    chartTextColor: darkMode ? '#ffffff' : '#000000',
-    chartLineColor: darkMode ? '#ffffff' : '#000000',
-    chartBackgroundColor: darkMode ? '#222222' : '#ffffff',
-    chartGridColor: darkMode ? '#444444' : '#cccccc'
-  };
-  renderStandingsLineChart();
-  renderTeamStandingsLineChart();
-}
+  async function renderTeamStandingsLineChart() {
+    try {
+      const { data: fd }      = await supabase.from('form_details').select('current_year').eq('id', 1).single();
+      const currentYear       = fd.current_year;
+      const seasonTeamData    = await getTable(`season_team_${currentYear}`);
+      if (!seasonTeamData?.length) return;
 
-window.addEventListener('themeChanged', reRenderCharts);
+      const rnRow = seasonTeamData.find(r => r.team_id === 0);
+      let lastRace = 0; const raceLabels = [];
+      for (let i = 1; i <= 32; i++) { const v = rnRow?.[`race_${i}`]; if (v) { raceLabels.push(v.replace(/\(.*?\)/g,'').trim()); lastRace=i; } else break; }
+      if (!lastRace) return;
 
-// Listen for a custom 'themeChanged' event.
-window.addEventListener('themeChanged', reRenderCharts);
+      const teamRows = seasonTeamData.filter(r => r.team_id !== 0);
+      const cumScores = {};
+      teamRows.forEach(t => {
+        let sum = 0; const cum = [];
+        for (let i = 1; i <= lastRace; i++) { const s = parseFloat((t[`race_${i}`]||'').replace(/\(.*?\)/g,'').trim()); if (!isNaN(s)) sum += s; cum.push(sum); }
+        cumScores[t.team_id] = { team_name: t.team_name, cumulative: cum };
+      });
+
+      const rankings = {}; teamRows.forEach(t => { rankings[t.team_id] = []; });
+      for (let ri = 0; ri < lastRace; ri++) {
+        const sorted = teamRows.map(t => ({ team_id: t.team_id, score: cumScores[t.team_id].cumulative[ri] })).sort((a,b) => b.score-a.score);
+        let r=1, prev=null;
+        sorted.forEach((item,i) => { if(prev===null||item.score!==prev) r=i+1; rankings[item.team_id].push(r); prev=item.score; });
+      }
+
+      const user = await getCurrentUser();
+      const utid = user?.participant_team_id ?? null;
+      const selfColor = utid ? getUserBackgroundColor(user.name, normalizeAvatarSettings(user.avatar_settings)) : null;
+      const toggleEl  = document.getElementById('highlightMyLineTeam');
+      const highlight = utid && toggleEl?.checked;
+      document.getElementById('highlightMyLineTeamContainer').style.display = utid ? 'block' : 'none';
+
+      const sorted = [...teamRows].sort((a,b) => a.team_name.localeCompare(b.team_name));
+      let gi=0, fi=0;
+      const datasets = sorted.map(t => {
+        const isSelf = t.team_id === utid;
+        const color  = lineColor(highlight, isSelf, selfColor, gi, fi);
+        if (!isSelf) gi++; fi++;
+        return { label: t.team_name, data: rankings[t.team_id], fill:false, borderColor:color, backgroundColor:color, borderWidth: isSelf&&highlight?4:2, tension:0, pointStyle:'circle', pointRadius: isSelf&&highlight?5:3, pointHoverRadius:5, order: isSelf?0:1 };
+      });
+
+      if (chartInstances.teamStandings) chartInstances.teamStandings.destroy();
+      chartInstances.teamStandings = new Chart(document.getElementById('standings-team-line-chart').getContext('2d'), {
+        type:'line', data:{ labels:raceLabels, datasets },
+        options:{ responsive:true, maintainAspectRatio:false, layout:{padding:10},
+          plugins:{ title:{display:true,text:`Team Standings ${currentYear}`,color:window.chartTheme.chartTextColor,font:{family:'Helvetica',size:20}}, legend:{position:'bottom',labels:{font:{family:'Helvetica'},color:window.chartTheme.chartTextColor}} },
+          scales:{ y:{reverse:true,min:1,max:teamRows.length,offset:true,ticks:{stepSize:1,padding:10,font:{family:'Helvetica'},color:window.chartTheme.chartTextColor},title:{display:true,text:'Rank',font:{family:'Helvetica'},color:window.chartTheme.chartTextColor},grid:{color:window.chartTheme.chartGridColor}}, x:{ticks:{font:{family:'Helvetica'},color:window.chartTheme.chartTextColor},grid:{color:window.chartTheme.chartGridColor}} }
+        }
+      });
+    } catch(e) { console.error('Team chart error:', e); }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    renderStandingsLineChart();
+    renderTeamStandingsLineChart();
+    document.getElementById('highlightMyLinePlayer')?.addEventListener('change', renderStandingsLineChart);
+    document.getElementById('highlightMyLineTeam')?.addEventListener('change', renderTeamStandingsLineChart);
+  });
+
+  function reRenderCharts() {
+    const dark = localStorage.getItem('darkMode') === 'true';
+    window.chartTheme = { chartTextColor: dark?'#ffffff':'#000000', chartLineColor: dark?'#ffffff':'#000000', chartBackgroundColor: dark?'#222222':'#ffffff', chartGridColor: dark?'#444444':'#cccccc' };
+    renderStandingsLineChart();
+    renderTeamStandingsLineChart();
+  }
+  window.addEventListener('themeChanged', reRenderCharts);
+
 </script>
 </body>
 </html>
