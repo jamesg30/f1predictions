@@ -8,21 +8,23 @@
       (function() {
         const darkMode = localStorage.getItem('darkMode') === 'true';
         const cssFile = darkMode ? '/dark.css' : '/light.css';
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = cssFile;
-        link.id = 'themeStylesheet';
+        const link = document.createElement('link'); link.rel='stylesheet'; link.href=cssFile; link.id='themeStylesheet';
         document.head.appendChild(link);
-        const chartTextColor = darkMode ? '#ffffff' : '#000000';
-        const chartLineColor = darkMode ? '#ffffff' : '#000000';
-        const chartBackgroundColor = darkMode ? '#222222' : '#ffffff';
-        const chartGridColor = darkMode ? '#444444' : '#cccccc';
-        window.chartTheme = { chartTextColor, chartLineColor, chartBackgroundColor, chartGridColor };
+        window.chartTheme = {
+          chartTextColor:       darkMode ? '#ffffff' : '#000000',
+          chartLineColor:       darkMode ? '#ffffff' : '#000000',
+          chartBackgroundColor: darkMode ? '#222222' : '#ffffff',
+          chartGridColor:       darkMode ? '#444444' : '#cccccc',
+        };
       })();
     </script>
     <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
-    <title>F1 Predictions | Results</title>
     <link rel="apple-touch-icon" sizes="180x180" href="/media/f1_predictions_logo.png">
+    <title>F1 Predictions | Results</title>
+    <link rel="stylesheet" href="/shared.css">
+    <style>
+      .year-select-placeholder { color:#6c757d; }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script>
         const supabaseUrl = 'https://mbyhlefxnjjzmiwsvnaa.supabase.co';
@@ -32,42 +34,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module" src="/script.js"></script>
-    <style>
-      .chart-wrapper      { width:100%; max-width:900px; height:400px; margin:0 auto; padding:0 20px; }
-      .chart-wrapper-tall { width:100%; max-width:900px; height:650px; margin:0 auto; padding:0 20px; }
-      @media (max-width:768px) {
-        .chart-wrapper      { height:500px; padding:0 10px; }
-        .chart-wrapper-tall { height:750px; padding:0 10px; }
-      }
-      .podium-container { display:flex; justify-content:center; align-items:flex-end; gap:10px; margin:20px; }
-      .podium-box { display:flex; flex-direction:column; align-items:center; width:150px; }
-      .podium-box .player-names { margin-bottom:5px; text-align:center; font-weight:bold; }
-      .player-info { display:inline-flex; align-items:center; gap:5px; flex-wrap:wrap; }
-      .icons { display:inline-flex; align-items:center; }
-      .player-name { flex:1 1 auto; white-space:normal; word-break:break-word; }
-      .podium-block { display:flex; align-items:center; justify-content:center; width:100%; border:2px solid #999; border-radius:4px 4px 0 0; font-size:24px; font-weight:bold; color:#333; }
-      .podium-box.first  .podium-block { height:90px; background-color:rgba(255,215,0,0.2); }
-      .podium-box.second .podium-block { height:70px; background-color:rgba(192,192,192,0.2); }
-      .podium-box.third  .podium-block { height:60px; background-color:rgba(205,127,50,0.2); }
-      .podium-content { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; }
-      @media (max-width:400px) { .player-name { font-size:1em; } .podium-box { width:90px; } }
-      .your-results-box { margin-top:20px; width:100%; }
-      .your-results-box h3 { margin-top:0; }
-      .your-results-box table { width:100%; table-layout:auto; border-collapse:collapse; }
-      .your-results-box td { border:1px solid #ddd; max-width:10ch; word-wrap:break-word; white-space:normal; padding:1px; text-align:center; vertical-align:middle; }
-      .your-results-box td:first-child { background-color:#eeeeee; min-width:3ch; }
-      .your-results-box td:nth-child(2) { text-align:left; padding-left:8px; padding-top:5px; }
-      /* Team results toggle */
-      #team-results-toggle button { cursor:pointer; }
-      #team-results-toggle .toggle-icon { transition: transform 0.2s; display:inline-block; }
-      #team-results-toggle.open .toggle-icon { transform: rotate(90deg); }
-      #team-results-body { display:none; }
-      /* Past results year selector */
-      .year-select-placeholder { color: #6c757d; }
-    </style>
 </head>
 <body>
-  <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999;"></div>
+  <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x" style="z-index:9999;"></div>
   <header>
     <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
       <div class="container-fluid d-flex flex-wrap flex-lg-nowrap align-items-center">
@@ -76,20 +45,20 @@
         </button>
         <a class="navbar-brand mx-auto mx-lg-0 order-2 order-lg-1" href="/">
           <img src="/media/f1_predictions_logo.png" alt="Logo" width="45" height="45" class="me-2">
-          <span class="fs-5 d-none d-lg-inline heading-text-11" style="margin-right: 8px">F1 Predictions</span>
+          <span class="fs-5 d-none d-lg-inline heading-text-11" style="margin-right:8px">F1 Predictions</span>
         </a>
         <div class="d-flex align-items-center order-3 order-lg-3 ms-lg-auto account-controls">
           <div class="dropdown" id="avatarDropdownContainer">
             <a href="#" id="userDropdown" class="d-flex align-items-center text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
-              <div id="user-avatar" class="user-avatar" style="background-color: #ccc;"></div>
+              <div id="user-avatar" class="user-avatar" style="background-color:#ccc;"></div>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" id="logoutMenuItem">
-              <li id="loggedInUserDisplay" class="dropdown-item-text body-text" style="color: darkgrey;">Logged in as <br><strong></strong></li>
+              <li id="loggedInUserDisplay" class="dropdown-item-text body-text" style="color:darkgrey;">Logged in as <br><strong></strong></li>
               <li><a class="dropdown-item body-text-xs" href="/account">Account</a></li>
               <li>
                 <div class="dropdown-item no-highlight">
-                  <div class="form-check form-switch" style="line-height: 2; vertical-align: middle;">
-                    <input class="form-check-input" type="checkbox" id="darkModeToggle" style="margin-top: 0.5rem">
+                  <div class="form-check form-switch" style="line-height:2; vertical-align:middle;">
+                    <input class="form-check-input" type="checkbox" id="darkModeToggle" style="margin-top:0.5rem">
                     <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
                   </div>
                 </div>
@@ -116,311 +85,300 @@
   </header>
 
   <main class="container my-5">
-    <!-- Tabs Navigation -->
     <ul class="nav nav-underline mb-4" id="tabs" role="tablist">
       <li class="nav-item" role="presentation">
-        <a class="nav-link active" id="race-results-tab" data-bs-toggle="tab" href="#race-results" role="tab" aria-selected="true">Race Results</a>
+        <a class="nav-link active" id="race-results-tab" data-bs-toggle="tab" href="#race-results" role="tab">Race Results</a>
       </li>
       <li class="nav-item" role="presentation">
-        <a class="nav-link" id="season-player-tab" data-bs-toggle="tab" href="#season-player" role="tab" aria-selected="false">Season - Player</a>
+        <a class="nav-link" id="season-player-tab" data-bs-toggle="tab" href="#season-player" role="tab">Season - Player</a>
       </li>
       <li class="nav-item" role="presentation">
-        <a class="nav-link" id="season-team-tab" data-bs-toggle="tab" href="#season-team" role="tab" aria-selected="false">Season - Team</a>
+        <a class="nav-link" id="season-team-tab" data-bs-toggle="tab" href="#season-team" role="tab">Season - Team</a>
       </li>
       <li class="nav-item dropdown" role="presentation">
-        <a class="nav-link dropdown-toggle" id="past-results-tab" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Past Results <span class="badge rounded-pill text-bg-primary" style="vertical-align: middle;">NEW</span></a>
+        <a class="nav-link dropdown-toggle" id="past-results-tab" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Past Results <span class="badge rounded-pill text-bg-primary" style="vertical-align:middle;">NEW</span>
+        </a>
         <ul class="dropdown-menu">
-          <li><a class="dropdown-item" id="past-race-results-link" href="#past-race-results" data-bs-toggle="tab" role="tab">Past Race Results</a></li>
+          <li><a class="dropdown-item" id="past-race-results-link"  href="#past-race-results"  data-bs-toggle="tab" role="tab">Past Race Results</a></li>
           <li><a class="dropdown-item" id="past-season-player-link" href="#past-season-player" data-bs-toggle="tab" role="tab">Past Season Player Results</a></li>
-          <li><a class="dropdown-item" id="past-season-team-link" href="#past-season-team" data-bs-toggle="tab" role="tab">Past Season Team Results</a></li>
+          <li><a class="dropdown-item" id="past-season-team-link"   href="#past-season-team"   data-bs-toggle="tab" role="tab">Past Season Team Results</a></li>
         </ul>
       </li>
     </ul>
 
-    <!-- Tabs Content -->
     <div class="tab-content" id="tab-content">
 
-      <!-- ═══════════════════════════════════════════════════════ -->
-      <!-- RACE RESULTS TAB                                        -->
-      <!-- ═══════════════════════════════════════════════════════ -->
-      <div id="race-results" class="tab-pane fade show active" role="tabpanel" aria-labelledby="race-results-tab">
+      <!-- RACE RESULTS -->
+      <div id="race-results" class="tab-pane fade show active" role="tabpanel">
         <h2 class="mb-3 heading-text-2">Race Results</h2>
         <div class="mb-3">
-          <label for="team-select" class="form-label">Viewing results for:</label>
-          <select id="team-select" class="form-select"></select>
+          <label for="rr-race-select" class="form-label">Viewing results for:</label>
+          <select id="rr-race-select" class="form-select"></select>
         </div>
+        <div id="rr-loading" class="loading-indicator mb-3 heading-text-3" style="display:none;">Results loading...<div class="loading-bar"></div></div>
 
-        <!-- Loading bar -->
-        <div id="playerLoading" class="loading-indicator mb-3 heading-text-3" style="display:none;">
-          Results loading...<div class="loading-bar"></div>
-        </div>
-
-        <!-- Podium -->
-        <div id="topPlayersContainer" class="podium-container" style="display:none;">
+        <div id="rr-podium" class="podium-container" style="display:none;">
           <div class="podium-box second">
             <div class="player-names" id="rr-secondNames"></div>
             <div class="podium-block"><div class="podium-content">
               <div class="rank-number" style="color:rgba(192,192,192,0.9);">2</div>
-              <div class="rank-score" style="color:rgba(192,192,192,0.9); margin-top:-5px" id="rr-secondScore"></div>
+              <div class="rank-score" style="color:rgba(192,192,192,0.9);margin-top:-5px" id="rr-secondScore"></div>
             </div></div>
           </div>
           <div class="podium-box first">
             <div class="player-names" id="rr-firstNames"></div>
             <div class="podium-block"><div class="podium-content">
               <div class="rank-number" style="color:rgba(255,215,0,0.9);">1</div>
-              <div class="rank-score" style="color:rgba(255,215,0,0.9); margin-top:-5px" id="rr-firstScore"></div>
+              <div class="rank-score" style="color:rgba(255,215,0,0.9);margin-top:-5px" id="rr-firstScore"></div>
             </div></div>
           </div>
           <div class="podium-box third">
             <div class="player-names" id="rr-thirdNames"></div>
             <div class="podium-block"><div class="podium-content">
               <div class="rank-number" style="color:rgba(205,127,50,0.9);">3</div>
-              <div class="rank-score" style="color:rgba(205,127,50,0.9); margin-top:-5px" id="rr-thirdScore"></div>
+              <div class="rank-score" style="color:rgba(205,127,50,0.9);margin-top:-5px" id="rr-thirdScore"></div>
             </div></div>
           </div>
         </div>
 
-        <!-- Your Results -->
-        <div id="rr-yourResultsBox" style="display:none;" class="your-results-box">
+        <div id="rr-yourResultsBox" class="your-results-box" style="display:none;">
           <h3 class="heading-text-3" style="font-size:1.2rem !important">Your results</h3>
           <table><tbody id="rr-yourResultsContent"></tbody></table>
           <div style="margin-bottom:5px"></div>
         </div>
 
-        <!-- Player Results -->
-        <h4 class="mb-3 heading-text-3">Player Results</h4>
-        <div class="table-responsive" style="overflow-x:auto; max-width:100%; white-space:nowrap;">
-          <table id="player-results-table" class="table table-sm table-bordered"></table>
+        <h4 class="mb-2 heading-text-3">Player Results</h4>
+        <div class="table-responsive"><table id="rr-player-table" class="table table-sm table-bordered"></table></div>
+        <div class="form-check form-switch mt-2">
+          <input class="form-check-input" type="checkbox" id="rr-toggleScores">
+          <label class="form-check-label" for="rr-toggleScores">Show Detailed Scoring</label>
         </div>
+        <div class="form-check mt-1">
+          <input class="form-check-input" type="checkbox" id="rr-pinQuestion">
+          <label class="form-check-label" for="rr-pinQuestion">Pin Questions and Results</label>
+        </div>
+        <div class="form-check mt-1 mb-2">
+          <input class="form-check-input" type="checkbox" id="rr-pinBoth">
+          <label class="form-check-label" for="rr-pinBoth">Pin Questions, Results and My Responses</label>
+        </div>
+        <div id="rr-lowestScores" class="mb-3"></div>
 
-        <div class="form-check form-switch mt-3" style="margin-top:5px; margin-bottom:5px">
-          <label class="form-check-label" for="toggleScoresPlayer">Show Detailed Scoring</label>
-          <input class="form-check-input" type="checkbox" id="toggleScoresPlayer">
-        </div>
-        <div class="form-check" style="margin-top:5px; margin-bottom:5px">
-          <input class="form-check-input" type="checkbox" id="pinQuestionColumn">
-          <label class="form-check-label" for="pinQuestionColumn">Pin Questions</label>
-        </div>
-        <div class="form-check" style="margin-top:5px; margin-bottom:5px">
-          <input class="form-check-input" type="checkbox" id="pinBothColumns">
-          <label class="form-check-label" for="pinBothColumns">Pin Questions &amp; My Results</label>
-        </div>
-        <div id="lowestScores" class="mt-3" style="margin-bottom:15px"></div>
-
-        <!-- Team Results collapse panel -->
-        <div id="team-results-section" class="mt-4" style="display:none;">
-          <div id="team-results-toggle" class="d-inline-flex align-items-center gap-2">
-            <button class="btn btn-outline-secondary btn-sm px-3">
-              <i class="toggle-icon">▶</i>&nbsp; Team Results
-            </button>
-          </div>
-          <div id="team-results-body">
-            <div id="team-results-loading" class="loading-indicator mt-2 mb-2 heading-text-3" style="display:none;">
-              Loading team results...<div class="loading-bar"></div>
-            </div>
-            <div class="table-responsive mt-2">
-              <table id="home-team-results-table" class="table table-sm table-bordered"></table>
-            </div>
-          </div>
+        <div id="rr-team-section" style="display:none;" class="mt-2">
+          <h4 class="mb-2 heading-text-3">Team Results</h4>
+          <div id="rr-team-loading" class="loading-indicator mb-2 heading-text-3" style="display:none;">Loading team results...<div class="loading-bar"></div></div>
+          <div class="table-responsive"><table id="rr-team-table" class="table table-sm table-bordered"></table></div>
         </div>
       </div>
 
-      <!-- ═══════════════════════════════════════════════════════ -->
-      <!-- SEASON - PLAYER TAB                                     -->
-      <!-- ═══════════════════════════════════════════════════════ -->
-      <div id="season-player" class="tab-pane fade" role="tabpanel" aria-labelledby="season-player-tab">
+      <!-- SEASON PLAYER -->
+      <div id="season-player" class="tab-pane fade" role="tabpanel">
         <h2 class="mb-3 heading-text-2">Season Player Results</h2>
-        <div class="table-responsive" style="overflow-x:auto; max-width:100%; white-space:nowrap;">
-          <table id="full-season-table" class="table table-sm table-bordered"></table>
-        </div>
+        <div id="sp-loading" class="loading-indicator mb-3 heading-text-3" style="display:none;">Loading...<div class="loading-bar"></div></div>
+        <div class="table-responsive"><table id="sp-table" class="table table-sm table-bordered"></table></div>
         <div class="container mt-4">
-          <div class="chart-wrapper-tall"><canvas id="standings-line-chart"></canvas></div>
-          <div id="highlightMyLinePlayerContainer" style="display:none; margin-bottom:8px;">
+          <div class="chart-wrapper-tall"><canvas id="sp-chart"></canvas></div>
+          <div id="sp-highlight-container" style="display:none; margin-top:8px; margin-bottom:8px;">
             <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="highlightMyLinePlayer" checked>
-              <label class="form-check-label" for="highlightMyLinePlayer">Highlight my line</label>
+              <input class="form-check-input" type="checkbox" id="sp-highlight" checked>
+              <label class="form-check-label" for="sp-highlight">Highlight my line</label>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ═══════════════════════════════════════════════════════ -->
-      <!-- SEASON - TEAM TAB                                       -->
-      <!-- ═══════════════════════════════════════════════════════ -->
-      <div id="season-team" class="tab-pane fade" role="tabpanel" aria-labelledby="season-team-tab">
+      <!-- SEASON TEAM -->
+      <div id="season-team" class="tab-pane fade" role="tabpanel">
         <h2 class="mb-3 heading-text-2">Season Team Results</h2>
-        <div class="table-responsive" style="overflow-x:auto; max-width:100%; white-space:nowrap;">
-          <table id="full-season-team-table" class="table table-sm table-bordered"></table>
-        </div>
+        <div id="st-loading" class="loading-indicator mb-3 heading-text-3" style="display:none;">Loading...<div class="loading-bar"></div></div>
+        <div class="table-responsive"><table id="st-table" class="table table-sm table-bordered"></table></div>
         <div class="container mt-4">
-          <div class="chart-wrapper"><canvas id="standings-team-line-chart"></canvas></div>
-          <div id="highlightMyLineTeamContainer" style="display:none; margin-bottom:8px; margin-top:16px;">
+          <div class="chart-wrapper"><canvas id="st-chart"></canvas></div>
+          <div id="st-highlight-container" style="display:none; margin-top:8px; margin-bottom:8px;">
             <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="highlightMyLineTeam" checked>
-              <label class="form-check-label" for="highlightMyLineTeam">Highlight my line</label>
+              <input class="form-check-input" type="checkbox" id="st-highlight" checked>
+              <label class="form-check-label" for="st-highlight">Highlight my line</label>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ═══════════════════════════════════════════════════════ -->
-      <!-- PAST RACE RESULTS TAB                                   -->
-      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- PAST RACE RESULTS -->
       <div id="past-race-results" class="tab-pane fade" role="tabpanel">
         <h2 class="mb-3 heading-text-2">Past Race Results</h2>
         <div class="mb-3">
-          <label for="past-race-year-select" class="form-label">Select Year:</label>
-          <select id="past-race-year-select" class="form-select" style="max-width:200px;">
-            <option value="" disabled selected class="year-select-placeholder">Select year</option>
+          <label for="prr-year-select" class="form-label">Select Year:</label>
+          <select id="prr-year-select" class="form-select" style="max-width:200px;">
+            <option value="" disabled selected>Select year</option>
             <option value="2025">2025</option>
-            <!-- <option value="2024">2024</option> -->
           </select>
         </div>
-        <div id="past-race-year-prompt" class="text-muted mb-3">Please select a year above to load results.</div>
-        <div class="mb-3" id="past-race-select-container" style="display:none;">
-          <label for="past-race-select" class="form-label">Viewing results for:</label>
-          <select id="past-race-select" class="form-select"></select>
+        <div id="prr-year-prompt" class="text-muted mb-3">Please select a year above to load results.</div>
+        <div id="prr-race-select-container" class="mb-3" style="display:none;">
+          <label for="prr-race-select" class="form-label">Viewing results for:</label>
+          <select id="prr-race-select" class="form-select"></select>
         </div>
-        <div id="past-playerLoading" class="loading-indicator mb-3 heading-text-3" style="display:none;">
-          Results loading...<div class="loading-bar"></div>
-        </div>
-        <div id="past-race-content" style="display:none;">
-          <h4 class="mb-3 heading-text-3">Player Results</h4>
-          <div class="table-responsive" style="overflow-x:auto; max-width:100%; white-space:nowrap;">
-            <table id="past-player-results-table" class="table table-sm table-bordered"></table>
-          </div>
-          <div class="form-check form-switch mt-3" style="margin-top:5px; margin-bottom:5px">
-            <label class="form-check-label" for="past-toggleScoresPlayer">Show Detailed Scoring</label>
-            <input class="form-check-input" type="checkbox" id="past-toggleScoresPlayer">
-          </div>
-          <div id="past-lowestScores" class="mt-3" style="margin-bottom:15px"></div>
 
-          <!-- Past Team Results collapse panel -->
-          <div id="past-team-results-section" class="mt-4" style="display:none;">
-            <div id="past-team-results-toggle" class="d-inline-flex align-items-center gap-2">
-              <button class="btn btn-outline-secondary btn-sm px-3">
-                <i class="toggle-icon">▶</i>&nbsp; Team Results
-              </button>
+        <div id="prr-content" style="display:none;">
+          <div id="prr-loading" class="loading-indicator mb-3 heading-text-3" style="display:none;">Results loading...<div class="loading-bar"></div></div>
+
+          <div id="prr-podium" class="podium-container" style="display:none;">
+            <div class="podium-box second">
+              <div class="player-names" id="prr-secondNames"></div>
+              <div class="podium-block"><div class="podium-content">
+                <div class="rank-number" style="color:rgba(192,192,192,0.9);">2</div>
+                <div class="rank-score" style="color:rgba(192,192,192,0.9);margin-top:-5px" id="prr-secondScore"></div>
+              </div></div>
             </div>
-            <div id="past-team-results-body" style="display:none;">
-              <div id="past-team-results-loading" class="loading-indicator mt-2 mb-2 heading-text-3" style="display:none;">
-                Loading team results...<div class="loading-bar"></div>
-              </div>
-              <div class="table-responsive mt-2">
-                <table id="past-home-team-results-table" class="table table-sm table-bordered"></table>
-              </div>
+            <div class="podium-box first">
+              <div class="player-names" id="prr-firstNames"></div>
+              <div class="podium-block"><div class="podium-content">
+                <div class="rank-number" style="color:rgba(255,215,0,0.9);">1</div>
+                <div class="rank-score" style="color:rgba(255,215,0,0.9);margin-top:-5px" id="prr-firstScore"></div>
+              </div></div>
             </div>
+            <div class="podium-box third">
+              <div class="player-names" id="prr-thirdNames"></div>
+              <div class="podium-block"><div class="podium-content">
+                <div class="rank-number" style="color:rgba(205,127,50,0.9);">3</div>
+                <div class="rank-score" style="color:rgba(205,127,50,0.9);margin-top:-5px" id="prr-thirdScore"></div>
+              </div></div>
+            </div>
+          </div>
+
+          <div id="prr-yourResultsBox" class="your-results-box" style="display:none;">
+            <h3 class="heading-text-3" style="font-size:1.2rem !important">Your results</h3>
+            <table><tbody id="prr-yourResultsContent"></tbody></table>
+            <div style="margin-bottom:5px"></div>
+          </div>
+
+          <h4 class="mb-2 heading-text-3">Player Results</h4>
+          <div class="table-responsive"><table id="prr-player-table" class="table table-sm table-bordered"></table></div>
+          <div class="form-check form-switch mt-2">
+            <input class="form-check-input" type="checkbox" id="prr-toggleScores">
+            <label class="form-check-label" for="prr-toggleScores">Show Detailed Scoring</label>
+          </div>
+          <div class="form-check mt-1">
+            <input class="form-check-input" type="checkbox" id="prr-pinQuestion">
+            <label class="form-check-label" for="prr-pinQuestion">Pin Questions and Results</label>
+          </div>
+          <div class="form-check mt-1 mb-2">
+            <input class="form-check-input" type="checkbox" id="prr-pinBoth">
+            <label class="form-check-label" for="prr-pinBoth">Pin Questions, Results and My Responses</label>
+          </div>
+          <div id="prr-lowestScores" class="mb-3 mt-2"></div>
+
+          <div id="prr-team-section" style="display:none;" class="mt-2">
+            <h4 class="mb-2 heading-text-3">Team Results</h4>
+            <div id="prr-team-loading" class="loading-indicator mb-2 heading-text-3" style="display:none;">Loading team results...<div class="loading-bar"></div></div>
+            <div class="table-responsive"><table id="prr-team-table" class="table table-sm table-bordered"></table></div>
           </div>
         </div>
       </div>
 
-      <!-- ═══════════════════════════════════════════════════════ -->
-      <!-- PAST SEASON PLAYER TAB                                  -->
-      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- PAST SEASON PLAYER -->
       <div id="past-season-player" class="tab-pane fade" role="tabpanel">
         <h2 class="mb-3 heading-text-2">Past Season Player Results</h2>
         <div class="mb-3">
-          <label for="past-sp-year-select" class="form-label">Select Year:</label>
-          <select id="past-sp-year-select" class="form-select" style="max-width:200px;">
-            <option value="" disabled selected class="year-select-placeholder">Select year</option>
-            <option value="2024">2025</option>
+          <label for="psp-year-select" class="form-label">Select Year:</label>
+          <select id="psp-year-select" class="form-select" style="max-width:200px;">
+            <option value="" disabled selected>Select year</option>
+            <option value="2025">2025</option>
             <option value="2024">2024</option>
           </select>
         </div>
-        <div id="past-sp-prompt" class="text-muted mb-3">Please select a year above to load results.</div>
-        <div id="past-sp-loading" class="loading-indicator mb-3 heading-text-3" style="display:none;">
-          Loading...<div class="loading-bar"></div>
-        </div>
-        <div id="past-sp-content" style="display:none;">
-          <div class="table-responsive" style="overflow-x:auto; max-width:100%; white-space:nowrap;">
-            <table id="past-full-season-table" class="table table-sm table-bordered"></table>
-          </div>
+        <div id="psp-prompt" class="text-muted mb-3">Please select a year above to load results.</div>
+        <div id="psp-loading" class="loading-indicator mb-3 heading-text-3" style="display:none;">Loading...<div class="loading-bar"></div></div>
+        <div id="psp-content" style="display:none;">
+          <div class="table-responsive"><table id="psp-table" class="table table-sm table-bordered"></table></div>
           <div class="container mt-4">
-            <div class="chart-wrapper-tall"><canvas id="past-standings-line-chart"></canvas></div>
+            <div class="chart-wrapper-tall"><canvas id="psp-chart"></canvas></div>
+            <div id="psp-highlight-container" style="display:none; margin-top:8px; margin-bottom:8px;">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="psp-highlight" checked>
+                <label class="form-check-label" for="psp-highlight">Highlight my line</label>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- ═══════════════════════════════════════════════════════ -->
-      <!-- PAST SEASON TEAM TAB                                    -->
-      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- PAST SEASON TEAM -->
       <div id="past-season-team" class="tab-pane fade" role="tabpanel">
         <h2 class="mb-3 heading-text-2">Past Season Team Results</h2>
         <div class="mb-3">
-          <label for="past-st-year-select" class="form-label">Select Year:</label>
-          <select id="past-st-year-select" class="form-select" style="max-width:200px;">
-            <option value="" disabled selected class="year-select-placeholder">Select year</option>
+          <label for="pst-year-select" class="form-label">Select Year:</label>
+          <select id="pst-year-select" class="form-select" style="max-width:200px;">
+            <option value="" disabled selected>Select year</option>
             <option value="2025">2025</option>
           </select>
         </div>
-        <div id="past-st-prompt" class="text-muted mb-3">Please select a year above to load results.</div>
-        <div id="past-st-loading" class="loading-indicator mb-3 heading-text-3" style="display:none;">
-          Loading...<div class="loading-bar"></div>
-        </div>
-        <div id="past-st-content" style="display:none;">
-          <div class="table-responsive" style="overflow-x:auto; max-width:100%; white-space:nowrap;">
-            <table id="past-full-season-team-table" class="table table-sm table-bordered"></table>
-          </div>
+        <div id="pst-prompt" class="text-muted mb-3">Please select a year above to load results.</div>
+        <div id="pst-loading" class="loading-indicator mb-3 heading-text-3" style="display:none;">Loading...<div class="loading-bar"></div></div>
+        <div id="pst-content" style="display:none;">
+          <div class="table-responsive"><table id="pst-table" class="table table-sm table-bordered"></table></div>
           <div class="container mt-4">
-            <div class="chart-wrapper"><canvas id="past-standings-team-line-chart"></canvas></div>
+            <div class="chart-wrapper"><canvas id="pst-chart"></canvas></div>
+            <div id="pst-highlight-container" style="display:none; margin-top:8px; margin-bottom:8px;">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="pst-highlight" checked>
+                <label class="form-check-label" for="pst-highlight">Highlight my line</label>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
     </div><!-- /tab-content -->
 
-<!-- LOGIN MODAL -->
-<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title heading-text-3" id="loginModalLabel">Log In</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="login-form">
-          <div class="mb-3">
-            <label for="login-player-name" class="form-label">Name:</label>
-            <input list="players-list" id="login-player-name" class="form-control" required />
-            <datalist id="players-list"></datalist>
-          </div>
-          <div class="mb-3">
-            <label for="login-pin" class="form-label">PIN:</label>
-            <input type="password" id="login-pin" class="form-control" maxlength="4" pattern="\d*" inputmode="numeric" required />
-          </div>
-          <div class="mb-3">
-            <label for="rememberMe" class="form-check-label">
-              <input type="checkbox" id="rememberMe" class="form-check-input" /> Keep me logged in for 30 days
-            </label>
-          </div>
-          <div class="d-grid gap-2 col-6 mx-auto">
-            <button type="submit" class="btn btn-primary" disabled>Log In</button>
-          </div>
-          <hr>
-          <div class="mb-3">Create an account on the <a href="/register">Register Page</a>.</div>
-          <div class="mb-3">Forgot password? Visit the <a href="/account">Account Page</a>.</div>
-        </form>
-      </div>
+    <!-- LOGIN MODAL -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+      <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title heading-text-3" id="loginModalLabel">Log In</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="login-form">
+            <div class="mb-3">
+              <label for="login-player-name" class="form-label">Name:</label>
+              <input list="players-list" id="login-player-name" class="form-control" required />
+              <datalist id="players-list"></datalist>
+            </div>
+            <div class="mb-3">
+              <label for="login-pin" class="form-label">PIN:</label>
+              <input type="password" id="login-pin" class="form-control" maxlength="4" pattern="\d*" inputmode="numeric" required />
+            </div>
+            <div class="mb-3">
+              <label for="rememberMe" class="form-check-label">
+                <input type="checkbox" id="rememberMe" class="form-check-input" /> Keep me logged in for 30 days
+              </label>
+            </div>
+            <div class="d-grid gap-2 col-6 mx-auto">
+              <button type="submit" class="btn btn-primary" disabled>Log In</button>
+            </div>
+            <hr>
+            <div class="mb-3">Create an account on the <a href="/register">Register Page</a>.</div>
+            <div class="mb-3">Forgot password? Visit the <a href="/account">Account Page</a>.</div>
+          </form>
+        </div>
+      </div></div>
     </div>
-  </div>
-</div>
 
-<!-- Custom Confirm Modal -->
-<div class="modal fade" id="customConfirmModal" tabindex="-1" aria-labelledby="customConfirmModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="customConfirmModalLabel">Confirm</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body"></div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-dark" id="customConfirmCancel" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" id="customConfirmOk">OK</button>
-      </div>
+    <!-- CONFIRM MODAL -->
+    <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-labelledby="customConfirmModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="customConfirmModalLabel">Confirm</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-dark" id="customConfirmCancel" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="customConfirmOk">OK</button>
+        </div>
+      </div></div>
     </div>
-  </div>
-</div>
 
   </main>
 
@@ -428,871 +386,289 @@
     <p>&copy; 2025 F1 Predictions Form</p>
   </footer>
 
-<script src="/js/bootstrap.bundle.min.js"></script>
-<script type="module">
-  import { getCookie, getColorForLetter, renderAvatar, darkenColor, createSmallAvatarHTML } from '/script.js';
+  <script src="/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import {
+      getCookie, getCurrentYear,
+      populateRaceDropdown,
+      buildRaceResultsPlayerTable, buildTeamResultsTable,
+      buildSeasonPlayerTable, buildSeasonTeamTable,
+      renderSeasonPlayerChart, renderSeasonTeamChart,
+    } from '/script.js';
 
-  // ═══════════════════════════════════════════
-  // SHARED HELPERS
-  // ═══════════════════════════════════════════
+    const chartInstances = {};
 
-  function hexToRgb(hex) {
-    hex = hex.replace(/^#/, '');
-    if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
-    const bigint = parseInt(hex, 16);
-    return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
-  }
-  function getContrastTextColor(bg) {
-    const { r, g, b } = hexToRgb(bg);
-    return (r * 299 + g * 587 + b * 114) / 1000 > 128 ? '#000' : '#fff';
-  }
-  function getUserBackgroundColor(name, avatar_settings) {
-    if (avatar_settings?.backgroundColor) return avatar_settings.backgroundColor;
-    if (!name?.length) return '#52c1fa';
-    return getColorForLetter(name.charAt(0).toUpperCase());
-  }
-  function normalizeAvatarSettings(av) {
-    if (!av) return null;
-    if (typeof av === 'string') { try { return JSON.parse(av); } catch { return null; } }
-    return av;
-  }
-  async function getCurrentUser() {
-    const playerId = getCookie('playerId');
-    if (!playerId) return null;
-    const { data, error } = await supabase.from('players').select('*').eq('id', playerId).single();
-    return error ? null : data;
-  }
-  function applyHeaderColor(name, avatar_settings, selector) {
-    const el = document.querySelector(selector || 'th.your-results-header');
-    if (!el) return;
-    const bg = getUserBackgroundColor(name, normalizeAvatarSettings(avatar_settings));
-    el.style.backgroundColor = bg;
-    el.style.color = getContrastTextColor(bg);
-  }
-  async function getTable(tableName) {
-    const { data, error } = await supabase.from(tableName).select('*');
-    if (error) { console.error(`Error fetching ${tableName}:`, error); throw error; }
-    return data;
-  }
-  async function getCurrentYear() {
-    const { data } = await supabase.from('form_details').select('current_year').eq('id', 1).single();
-    return data?.current_year;
-  }
-
-  // ═══════════════════════════════════════════
-  // RACE RESULTS TAB — race dropdown + load
-  // ═══════════════════════════════════════════
-
-  async function loadRaceOptionsResults() {
-    try {
-      const currentYear = await getCurrentYear();
-      await populateRaceDropdown('team-select', currentYear);
-      document.getElementById('team-select').addEventListener('change', () => {
-        loadRaceResultsPlayer();
-        loadRaceResultsTeam();
-      });
-      loadRaceResultsPlayer();
-      loadRaceResultsTeam();
-    } catch (err) { console.error('loadRaceOptionsResults error:', err); }
-  }
-
-  async function populateRaceDropdown(selectId, year) {
-    const teamScoringTable = `team_scoring_${year}`;
-    const { data, error } = await supabase.from(teamScoringTable).select('race_number, race_name');
-    if (error) { console.error('Error fetching race options:', error.message); return; }
-    const raceMap = {};
-    data.forEach(r => { if (r.race_number != null && r.race_name) raceMap[r.race_number] = r.race_name; });
-    const races = Object.keys(raceMap).map(n => ({ race_number: parseInt(n, 10), race_name: raceMap[n] })).sort((a,b) => a.race_number - b.race_number);
-    const dropdown = document.getElementById(selectId);
-    dropdown.innerHTML = '';
-    races.forEach(race => {
-      const opt = document.createElement('option');
-      opt.value = race.race_number;
-      opt.textContent = `Race ${race.race_number}: ${race.race_name} GP`;
-      dropdown.appendChild(opt);
-    });
-    if (races.length > 0) dropdown.value = races[races.length - 1].race_number;
-  }
-
-  // ═══════════════════════════════════════════
-  // RACE RESULTS — PLAYER
-  // ═══════════════════════════════════════════
-
-  async function loadRaceResultsPlayer(yearOverride, raceSelectId, tableId, podiumPrefix, yourBoxId, yourContentId, lowestId, toggleId, loadingId, teamSectionId) {
-    // Default IDs for the main race results tab
-    raceSelectId  = raceSelectId  || 'team-select';
-    tableId       = tableId       || 'player-results-table';
-    podiumPrefix  = podiumPrefix  || 'rr';
-    yourBoxId     = yourBoxId     || 'rr-yourResultsBox';
-    yourContentId = yourContentId || 'rr-yourResultsContent';
-    lowestId      = lowestId      || 'lowestScores';
-    toggleId      = toggleId      || 'toggleScoresPlayer';
-    loadingId     = loadingId     || 'playerLoading';
-    teamSectionId = teamSectionId || 'team-results-section';
-
-    try {
-      document.getElementById(loadingId).style.display = 'block';
-
-      const { data: drivers }      = await supabase.from('drivers').select('*');
-      const { data: constructors } = await supabase.from('constructors').select('*');
-
-      const currentYear  = yearOverride || (await getCurrentYear());
-      const raceNumber   = document.getElementById(raceSelectId).value;
-
-      const { data: formResponses, error: frErr } = await supabase
-        .from(`form_responses_${currentYear}`).select('*').eq('race_number', raceNumber);
-      if (frErr) { console.error(frErr.message); document.getElementById(loadingId).style.display = 'none'; return; }
-
-      const questions    = formResponses.find(r => r.entry_type === 'questions');
-      const results      = formResponses.find(r => r.entry_type === 'results');
-      let   players      = formResponses.filter(r => r.entry_type === 'player');
-      const lowestScores = formResponses.filter(r => r.entry_type === 'player_lowest_score');
-
-      const currentUserId = getCookie('playerId');
-      let userResultPulled = false;
-      if (currentUserId) {
-        const idx = players.findIndex(p => p.player_id == currentUserId);
-        if (idx !== -1) { userResultPulled = true; const [up] = players.splice(idx, 1); players.unshift(up); }
+    // ── Cache drivers/constructors for the page lifetime ──
+    let _drivers = null, _constructors = null;
+    async function getDriversAndConstructors() {
+      if (!_drivers) {
+        [{ data: _drivers }, { data: _constructors }] = await Promise.all([
+          supabase.from('drivers').select('*'),
+          supabase.from('constructors').select('*'),
+        ]);
       }
+      return { drivers: _drivers, constructors: _constructors };
+    }
 
-      const { data: playersData } = await supabase.from('players').select('id, avatar_settings, name');
-      const pm = {};
-      (playersData || []).forEach(p => { pm[p.id] = p; });
-      players = players.map(p => ({ ...p, ...pm[p.player_id] }));
+    // ══════════════════════════════════════════════════
+    // SHARED RACE RENDERER
+    // ══════════════════════════════════════════════════
+    async function renderRaceTab(cfg) {
+      const { drivers, constructors } = await getDriversAndConstructors();
 
-      const pinBothCb = document.getElementById('pinBothColumns');
-      if (pinBothCb) pinBothCb.disabled = !userResultPulled;
+      document.getElementById(cfg.loadingId).style.display = 'block';
 
-      // Build table
-      const playerTable = document.getElementById(tableId);
-      playerTable.style.display = 'none';
-      playerTable.innerHTML = '';
-
-      const headerRow = document.createElement('tr');
-      headerRow.classList.add('header');
-      const thName = document.createElement('th'); thName.textContent = 'Name'; headerRow.appendChild(thName);
-      players.forEach(player => {
-        const th = document.createElement('th');
-        th.textContent = player.player_name;
-        if (currentUserId && player.player_id == currentUserId) th.classList.add('your-results-header');
-        headerRow.appendChild(th);
-      });
-      const spacerTh = document.createElement('th'); spacerTh.style.borderBottom = 'none'; headerRow.appendChild(spacerTh);
-      const resultsTh = document.createElement('th'); resultsTh.textContent = 'Results'; headerRow.appendChild(resultsTh);
-      const thead = document.createElement('thead'); thead.appendChild(headerRow); playerTable.appendChild(thead);
-
-      const tbody = document.createElement('tbody');
-      function createRow(id, label) {
-        const isTotalCol = ['subtotal_1','subtotal_2','subtotal_3','subtotal_4','grand_total'].includes(id);
-        if (isTotalCol) {
-          const row = document.createElement('tr');
-          const tdL = document.createElement('td'); tdL.textContent = label; row.appendChild(tdL);
-          players.forEach(player => {
-            const td = document.createElement('td');
-            td.textContent = player[id]; td.className = `${id}_score`; td.dataset.playerId = player.player_id;
-            row.appendChild(td);
-          });
-          const sp = document.createElement('td'); row.appendChild(sp);
-          const rt = document.createElement('td'); row.appendChild(rt);
-          tbody.appendChild(row);
-        } else if (results && results[`form_id_${id}`] !== null) {
-          const row = document.createElement('tr');
-          const tdL = document.createElement('td'); tdL.textContent = label; row.appendChild(tdL);
-          players.forEach(player => {
-            const td = document.createElement('td');
-            td.textContent = player[`form_id_${id}`]; td.className = `form_id_${id}_score`; td.dataset.playerId = player.player_id;
-            row.appendChild(td);
-          });
-          const sp = document.createElement('td'); row.appendChild(sp);
-          const rt = document.createElement('td'); rt.textContent = results[`form_id_${id}`]; row.appendChild(rt);
-          tbody.appendChild(row);
-        }
-      }
-      const addSpacer = () => { const r = document.createElement('tr'); const c = document.createElement('td'); c.colSpan = players.length + 3; r.appendChild(c); tbody.appendChild(r); };
-      for (let i = 2; i <= 7; i++) createRow(i, questions[`form_id_${i}`]);
-      createRow('subtotal_2', 'Subtotal'); addSpacer();
-      for (let i = 8; i <= 27; i++) createRow(i, questions[`form_id_${i}`]);
-      createRow('subtotal_3', 'Subtotal'); addSpacer();
-      createRow(28, questions[`form_id_28`]); addSpacer();
-      createRow('grand_total', 'Grand Total');
-      playerTable.appendChild(tbody);
-
-      // Colour formatting
-      const applyFmt = (cell, value) => {
-        if (/^[A-Z]{3}$/.test(value)) {
-          const drv = drivers?.find(d => d.abbreviation === value);
-          if (drv) { const ctor = constructors?.find(c => c.id === drv.constructor_id); if (ctor) { cell.style.backgroundColor = ctor.background_colour; cell.style.color = ctor.text_colour; } }
-        } else if (value === 'Yes') { cell.style.color = 'green'; }
-          else if (value === 'No')  { cell.style.color = 'red'; }
-          else { const ctor = constructors?.find(c => c.name === value); if (ctor) { cell.style.backgroundColor = ctor.background_colour; cell.style.color = ctor.text_colour; } }
-      };
-      playerTable.querySelectorAll('tbody td').forEach(cell => applyFmt(cell, cell.textContent));
-
-      const highlightHighest = (selector, colors) => {
-        const cells = Array.from(document.querySelectorAll(selector)).map(c => ({ cell: c, value: parseFloat(c.textContent) })).filter(i => !isNaN(i.value));
-        cells.sort((a,b) => b.value - a.value);
-        let rank=1, prev=null, cnt=0;
-        cells.forEach(i => { if (prev!==null && i.value!==prev) rank=cnt+1; i.rank=rank; prev=i.value; cnt++; });
-        cells.forEach(i => { if (i.rank <= colors.length) { i.cell.style.backgroundColor = colors[i.rank-1]; i.cell.style.color = 'black'; } });
-      };
-      highlightHighest(`#${tableId} td.subtotal_2_score`, ['lightyellow']);
-      highlightHighest(`#${tableId} td.subtotal_3_score`, ['lightyellow']);
-      highlightHighest(`#${tableId} td.grand_total_score`, ['gold','silver','#cd7f32']);
-      document.querySelectorAll(`#${tableId} td.form_id_28_score`).forEach(cell => {
-        const p = players.find(p => p.player_id == cell.dataset.playerId);
-        if (p?.form_id_28_score === 1) { cell.style.backgroundColor = 'lightyellow'; cell.style.color = 'black'; }
+      await buildRaceResultsPlayerTable({
+        year: cfg.year, raceNumber: cfg.raceNumber,
+        tableEl: document.getElementById(cfg.playerTableId),
+        drivers, constructors,
+        podium: {
+          containerEl:   document.getElementById(cfg.podiumIds.container),
+          firstNamesEl:  document.getElementById(cfg.podiumIds.firstNames),
+          secondNamesEl: document.getElementById(cfg.podiumIds.secondNames),
+          thirdNamesEl:  document.getElementById(cfg.podiumIds.thirdNames),
+          firstScoreEl:  document.getElementById(cfg.podiumIds.firstScore),
+          secondScoreEl: document.getElementById(cfg.podiumIds.secondScore),
+          thirdScoreEl:  document.getElementById(cfg.podiumIds.thirdScore),
+        },
+        yourResults: {
+          boxEl:     document.getElementById(cfg.yourResults.boxId),
+          contentEl: document.getElementById(cfg.yourResults.contentId),
+        },
+        lowestEl:  document.getElementById(cfg.lowestId),
+        toggleEl:  document.getElementById(cfg.toggleId),
+        pinBothEl: cfg.pinBothId ? document.getElementById(cfg.pinBothId) : null,
       });
 
-      // Podium
-      if (document.getElementById(`${podiumPrefix}-firstNames`)) {
-        const grandTotals = players.map(p => ({ id: p.player_id, name: p.player_name, total: parseFloat(p.grand_total), avatar_settings: p.avatar_settings })).sort((a,b) => b.total - a.total);
-        const getMedalIcon = r => r===1?'<img src="/media/awards/medal_first.png" class="medal-icon">':r===2?'<img src="/media/awards/medal_second.png" class="medal-icon">':r===3?'<img src="/media/awards/medal_third.png" class="medal-icon">':'';
-        let topPlayers=[], rank=1, prevScore=null, cnt=0, lastValidRank=1;
-        for (let i = 0; i < grandTotals.length; i++) {
-          const p = grandTotals[i];
-          if (prevScore !== null && p.total !== prevScore) { rank = cnt + 1; if (rank > 3 && lastValidRank !== 3) break; lastValidRank = rank; }
-          if (rank <= 3) topPlayers.push({ ...p, rank }); else break;
-          prevScore = p.total; cnt++;
-        }
-        const podiumGroups = {1:[],2:[],3:[]};
-        topPlayers.forEach(p => { if (podiumGroups[p.rank]) podiumGroups[p.rank].push(p); });
-        const el1 = document.getElementById(`${podiumPrefix}-firstScore`);
-        const el2 = document.getElementById(`${podiumPrefix}-secondScore`);
-        const el3 = document.getElementById(`${podiumPrefix}-thirdScore`);
-        if (el1 && podiumGroups[1][0]) el1.textContent = `${podiumGroups[1][0].total} pts`;
-        if (el2 && podiumGroups[2][0]) el2.textContent = `${podiumGroups[2][0].total} pts`;
-        if (el3 && podiumGroups[3][0]) el3.textContent = `${podiumGroups[3][0].total} pts`;
-        const genPodiumHTML = pl => pl.map(p => `<div class="player-info"><div class="icons">${getMedalIcon(p.rank)}${createSmallAvatarHTML(p)}</div><div class="player-name">${p.name}</div></div>`).join('');
-        document.getElementById(`${podiumPrefix}-firstNames`).innerHTML  = genPodiumHTML(podiumGroups[1]);
-        document.getElementById(`${podiumPrefix}-secondNames`).innerHTML = genPodiumHTML(podiumGroups[2]);
-        document.getElementById(`${podiumPrefix}-thirdNames`).innerHTML  = genPodiumHTML(podiumGroups[3]);
-        document.getElementById('topPlayersContainer').style.display = 'flex';
-      }
+      document.getElementById(cfg.loadingId).style.display = 'none';
 
-      // Your results box
-      if (currentUserId && userResultPulled) {
-        const userPlayer = players.find(p => p.player_id == currentUserId);
-        const userRank   = players.map(p => parseFloat(p.grand_total)).sort((a,b) => b - a).indexOf(parseFloat(userPlayer?.grand_total)) + 1;
-        if (userPlayer) {
-          const box = document.getElementById(yourBoxId);
-          const content = document.getElementById(yourContentId);
-          if (box && content) {
-            box.style.display = 'block';
-            const row = document.createElement('tr');
-            row.innerHTML = `<td><strong>${userRank}</strong></td>
-              <td><div class="player-info"><div class="icons">${createSmallAvatarHTML(userPlayer)}</div><div class="player-name">${userPlayer.name}</div></div></td>
-              <td>${userPlayer.grand_total ?? 0} pts</td>`;
-            content.innerHTML = '';
-            content.appendChild(row);
-          }
-        }
+      // Team results — always visible when data exists
+      const teamSection = document.getElementById(cfg.teamSectionId);
+      const teamLoading = document.getElementById(cfg.teamLoadingId);
+      const teamTable   = document.getElementById(cfg.teamTableId);
+      teamSection.style.display = 'none';
+      teamTable.innerHTML = '';
+      teamLoading.style.display = 'block';
+      const { data: probe } = await supabase
+        .from(`team_scoring_${cfg.year}`).select('race_number').eq('race_number', cfg.raceNumber).limit(1);
+      if (probe?.length) {
+        teamSection.style.display = 'block';
+        await buildTeamResultsTable({ year: cfg.year, raceNumber: cfg.raceNumber, tableEl: teamTable });
       }
+      teamLoading.style.display = 'none';
+    }
 
-      // Toggle detailed scoring
-      const toggleEl = document.getElementById(toggleId);
-      if (toggleEl) {
-        const newToggle = toggleEl.cloneNode(true);
-        toggleEl.parentNode.replaceChild(newToggle, toggleEl);
-        newToggle.addEventListener('change', e => {
-          const show = e.target.checked;
-          document.querySelectorAll(`#${tableId} tbody td`).forEach(cell => {
-            const m = cell.className.match(/form_id_(\d+)_score/);
-            if (m) {
-              const p = players.find(p => p.player_id == cell.dataset.playerId);
-              const score = p ? p[`form_id_${m[1]}_score`] : null;
-              if (score !== null) {
-                const base = cell.dataset.baseText || cell.textContent.split(' (')[0];
-                cell.dataset.baseText = base;
-                cell.textContent = show ? `${base} (${score})` : base;
-              }
-            }
-          });
+    // ══════════════════════════════════════════════════
+    // COLUMN PINNING (shared helper)
+    // ══════════════════════════════════════════════════
+    function applyPinning(tableId, pinQ, pinQM) {
+      document.querySelectorAll(`#${tableId} .pinned`).forEach(c => { c.classList.remove('pinned'); c.style.left=''; });
+      const count = pinQM?.checked ? 3 : pinQ?.checked ? 2 : 0;
+      if (!count) return;
+      const hdr = document.querySelector(`#${tableId} thead tr`);
+      if (!hdr) return;
+      let offset = 0;
+      for (let i = 0; i < count; i++) {
+        document.querySelectorAll(`#${tableId} thead tr, #${tableId} tbody tr`).forEach(row => {
+          const cell = row.children[i];
+          if (cell) { cell.classList.add('pinned'); cell.style.left=`${offset}px`; }
         });
+        offset += hdr.children[i].offsetWidth;
       }
-
-      // Lowest scores
-      const lowestEl = document.getElementById(lowestId);
-      if (lowestEl) {
-        lowestEl.textContent = lowestScores.length > 0 ? `Did not play (receives lowest score): ${lowestScores.map(p => p.player_name).join(', ')}` : '';
-      }
-
-      playerTable.style.display = 'table';
-      document.getElementById(loadingId).style.display = 'none';
-
-      // Apply header colour for logged-in user
-      const user = await getCurrentUser();
-      if (user) applyHeaderColor(user.name, user.avatar_settings, `#${tableId} th.your-results-header`);
-
-    } catch (err) {
-      console.error('loadRaceResultsPlayer error:', err);
-      document.getElementById(loadingId).style.display = 'none';
     }
-  }
 
-  // ═══════════════════════════════════════════
-  // RACE RESULTS — TEAM
-  // ═══════════════════════════════════════════
+    // ══════════════════════════════════════════════════
+    // RACE RESULTS TAB
+    // ══════════════════════════════════════════════════
+    let rrTableReady = false;
 
-  async function loadRaceResultsTeam(yearOverride, raceSelectId, sectionId, tableId) {
-    raceSelectId = raceSelectId || 'team-select';
-    sectionId    = sectionId    || 'team-results-section';
-    tableId      = tableId      || 'home-team-results-table';
-
-    try {
-      const currentYear = yearOverride || (await getCurrentYear());
-      const raceNumber  = document.getElementById(raceSelectId).value;
-      await initTeamResultsPanel(currentYear, raceNumber, sectionId, tableId);
-    } catch (err) { console.error('loadRaceResultsTeam error:', err); }
-  }
-
-  async function initTeamResultsPanel(currentYear, raceNumber, sectionId, tableId) {
-    const section   = document.getElementById(sectionId);
-    const toggleDiv = section.querySelector('[id$="-results-toggle"], #team-results-toggle, #past-team-results-toggle');
-    const body      = section.querySelector('[id$="-results-body"], #team-results-body, #past-team-results-body');
-    if (!section || !toggleDiv || !body) return;
-
-    section.style.display = 'block';
-    let loaded = false;
-    body.style.display = 'none';
-    toggleDiv.classList.remove('open');
-
-    const freshToggle = toggleDiv.cloneNode(true);
-    toggleDiv.parentNode.replaceChild(freshToggle, toggleDiv);
-    freshToggle.addEventListener('click', async () => {
-      const isOpen = body.style.display !== 'none';
-      if (isOpen) { body.style.display = 'none'; freshToggle.classList.remove('open'); }
-      else {
-        body.style.display = 'block'; freshToggle.classList.add('open');
-        if (!loaded) {
-          loaded = true;
-          const loadingEl = body.querySelector('[id$="-results-loading"]');
-          const tableEl   = document.getElementById(tableId);
-          if (loadingEl) loadingEl.style.display = 'block';
-          if (tableEl)   tableEl.innerHTML = '';
-          await buildTeamResultsTable(currentYear, raceNumber, tableEl);
-          if (loadingEl) loadingEl.style.display = 'none';
-        }
-      }
-    });
-  }
-
-  async function buildTeamResultsTable(currentYear, raceNumber, tableEl) {
-    const { data: tsd, error } = await supabase
-      .from(`team_scoring_${currentYear}`).select('*').eq('race_number', raceNumber);
-    if (error || !tsd?.length) { tableEl.innerHTML = '<tr><td class="text-muted p-3">No team scoring data for this race.</td></tr>'; return; }
-
-    tsd.sort((a,b) => b.grand_total - a.grand_total);
-    let currentRank = 1, prevScore = null;
-    const rankMap = {};
-    tsd.forEach((t, i) => { if (prevScore === null || t.grand_total !== prevScore) currentRank = i + 1; rankMap[t.team_id] = currentRank; prevScore = t.grand_total; });
-
-    const sortedTotals = [...new Set(tsd.map(t => t.grand_total))].sort((a,b) => b - a);
-    const podiumBg = { [sortedTotals[0]]:'gold', [sortedTotals[1]]:'silver', [sortedTotals[2]]:'#cd7f32' };
-
-    function cardsPlayedHTML(team) {
-      if (team.casino_details?.trim()) return `<img src="/media/casino/casino.png" style="width:38px;height:auto;">`;
-      let h = ''; const s = 'float:left;width:38px;height:51px;';
-      if (team.card_aero_playedcol)      h += `<img src="/media/cards/card_aero.png" style="${s}">`;
-      if (team.card_double_playedcol)    h += `<img src="/media/cards/card_double.png" style="${s}">`;
-      if (team.card_halo_playedcol)      h += `<img src="/media/cards/card_halo.png" style="${s}">`;
-      if (team.card_safetycar_playedcol) h += `<img src="/media/cards/card_safetycar.png" style="${s}">`;
-      if (team.card_report_playedcol)    h += `<img src="/media/cards/card_report.png" style="${s}">`;
-      if (team.card_swap_playedcol)      h += `<img src="/media/cards/card_swap.png" style="${s}">`;
-      return h || '—';
+    async function loadRaceResultsTab() {
+      rrTableReady = false;
+      const year       = await getCurrentYear();
+      const raceNumber = document.getElementById('rr-race-select').value;
+      await renderRaceTab({
+        year, raceNumber,
+        loadingId: 'rr-loading', playerTableId: 'rr-player-table',
+        podiumIds: {
+          container: 'rr-podium',
+          firstNames: 'rr-firstNames', secondNames: 'rr-secondNames', thirdNames: 'rr-thirdNames',
+          firstScore: 'rr-firstScore', secondScore: 'rr-secondScore', thirdScore: 'rr-thirdScore',
+        },
+        yourResults: { boxId: 'rr-yourResultsBox', contentId: 'rr-yourResultsContent' },
+        lowestId: 'rr-lowestScores', toggleId: 'rr-toggleScores', pinBothId: 'rr-pinBoth',
+        teamSectionId: 'rr-team-section', teamLoadingId: 'rr-team-loading', teamTableId: 'rr-team-table',
+      });
+      rrTableReady = true;
+      applyPinning('rr-player-table', document.getElementById('rr-pinQuestion'), document.getElementById('rr-pinBoth'));
     }
-    function cardsAppliedHTML(team) {
-      if (team.casino_details?.trim()) return `<img src="/media/casino/casino.png" style="display:block;width:80px;height:auto;margin-bottom:4px;"><div style="word-wrap:break-word;white-space:normal;font-size:0.75rem;">${team.casino_details}</div>`;
-      let h = ''; const s = 'float:left;width:38px;height:51px;';
-      const append = (n, name) => { for (let i=0;i<(n||0);i++) h+=`<img src="/media/cards/card_${name}.png" style="${s}">`; };
-      append(team.card_aero_applied,'aero'); append(team.card_double_applied,'double');
-      append(team.card_halo_applied,'halo'); append(team.card_report_applied,'report');
-      append(team.card_safetycar_applied,'safetycar'); append(team.card_swap_applied,'swap');
-      if (team.card_report_details) h += `<div style="clear:both;word-wrap:break-word;white-space:normal;font-size:0.75rem;">${team.card_report_details}</div>`;
-      if (team.card_swap_details)   h += `<div style="clear:both;word-wrap:break-word;white-space:normal;font-size:0.75rem;">${team.card_swap_details}</div>`;
-      return h || '—';
+
+    async function initRaceResultsTab() {
+      const year = await getCurrentYear();
+      await populateRaceDropdown(document.getElementById('rr-race-select'), year);
+      document.getElementById('rr-race-select').addEventListener('change', loadRaceResultsTab);
+      loadRaceResultsTab();
     }
-    const delta = t => (t.card_points_delta >= 0 ? '+' : '') + t.card_points_delta;
 
-    let html = `<thead><tr>
-      <th>Rank</th><th>Team</th>
-      <th>P1</th><th>P1 Pts</th>
-      <th>P2</th><th>P2 Pts</th>
-      <th>Sub-total</th><th>Cards Played</th>
-      <th>Cards Applied / Casino</th>
-      <th>Bonus / Penalty</th><th>Total</th>
-    </tr></thead><tbody>`;
-    tsd.forEach(team => {
-      const rank = rankMap[team.team_id];
-      const bg   = podiumBg[team.grand_total] || '';
-      const totalStyle = bg ? `background-color:${bg};color:black;font-weight:bold;` : 'font-weight:bold;';
-      html += `<tr>
-        <td>${rank}</td>
-        <td><strong>${team.team_name}</strong></td>
-        <td>${team.player_name_1}</td><td>${team.player_points_1}</td>
-        <td>${team.player_name_2}</td><td>${team.player_points_2}</td>
-        <td>${team.subtotal}</td>
-        <td style="white-space:normal;min-width:44px;">${cardsPlayedHTML(team)}</td>
-        <td style="white-space:normal;min-width:80px;">${cardsAppliedHTML(team)}</td>
-        <td>${delta(team)}</td>
-        <td style="${totalStyle}">${team.grand_total}</td>
-      </tr>`;
-    });
-    html += '</tbody>';
-    tableEl.innerHTML = html;
-  }
-
-  // ═══════════════════════════════════════════
-  // SEASON PLAYER RESULTS
-  // ═══════════════════════════════════════════
-
-  async function loadFullSeasonResults(yearOverride, tableId, chartId, highlightToggleContainerId, highlightToggleId) {
-    tableId                  = tableId                  || 'full-season-table';
-    chartId                  = chartId                  || 'standings-line-chart';
-    highlightToggleContainerId = highlightToggleContainerId || 'highlightMyLinePlayerContainer';
-    highlightToggleId        = highlightToggleId        || 'highlightMyLinePlayer';
-
-    try {
-      const currentYear = yearOverride || (await getCurrentYear());
-      const seasonData  = await getTable(`season_player_${currentYear}`);
-      if (!seasonData?.length) { document.getElementById(tableId).innerHTML = '<tr><td colspan="3">No season data available.</td></tr>'; return; }
-
-      const { data: playersData } = await supabase.from('players').select('id, avatar_settings, name');
-      const pm = {}; (playersData || []).forEach(p => { pm[p.id] = p; });
-
-      const raceNamesRow = seasonData.find(r => r.player_id === 0);
-      if (!raceNamesRow) { document.getElementById(tableId).innerHTML = '<tr><td colspan="3">No race names row found.</td></tr>'; return; }
-      let lastRace = 0;
-      for (let i = 1; i <= 32; i++) { if (raceNamesRow[`race_${i}`]) lastRace = i; else break; }
-      if (!lastRace) { document.getElementById(tableId).innerHTML = '<tr><td colspan="3">No race scores available yet.</td></tr>'; return; }
-
-      let headerHTML = '<thead><tr><th>Rank</th><th>Player</th><th>Total</th>';
-      for (let i = 1; i <= lastRace; i++) headerHTML += `<th>${raceNamesRow[`race_${i}`]}</th>`;
-      headerHTML += '</tr></thead>';
-
-      const playerRows = seasonData.filter(r => r.player_id !== 0);
-      const standings  = playerRows.map(row => {
-        let total = 0, prevTotal = 0; const raceScores = [];
-        for (let i = 1; i <= lastRace; i++) {
-          const raw = row[`race_${i}`];
-          if (raw !== null && raw !== '') {
-            const num = parseFloat(raw.replace(/\(LS\)/, '').trim());
-            raceScores.push(raw);
-            if (!isNaN(num)) { total += num; if (i < lastRace) prevTotal += num; }
-          } else { raceScores.push(''); }
-        }
-        const pd = pm[row.player_id] || {};
-        return { player_id: row.player_id, player_name: row.player_name, total, prevTotal, raceScores, avatar_settings: pd.avatar_settings || null };
-      }).sort((a,b) => b.total - a.total);
-
-      let rank = 1, prevScore = null;
-      const rankMap = {}, prevRankMap = {};
-      standings.forEach((p, i) => { if (prevScore === null || p.total !== prevScore) rank = i + 1; rankMap[p.player_id] = rank; prevScore = p.total; });
-      if (lastRace > 1) {
-        const ps = [...standings].sort((a,b) => b.prevTotal - a.prevTotal);
-        let r=1, pp=null;
-        ps.forEach((p,i) => { if (pp===null||p.prevTotal!==pp) r=i+1; prevRankMap[p.player_id]=r; pp=p.prevTotal; });
-      }
-
-      let bodyHTML = '<tbody>';
-      standings.forEach(player => {
-        const cr = rankMap[player.player_id];
-        const diff = lastRace > 1 && prevRankMap[player.player_id] !== undefined ? prevRankMap[player.player_id] - cr : null;
-        const movement = diff===null?'':diff>0?`(+${diff})`:diff<0?`(${diff})`:'(=)';
-        bodyHTML += `<tr><td>${cr} ${movement}</td>
-          <td><div class="player-cell">${createSmallAvatarHTML({ name: player.player_name, avatar_settings: player.avatar_settings })}<span class="player-name">${player.player_name}</span></div></td>
-          <td>${player.total}</td>`;
-        player.raceScores.forEach(score => { bodyHTML += `<td>${score}</td>`; });
-        bodyHTML += '</tr>';
-      });
-      bodyHTML += '</tbody>';
-
-      const tableEl = document.getElementById(tableId);
-      tableEl.innerHTML = headerHTML + bodyHTML;
-      tableEl.querySelectorAll('thead th').forEach(c => { c.style.textAlign = 'center'; });
-      tableEl.querySelectorAll('tbody tr').forEach(row => {
-        const cells = row.querySelectorAll('td');
-        for (let j = 3; j < cells.length; j++) {
-          if (cells[j].textContent.includes('(LS)')) { cells[j].textContent = cells[j].textContent.replace(/\(LS\)/, '').trim(); cells[j].style.color = 'grey'; }
-        }
-      });
-      const numCols = tableEl.querySelector('thead tr').children.length;
-      for (let col = 3; col < numCols; col++) {
-        const colCells = Array.from(tableEl.querySelectorAll(`tbody tr td:nth-child(${col + 1})`));
-        const values   = colCells.map(c => parseFloat(c.textContent.trim())).filter(v => !isNaN(v));
-        const sorted   = [...new Set(values)].sort((a,b) => b - a);
-        const colors   = ['gold','silver','#cd7f32'];
-        colCells.forEach(cell => { const v = parseFloat(cell.textContent.trim()); if (!isNaN(v)) { const r = sorted.indexOf(v); if (r >= 0 && r < 3) { cell.style.backgroundColor = colors[r]; if (cell.style.color !== 'grey') cell.style.color = 'black'; } } });
-      }
-
-      await renderSeasonPlayerChart(currentYear, chartId, highlightToggleContainerId, highlightToggleId);
-    } catch (err) {
-      console.error('loadFullSeasonResults error:', err);
-      document.getElementById(tableId).innerHTML = `<tr><td colspan="100%">Error: ${err.message}</td></tr>`;
-    }
-  }
-
-  // ═══════════════════════════════════════════
-  // SEASON TEAM RESULTS
-  // ═══════════════════════════════════════════
-
-  async function loadFullSeasonTeamResults(yearOverride, tableId, chartId, highlightToggleContainerId, highlightToggleId) {
-    tableId                    = tableId                    || 'full-season-team-table';
-    chartId                    = chartId                    || 'standings-team-line-chart';
-    highlightToggleContainerId = highlightToggleContainerId || 'highlightMyLineTeamContainer';
-    highlightToggleId          = highlightToggleId          || 'highlightMyLineTeam';
-
-    try {
-      const currentYear    = yearOverride || (await getCurrentYear());
-      const seasonTeamData = await getTable(`season_team_${currentYear}`);
-      if (!seasonTeamData?.length) { document.getElementById(tableId).innerHTML = '<tr><td colspan="3">No season team data available.</td></tr>'; return; }
-
-      const raceNamesRow = seasonTeamData.find(r => r.team_id === 0);
-      if (!raceNamesRow) { document.getElementById(tableId).innerHTML = '<tr><td colspan="3">No race names row found.</td></tr>'; return; }
-      let lastRace = 0;
-      for (let i = 1; i <= 32; i++) { if (raceNamesRow[`race_${i}`]) lastRace = i; else break; }
-      if (!lastRace) { document.getElementById(tableId).innerHTML = '<tr><td colspan="3">No race scores available yet.</td></tr>'; return; }
-
-      let headerHTML = '<thead><tr><th>Rank</th><th>Team</th><th>Total</th>';
-      for (let i = 1; i <= lastRace; i++) headerHTML += `<th>${raceNamesRow[`race_${i}`]}</th>`;
-      headerHTML += '</tr></thead>';
-
-      const teamRows = seasonTeamData.filter(r => r.team_id !== 0);
-      const standings = teamRows.map(row => {
-        let total = 0, prevTotal = 0; const raceScores = [];
-        for (let i = 1; i <= lastRace; i++) {
-          const raw = row[`race_${i}`];
-          if (raw !== null && raw !== '') {
-            const num = parseFloat(raw.replace(/\(.*?\)/g, '').trim());
-            raceScores.push(raw);
-            if (!isNaN(num)) { total += num; if (i < lastRace) prevTotal += num; }
-          } else { raceScores.push(''); }
-        }
-        return { team_id: row.team_id, team_name: row.team_name, total, prevTotal, raceScores };
-      }).sort((a,b) => b.total - a.total);
-
-      let rank = 1, prevScore = null;
-      const rankMap = {}, prevRankMap = {};
-      standings.forEach((t,i) => { if (prevScore===null||t.total!==prevScore) rank=i+1; rankMap[t.team_id]=rank; prevScore=t.total; });
-      if (lastRace > 1) {
-        const ps = [...standings].sort((a,b)=>b.prevTotal-a.prevTotal);
-        let r=1,pp=null; ps.forEach((t,i)=>{ if(pp===null||t.prevTotal!==pp) r=i+1; prevRankMap[t.team_id]=r; pp=t.prevTotal; });
-      }
-
-      const { data: players } = await supabase.from('players').select('id, name, participant_team_id');
-
-      function processTeamRaceScore(raw) {
-        if (!raw) return '';
-        const numStr = raw.replace(/\(.*?\)/g, '').trim();
-        let output = '';
-        const cardTags = []; const regex = /\(([^)]+)\)/g; let match;
-        while ((match = regex.exec(raw)) !== null) { const tag = match[1].toLowerCase(); if (['aero','double','safetycar','halo','report','swap','casino'].includes(tag)) cardTags.push(tag); }
-        if (cardTags.includes('casino')) {
-          output += `<div style="max-width:100px;display:inline-block;vertical-align:middle;word-wrap:break-word;"><img src="/media/casino/casino.png" style="width:100px;height:auto;display:block;margin-bottom:5px;"></div>`;
-        } else {
-          cardTags.forEach(tag => { if (tag !== 'casino') output += `<img src="/media/cards/card_${tag}.png" style="float:left;width:45px;height:61px;">`; });
-        }
-        output += `<div style="display:block;max-width:100px;word-wrap:break-word;">${numStr}</div>`;
-        return output;
-      }
-
-      let bodyHTML = '<tbody>';
-      standings.forEach(team => {
-        const cr = rankMap[team.team_id];
-        const diff = prevRankMap[team.team_id] !== undefined ? prevRankMap[team.team_id] - cr : null;
-        const movement = diff===null?'':diff>0?`(+${diff})`:diff<0?`(${diff})`:'(=)';
-        const tp = (players||[]).filter(p=>p.participant_team_id===team.team_id).map(p=>p.name).join(', ');
-        bodyHTML += `<tr><td>${cr} ${movement}</td><td><b>${team.team_name}</b>${tp?'<br>'+tp:''}</td><td>${team.total}</td>`;
-        team.raceScores.forEach(score => { bodyHTML += `<td>${processTeamRaceScore(score)}</td>`; });
-        bodyHTML += '</tr>';
-      });
-      bodyHTML += '</tbody>';
-
-      const tableEl = document.getElementById(tableId);
-      tableEl.innerHTML = headerHTML + bodyHTML;
-      tableEl.querySelectorAll('thead th').forEach(c => { c.style.textAlign = 'center'; });
-      tableEl.querySelectorAll('tbody tr').forEach(row => {
-        const cells = row.querySelectorAll('td');
-        for (let j = 3; j < cells.length; j++) {
-          if (cells[j].textContent.includes('(LS)')) { cells[j].textContent = cells[j].textContent.replace(/\(LS\)/,'').trim(); cells[j].style.color = 'grey'; }
-        }
-      });
-      const numCols = tableEl.querySelector('thead tr').children.length;
-      for (let col = 3; col < numCols; col++) {
-        const colCells = Array.from(tableEl.querySelectorAll(`tbody tr td:nth-child(${col+1})`));
-        const values   = colCells.map(c => parseFloat(c.textContent.trim())).filter(v => !isNaN(v));
-        const sorted   = [...new Set(values)].sort((a,b) => b - a);
-        const colors   = ['gold','silver','#cd7f32'];
-        colCells.forEach(cell => { const v = parseFloat(cell.textContent.trim()); if (!isNaN(v)) { const r = sorted.indexOf(v); if (r >= 0 && r < 3) { cell.style.backgroundColor = colors[r]; if (cell.style.color !== 'grey') cell.style.color = 'black'; } } });
-      }
-
-      await renderSeasonTeamChart(currentYear, chartId, highlightToggleContainerId, highlightToggleId);
-    } catch (err) {
-      console.error('loadFullSeasonTeamResults error:', err);
-      document.getElementById(tableId).innerHTML = `<tr><td colspan="100%">Error: ${err.message}</td></tr>`;
-    }
-  }
-
-  // ═══════════════════════════════════════════
-  // CHARTS
-  // ═══════════════════════════════════════════
-
-  const chartInstances = {};
-  const FULL_COLORS = ['#e6194b','#3cb44b','#ffe119','#4363d8','#f58231','#911eb4','#46f0f0','#f032e6','#bcf60c','#fabebe','#008080','#e6beff','#9a6324','#fffac8','#800000','#aaffc3','#808000','#ffd8b1','#000075','#808080'];
-  const GREY_SHADES = ['#bbbbbb','#aaaaaa','#999999','#888888','#777777','#666666','#b0b0b0','#c0c0c0','#a0a0a0','#909090','#d0d0d0','#707070','#808080','#606060','#505050','#404040','#c8c8c8','#d8d8d8','#787878','#686868'];
-
-  function lineColor(highlightMode, isSelf, selfColor, gi, fi) {
-    return !highlightMode ? FULL_COLORS[fi % FULL_COLORS.length] : isSelf ? selfColor : GREY_SHADES[gi % GREY_SHADES.length];
-  }
-
-  async function renderSeasonPlayerChart(currentYear, chartId, toggleContainerId, toggleId) {
-    chartId            = chartId            || 'standings-line-chart';
-    toggleContainerId  = toggleContainerId  || 'highlightMyLinePlayerContainer';
-    toggleId           = toggleId           || 'highlightMyLinePlayer';
-    try {
-      const seasonData = await getTable(`season_player_${currentYear}`);
-      if (!seasonData?.length) return;
-      const rnRow = seasonData.find(r => r.player_id === 0);
-      let lastRace = 0; const raceLabels = [];
-      for (let i = 1; i <= 32; i++) { const v = rnRow?.[`race_${i}`]; if (v) { raceLabels.push(v.replace(/\(LS\)/g,'').trim()); lastRace=i; } else break; }
-      if (!lastRace) return;
-      const playerRows = seasonData.filter(r => r.player_id !== 0);
-      const cumScores  = {};
-      playerRows.forEach(p => {
-        let sum=0; const cum=[];
-        for (let i=1;i<=lastRace;i++) { const s=parseFloat((p[`race_${i}`]||'').replace(/\(LS\)/g,'').trim()); if (!isNaN(s)) sum+=s; cum.push(sum); }
-        cumScores[p.player_id] = { player_name: p.player_name, cumulative: cum };
-      });
-      const rankings = {}; playerRows.forEach(p => { rankings[p.player_id]=[]; });
-      for (let ri=0;ri<lastRace;ri++) {
-        const sorted = playerRows.map(p=>({player_id:p.player_id,score:cumScores[p.player_id].cumulative[ri]})).sort((a,b)=>b.score-a.score);
-        let r=1,prev=null; sorted.forEach((item,i)=>{ if(prev===null||item.score!==prev) r=i+1; rankings[item.player_id].push(r); prev=item.score; });
-      }
-      const user      = await getCurrentUser();
-      const uid       = user?.id ?? null;
-      const selfColor = uid ? getUserBackgroundColor(user.name, normalizeAvatarSettings(user.avatar_settings)) : null;
-      const toggleEl  = document.getElementById(toggleId);
-      const highlight = uid && toggleEl?.checked;
-      const contEl    = document.getElementById(toggleContainerId);
-      if (contEl) contEl.style.display = uid ? 'block' : 'none';
-      const sorted = [...playerRows].sort((a,b)=>a.player_name.localeCompare(b.player_name));
-      let gi=0,fi=0;
-      const datasets = sorted.map(p => {
-        const isSelf = p.player_id === uid;
-        const color  = lineColor(highlight, isSelf, selfColor, gi, fi);
-        if (!isSelf) gi++; fi++;
-        return { label:p.player_name, data:rankings[p.player_id], fill:false, borderColor:color, backgroundColor:color, borderWidth:isSelf&&highlight?4:2, tension:0, pointStyle:'circle', pointRadius:isSelf&&highlight?5:3, pointHoverRadius:5, order:isSelf?0:1 };
-      });
-      if (chartInstances[chartId]) chartInstances[chartId].destroy();
-      const ctx = document.getElementById(chartId)?.getContext('2d');
-      if (!ctx) return;
-      chartInstances[chartId] = new Chart(ctx, {
-        type:'line', data:{ labels:raceLabels, datasets },
-        options:{ responsive:true, maintainAspectRatio:false, layout:{padding:10},
-          plugins:{ title:{display:true,text:`Player Standings ${currentYear}`,color:window.chartTheme.chartTextColor,font:{family:'Helvetica',size:20}}, legend:{position:'bottom',labels:{font:{family:'Helvetica'},color:window.chartTheme.chartTextColor}} },
-          scales:{ y:{reverse:true,min:1,max:playerRows.length,offset:true,ticks:{stepSize:1,padding:10,font:{family:'Helvetica'},color:window.chartTheme.chartTextColor},title:{display:true,text:'Rank',font:{family:'Helvetica'},color:window.chartTheme.chartTextColor},grid:{color:window.chartTheme.chartGridColor}}, x:{ticks:{font:{family:'Helvetica'},color:window.chartTheme.chartTextColor},grid:{color:window.chartTheme.chartGridColor}} }
-        }
-      });
-    } catch(e) { console.error('Player chart error:', e); }
-  }
-
-  async function renderSeasonTeamChart(currentYear, chartId, toggleContainerId, toggleId) {
-    chartId           = chartId           || 'standings-team-line-chart';
-    toggleContainerId = toggleContainerId || 'highlightMyLineTeamContainer';
-    toggleId          = toggleId          || 'highlightMyLineTeam';
-    try {
-      const seasonTeamData = await getTable(`season_team_${currentYear}`);
-      if (!seasonTeamData?.length) return;
-      const rnRow = seasonTeamData.find(r => r.team_id === 0);
-      let lastRace=0; const raceLabels=[];
-      for (let i=1;i<=32;i++) { const v=rnRow?.[`race_${i}`]; if(v) { raceLabels.push(v.replace(/\(.*?\)/g,'').trim()); lastRace=i; } else break; }
-      if (!lastRace) return;
-      const teamRows = seasonTeamData.filter(r => r.team_id !== 0);
-      const cumScores = {};
-      teamRows.forEach(t => {
-        let sum=0; const cum=[];
-        for (let i=1;i<=lastRace;i++) { const s=parseFloat((t[`race_${i}`]||'').replace(/\(.*?\)/g,'').trim()); if (!isNaN(s)) sum+=s; cum.push(sum); }
-        cumScores[t.team_id] = { team_name:t.team_name, cumulative:cum };
-      });
-      const rankings={}; teamRows.forEach(t=>{ rankings[t.team_id]=[]; });
-      for (let ri=0;ri<lastRace;ri++) {
-        const sorted=teamRows.map(t=>({team_id:t.team_id,score:cumScores[t.team_id].cumulative[ri]})).sort((a,b)=>b.score-a.score);
-        let r=1,prev=null; sorted.forEach((item,i)=>{ if(prev===null||item.score!==prev) r=i+1; rankings[item.team_id].push(r); prev=item.score; });
-      }
-      const user      = await getCurrentUser();
-      const utid      = user?.participant_team_id ?? null;
-      const selfColor = utid ? getUserBackgroundColor(user.name, normalizeAvatarSettings(user.avatar_settings)) : null;
-      const toggleEl  = document.getElementById(toggleId);
-      const highlight = utid && toggleEl?.checked;
-      const contEl    = document.getElementById(toggleContainerId);
-      if (contEl) contEl.style.display = utid ? 'block' : 'none';
-      const sorted = [...teamRows].sort((a,b)=>a.team_name.localeCompare(b.team_name));
-      let gi=0,fi=0;
-      const datasets = sorted.map(t => {
-        const isSelf = t.team_id === utid;
-        const color  = lineColor(highlight, isSelf, selfColor, gi, fi);
-        if (!isSelf) gi++; fi++;
-        return { label:t.team_name, data:rankings[t.team_id], fill:false, borderColor:color, backgroundColor:color, borderWidth:isSelf&&highlight?4:2, tension:0, pointStyle:'circle', pointRadius:isSelf&&highlight?5:3, pointHoverRadius:5, order:isSelf?0:1 };
-      });
-      if (chartInstances[chartId]) chartInstances[chartId].destroy();
-      const ctx = document.getElementById(chartId)?.getContext('2d');
-      if (!ctx) return;
-      chartInstances[chartId] = new Chart(ctx, {
-        type:'line', data:{ labels:raceLabels, datasets },
-        options:{ responsive:true, maintainAspectRatio:false, layout:{padding:10},
-          plugins:{ title:{display:true,text:`Team Standings ${currentYear}`,color:window.chartTheme.chartTextColor,font:{family:'Helvetica',size:20}}, legend:{position:'bottom',labels:{font:{family:'Helvetica'},color:window.chartTheme.chartTextColor}} },
-          scales:{ y:{reverse:true,min:1,max:teamRows.length,offset:true,ticks:{stepSize:1,padding:10,font:{family:'Helvetica'},color:window.chartTheme.chartTextColor},title:{display:true,text:'Rank',font:{family:'Helvetica'},color:window.chartTheme.chartTextColor},grid:{color:window.chartTheme.chartGridColor}}, x:{ticks:{font:{family:'Helvetica'},color:window.chartTheme.chartTextColor},grid:{color:window.chartTheme.chartGridColor}} }
-        }
-      });
-    } catch(e) { console.error('Team chart error:', e); }
-  }
-
-  // ═══════════════════════════════════════════
-  // PINNING COLUMNS (Race Results tab only)
-  // ═══════════════════════════════════════════
-
-  let tableReady = false;
-
-  function updatePinnedColumns() {
-    if (!tableReady) return;
-    document.querySelectorAll('#player-results-table .pinned').forEach(c => { c.classList.remove('pinned'); c.style.left = ''; });
-    const pinQ   = document.getElementById('pinQuestionColumn');
-    const pinQM  = document.getElementById('pinBothColumns');
-    const pinCount = pinQM?.checked ? 2 : pinQ?.checked ? 1 : 0;
-    if (!pinCount) return;
-    const headerRow = document.querySelector('#player-results-table thead tr');
-    if (!headerRow) return;
-    let offsetLeft = 0;
-    for (let i = 0; i < pinCount; i++) {
-      document.querySelectorAll('#player-results-table thead tr, #player-results-table tbody tr').forEach(row => {
-        const cell = row.children[i];
-        if (cell) { cell.classList.add('pinned'); cell.style.left = `${offsetLeft}px`; }
-      });
-      offsetLeft += headerRow.children[i].offsetWidth;
-    }
-  }
-  function markTableAsReady() { tableReady = true; updatePinnedColumns(); }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const pinQ  = document.getElementById('pinQuestionColumn');
-    const pinQM = document.getElementById('pinBothColumns');
-    if (pinQ)  { pinQ.checked = true;  pinQ.addEventListener('change',  () => { pinQM.checked = false; updatePinnedColumns(); }); }
-    if (pinQM) { pinQM.addEventListener('change', () => { pinQ.checked = false; updatePinnedColumns(); }); }
-  });
-
-  // ═══════════════════════════════════════════
-  // PAST RESULTS — year selectors
-  // ═══════════════════════════════════════════
-
-  // Past Race Results
-  document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('past-race-year-select').addEventListener('change', async function() {
-      const year = this.value;
-      if (!year) return;
-      document.getElementById('past-race-year-prompt').style.display = 'none';
-      const container = document.getElementById('past-race-select-container');
-      container.style.display = 'block';
-      document.getElementById('past-race-content').style.display = 'none';
-      document.getElementById('past-team-results-section').style.display = 'none';
-
-      // Populate race dropdown for chosen year
-      await populateRaceDropdown('past-race-select', year);
-      const pastRaceSelect = document.getElementById('past-race-select');
-      const newSelect = pastRaceSelect.cloneNode(true);
-      pastRaceSelect.parentNode.replaceChild(newSelect, pastRaceSelect);
-      newSelect.addEventListener('change', () => loadPastRaceResults(year));
-
-      document.getElementById('past-race-content').style.display = 'block';
-      loadPastRaceResults(year);
-    });
+    // ══════════════════════════════════════════════════
+    // PAST RACE RESULTS TAB
+    // ══════════════════════════════════════════════════
+    let prrTableReady = false;
 
     async function loadPastRaceResults(year) {
-      await loadRaceResultsPlayer(
-        year,
-        'past-race-select',
-        'past-player-results-table',
-        null,           // no podium for past results
-        null, null,
-        'past-lowestScores',
-        'past-toggleScoresPlayer',
-        'past-playerLoading',
-        'past-team-results-section'
-      );
-      await loadRaceResultsTeam(year, 'past-race-select', 'past-team-results-section', 'past-home-team-results-table');
+      prrTableReady = false;
+      const raceNumber = document.getElementById('prr-race-select').value;
+      await renderRaceTab({
+        year, raceNumber,
+        loadingId: 'prr-loading', playerTableId: 'prr-player-table',
+        podiumIds: {
+          container: 'prr-podium',
+          firstNames: 'prr-firstNames', secondNames: 'prr-secondNames', thirdNames: 'prr-thirdNames',
+          firstScore: 'prr-firstScore', secondScore: 'prr-secondScore', thirdScore: 'prr-thirdScore',
+        },
+        yourResults: { boxId: 'prr-yourResultsBox', contentId: 'prr-yourResultsContent' },
+        lowestId: 'prr-lowestScores', toggleId: 'prr-toggleScores', pinBothId: 'prr-pinBoth',
+        teamSectionId: 'prr-team-section', teamLoadingId: 'prr-team-loading', teamTableId: 'prr-team-table',
+      });
+      prrTableReady = true;
+      applyPinning('prr-player-table', document.getElementById('prr-pinQuestion'), document.getElementById('prr-pinBoth'));
     }
-  });
 
-  // Past Season Player Results
-  document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('past-sp-year-select').addEventListener('change', async function() {
-      const year = this.value;
-      if (!year) return;
-      document.getElementById('past-sp-prompt').style.display = 'none';
-      document.getElementById('past-sp-loading').style.display = 'block';
-      document.getElementById('past-sp-content').style.display = 'none';
-      await loadFullSeasonResults(year, 'past-full-season-table', 'past-standings-line-chart', null, null);
-      document.getElementById('past-sp-loading').style.display = 'none';
-      document.getElementById('past-sp-content').style.display = 'block';
-    });
-  });
+    // ══════════════════════════════════════════════════
+    // SEASON PLAYER TAB
+    // ══════════════════════════════════════════════════
+    async function loadSeasonPlayer(year) {
+      if (!year) year = await getCurrentYear();
+      document.getElementById('sp-loading').style.display = 'block';
+      await buildSeasonPlayerTable({ year, tableEl: document.getElementById('sp-table'), detailed: true });
+      await renderSeasonPlayerChart({
+        year, canvasEl: document.getElementById('sp-chart'),
+        toggleEl: document.getElementById('sp-highlight'),
+        toggleContainerEl: document.getElementById('sp-highlight-container'),
+        chartInstances,
+      });
+      document.getElementById('sp-loading').style.display = 'none';
+    }
 
-  // Past Season Team Results
-  document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('past-st-year-select').addEventListener('change', async function() {
-      const year = this.value;
-      if (!year) return;
-      document.getElementById('past-st-prompt').style.display = 'none';
-      document.getElementById('past-st-loading').style.display = 'block';
-      document.getElementById('past-st-content').style.display = 'none';
-      await loadFullSeasonTeamResults(year, 'past-full-season-team-table', 'past-standings-team-line-chart', null, null);
-      document.getElementById('past-st-loading').style.display = 'none';
-      document.getElementById('past-st-content').style.display = 'block';
-    });
-  });
+    // ══════════════════════════════════════════════════
+    // SEASON TEAM TAB
+    // ══════════════════════════════════════════════════
+    async function loadSeasonTeam(year) {
+      if (!year) year = await getCurrentYear();
+      document.getElementById('st-loading').style.display = 'block';
+      await buildSeasonTeamTable({ year, tableEl: document.getElementById('st-table'), detailed: true });
+      await renderSeasonTeamChart({
+        year, canvasEl: document.getElementById('st-chart'),
+        toggleEl: document.getElementById('st-highlight'),
+        toggleContainerEl: document.getElementById('st-highlight-container'),
+        chartInstances,
+      });
+      document.getElementById('st-loading').style.display = 'none';
+    }
 
-  // ═══════════════════════════════════════════
-  // BOOTSTRAP TAB — activate "Past Results" parent
-  // when a child tab is clicked
-  // ═══════════════════════════════════════════
-  document.addEventListener('DOMContentLoaded', () => {
-    ['past-race-results-link','past-season-player-link','past-season-team-link'].forEach(id => {
-      document.getElementById(id)?.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('show','active'));
-        document.querySelectorAll('.nav-link, .dropdown-item').forEach(l => l.classList.remove('active'));
-        target?.classList.add('show','active');
-        this.classList.add('active');
-        document.getElementById('past-results-tab').classList.add('active');
+    // ══════════════════════════════════════════════════
+    // INITIALISATION
+    // ══════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', () => {
+
+      // ── Race Results tab ──
+      initRaceResultsTab();
+      const rrPinQ  = document.getElementById('rr-pinQuestion');
+      const rrPinQM = document.getElementById('rr-pinBoth');
+      if (rrPinQ)  { rrPinQ.checked = true; rrPinQ.addEventListener('change',  () => { rrPinQM.checked=false; if (rrTableReady) applyPinning('rr-player-table', rrPinQ, rrPinQM); }); }
+      if (rrPinQM) { rrPinQM.addEventListener('change', () => { rrPinQ.checked=false; if (rrTableReady) applyPinning('rr-player-table', rrPinQ, rrPinQM); }); }
+
+      // ── Past Race Results tab ──
+      document.getElementById('prr-year-select').addEventListener('change', async function() {
+        const year = this.value; if (!year) return;
+        document.getElementById('prr-year-prompt').style.display = 'none';
+        document.getElementById('prr-race-select-container').style.display = 'block';
+        document.getElementById('prr-content').style.display = 'none';
+
+        await populateRaceDropdown(document.getElementById('prr-race-select'), year);
+        const sel = document.getElementById('prr-race-select');
+        const fresh = sel.cloneNode(true);
+        sel.parentNode.replaceChild(fresh, sel);
+        fresh.addEventListener('change', () => loadPastRaceResults(year));
+
+        document.getElementById('prr-content').style.display = 'block';
+        loadPastRaceResults(year);
+      });
+
+      const prrPinQ  = document.getElementById('prr-pinQuestion');
+      const prrPinQM = document.getElementById('prr-pinBoth');
+      if (prrPinQ)  { prrPinQ.checked = true; prrPinQ.addEventListener('change',  () => { prrPinQM.checked=false; if (prrTableReady) applyPinning('prr-player-table', prrPinQ, prrPinQM); }); }
+      if (prrPinQM) { prrPinQM.addEventListener('change', () => { prrPinQ.checked=false; if (prrTableReady) applyPinning('prr-player-table', prrPinQ, prrPinQM); }); }
+
+      // ── Season tabs ──
+      loadSeasonPlayer();
+      loadSeasonTeam();
+      document.getElementById('sp-highlight')?.addEventListener('change', () => loadSeasonPlayer());
+      document.getElementById('st-highlight')?.addEventListener('change', () => loadSeasonTeam());
+
+      // ── Past Season Player tab ──
+      document.getElementById('psp-year-select').addEventListener('change', async function() {
+        const year = this.value; if (!year) return;
+        document.getElementById('psp-prompt').style.display = 'none';
+        document.getElementById('psp-loading').style.display = 'block';
+        document.getElementById('psp-content').style.display = 'none';
+        await buildSeasonPlayerTable({ year, tableEl: document.getElementById('psp-table'), detailed: true });
+        await renderSeasonPlayerChart({
+          year, canvasEl: document.getElementById('psp-chart'),
+          toggleEl: document.getElementById('psp-highlight'),
+          toggleContainerEl: document.getElementById('psp-highlight-container'),
+          chartInstances,
+        });
+        document.getElementById('psp-loading').style.display = 'none';
+        document.getElementById('psp-content').style.display = 'block';
+      });
+
+      // ── Past Season Team tab ──
+      document.getElementById('pst-year-select').addEventListener('change', async function() {
+        const year = this.value; if (!year) return;
+        document.getElementById('pst-prompt').style.display = 'none';
+        document.getElementById('pst-loading').style.display = 'block';
+        document.getElementById('pst-content').style.display = 'none';
+        await buildSeasonTeamTable({ year, tableEl: document.getElementById('pst-table'), detailed: true });
+        await renderSeasonTeamChart({
+          year, canvasEl: document.getElementById('pst-chart'),
+          toggleEl: document.getElementById('pst-highlight'),
+          toggleContainerEl: document.getElementById('pst-highlight-container'),
+          chartInstances,
+        });
+        document.getElementById('pst-loading').style.display = 'none';
+        document.getElementById('pst-content').style.display = 'block';
+      });
+
+      // ── Bootstrap tab — activate "Past Results" parent ──
+      ['past-race-results-link','past-season-player-link','past-season-team-link'].forEach(id => {
+        document.getElementById(id)?.addEventListener('click', function(e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('show','active'));
+          document.querySelectorAll('.nav-link, .dropdown-item').forEach(l => l.classList.remove('active'));
+          target?.classList.add('show','active');
+          this.classList.add('active');
+          document.getElementById('past-results-tab').classList.add('active');
+        });
       });
     });
-  });
 
-  // ═══════════════════════════════════════════
-  // INITIALISATION
-  // ═══════════════════════════════════════════
+    document.addEventListener('loginStateChanged', () => {
+      loadRaceResultsTab();
+      loadSeasonPlayer();
+      loadSeasonTeam();
+    });
 
-  document.addEventListener('DOMContentLoaded', () => {
-    loadRaceOptionsResults();
-    loadFullSeasonResults();
-    loadFullSeasonTeamResults();
+    window.addEventListener('themeChanged', () => {
+      const dark = localStorage.getItem('darkMode') === 'true';
+      window.chartTheme = {
+        chartTextColor: dark?'#ffffff':'#000000', chartLineColor: dark?'#ffffff':'#000000',
+        chartBackgroundColor: dark?'#222222':'#ffffff', chartGridColor: dark?'#444444':'#cccccc',
+      };
+      loadSeasonPlayer();
+      loadSeasonTeam();
+    });
 
-    document.getElementById('highlightMyLinePlayer')?.addEventListener('change', () => renderSeasonPlayerChart(null));
-    document.getElementById('highlightMyLineTeam')?.addEventListener('change', () => renderSeasonTeamChart(null));
-  });
-
-  document.addEventListener('loginStateChanged', async () => {
-    loadRaceResultsPlayer();
-    loadRaceResultsTeam();
-  });
-
-  function reRenderCharts() {
-    const dark = localStorage.getItem('darkMode') === 'true';
-    window.chartTheme = { chartTextColor: dark?'#ffffff':'#000000', chartLineColor: dark?'#ffffff':'#000000', chartBackgroundColor: dark?'#222222':'#ffffff', chartGridColor: dark?'#444444':'#cccccc' };
-    renderSeasonPlayerChart(null);
-    renderSeasonTeamChart(null);
-  }
-  window.addEventListener('themeChanged', reRenderCharts);
-
-</script>
+  </script>
 </body>
 </html>

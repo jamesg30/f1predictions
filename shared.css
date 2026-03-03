@@ -1,0 +1,182 @@
+/* =============================================================================
+   shared.css — F1 Predictions shared styles
+   Theme-agnostic only. Colours live in light.css / dark.css.
+   ============================================================================= */
+
+/* ── Loading animations ── */
+@keyframes pulse { 0%{opacity:0.6} 50%{opacity:1} 100%{opacity:0.6} }
+@keyframes glow  { 0%{opacity:0.5} 50%{opacity:1} 100%{opacity:0.5} }
+.placeholder-glow         { width:100%; height:300px; animation:pulse 1.5s infinite ease-in-out; }
+.placeholder-16by9        { width:100%; padding-top:56.25%; border-radius:0.25rem; animation:glow 1.5s ease-in-out infinite; }
+.loading-text-placeholder { display:inline-block; width:80%; height:1.6em; border-radius:0.25rem; animation:glow 1.5s ease-in-out infinite; }
+.flag-placeholder         { width:70px; height:36px; animation:glow 1.5s ease-in-out infinite; display:inline-block; border-radius:0.2rem; }
+
+/* ── Loading bar ── */
+.loading-indicator { text-align:center; margin:20px 0; }
+.loading-bar {
+  width:200px; height:20px; border-radius:0.25rem;
+  overflow:hidden; margin:10px auto; position:relative;
+}
+.loading-bar::before {
+  content:""; display:block; height:100%; width:100%;
+  background-color:#343a40;
+  background-image:linear-gradient(45deg,rgba(255,255,255,0.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,0.15) 50%,rgba(255,255,255,0.15) 75%,transparent 75%,transparent);
+  background-size:40px 40px;
+  animation:progress-bar-stripes 1s linear infinite;
+}
+@keyframes progress-bar-stripes {
+  from { background-position:40px 0; }
+  to   { background-position:0 0; }
+}
+
+/* ── Utility ── */
+.hidden { display:none; }
+
+/* ── Flag / track images ── */
+.flag-img  { height:36px; border-radius:0.2rem; }
+.track-img { height:200px !important; max-height:200px !important; }
+@media (min-width:576px) { .track-img { height:250px !important; max-height:250px !important; } }
+@media (min-width:992px) { .track-img { height:300px !important; max-height:300px !important; } }
+
+/* ── Chart wrappers ── */
+.chart-wrapper      { width:100%; max-width:900px; height:400px; margin:0 auto; padding:0 20px; }
+.chart-wrapper-tall { width:100%; max-width:900px; height:650px; margin:0 auto; padding:0 20px; }
+@media (max-width:768px) {
+  .chart-wrapper      { height:500px; padding:0 10px; }
+  .chart-wrapper-tall { height:750px; padding:0 10px; }
+}
+
+/* ── Podium ── */
+.podium-container {
+  display:flex; justify-content:center; align-items:flex-end; gap:10px; margin:20px;
+}
+.podium-box {
+  display:flex; flex-direction:column; align-items:center; width:150px;
+}
+.podium-box .player-names { margin-bottom:5px; text-align:center; font-weight:bold; }
+.player-info { display:inline-flex; align-items:center; gap:5px; flex-wrap:wrap; }
+.icons       { display:inline-flex; align-items:center; }
+.player-name { flex:1 1 auto; white-space:normal; word-break:break-word; }
+.podium-block {
+  display:flex; align-items:center; justify-content:center; width:100%;
+  border:2px solid #999; border-radius:4px 4px 0 0;
+  font-size:24px; font-weight:bold;
+}
+.podium-box.first  .podium-block { height:90px; background-color:rgba(255,215,0,0.2); }
+.podium-box.second .podium-block { height:70px; background-color:rgba(192,192,192,0.2); }
+.podium-box.third  .podium-block { height:60px; background-color:rgba(205,127,50,0.2); }
+.rank-score { font-size:0.7em; margin-top:4px; }
+.podium-content { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; }
+@media (max-width:400px) {
+  .player-name { font-size:1em; }
+  .podium-box  { width:90px; }
+}
+
+/* ── "Your results" box ── */
+.your-results-box { margin-top:20px; margin-bottom:20px; width:100%; }
+.your-results-box h3 { margin-top:0; }
+.your-results-box table { width:100%; table-layout:auto; border-collapse:collapse; }
+.your-results-box td {
+  max-width:10ch; word-wrap:break-word; white-space:normal;
+  padding:4px 6px; text-align:center; vertical-align:middle;
+}
+.your-results-box td:nth-child(2) { text-align:left; padding-left:8px; padding-top:5px; }
+
+/* ── Section dividers for results tabs ── */
+.results-section { margin-bottom:2rem; }
+.results-section + .results-section { padding-top:1.5rem; }
+
+/* =============================================================================
+   SHARED TABLE STRUCTURE
+   Applies to every data table across the site via .table-sm.table-bordered.
+   Structural rules only — colours live in light.css / dark.css.
+   ============================================================================= */
+.table-sm.table-bordered {
+  width:100%;
+  table-layout:auto;
+  border-collapse:collapse;
+}
+
+/* All header cells */
+.table-sm.table-bordered th {
+  max-width:10ch;
+  word-wrap:break-word;
+  white-space:normal;
+  padding:3px 4px;
+  text-align:center;
+  vertical-align:middle;
+}
+
+/* All body cells */
+.table-sm.table-bordered td {
+  max-width:10ch;
+  word-wrap:break-word;
+  white-space:normal;
+  padding:2px 4px;
+  text-align:center;
+  vertical-align:middle;
+}
+
+/* First column of race results / unscored tables — wide enough for question text */
+#mainResultsTable td:first-child,
+#mainResultsTable th:first-child,
+#rr-player-table td:first-child,
+#rr-player-table th:first-child,
+#prr-player-table td:first-child,
+#prr-player-table th:first-child,
+#unscoredResultsTable td:first-child,
+#unscoredResultsTable th:first-child {
+  min-width:22ch;
+  max-width:none;
+  white-space:normal;
+  word-break:break-word;
+}
+
+/* Second column and beyond in race results tables — don't let max-width:10ch squish them */
+#mainResultsTable td:not(:first-child),
+#mainResultsTable th:not(:first-child),
+#rr-player-table td:not(:first-child),
+#rr-player-table th:not(:first-child),
+#prr-player-table td:not(:first-child),
+#prr-player-table th:not(:first-child) {
+  max-width:none;
+}
+
+/* Season player/team tables — name column (col 2) left-aligned, wide enough
+   for avatar + longest player/team name without wrapping */
+#sp-table td:nth-child(2),  #sp-table th:nth-child(2),
+#st-table td:nth-child(2),  #st-table th:nth-child(2),
+#psp-table td:nth-child(2), #psp-table th:nth-child(2),
+#pst-table td:nth-child(2), #pst-table th:nth-child(2),
+#standings-table td:nth-child(2),      #standings-table th:nth-child(2),
+#standings-team-table td:nth-child(2), #standings-team-table th:nth-child(2) {
+  text-align:left;
+  min-width:18ch;
+  max-width:none;
+  white-space:nowrap;
+  padding-left:6px;
+}
+
+/* ── mainResultsTable: separate border-collapse so pinned cells work ── */
+#mainResultsTable {
+  border-collapse:separate !important;
+  border-spacing:0;
+}
+#mainResultsTable tr.spacer-row td { background-color:transparent !important; }
+
+/* ── Pinned column behaviour ── */
+.pinned {
+  position:sticky;
+  z-index:3;
+  left:0;
+}
+
+/* ── Team scoring table: cards/applied column needs room ── */
+.table-sm.table-bordered td:nth-child(9) { min-width:80px; }
+
+/* ── Toggle section panels ── */
+#team-results-toggle button .toggle-icon { display:inline-block; transition:transform 0.2s; }
+#team-results-toggle.open button .toggle-icon { transform:rotate(90deg); }
+#team-results-body { display:none; }
+#team-results-toggle.open + #team-results-body,
+#team-results-body[style*="block"] { display:block; }
