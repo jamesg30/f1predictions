@@ -83,6 +83,19 @@
             line-height: 1.5;
             padding: 6px 12px;
         }
+        /* Form config table: force min-widths so mobile scrolls instead of squashing */
+        #form-configuration-rows td:nth-child(1) { min-width: 40px;  }   /* ID */
+        #form-configuration-rows td:nth-child(2) { min-width: 70px;  }   /* Enabled */
+        #form-configuration-rows td:nth-child(3) { min-width: 220px; }   /* Text */
+        #form-configuration-rows td:nth-child(4) { min-width: 180px; }   /* Response Type */
+        #form-configuration-rows td:nth-child(5) { min-width: 180px; }   /* Scoring Type */
+        #form-configuration table thead th:nth-child(3) { min-width: 220px; }
+        #form-configuration table thead th:nth-child(4) { min-width: 180px; }
+        #form-configuration table thead th:nth-child(5) { min-width: 180px; }
+                /* inside your <style> block */
+        #form-configuration-rows td:nth-child(3) textarea {
+            white-space: normal;
+        }
         /* Data freshness badge */
         .data-freshness {
             font-size: 0.75rem;
@@ -324,7 +337,7 @@
                     <label class="form-check-label" for="enableFixedEditing">Enable fixed question editing</label>
                     </div>
                 </div>
-                <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
+                <div class="table-responsive" style="overflow-x: auto; max-width: 100%; white-space: nowrap;">
                     <table class="table">
                     <thead>
                         <tr>
