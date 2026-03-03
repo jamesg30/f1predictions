@@ -117,7 +117,13 @@
   vertical-align:middle;
 }
 
-/* First column of race results / unscored tables — wide enough for question text */
+/* First column of race results / unscored tables — wide enough for question text.
+   clamp(min, preferred, max) scales with viewport width:
+     ~320px wide (small phone) → ~10ch
+     ~480px wide (large phone) → ~14ch
+     ~768px wide (tablet)      → ~22ch cap reached
+   This prevents the column from being too narrow on mobile while still
+   giving full width on tablet and desktop. */
 #mainResultsTable td:first-child,
 #mainResultsTable th:first-child,
 #rr-player-table td:first-child,
@@ -126,10 +132,10 @@
 #prr-player-table th:first-child,
 #unscoredResultsTable td:first-child,
 #unscoredResultsTable th:first-child {
-  min-width:22ch;
-  max-width:none;
-  white-space:normal;
-  word-break:break-word;
+  min-width: clamp(10ch, 18vw, 22ch);
+  max-width: none;
+  white-space: normal;
+  word-break: break-word;
 }
 
 /* Second column and beyond in race results tables — don't let max-width:10ch squish them */
