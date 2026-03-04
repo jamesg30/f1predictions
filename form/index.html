@@ -222,6 +222,17 @@
   
   <main class="container my-5">
     <div class="container my-5">
+      <!-- DEV TOOL: only shown for player ID 1 -->
+      <div id="dev-tool-bar" style="display:none;" class="mb-3 px-2 py-1 border rounded d-flex align-items-center gap-3">
+        <span style="font-size:0.72rem; font-weight:600; letter-spacing:0.05em; opacity:0.5;">🛠 DEV</span>
+        <div class="form-check form-switch mb-0">
+          <input class="form-check-input" type="checkbox" id="dev-impersonate-toggle" style="cursor:pointer;">
+          <label class="form-check-label text-muted" for="dev-impersonate-toggle" style="font-size:0.75rem;"></label>
+        </div>
+        <select id="dev-player-select" class="form-select form-select-sm" style="display:none; max-width:180px; font-size:0.75rem;"></select>
+        <span id="dev-submitting-as" class="fst-italic" style="font-size:0.75rem; color: #cc7000;"></span>
+      </div>
+
       <h2 id="form-title" class="mb-3 heading-text-2">Form</h2>
       <!-- Form Countdown Timer -->
       <div id="form-countdown-container" style="display: none;">
@@ -700,6 +711,7 @@
 
       // Auto-fill the player field (both hidden and visible)
       autofillFormPlayer();
+      await initDevTool();
       // Load the starting grid image
       await loadStartingGridImage();
   
@@ -895,6 +907,59 @@
       } catch (err) {
         console.error('Error updating form alert:', err);
       }
+    }
+
+    async function initDevTool() {
+      const playerId = getCookie("playerId");
+      if (playerId !== "1") return;
+
+      const devBar       = document.getElementById("dev-tool-bar");
+      const toggle       = document.getElementById("dev-impersonate-toggle");
+      const playerSelect = document.getElementById("dev-player-select");
+      const submittingAs = document.getElementById("dev-submitting-as");
+
+      devBar.style.display = "flex";
+
+      const { data: players } = await supabase.from("players").select("id, name").order("name");
+      (players || []).forEach(p => {
+        if (String(p.id) === "1") return;
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.name;
+        playerSelect.appendChild(opt);
+      });
+
+      function applyImpersonation() {
+        const hiddenInput  = document.getElementById("input-1");
+        const visibleInput = document.getElementById("input-1-visible");
+
+        if (toggle.checked) {
+          playerSelect.style.display = "inline-block";
+          const selectedId   = playerSelect.value;
+          const selectedName = playerSelect.options[playerSelect.selectedIndex]?.text || "";
+          if (hiddenInput)  hiddenInput.value  = selectedId;
+          if (visibleInput) visibleInput.value = selectedName;
+          submittingAs.textContent = `⚠ Submitting as: ${selectedName}`;
+        } else {
+          playerSelect.style.display = "none";
+          if (hiddenInput)  hiddenInput.value  = "1";
+          if (visibleInput) visibleInput.value = players.find(p => String(p.id) === "1")?.name || "Me";
+          submittingAs.textContent = "";
+        }
+      }
+
+      toggle.addEventListener("change", applyImpersonation);
+
+      playerSelect.addEventListener("change", () => {
+        if (!toggle.checked) return;
+        const selectedId   = playerSelect.value;
+        const selectedName = playerSelect.options[playerSelect.selectedIndex]?.text || "";
+        const hiddenInput  = document.getElementById("input-1");
+        const visibleInput = document.getElementById("input-1-visible");
+        if (hiddenInput)  hiddenInput.value  = selectedId;
+        if (visibleInput) visibleInput.value = selectedName;
+        submittingAs.textContent = `⚠ Submitting as: ${selectedName}`;
+      });
     }
 
     // Call the function on page load
