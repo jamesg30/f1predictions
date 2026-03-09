@@ -994,8 +994,8 @@ export function createNumberInput(container, id, isDecimal) {
     const input = document.createElement('input');
     input.type = 'number'; input.id = id; input.name = id;
     input.step = isDecimal ? '0.01' : '1';
-    input.min = '0'; input.max = isDecimal ? '1000' : '20';
-    input.placeholder = isDecimal ? 'Enter a number (up to 2 decimal places)' : 'Enter a number (0-20)';
+    input.min = '0'; input.max = isDecimal ? '1000' : '22';
+    input.placeholder = isDecimal ? 'Enter a number (up to 2 decimal places)' : 'Enter a number (0-22)';
     input.setAttribute('maxlength', '7');
     input.addEventListener('input', function() {
         const value = input.value;
@@ -1106,7 +1106,7 @@ export async function generateFormBlocks() {
                     hiddenInput.id = `input-${config.id}`; hiddenInput.value = hiddenValue;
                     block.appendChild(visibleInput); block.appendChild(hiddenInput); break;
                 }
-                case 'Number - Integer (0 - 20)': createNumberInput(block, `input-${config.id}`, false); break;
+                case 'Number - Integer (0 - 22)': createNumberInput(block, `input-${config.id}`, false); break;
                 case 'Number - Integer (0 - 1000)': createNumberInput2(block, `input-${config.id}`, false); break;
                 case 'Number - Decimal': createNumberInput(block, `input-${config.id}`, true); break;
                 case 'Radio - Yes/No': createYesNoInput(block, `input-${config.id}`); break;
