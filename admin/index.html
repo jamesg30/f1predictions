@@ -321,6 +321,7 @@
                     <li><a class="dropdown-item" id="edit-drivers-tab" data-bs-toggle="tab" href="#edit-drivers" role="tab">Edit Drivers</a></li>
                     <li><a class="dropdown-item" id="edit-constructors-tab" data-bs-toggle="tab" href="#edit-constructors" role="tab">Edit Constructors</a></li>
                     <li><a class="dropdown-item" id="edit-calendar-tab" data-bs-toggle="tab" href="#edit-calendar" role="tab">Edit Calendar</a></li>
+                    <li><a class="dropdown-item" id="edit-tracks-tab" data-bs-toggle="tab" href="#edit-tracks" role="tab">Edit Tracks</a></li>
                 </ul>
             </li>
         </ul>
@@ -619,7 +620,7 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>ID</th><th>Race Number</th><th>Race Name</th><th>Country</th>
+                            <th>ID</th><th>Race Number</th><th>Race Name</th>
                             <th>Date & Time (UTC+<span id="utc-offset"></span>)</th><th>Actions</th>
                         </tr>
                     </thead>
@@ -629,10 +630,42 @@
                 <h5>Add Race</h5>
                 <div>
                     <input type="number" id="new-race-number" placeholder="Race Number" class="form-control-inline">
-                    <input type="text" id="new-race-name" placeholder="Race Name" class="form-control-inline">
-                    <input type="text" id="new-race-country" placeholder="Country" class="form-control-inline">
+                    <select id="new-race-name" class="form-select form-control-inline"></select>
                     <input type="datetime-local" id="new-race-date" step="1" class="form-control-inline">
                     <button class="btn btn-success" id="add-race">Add Race</button>
+                </div>
+            </div>
+
+            <!-- Edit Tracks -->
+            <div class="tab-pane fade" id="edit-tracks" role="tabpanel" aria-labelledby="edit-tracks-tab">
+                <h4 class="mb-3 heading-text-3">Edit Tracks</h4>
+                <div class="table-responsive" style="overflow-x:auto;">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>ID</th><th>Name</th><th>Circuit Name</th><th>Country</th>
+                                <th>Track Image</th><th>Laps</th><th>Circuit Length</th>
+                                <th>Race Distance</th><th>First GP</th><th>Lat</th><th>Lon</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tracks-table"></tbody>
+                    </table>
+                </div>
+                <button class="btn btn-primary" id="save-tracks">Save Changes</button>
+                <h5 class="mt-4">Add Track</h5>
+                <div class="row g-2" id="add-track-form">
+                    <div class="col-md-3"><input type="text" id="new-track-name" placeholder="Name" class="form-control"></div>
+                    <div class="col-md-3"><input type="text" id="new-track-circuit-name" placeholder="Circuit Name" class="form-control"></div>
+                    <div class="col-md-2"><select id="new-track-country" class="form-select"><option value="">Country</option></select></div>
+                    <div class="col-md-2"><select id="new-track-image" class="form-select"><option value="">Track Image</option></select></div>
+                    <div class="col-md-1"><input type="number" id="new-track-laps" placeholder="Laps" class="form-control"></div>
+                    <div class="col-md-2"><input type="number" step="0.001" id="new-track-length" placeholder="Circuit Length (km)" class="form-control"></div>
+                    <div class="col-md-2"><input type="number" step="0.001" id="new-track-distance" placeholder="Race Distance (km)" class="form-control"></div>
+                    <div class="col-md-1"><input type="number" id="new-track-firstgp" placeholder="First GP Year" class="form-control"></div>
+                    <div class="col-md-2"><input type="number" step="0.000001" id="new-track-lat" placeholder="Latitude" class="form-control"></div>
+                    <div class="col-md-2"><input type="number" step="0.000001" id="new-track-lon" placeholder="Longitude" class="form-control"></div>
+                    <div class="col-md-1"><button class="btn btn-success" id="add-track">Add</button></div>
                 </div>
             </div>
         </div>
@@ -2551,16 +2584,18 @@
             table.innerHTML += `<tr>
                 <td>${event.id}</td>
                 <td><input type="number" class="form-control" value="${event.race_number || ''}" data-id="${event.id}" data-field="race_number"></td>
-                <td><input type="text" class="form-control" value="${event.name || ''}" data-id="${event.id}" data-field="name"></td>
-                <td><input type="text" class="form-control" value="${event.country || ''}" data-id="${event.id}" data-field="country"></td>
+                <td><select class="form-select" data-id="${event.id}" data-field="name">${window.trackOptions || ''}</select></td>
                 <td><input type="datetime-local" class="form-control" value="${dt}" data-id="${event.id}" data-field="date"></td>
                 <td><button class="btn btn-danger" onclick="deleteRace(${event.id})">Delete</button></td>
             </tr>`;
         });
+        table.querySelectorAll('select[data-field="name"]').forEach((sel, i) => {
+            sel.value = data[i].name || '';
+        });
     }
 
     async function saveCalendar() {
-        const inputs = document.querySelectorAll("#calendar-table input");
+        const inputs = document.querySelectorAll("#calendar-table input, #calendar-table select");
         const grouped = {};
         inputs.forEach(el => {
             const id = el.dataset.id;
@@ -2588,15 +2623,13 @@
     async function addRace() {
         const race_number = document.getElementById("new-race-number").value.trim();
         const name        = document.getElementById("new-race-name").value.trim();
-        const country     = document.getElementById("new-race-country").value.trim();
         const date        = document.getElementById("new-race-date").value.trim();
-        if (!race_number || !name || !country || !date) { showCustomAlert("All fields are required."); return; }
+        if (!race_number || !name || !date) { showCustomAlert("All fields are required."); return; }
         const utcDate = new Date(date + "Z");
         if (isNaN(utcDate)) { showCustomAlert("Invalid date format!"); return; }
-        await supabase.from("calendar").insert([{ race_number, name, country, date: utcDate.toISOString() }]);
+        await supabase.from("calendar").insert([{ race_number, name, date: utcDate.toISOString() }]);
         document.getElementById("new-race-number").value = "";
         document.getElementById("new-race-name").value = "";
-        document.getElementById("new-race-country").value = "";
         document.getElementById("new-race-date").value = "";
         await fetchCalendar(); showCustomAlert("Race added!");
     }
@@ -2604,31 +2637,179 @@
     // ============================================================
     // === EDIT TABS INITIALISATION
     // ============================================================
+    async function fetchTracks() {
+        const { data, error } = await supabase.from('tracks').select('name').order('name', { ascending: true });
+        if (error || !data) return;
+        const options = data.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+        window.trackOptions = options;
+        document.getElementById('new-race-name').innerHTML = `<option value="">Select Track</option>` + options;
+    }
+
+    // ============================================================
+    // === EDIT TRACKS TAB
+    // ============================================================
+
+    let trackImageFiles = [];
+    let trackCountryFiles = [];
+
+    async function fetchTrackStorageFiles() {
+        const GITHUB_OWNER = 'jamesg30';
+        const GITHUB_REPO  = 'f1predictions';
+        const base = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/media`;
+        const [imgRes, flagRes] = await Promise.all([
+            fetch(`${base}/tracks`),
+            fetch(`${base}/flags`)
+        ]);
+        const imgData  = imgRes.ok  ? await imgRes.json()  : [];
+        const flagData = flagRes.ok ? await flagRes.json() : [];
+        trackImageFiles   = imgData.filter(f => f.type === 'file').map(f => f.name.replace(/\.[^.]+$/, ''));
+        trackCountryFiles = flagData.filter(f => f.type === 'file').map(f => f.name.replace(/\.[^.]+$/, ''));
+
+        const imgSel = document.getElementById('new-track-image');
+        imgSel.innerHTML = '<option value="">Track Image</option>' +
+            trackImageFiles.map(f => `<option value="${f}">${f}</option>`).join('');
+
+        const ctrySel = document.getElementById('new-track-country');
+        ctrySel.innerHTML = '<option value="">Country</option>' +
+            trackCountryFiles.map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+
+        //     console.log('trackImageFiles:', imgData, trackImageFiles);
+        // console.log('trackCountryFiles:', flagData, trackCountryFiles);
+
+    function buildTrackImageSelect(selectedValue, dataId) {
+        const opts = trackImageFiles.map(f =>
+            `<option value="${f}" ${f === selectedValue ? 'selected' : ''}>${f}</option>`
+        ).join('');
+        return `<select class="form-select form-select-sm" data-id="${dataId}" data-field="track_image_name">
+            <option value="">-- select --</option>${opts}
+        </select>`;
+    }
+
+    function buildTrackCountrySelect(selectedValue, dataId) {
+        const opts = trackCountryFiles.map(c =>
+            `<option value="${c}" ${c === selectedValue ? 'selected' : ''}>${c}</option>`
+        ).join('');
+        return `<select class="form-select form-select-sm" data-id="${dataId}" data-field="country">
+            <option value="">-- select --</option>${opts}
+        </select>`;
+    }
+
+    async function fetchTracksTable() {
+        const { data, error } = await supabase.from('tracks').select('*').order('id', { ascending: true });
+        if (error) return;
+        const tbody = document.getElementById('tracks-table');
+        tbody.innerHTML = '';
+        data.forEach(t => {
+            tbody.innerHTML += `<tr>
+                <td>${t.id}</td>
+                <td><input type="text" class="form-control form-control-sm" value="${t.name || ''}" data-id="${t.id}" data-field="name"></td>
+                <td><input type="text" class="form-control form-control-sm" value="${t.circuit_name || ''}" data-id="${t.id}" data-field="circuit_name"></td>
+                <td>${buildTrackCountrySelect(t.country, t.id)}</td>
+                <td>${buildTrackImageSelect(t.track_image_name, t.id)}</td>
+                <td><input type="number" class="form-control form-control-sm" style="width:70px" value="${t.number_of_laps ?? ''}" data-id="${t.id}" data-field="number_of_laps"></td>
+                <td><input type="number" step="0.001" class="form-control form-control-sm" style="width:90px" value="${t.circuit_length ?? ''}" data-id="${t.id}" data-field="circuit_length"></td>
+                <td><input type="number" step="0.001" class="form-control form-control-sm" style="width:90px" value="${t.race_distance ?? ''}" data-id="${t.id}" data-field="race_distance"></td>
+                <td><input type="number" class="form-control form-control-sm" style="width:80px" value="${t.first_grand_prix ?? ''}" data-id="${t.id}" data-field="first_grand_prix"></td>
+                <td><input type="number" step="0.000001" class="form-control form-control-sm" style="width:100px" value="${t.lat ?? ''}" data-id="${t.id}" data-field="lat"></td>
+                <td><input type="number" step="0.000001" class="form-control form-control-sm" style="width:100px" value="${t.lon ?? ''}" data-id="${t.id}" data-field="lon"></td>
+                <td><button class="btn btn-danger btn-sm" onclick="deleteTrack(${t.id})">Delete</button></td>
+            </tr>`;
+        });
+    }
+
+    async function saveTracks() {
+        const els = document.querySelectorAll('#tracks-table input[data-id], #tracks-table select[data-id]');
+        const grouped = {};
+        els.forEach(el => {
+            const id = Number(el.dataset.id);
+            if (!grouped[id]) grouped[id] = { id };
+            const val = el.value;
+            grouped[id][el.dataset.field] = ['number_of_laps','first_grand_prix'].includes(el.dataset.field)
+                ? (val === '' ? null : parseInt(val))
+                : ['circuit_length','race_distance','lat','lon'].includes(el.dataset.field)
+                    ? (val === '' ? null : parseFloat(val))
+                    : val;
+        });
+        const { error } = await supabase.from('tracks').upsert(Object.values(grouped));
+        if (error) { showCustomAlert('Failed to save tracks: ' + error.message); return; }
+        showCustomAlert('Tracks saved successfully!');
+        document.getElementById('save-tracks').disabled = true;
+        await fetchTracks();
+        await fetchTracksTable();
+    }
+
+    async function addTrack() {
+        const name             = document.getElementById('new-track-name').value.trim();
+        const circuit_name     = document.getElementById('new-track-circuit-name').value.trim();
+        const country          = document.getElementById('new-track-country').value;
+        const track_image_name = document.getElementById('new-track-image').value;
+        const number_of_laps   = parseInt(document.getElementById('new-track-laps').value) || null;
+        const circuit_length   = parseFloat(document.getElementById('new-track-length').value) || null;
+        const race_distance    = parseFloat(document.getElementById('new-track-distance').value) || null;
+        const first_grand_prix = parseInt(document.getElementById('new-track-firstgp').value) || null;
+        const lat = parseFloat(document.getElementById('new-track-lat').value) || null;
+        const lon = parseFloat(document.getElementById('new-track-lon').value) || null;
+        if (!name) { showCustomAlert('Track name is required.'); return; }
+        const { error } = await supabase.from('tracks').insert([{
+            name, circuit_name, country, track_image_name,
+            number_of_laps, circuit_length, race_distance, first_grand_prix, lat, lon
+        }]);
+        if (error) { showCustomAlert('Failed to add track: ' + error.message); return; }
+        showCustomAlert('Track added!');
+        ['new-track-name','new-track-circuit-name','new-track-laps','new-track-length',
+         'new-track-distance','new-track-firstgp','new-track-lat','new-track-lon'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+        document.getElementById('new-track-country').value = '';
+        document.getElementById('new-track-image').value = '';
+        await fetchTracks();
+        await fetchTracksTable();
+    }
+
+    async function deleteTrack(id) {
+        if (!await showCustomConfirm('Delete this track?', 'Confirm Deletion')) return;
+        const { error } = await supabase.from('tracks').delete().eq('id', id);
+        if (error) { showCustomAlert('Failed to delete track.'); return; }
+        showCustomAlert('Track deleted!');
+        await fetchTracks();
+        await fetchTracksTable();
+    }
+    window.deleteTrack = deleteTrack;
 
     document.addEventListener('DOMContentLoaded', async () => {
         await populatePlayers();
         await populateTeams();
         await fetchDrivers();
         await fetchConstructors();
+        await fetchTrackStorageFiles();
+        await fetchTracks();
         await fetchCalendar();
+        await fetchTracksTable();
         await populateConstructorDropdown();
 
         const saveDriversBtn       = document.getElementById("save-drivers");
         const saveConstructorsBtn  = document.getElementById("save-constructors");
         const saveCalendarBtn      = document.getElementById("save-calendar");
+        const saveTracksBtn        = document.getElementById("save-tracks");
 
-        saveDriversBtn.disabled = saveConstructorsBtn.disabled = saveCalendarBtn.disabled = true;
+        saveDriversBtn.disabled = saveConstructorsBtn.disabled = saveCalendarBtn.disabled = saveTracksBtn.disabled = true;
 
         document.getElementById("drivers-table").addEventListener("input",      () => { saveDriversBtn.disabled = false; });
         document.getElementById("constructors-table").addEventListener("input",  () => { saveConstructorsBtn.disabled = false; });
         document.getElementById("calendar-table").addEventListener("input",      () => { saveCalendarBtn.disabled = false; });
+        document.getElementById("calendar-table").addEventListener("change",     () => { saveCalendarBtn.disabled = false; });
+        document.getElementById("tracks-table").addEventListener("input",        () => { saveTracksBtn.disabled = false; });
+        document.getElementById("tracks-table").addEventListener("change",       () => { saveTracksBtn.disabled = false; });
 
         document.getElementById("add-driver").addEventListener("click",      addDriver);
         document.getElementById("add-constructor").addEventListener("click",  addConstructor);
         document.getElementById("add-race").addEventListener("click",         addRace);
+        document.getElementById("add-track").addEventListener("click",        addTrack);
         saveDriversBtn.addEventListener("click",      saveDrivers);
         saveConstructorsBtn.addEventListener("click",  saveConstructors);
         saveCalendarBtn.addEventListener("click",      saveCalendar);
+        saveTracksBtn.addEventListener("click",        saveTracks);
     });
 
     // ============================================================
@@ -2786,6 +2967,8 @@
     window.addDriver           = addDriver;
     window.addConstructor      = addConstructor;
     window.addRace             = addRace;
+    window.addTrack            = addTrack;
+    window.deleteTrack         = deleteTrack;
     window.populatePlayers     = populatePlayers;
     window.populateTeams       = populateTeams;
     window.populateConstructors = fetchConstructors;

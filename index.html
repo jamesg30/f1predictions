@@ -409,6 +409,8 @@
     try {
       const { data: fd } = await supabase.from('form_details').select('race_number').eq('id', 1).single();
       const { data: rd } = await supabase.from('calendar').select('*').eq('race_number', fd.race_number).single();
+      const { data: td } = await supabase.from('tracks').select('country').eq('name', rd.name).single();
+      rd.country = td?.country || '';
       return rd;
     } catch { return null; }
   }
