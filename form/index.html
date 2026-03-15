@@ -25,7 +25,7 @@
   </script>
   <!-- Page Details 2 -->
   <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
-  <title>F1 Predictions | Form</title>
+  <title>Form | F1 Predictions </title>
   <!-- Apple Touch Icon: used when bookmarking or adding to home screen on iOS -->
   <link rel="apple-touch-icon" sizes="180x180" href="/media/f1_predictions_logo.png">
   
@@ -388,7 +388,7 @@
   </main>
   
   <footer class="bg-light text-black text-center py-1 body-text-xs">
-    <p>&copy; 2025 F1 Predictions Form</p>
+    <p>&copy; 2026 F1 Predictions Form</p>
   </footer>
   
 <script type="module">
@@ -1143,7 +1143,8 @@
           const mainContainer = document.querySelector('main.container');
           mainContainer.insertAdjacentElement('afterbegin', pinnedBar);
 
-          pinBtn.textContent = '📌 Pinned';
+          pinBtn.innerHTML = '<img id="pinIconImg" src="/media/symbols/pin.png" alt="pin" style="width:14px;height:14px;object-fit:contain;margin-right:5px;">Pinned';
+          updatePinIcon();
           pinBtn.disabled = true;
 
           // Re-detect if dark mode changes while pinned
@@ -1163,7 +1164,8 @@
                 pinnedBar.remove();
                 pinnedBar = null;
             }
-            pinBtn.textContent = '📌 Pin Grid';
+            pinBtn.innerHTML = '<img id="pinIconImg" src="/media/symbols/pin.png" alt="pin" style="width:14px;height:14px;object-fit:contain;margin-right:5px;">Pin Grid';
+            updatePinIcon();
             pinBtn.disabled = false;
         }
 

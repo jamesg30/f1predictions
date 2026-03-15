@@ -20,7 +20,7 @@
     </script>
     <!-- Page Details 2 -->
     <link rel="icon" href="/media/f1_predictions_logo.ico" type="image/x-icon">
-    <title>F1 Predictions | Admin</title>
+    <title>Admin | F1 Predictions</title>
     <link rel="apple-touch-icon" sizes="180x180" href="/media/f1_predictions_logo.png">
 
     <!-- Supabase Scripts -->
@@ -47,7 +47,7 @@
         #admin-content {
             display: none;
         }
-        html, body {
+        body {
             overflow-x: hidden;
         }
         /* Unified progress component */
@@ -396,7 +396,13 @@
             <!-- Form Configuration Tab -->
             <div id="form-configuration" class="tab-pane fade show active" role="tabpanel">
                 <form id="form-configuration-form">
-                <div><h4 class="mb-3 heading-text-3">Form Configuration</h4></div>
+                <div style="display:flex;align-items:center;margin-bottom:1rem;">
+                    <h4 class="heading-text-3" style="margin-bottom:0;">Form Configuration</h4>
+                    <button type="button" id="adminPinGridBtn" class="btn btn-outline-secondary btn-sm" style="margin-left:auto;display:flex;align-items:center;gap:5px;">
+                        <img id="adminPinIconImg" src="/media/symbols/pin.png" alt="pin" style="width:14px;height:14px;object-fit:contain;">
+                        Pin Grid
+                    </button>
+                </div>
                 <div class="mb-3">
                     <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="enableFixedEditing">
@@ -829,7 +835,7 @@
     </main>
 
     <footer class="bg-light text-black text-center py-1 body-text-xs">
-        <p>&copy; 2025 F1 Predictions Form | Build 243a</p>
+        <p>&copy; 2026 F1 Predictions Form | Build 243b</p>
     </footer>
 
 <script src="/js/bootstrap.bundle.min.js"></script>
@@ -2441,6 +2447,10 @@ Changes:
         await fetchFormDetails();
 
         async function fetchRaceOptions() {
+            const { data: formDetailsForDisplay, error: fdErr } = await supabase
+                .from('form_details').select('results_display_race_number').eq('id', 1).single();
+            const resultsDisplayRaceNumber = formDetailsForDisplay?.results_display_race_number;
+
             const { data: races, error } = await supabase
                 .from('calendar').select('race_number, name').order('race_number', { ascending: true });
             if (error) return;
@@ -2451,7 +2461,10 @@ Changes:
                 if (race.race_number === currentRaceNumber) opt.selected = true;
                 raceSelect.appendChild(opt);
 
-                const opt2 = opt.cloneNode(true);
+                const opt2 = document.createElement('option');
+                opt2.value = race.race_number;
+                opt2.textContent = `Race ${race.race_number}: ${race.name} GP`;
+                if (race.race_number == resultsDisplayRaceNumber) opt2.selected = true;
                 resultsDisplayRaceSelect.appendChild(opt2);
             });
         }
@@ -3131,6 +3144,139 @@ Changes:
     window.populateTeams        = populateTeams;
     window.populateConstructors = fetchConstructors;
     window.populateCalendar     = fetchCalendar;
+
+    // ============================================================
+    // === ADMIN PIN GRID (Form Configuration Tab)
+    // ============================================================
+
+    (function() {
+        function updateAdminPinIcon() {
+            const icon = document.getElementById('adminPinIconImg');
+            if (!icon) return;
+            icon.style.filter = localStorage.getItem('darkMode') === 'true' ? 'invert(1)' : 'none';
+        }
+        updateAdminPinIcon();
+        window.addEventListener('themeChanged', updateAdminPinIcon);
+
+        let adminPinnedBar = null;
+        let resizeHandler = null;
+
+        function createAdminPinnedBar(src) {
+            const navbar = document.querySelector('header nav');
+            const navHeight = navbar ? navbar.getBoundingClientRect().height : 56;
+            const isDark = localStorage.getItem('darkMode') === 'true';
+
+            adminPinnedBar = document.createElement('div');
+            adminPinnedBar.id = 'admin-pinned-grid-bar';
+            adminPinnedBar.style.cssText = `
+                position: fixed;
+                top: ${navHeight}px;
+                left: 0;
+                right: 0;
+                z-index: 800;
+                background: ${isDark ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)'};
+                backdrop-filter: blur(6px);
+                -webkit-backdrop-filter: blur(6px);
+                border-bottom: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+                padding: 8px 12px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            `;
+
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = 'Starting Grid';
+            img.style.cssText = `
+                width: auto;
+                object-fit: contain;
+                display: block;
+                height: ${window.innerWidth >= 576 ? '250px' : '200px'};
+            `;
+
+            resizeHandler = () => {
+                img.style.height = window.innerWidth >= 576 ? '250px' : '200px';
+                // Also update padding on resize since bar height may change
+                applyPadding();
+            };
+            window.addEventListener('resize', resizeHandler);
+
+            const unpinBtn = document.createElement('button');
+            unpinBtn.type = 'button';
+            unpinBtn.textContent = '✕ Unpin';
+            unpinBtn.style.cssText = `
+                position: absolute;
+                right: 12px;
+                top: 8px;
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                background: ${isDark ? 'rgba(30,30,30,0.85)' : 'rgba(255,255,255,0.85)'};
+                border: 1px solid ${isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'};
+                color: ${isDark ? '#fff' : '#111'};
+                font-size: 0.75rem;
+                padding: 2px 8px;
+                border-radius: 6px;
+                cursor: pointer;
+            `;
+            unpinBtn.addEventListener('click', unpinAdmin);
+
+            window.addEventListener('themeChanged', () => {
+                if (!adminPinnedBar) return;
+                const dark = localStorage.getItem('darkMode') === 'true';
+                adminPinnedBar.style.background = dark ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)';
+                adminPinnedBar.style.borderBottomColor = dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                unpinBtn.style.background = dark ? 'rgba(30,30,30,0.85)' : 'rgba(255,255,255,0.85)';
+                unpinBtn.style.borderColor = dark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)';
+                unpinBtn.style.color = dark ? '#fff' : '#111';
+            });
+
+            adminPinnedBar.appendChild(img);
+            adminPinnedBar.appendChild(unpinBtn);
+            document.body.appendChild(adminPinnedBar);
+
+            // Apply padding after inserting so we can measure the bar's actual height
+            requestAnimationFrame(applyPadding);
+
+            const pinBtn = document.getElementById('adminPinGridBtn');
+            if (pinBtn) {
+                pinBtn.innerHTML = '<img id="adminPinIconImg" src="/media/symbols/pin.png" alt="pin" style="width:14px;height:14px;object-fit:contain;margin-right:5px;">Pinned';
+                pinBtn.disabled = true;
+                updateAdminPinIcon();
+            }
+        }
+
+        function applyPadding() {
+            if (!adminPinnedBar) return;
+            const barHeight = adminPinnedBar.getBoundingClientRect().height;
+            document.getElementById('admin-content').style.paddingTop = barHeight + 'px';
+        }
+
+        function unpinAdmin() {
+            if (resizeHandler) { window.removeEventListener('resize', resizeHandler); resizeHandler = null; }
+            if (adminPinnedBar) { adminPinnedBar.remove(); adminPinnedBar = null; }
+            document.getElementById('admin-content').style.paddingTop = '';
+
+            const pinBtn = document.getElementById('adminPinGridBtn');
+            if (pinBtn) {
+                pinBtn.innerHTML = '<img id="adminPinIconImg" src="/media/symbols/pin.png" alt="pin" style="width:14px;height:14px;object-fit:contain;margin-right:5px;">Pin Grid';
+                pinBtn.disabled = false;
+                updateAdminPinIcon();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const pinBtn = document.getElementById('adminPinGridBtn');
+            if (!pinBtn) return;
+            pinBtn.addEventListener('click', () => {
+                const existingImg = document.getElementById('currentGridImage');
+                if (!existingImg || !existingImg.src || existingImg.src === window.location.href) {
+                    showCustomAlert('No grid image loaded. Please visit the Grid Upload tab first.');
+                    return;
+                }
+                createAdminPinnedBar(existingImg.src);
+            });
+        });
+    })();
 </script>
 </body>
 </html>
