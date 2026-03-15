@@ -105,6 +105,69 @@
         .data-freshness .badge {
             font-size: 0.7rem;
         }
+
+        /* Mobile-scrollable tables for all admin tabs */
+        .tab-pane .table-responsive,
+        .tab-pane > .container table,
+        .tab-pane > table {
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Wrap bare tables in tabs that don't already have .table-responsive */
+        #edit-players .table,
+        #edit-teams .table,
+        #edit-drivers .table,
+        #edit-constructors .table,
+        #edit-calendar .table,
+        #scoring #scoreTable,
+        #feedback .card {
+            min-width: 500px;
+        }
+
+        /* Sensible min-widths per tab */
+        #edit-players td:nth-child(1)  { min-width: 40px; }
+        #edit-players td:nth-child(2)  { min-width: 150px; }
+        #edit-players td:nth-child(3)  { min-width: 100px; }
+        #edit-players td:nth-child(4)  { min-width: 130px; }
+        #edit-players td:nth-child(5)  { min-width: 180px; }
+
+        #edit-teams td:nth-child(1)    { min-width: 40px; }
+        #edit-teams td:nth-child(2)    { min-width: 160px; }
+        #edit-teams td:nth-child(3)    { min-width: 120px; }
+
+        #edit-drivers td:nth-child(1)  { min-width: 40px; }
+        #edit-drivers td:nth-child(2)  { min-width: 160px; }
+        #edit-drivers td:nth-child(3)  { min-width: 120px; }
+        #edit-drivers td:nth-child(4)  { min-width: 160px; }
+        #edit-drivers td:nth-child(5)  { min-width: 80px; }
+
+        #edit-constructors td:nth-child(1) { min-width: 40px; }
+        #edit-constructors td:nth-child(2) { min-width: 160px; }
+        #edit-constructors td:nth-child(3) { min-width: 160px; }
+        #edit-constructors td:nth-child(4) { min-width: 130px; }
+        #edit-constructors td:nth-child(5) { min-width: 120px; }
+        #edit-constructors td:nth-child(6) { min-width: 80px; }
+
+        #edit-calendar td:nth-child(1) { min-width: 40px; }
+        #edit-calendar td:nth-child(2) { min-width: 80px; }
+        #edit-calendar td:nth-child(3) { min-width: 160px; }
+        #edit-calendar td:nth-child(4) { min-width: 180px; }
+        #edit-calendar td:nth-child(5) { min-width: 80px; }
+
+        #edit-tracks td:nth-child(1)  { min-width: 40px; }   /* ID */
+        #edit-tracks td:nth-child(2)  { min-width: 160px; }  /* Name */
+        #edit-tracks td:nth-child(3)  { min-width: 160px; }  /* Circuit Name */
+        #edit-tracks td:nth-child(4)  { min-width: 140px; }  /* Country */
+        #edit-tracks td:nth-child(5)  { min-width: 140px; }  /* Track Image */
+        #edit-tracks td:nth-child(6)  { min-width: 80px; }   /* Laps */
+        #edit-tracks td:nth-child(7)  { min-width: 120px; }  /* Circuit Length */
+        #edit-tracks td:nth-child(8)  { min-width: 120px; }  /* Race Distance */
+        #edit-tracks td:nth-child(9)  { min-width: 100px; }  /* First GP */
+        #edit-tracks td:nth-child(10) { min-width: 110px; }  /* Lat */
+        #edit-tracks td:nth-child(11) { min-width: 110px; }  /* Lon */
+        #edit-tracks td:nth-child(12) { min-width: 80px; }   /* Actions */
     </style>
 
     <!-- Encryption Script -->
@@ -574,19 +637,23 @@
             <!-- Edit Teams -->
             <div class="tab-pane fade" id="edit-teams" role="tabpanel" aria-labelledby="edit-teams-tab">
                 <h4 class="mb-3 heading-text-3">Edit Teams</h4>
-                <table class="table">
-                    <thead><tr><th>ID</th><th>Name</th><th>Actions</th></tr></thead>
-                    <tbody id="teams-table"></tbody>
-                </table>
+                <div class="table-responsive" style="overflow-x: auto;">
+                    <table class="table">
+                        <thead><tr><th>ID</th><th>Name</th><th>Actions</th></tr></thead>
+                        <tbody id="teams-table"></tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Edit Drivers -->
             <div class="tab-pane fade" id="edit-drivers" role="tabpanel" aria-labelledby="edit-drivers-tab">
                 <h4 class="mb-3 heading-text-3">Edit Drivers</h4>
-                <table class="table">
-                    <thead><tr><th>ID</th><th>Name</th><th>Abbreviation</th><th>Constructor</th><th>Actions</th></tr></thead>
-                    <tbody id="drivers-table"></tbody>
-                </table>
+                <div class="table-responsive" style="overflow-x: auto;">
+                    <table class="table">
+                        <thead><tr><th>ID</th><th>Name</th><th>Abbreviation</th><th>Constructor</th><th>Actions</th></tr></thead>
+                        <tbody id="drivers-table"></tbody>
+                    </table>
+                </div>
                 <button class="btn btn-primary" id="save-drivers">Save Changes</button>
                 <h5>Add Driver</h5>
                 <div>
@@ -600,10 +667,12 @@
             <!-- Edit Constructors -->
             <div class="tab-pane fade" id="edit-constructors" role="tabpanel" aria-labelledby="edit-constructors-tab">
                 <h4 class="mb-3 heading-text-3">Edit Constructors</h4>
-                <table class="table">
-                    <thead><tr><th>ID</th><th>Name</th><th>Background Colour</th><th>Text Colour</th><th>Actions</th></tr></thead>
-                    <tbody id="constructors-table"></tbody>
-                </table>
+                <div class="table-responsive" style="overflow-x: auto;">
+                    <table class="table">
+                        <thead><tr><th>ID</th><th>Name</th><th>Background Colour</th><th>Text Colour</th><th>Preview</th><th>Actions</th></tr></thead>
+                        <tbody id="constructors-table"></tbody>
+                    </table>
+                </div>
                 <button class="btn btn-primary" id="save-constructors">Save Changes</button>
                 <h5>Add Constructor</h5>
                 <div>
@@ -617,15 +686,17 @@
             <!-- Edit Calendar -->
             <div class="tab-pane fade" id="edit-calendar" role="tabpanel" aria-labelledby="edit-calendar-tab">
                 <h4 class="mb-3 heading-text-3">Edit Calendar</h4>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>ID</th><th>Race Number</th><th>Race Name</th>
-                            <th>Date & Time (UTC+<span id="utc-offset"></span>)</th><th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="calendar-table"></tbody>
-                </table>
+                <div class="table-responsive" style="overflow-x: auto;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th><th>Race Number</th><th>Race Name</th>
+                                <th>Date & Time (UTC+<span id="utc-offset"></span>)</th><th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="calendar-table"></tbody>
+                    </table>
+                </div>
                 <button class="btn btn-primary" id="save-calendar">Save Changes</button>
                 <h5>Add Race</h5>
                 <div>
@@ -760,24 +831,51 @@
     </footer>
 
 <script src="/js/bootstrap.bundle.min.js"></script>
+<!-- 
+=================================================================
+ADMIN PAGE — RESULTS ENTRY & SCORING REPLACEMENT SECTIONS
+=================================================================
+
+Replace the existing inline <script type="module"> block at the
+bottom of admin.html with this updated version.
+
+Changes:
+  1. generateFormBlocks() called with { isAdmin: true } so the
+     Exclude / Add Correct Answer controls appear.
+  2. autofillResultsForm() uses the new prefillAdminResultBlock()
+     helper from script.js so it handles MULTI:: and Excluded.
+  3. Form submission reads values via readAdminResultValue() and
+     stores them (MULTI:: encoded or 'Excluded') in form_raw.
+  4. calculateScore() in the Scoring tab handles 'Excluded' and
+     'MULTI::' prefixed results correctly.
+  5. convertResponseToText() handles multi-result display strings.
+=================================================================
+-->
+
 <script type="module">
-    import { getCookie, showCustomAlert, showCustomConfirm, generateFormBlocks } from '/script.js';
+    import {
+        getCookie,
+        showCustomAlert,
+        showCustomConfirm,
+        generateFormBlocks,
+        readAdminResultValue,
+        prefillAdminResultBlock,
+        decodeResult,
+        encodeMultiResult,
+        resultToDisplayText,
+        responseMatchesResult
+    } from '/script.js';
 
     // ============================================================
     // === SHARED UTILITIES
     // ============================================================
 
-    /** Fetch all rows from a Supabase table */
     async function getTable(tableName) {
         const { data, error } = await supabase.from(tableName).select('*');
-        if (error) {
-            console.error(`Error retrieving data from ${tableName}:`, error.message);
-            return [];
-        }
+        if (error) { console.error(`Error retrieving data from ${tableName}:`, error.message); return []; }
         return data;
     }
 
-    /** Generic fetch ordered by id */
     async function fetchData(table) {
         const { data, error } = await supabase.from(table).select('*').order('id', { ascending: true });
         if (error) { console.error(`Error fetching ${table}:`, error); return []; }
@@ -810,12 +908,7 @@
         });
     }
 
-    /** Format current time as HH:MM:SS */
-    function nowTimestamp() {
-        return new Date().toLocaleTimeString();
-    }
-
-    /** Set a freshness badge to current time */
+    function nowTimestamp() { return new Date().toLocaleTimeString(); }
     function markFresh(spanId) {
         const el = document.getElementById(spanId);
         if (el) el.textContent = nowTimestamp();
@@ -825,43 +918,28 @@
     // === UNIFIED PROGRESS HELPERS
     // ============================================================
 
-    /**
-     * Progress controller for a step.
-     * @param {string} wrapId   - id of the .step-progress-wrap div
-     * @param {string} barId    - id of the progress-bar div
-     * @param {string} statusId - id of the .step-status-text div
-     * @param {string} logId    - id of the .step-debug-log div
-     */
     function makeProgress(wrapId, barId, statusId, logId) {
-        const wrap = document.getElementById(wrapId);
-        const bar  = document.getElementById(barId);
+        const wrap   = document.getElementById(wrapId);
+        const bar    = document.getElementById(barId);
         const status = document.getElementById(statusId);
-        const log  = document.getElementById(logId);
+        const log    = document.getElementById(logId);
 
         return {
-            show() { wrap.classList.add('active'); },
-            hide() { wrap.classList.remove('active'); },
+            show()  { wrap.classList.add('active'); },
+            hide()  { wrap.classList.remove('active'); },
             reset() {
-                if (bar) { bar.style.width = '0%'; bar.setAttribute('aria-valuenow', 0); }
+                if (bar)    { bar.style.width = '0%'; bar.setAttribute('aria-valuenow', 0); }
                 if (status) status.textContent = '';
-                if (log) log.textContent = '';
+                if (log)    log.textContent = '';
                 wrap.classList.add('active');
             },
             setPercent(pct) {
                 const v = Math.min(100, Math.max(0, Math.round(pct)));
                 if (bar) { bar.style.width = `${v}%`; bar.setAttribute('aria-valuenow', v); }
             },
-            setStatus(msg) {
-                if (status) status.textContent = msg;
-            },
-            log(msg) {
-                console.log(msg);
-                if (log) log.textContent += msg + '\n';
-            },
-            done(msg) {
-                this.setPercent(100);
-                this.setStatus(msg || 'Complete.');
-            }
+            setStatus(msg) { if (status) status.textContent = msg; },
+            log(msg) { console.log(msg); if (log) log.textContent += msg + '\n'; },
+            done(msg) { this.setPercent(100); this.setStatus(msg || 'Complete.'); }
         };
     }
 
@@ -876,11 +954,9 @@
     document.addEventListener('input', e => {
         if (e.target.classList.contains('auto-expand')) initAutoExpand(e.target);
     });
-    // Expand any textareas already in the DOM on load
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('textarea.auto-expand').forEach(initAutoExpand);
     });
-    // Also expand dynamically injected textareas (form config rows) when rendered
     function expandNewTextareas(container) {
         container.querySelectorAll('textarea.auto-expand').forEach(initAutoExpand);
     }
@@ -971,7 +1047,6 @@
                 </td>
             </tr>`;
         });
-        // Size any auto-expand textareas that were just injected
         expandNewTextareas(rowsContainer);
     }
 
@@ -1032,9 +1107,7 @@
         async function loadGridImage() {
             const { data: formData, error: formError } = await supabase
                 .from("form_details").select("form_image_name").eq("id", 1).single();
-            if (formError || !formData?.form_image_name) {
-                currentGridImage.src = ""; return;
-            }
+            if (formError || !formData?.form_image_name) { currentGridImage.src = ""; return; }
             const { data: fileData, error: downloadError } = await supabase.storage
                 .from(bucketName).download(formData.form_image_name);
             if (!downloadError) currentGridImage.src = URL.createObjectURL(fileData);
@@ -1058,7 +1131,7 @@
     });
 
     // ============================================================
-    // === RESULTS ENTRY TAB
+    // === RESULTS ENTRY TAB  (updated)
     // ============================================================
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -1070,7 +1143,7 @@
         let currentRaceNumberForResults;
 
         async function fetchFormConfigForResults() {
-            const { data, error } = await supabase.from('form_configuration').select('id, enabled');
+            const { data, error } = await supabase.from('form_configuration').select('id, enabled, response_type');
             if (!error) formConfig = data;
         }
 
@@ -1082,7 +1155,6 @@
             if (fdErr) { console.error(fdErr); return; }
             currentRaceNumberForResults = formDetails.race_number;
 
-            // Check for existing results submission (player_id = 0)
             const { data: submissions } = await supabase
                 .from('form_raw')
                 .select('player_id, submission_time')
@@ -1092,7 +1164,6 @@
 
             if (existingSubmissions.includes(0)) {
                 document.getElementById('repeated-results-alert').classList.remove('d-none');
-                // Show last submission timestamp
                 const resultEntry = submissions.find(s => s.player_id === 0);
                 if (resultEntry?.submission_time) {
                     const ts = new Date(resultEntry.submission_time).toLocaleString();
@@ -1104,10 +1175,12 @@
                 document.getElementById('results-last-submitted').style.display = 'none';
             }
 
-            // Generate form blocks
             const loadingIndicator = document.getElementById('formLoading');
             loadingIndicator.style.display = 'block';
-            await generateFormBlocks();
+
+            // Generate form with isAdmin=true — this adds Exclude/Add Answer controls
+            await generateFormBlocks({ isAdmin: true });
+
             loadingIndicator.style.display = 'none';
 
             // Autofill with existing results if present
@@ -1116,7 +1189,10 @@
             }
         }
 
-        /** Pre-fill the generated form inputs with the previously saved results */
+        /**
+         * Pre-fill the admin results form from previously saved data.
+         * Uses prefillAdminResultBlock() to handle MULTI:: and Excluded values.
+         */
         async function autofillResultsForm(raceNumber) {
             const { data: resultRow, error } = await supabase
                 .from('form_raw')
@@ -1126,43 +1202,52 @@
                 .single();
             if (error || !resultRow) return;
 
+            // Build a lookup of formConfig by id for response_type
+            const configById = {};
+            formConfig.forEach(c => { configById[c.id] = c; });
+
             for (let i = 2; i <= 28; i++) {
-                const val = resultRow[`form_id_${i}`];
-                if (val === null || val === undefined) continue;
+                const rawVal = resultRow[`form_id_${i}`];
+                if (rawVal === null || rawVal === undefined) continue;
 
-                const inputName = `input-${i}`;
-                const inputs = form.querySelectorAll(`[name="${inputName}"]`);
+                const config = configById[i];
+                if (!config) continue;
 
-                if (inputs.length === 1) {
-                    const el = inputs[0];
-                    if (el.tagName === 'SELECT') {
-                        el.value = val;
-                        // Fire change event so colour styling (applied by generateFormBlocks) triggers
-                        el.dispatchEvent(new Event('change', { bubbles: true }));
-                    } else {
-                        el.value = val;
-                        el.dispatchEvent(new Event('input', { bubbles: true }));
-                    }
-                } else if (inputs.length > 1) {
-                    // Radio buttons
-                    inputs.forEach(radio => {
-                        if (radio.value === val) {
-                            radio.checked = true;
-                            // Fire change so any styling listeners on the radio group activate
-                            radio.dispatchEvent(new Event('change', { bubbles: true }));
-                        }
-                    });
-                }
+                // Find the block that owns input-i
+                const block = findBlockForInput(`input-${i}`);
+                if (!block) continue;
+
+                prefillAdminResultBlock(
+                    block,
+                    `input-${i}`,
+                    config.response_type,
+                    rawVal,
+                    null   // dropdownOpts not needed; elements already in DOM
+                );
             }
+        }
+
+        /** Locate the .mb-3 block that contains a given input by name or id */
+        function findBlockForInput(inputName) {
+            // First try data attribute set by generateFormBlocks (isAdmin mode)
+            const byData = document.querySelector(`[data-input-name="${inputName}"]`);
+            if (byData) return byData;
+            // Fallback: walk up from the input element
+            const el = document.querySelector(`[name="${inputName}"]`) ||
+                       document.getElementById(inputName);
+            if (!el) return null;
+            let node = el.parentElement;
+            while (node && !node.classList.contains('mb-3')) node = node.parentElement;
+            return node;
         }
 
         await loadResultsEntryData();
 
-        // Reload Results Entry data when tab is activated
         document.getElementById('results-entry-tab').addEventListener('shown.bs.tab', async () => {
             await loadResultsEntryData();
         });
 
+        // ── Form submission ──
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
 
@@ -1171,25 +1256,39 @@
             if (fdErr) { showCustomAlert('Error fetching form details'); return; }
             if (!formDetails.form_enabled) { showCustomAlert('Form submissions are currently closed.'); return; }
 
-            const formData = new FormData(form);
-            const playerId = 0;
+            const playerId   = 0;
             const raceNumber = formDetails.race_number;
 
-            for (const config of formConfig) {
-                if (config.enabled && config.id !== 1) {
-                    const value = formData.get(`input-${config.id}`);
-                    if (!value) { showCustomAlert(`Please fill out all required fields.`); return; }
-                }
-            }
-
+            // Build submission by reading admin-aware values
             const submissionData = {
                 submission_time: new Date().toISOString(),
                 race_number: raceNumber,
                 player_id: playerId,
             };
+
+            // formConfig here has response_type; gather results via readAdminResultValue
+            const configById = {};
+            formConfig.forEach(c => { configById[c.id] = c; });
+
             for (let i = 2; i <= 28; i++) {
-                submissionData[`form_id_${i}`] = formData.get(`input-${i}`);
+                const config = configById[i];
+                if (!config || !config.enabled) {
+                    submissionData[`form_id_${i}`] = null;
+                    continue;
+                }
+
+                const block = findBlockForInput(`input-${i}`);
+                if (!block) {
+                    submissionData[`form_id_${i}`] = null;
+                    continue;
+                }
+
+                const val = readAdminResultValue(block, `input-${i}`, config.response_type);
+                submissionData[`form_id_${i}`] = val || null;
             }
+
+            // form_id_1 is the player name field (id=1), always 0 for results
+            // submissionData['form_id_1'] = null; this should not have been here
 
             let saveError;
             if (existingSubmissions.includes(playerId)) {
@@ -1203,15 +1302,23 @@
 
             if (saveError) { showCustomAlert('Error saving form submission'); return; }
 
-            // Refresh the form to a clean state
             await loadResultsEntryData();
-
-            // Trigger a data refresh on the Scoring tab so it's ready
             await refreshScoringData();
 
             const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
             confirmationModal.show();
         });
+
+        function findBlockForInput(inputName) {
+            const byData = document.querySelector(`[data-input-name="${inputName}"]`);
+            if (byData) return byData;
+            const el = document.querySelector(`[name="${inputName}"]`) ||
+                       document.getElementById(inputName);
+            if (!el) return null;
+            let node = el.parentElement;
+            while (node && !node.classList.contains('mb-3')) node = node.parentElement;
+            return node;
+        }
     });
 
     async function updateResultsEntryTitle() {
@@ -1226,10 +1333,9 @@
     }
 
     // ============================================================
-    // === SCORING TAB
+    // === SCORING TAB  (updated for Excluded and MULTI::)
     // ============================================================
 
-    // Module-level data store for Scoring tab (refreshable)
     let scoringData = {
         formRaw: [], formConfig: [], calendar: [], players: [],
         drivers: [], constructors: [], formDetails: [], loaded: false
@@ -1283,7 +1389,6 @@
         );
 
         document.getElementById('scoreRoundButton').addEventListener('click', async () => {
-            // Ensure fresh data
             await refreshScoringData();
 
             const { formRaw, formConfig, calendar, players, drivers, constructors, formDetails } = scoringData;
@@ -1299,68 +1404,116 @@
             progress.reset();
             progress.setStatus('Starting scoring...');
 
-            // Score helpers (same logic as before)
-            function calculateScore(response, result, scoringType, results, currentQuestionID) {
+            // ── Score calculation (updated for Excluded + MULTI::) ──
+            function calculateScore(response, rawResult, scoringType, results, currentQuestionID) {
+                // If result is excluded, everyone gets 0
+                if (!rawResult || rawResult === 'Excluded') return 0;
+
+                // Helper: does response match this raw result?
+                const matches = (resp, raw) => responseMatchesResult(String(resp), raw);
+
+                // For P-type scoring we need to know if a response matches a specific position's result
+                // When a position's result is MULTI, we treat it as matching if any value matches.
+                const matchesPos = (resp, posRaw) => {
+                    if (!posRaw || posRaw === 'Excluded') return false;
+                    return responseMatchesResult(String(resp), posRaw);
+                };
+
                 switch (scoringType) {
                     case 'Off (0)': return 0;
+
                     case 'P1 Type (3)':
-                        if (response === result) return 3;
-                        if (response === results.form_id_3) return 1.5;
-                        if (response === results.form_id_4) return 1;
-                        if (response === results.form_id_5) return 0.5;
+                        if (matches(response, rawResult)) return 3;
+                        if (matchesPos(response, results.form_id_3)) return 1.5;
+                        if (matchesPos(response, results.form_id_4)) return 1;
+                        if (matchesPos(response, results.form_id_5)) return 0.5;
                         return 0;
+
                     case 'P2 Type (2)':
-                        if (response === result) return 2;
-                        if (response === results.form_id_2 || response === results.form_id_4) return 1.5;
-                        if (response === results.form_id_5) return 1;
-                        if (response === results.form_id_6) return 0.5;
+                        if (matches(response, rawResult)) return 2;
+                        if (matchesPos(response, results.form_id_2) || matchesPos(response, results.form_id_4)) return 1.5;
+                        if (matchesPos(response, results.form_id_5)) return 1;
+                        if (matchesPos(response, results.form_id_6)) return 0.5;
                         return 0;
+
                     case 'P3 Type (2)':
-                        if (response === result) return 2;
-                        if (response === results.form_id_3 || response === results.form_id_5) return 1.5;
-                        if (response === results.form_id_6 || response === results.form_id_2) return 1;
-                        if (response === results.form_id_7) return 0.5;
+                        if (matches(response, rawResult)) return 2;
+                        if (matchesPos(response, results.form_id_3) || matchesPos(response, results.form_id_5)) return 1.5;
+                        if (matchesPos(response, results.form_id_6) || matchesPos(response, results.form_id_2)) return 1;
+                        if (matchesPos(response, results.form_id_7)) return 0.5;
                         return 0;
+
                     case 'P4 Type (2)':
-                        if (response === result) return 2;
-                        if (response === results.form_id_4 || response === results.form_id_6) return 1.5;
-                        if (response === results.form_id_3 || response === results.form_id_7) return 1;
-                        if (response === results.form_id_2) return 0.5;
+                        if (matches(response, rawResult)) return 2;
+                        if (matchesPos(response, results.form_id_4) || matchesPos(response, results.form_id_6)) return 1.5;
+                        if (matchesPos(response, results.form_id_3) || matchesPos(response, results.form_id_7)) return 1;
+                        if (matchesPos(response, results.form_id_2)) return 0.5;
                         return 0;
+
                     case 'P5 Type (2)':
-                        if (response === result) return 2;
-                        if (response === results.form_id_5 || response === results.form_id_7) return 1.5;
-                        if (response === results.form_id_4) return 1;
-                        if (response === results.form_id_3) return 0.5;
+                        if (matches(response, rawResult)) return 2;
+                        if (matchesPos(response, results.form_id_5) || matchesPos(response, results.form_id_7)) return 1.5;
+                        if (matchesPos(response, results.form_id_4)) return 1;
+                        if (matchesPos(response, results.form_id_3)) return 0.5;
                         return 0;
+
                     case 'P6 Type (2)':
-                        if (response === result) return 2;
-                        if (response === results.form_id_6) return 1.5;
-                        if (response === results.form_id_5) return 1;
-                        if (response === results.form_id_4) return 0.5;
+                        if (matches(response, rawResult)) return 2;
+                        if (matchesPos(response, results.form_id_6)) return 1.5;
+                        if (matchesPos(response, results.form_id_5)) return 1;
+                        if (matchesPos(response, results.form_id_4)) return 0.5;
                         return 0;
-                    case 'Simple (1)': return response === result ? 1 : 0;
+
+                    case 'Simple (1)':
+                        return matches(response, rawResult) ? 1 : 0;
+
                     case 'Driver + Team (2)': {
-                        if (response === result) return 2;
+                        if (matches(response, rawResult)) return 2;
+                        // Check if player's driver is in the same constructor as any correct answer
+                        const decoded = decodeResult(rawResult);
                         const rd = drivers.find(d => d.id === Number(response));
-                        const rl = drivers.find(d => d.id === Number(result));
-                        return (rd && rl && rd.constructor_id === rl.constructor_id) ? 1 : 0;
+                        if (!rd) return 0;
+                        const anyTeamMatch = decoded.values.some(v => {
+                            const rl = drivers.find(d => d.id === Number(v));
+                            return rl && rd.constructor_id === rl.constructor_id;
+                        });
+                        return anyTeamMatch ? 1 : 0;
                     }
+
                     case 'Plus Minus One (2)':
-                        return response === result ? 2 : Math.abs(response - result) === 1 ? 1 : 0;
+                        // Excluded handled above; for numeric, compare to first value
+                        if (matches(response, rawResult)) return 2;
+                        {
+                            const decoded = decodeResult(rawResult);
+                            const resultNum = Number(decoded.values[0]);
+                            const diff = Math.abs(Number(response) - resultNum);
+                            return diff === 1 ? 1 : 0;
+                        }
+
                     case 'Closest (1)': {
+                        // Excluded handled above
+                        const decoded = decodeResult(rawResult);
+                        const resultNum = Number(decoded.values[0]);
                         const allResponses = formRaw
                             .filter(r => r.race_number === relevantRaceNumber && r.player_id !== 0 && r.player_id !== -1)
-                            .map(r => Number(r[`form_id_${currentQuestionID}`]));
-                        const resultNum = Number(results[`form_id_${currentQuestionID}`]);
+                            .map(r => Number(r[`form_id_${currentQuestionID}`]))
+                            .filter(n => !isNaN(n));
+                        if (!allResponses.length) return 0;
                         const closestDiff = Math.min(...allResponses.map(r => Math.abs(r - resultNum)));
                         return Math.abs(Number(response) - resultNum) === closestDiff ? 1 : 0;
                     }
+
                     default: return 0;
                 }
             }
 
+            /**
+             * Convert a stored raw response value to display text for the results table.
+             * Handles MULTI:: format and standard values.
+             */
             function convertResponseToText(response, responseType) {
+                // If the response itself is already a display value (from a player submission)
+                // we just need to map IDs to names. Raw results use resultToDisplayText().
                 switch (responseType) {
                     case 'Select - Name List':
                         return players.find(p => p.id === parseInt(response))?.name || response;
@@ -1371,11 +1524,27 @@
                     case 'Select - Team List':
                         return constructors.find(c => c.id === parseInt(response))?.name || response;
                     case 'Radio - Yes/No':
-                        return response.toLowerCase() === 'yes' ? 'Yes' : 'No';
+                        return response?.toLowerCase() === 'yes' ? 'Yes' : 'No';
                     case 'Radio - Heads/Tails':
-                        return response.toLowerCase() === 'heads' ? 'Heads' : 'Tails';
+                        return response?.toLowerCase() === 'heads' ? 'Heads' : 'Tails';
                     default: return response;
                 }
+            }
+
+            /**
+             * Convert a stored *result* value (which may be MULTI:: or Excluded)
+             * into a human-readable display string for the results row in the response table.
+             */
+            function convertResultToDisplayText(rawResult, responseType) {
+                if (!rawResult || rawResult === 'Excluded') return 'Excluded';
+                const decoded = decodeResult(rawResult);
+                if (decoded.isMulti) {
+                    // Convert each stored ID to its display name, then join with &
+                    return decoded.values
+                        .map(v => convertResponseToText(v, responseType))
+                        .join(' & ');
+                }
+                return convertResponseToText(decoded.values[0], responseType);
             }
 
             function scoreResponses(playerResponses, results) {
@@ -1383,10 +1552,13 @@
                 let scores = { form_id_1_score: 0 };
                 formConfig.forEach(question => {
                     if (question.id !== 1 && question.enabled) {
+                        const rawResult = results[`form_id_${question.id}`];
                         scores[`form_id_${question.id}_score`] = calculateScore(
                             playerResponses[`form_id_${question.id}`],
-                            results[`form_id_${question.id}`],
-                            question.scoring_type, results, question.id
+                            rawResult,
+                            question.scoring_type,
+                            results,
+                            question.id
                         );
                     } else if (question.id !== 1) {
                         scores[`form_id_${question.id}_score`] = 0;
@@ -1410,10 +1582,13 @@
                 let convertedResponses = {}, subtotal_1 = 0, subtotal_2 = 0, subtotal_3 = 0, subtotal_4 = 0;
 
                 if (entryType === 'results') {
+                    // For the results row, store the human-readable version of each result
                     formConfig.forEach(q => {
                         if (q.id !== 1 && q.enabled) {
                             const r = responses[`form_id_${q.id}`];
-                            if (r !== undefined) convertedResponses[`form_id_${q.id}`] = convertResponseToText(r, q.response_type);
+                            if (r !== undefined && r !== null) {
+                                convertedResponses[`form_id_${q.id}`] = convertResultToDisplayText(r, q.response_type);
+                            }
                         }
                     });
                 } else if (entryType !== 'player_lowest_score') {
@@ -1423,7 +1598,9 @@
                     formConfig.forEach(q => {
                         if (q.id !== 1 && q.enabled) {
                             const r = responses[`form_id_${q.id}`];
-                            if (r !== undefined) convertedResponses[`form_id_${q.id}`] = convertResponseToText(r, q.response_type);
+                            if (r !== undefined && r !== null) {
+                                convertedResponses[`form_id_${q.id}`] = convertResponseToText(r, q.response_type);
+                            }
                         }
                     });
                 }
@@ -1476,7 +1653,7 @@
                 return Math.min(...data.map(r => r.grand_total));
             }
 
-            // Process results entry
+            // Process results entry row
             if (results) {
                 progress.setStatus('Processing results entry...');
                 progress.setPercent(5);
@@ -1503,7 +1680,6 @@
             progress.setStatus('Saving questions...');
             await saveQuestions(relevantRaceNumber, raceName);
 
-            // Handle players without responses
             const playersWithoutResponses = players.filter(p => !relevantResponses.some(r => r.player_id === p.id));
             if (playersWithoutResponses.length > 0) {
                 progress.setStatus('Assigning lowest scores to absent players...');
@@ -1520,9 +1696,7 @@
             displayScores(updatedResponses);
             progress.done('Scoring complete.');
 
-            // Refresh Season Player with fresh data
             await refreshSeasonPlayerData();
-
             showCustomAlert('Round scored successfully!');
         });
 
@@ -1543,9 +1717,7 @@
     // === SEASON PLAYER TAB
     // ============================================================
 
-    let seasonPlayerData = {
-        formDetails: null, currentYear: null, loaded: false
-    };
+    let seasonPlayerData = { formDetails: null, currentYear: null, loaded: false };
 
     async function refreshSeasonPlayerData() {
         seasonPlayerData.formDetails = (await getTable('form_details'))[0];
@@ -1598,7 +1770,6 @@
             raceSelect.appendChild(opt);
         }
 
-        // Default to current race from form_details
         const currentRaceNumber = seasonPlayerData.formDetails?.race_number;
         let matched = false;
         for (let i = 0; i < raceSelect.options.length; i++) {
@@ -1607,7 +1778,6 @@
             }
         }
         if (!matched && raceSelect.options.length > 0) {
-            // Fall back to latest
             let latestIdx = 0, latestNum = 0;
             for (let i = 0; i < raceSelect.options.length; i++) {
                 const n = parseInt(raceSelect.options[i].dataset.raceNumber);
@@ -1626,9 +1796,9 @@
         const { data, error } = await supabase
             .from(`form_responses_${currentYear}`).select('entry_type').eq('race_name', selectedRaceName);
         if (error) return;
-        const playerCount = data.filter(r => r.entry_type === 'player').length;
-        const lowestCount = data.filter(r => r.entry_type === 'player_lowest_score').length;
-        const hasResults  = data.some(r => r.entry_type === 'results');
+        const playerCount  = data.filter(r => r.entry_type === 'player').length;
+        const lowestCount  = data.filter(r => r.entry_type === 'player_lowest_score').length;
+        const hasResults   = data.some(r => r.entry_type === 'results');
         const hasQuestions = data.some(r => r.entry_type === 'questions');
         document.getElementById("race-info").innerHTML = `
             <p class="mb-1"><strong>Race:</strong> ${selectedRaceName}</p>
@@ -1650,7 +1820,7 @@
         const raceNumber = parseInt(raceSelect.options[raceSelect.selectedIndex].dataset.raceNumber, 10);
         spProgress.log(`Race: ${selectedRaceName} (${raceNumber})`);
 
-        const responsesTable = `form_responses_${currentYear}`;
+        const responsesTable  = `form_responses_${currentYear}`;
         const seasonPlayerTable = `season_player_${currentYear}`;
 
         const { data: responses, error: respErr } = await supabase
@@ -1728,12 +1898,10 @@
     });
 
     // ============================================================
-    // === SEASON TEAM TAB — TEAM SCORING
+    // === SEASON TEAM TAB — (unchanged from original)
     // ============================================================
 
-    let seasonTeamTabData = {
-        formDetails: null, currentYear: null, loaded: false
-    };
+    let seasonTeamTabData = { formDetails: null, currentYear: null, loaded: false };
 
     async function refreshSeasonTeamData() {
         seasonTeamTabData.formDetails = (await getTable('form_details'))[0];
@@ -1781,7 +1949,6 @@
             raceSelect.appendChild(opt);
         }
 
-        // Default to current race
         const currentRaceNumber = seasonTeamTabData.formDetails?.race_number;
         let matched = false;
         for (let i = 0; i < raceSelect.options.length; i++) {
@@ -1833,14 +2000,12 @@
         let swapRequests = [];
         let reportRequests = [];
 
-        // Build report requests
         for (const team of teams) {
             if (team.card_report_team_selected) {
                 reportRequests.push({ reportingTeamId: team.id, reportedTeamId: team.card_report_team_selected });
             }
         }
 
-        // Part 1: Calculate base scores and card bonuses
         for (const team of teams) {
             const teamId = team.id, teamName = team.name;
             stScoringProgress.setStatus(`Processing ${teamName}...`);
@@ -1899,7 +2064,6 @@
         }
         stScoringProgress.setPercent(40);
 
-        // Part 1.5: Safety Car
         stScoringProgress.setStatus('Applying Safety Car cards...');
         teamScoringData.sort((a, b) => b.grandTotal - a.grandTotal);
         let currentRank = 1;
@@ -1929,7 +2093,6 @@
         }
         stScoringProgress.setPercent(60);
 
-        // Part 2: Report cards
         stScoringProgress.setStatus('Applying Report cards...');
         for (const td of teamScoringData) {
             const reports = reportRequests.filter(r => r.reportedTeamId === td.teamId);
@@ -1953,29 +2116,27 @@
             else if (reportCount > 1) td.grandTotal += highestScore;
         }
 
-        // Part 3: Swap cards
         stScoringProgress.setStatus('Applying Swap cards...');
         swapRequests.sort((a, b) => a.swapTime - b.swapTime);
         let swapCount = 1;
         for (const swap of swapRequests) {
-            const td = teamScoringData.find(t => t.teamId === swap.teamId);
+            const td  = teamScoringData.find(t => t.teamId === swap.teamId);
             const tgt = teamScoringData.find(t => t.teamId === swap.swapTargetTeamId);
             if (!td || !tgt) continue;
             if (tgt.card_halo_applied === 1) {
-                td.card_swap_details += `(#${swapCount}) ${td.teamName} swap with ${tgt.teamName} stopped by Halo. `;
+                td.card_swap_details  += `(#${swapCount}) ${td.teamName} swap with ${tgt.teamName} stopped by Halo. `;
                 tgt.card_swap_details += `(#${swapCount}) Swap by ${td.teamName} stopped by Halo. `;
             } else {
                 const tmp = td.grandTotal;
                 td.grandTotal = tgt.grandTotal;
                 tgt.grandTotal = tmp;
-                td.card_swap_details += `(#${swapCount}) ${td.teamName} swaps with ${tgt.teamName}. `;
+                td.card_swap_details  += `(#${swapCount}) ${td.teamName} swaps with ${tgt.teamName}. `;
                 tgt.card_swap_details += `(#${swapCount}) ${td.teamName} swaps with ${tgt.teamName}. `;
                 td.card_swap_applied++; tgt.card_swap_applied++; swapCount++;
             }
         }
         stScoringProgress.setPercent(80);
 
-        // Part 4: Upload
         stScoringProgress.setStatus('Uploading results...');
         for (const td of teamScoringData) {
             td.cardPointsDelta = td.grandTotal - td.subtotal;
@@ -2081,7 +2242,6 @@
             await upsertTeamScoringData([rec], teamScoringTable);
         }
 
-        // Reset casino bets
         const { error: deleteErr } = await supabase.from('casino').delete().gt('team_id', 0);
         if (deleteErr) stScoringProgress.log('Error resetting casino bets: ' + deleteErr.message);
         else stScoringProgress.log('Casino bets reset.');
@@ -2122,9 +2282,7 @@
         else await updateCasinoTeamScoring();
     }
 
-    // ============================================================
-    // === SEASON TEAM TAB — SEASON SUMMARY
-    // ============================================================
+    // ── Season Team Summary ──
 
     function getLowestTeamScoreForRound(roundNumber, seasonTeamData) {
         const column = `race_${roundNumber}`;
@@ -2161,7 +2319,6 @@
         }
         stSummaryProgress.setPercent(15);
 
-        // Build final score strings with card tags
         tsd.forEach(rec => {
             let tags = '';
             const append = (count, label) => { for (let i = 0; i < (count || 0); i++) tags += `(${label})`; };
@@ -2205,7 +2362,6 @@
             stSummaryProgress.setPercent(30 + (idx / total) * 60);
         }
 
-        // Update Race Names row
         stSummaryProgress.setStatus('Updating Race Names row...');
         const { data: rnRow } = await supabase.from(seasonTeamTable).select('*').eq('team_id', 0).maybeSingle();
         if (!rnRow) {
@@ -2229,24 +2385,24 @@
     });
 
     // ============================================================
-    // === INFORMATION DASHBOARD
+    // === INFORMATION DASHBOARD (unchanged)
     // ============================================================
 
     document.addEventListener('DOMContentLoaded', async () => {
-        const raceSelect = document.getElementById('race-select');
-        const resultsDisplayRaceSelect = document.getElementById('results-display-race-select');
-        const resultsDisplayTypeSelect = document.getElementById('results-display-type-select');
-        const formResponses = document.getElementById('form-responses');
-        const formStatus = document.getElementById('form-status');
-        const formStatusLabel = document.getElementById('form-status-label');
-        const currentYearInput = document.getElementById('current-year');
-        const formStatusTextEnabledInput = document.getElementById('form-status-text-enabled');
-        const formStatusTextEnabledLabel = document.getElementById('form-status-text-enabled-label');
-        const formStatusTextInput = document.getElementById('form-status-text');
-        const formAlertTextEnabledInput = document.getElementById('form-alert-text-enabled');
-        const formAlertTextEnabledLabel = document.getElementById('form-alert-text-enabled-label');
-        const formAlertTextInput = document.getElementById('form-alert-text-input');
-        const saveChangesButton = document.getElementById('save-changes');
+        const raceSelect                  = document.getElementById('race-select');
+        const resultsDisplayRaceSelect    = document.getElementById('results-display-race-select');
+        const resultsDisplayTypeSelect    = document.getElementById('results-display-type-select');
+        const formResponses               = document.getElementById('form-responses');
+        const formStatus                  = document.getElementById('form-status');
+        const formStatusLabel             = document.getElementById('form-status-label');
+        const currentYearInput            = document.getElementById('current-year');
+        const formStatusTextEnabledInput  = document.getElementById('form-status-text-enabled');
+        const formStatusTextEnabledLabel  = document.getElementById('form-status-text-enabled-label');
+        const formStatusTextInput         = document.getElementById('form-status-text');
+        const formAlertTextEnabledInput   = document.getElementById('form-alert-text-enabled');
+        const formAlertTextEnabledLabel   = document.getElementById('form-alert-text-enabled-label');
+        const formAlertTextInput          = document.getElementById('form-alert-text-input');
+        const saveChangesButton           = document.getElementById('save-changes');
 
         let currentRaceNumber;
 
@@ -2304,7 +2460,6 @@
         }
         await fetchFormResponseCount();
 
-        // Change listeners
         [raceSelect, resultsDisplayRaceSelect, resultsDisplayTypeSelect, currentYearInput,
          formStatusTextInput, formAlertTextInput,
          document.getElementById('main-page-alert-text-input'),
@@ -2460,7 +2615,7 @@
         const table = document.getElementById("drivers-table");
         table.innerHTML = "";
         driverData.forEach(driver => {
-            let sel = `<select class="form-control" data-id="${driver.id}" data-field="constructor_id">
+            let sel = `<select class="form-control form-select" data-id="${driver.id}" data-field="constructor_id">
                 <option value="">Select Constructor</option>`;
             (constructors || []).forEach(c => {
                 sel += `<option value="${c.id}" ${c.id === driver.constructor_id ? 'selected' : ''}>${c.name}</option>`;
@@ -2527,6 +2682,7 @@
                 <td><input type="text" class="form-control" value="${c.name}" data-id="${c.id}" data-field="name"></td>
                 <td><input type="text" class="form-control" value="${c.background_colour}" data-id="${c.id}" data-field="background_colour"></td>
                 <td><input type="text" class="form-control" value="${c.text_colour}" data-id="${c.id}" data-field="text_colour"></td>
+                <td><span class="constructor-preview" style="background-color:${c.background_colour};color:${c.text_colour};padding:3px 10px;border-radius:4px;font-weight:600;font-size:0.85rem;white-space:nowrap;">${c.name}</span></td>
                 <td><button class="btn btn-danger btn-sm" onclick="deleteConstructor(${c.id})">Delete</button></td>
             </tr>`;
         });
@@ -2637,6 +2793,7 @@
     // ============================================================
     // === EDIT TABS INITIALISATION
     // ============================================================
+
     async function fetchTracks() {
         const { data, error } = await supabase.from('tracks').select('name').order('name', { ascending: true });
         if (error || !data) return;
@@ -2674,9 +2831,6 @@
             trackCountryFiles.map(c => `<option value="${c}">${c}</option>`).join('');
     }
 
-        //     console.log('trackImageFiles:', imgData, trackImageFiles);
-        // console.log('trackCountryFiles:', flagData, trackCountryFiles);
-
     function buildTrackImageSelect(selectedValue, dataId) {
         const opts = trackImageFiles.map(f =>
             `<option value="${f}" ${f === selectedValue ? 'selected' : ''}>${f}</option>`
@@ -2707,12 +2861,12 @@
                 <td><input type="text" class="form-control form-control-sm" value="${t.circuit_name || ''}" data-id="${t.id}" data-field="circuit_name"></td>
                 <td>${buildTrackCountrySelect(t.country, t.id)}</td>
                 <td>${buildTrackImageSelect(t.track_image_name, t.id)}</td>
-                <td><input type="number" class="form-control form-control-sm" style="width:70px" value="${t.number_of_laps ?? ''}" data-id="${t.id}" data-field="number_of_laps"></td>
-                <td><input type="number" step="0.001" class="form-control form-control-sm" style="width:90px" value="${t.circuit_length ?? ''}" data-id="${t.id}" data-field="circuit_length"></td>
-                <td><input type="number" step="0.001" class="form-control form-control-sm" style="width:90px" value="${t.race_distance ?? ''}" data-id="${t.id}" data-field="race_distance"></td>
-                <td><input type="number" class="form-control form-control-sm" style="width:80px" value="${t.first_grand_prix ?? ''}" data-id="${t.id}" data-field="first_grand_prix"></td>
-                <td><input type="number" step="0.000001" class="form-control form-control-sm" style="width:100px" value="${t.lat ?? ''}" data-id="${t.id}" data-field="lat"></td>
-                <td><input type="number" step="0.000001" class="form-control form-control-sm" style="width:100px" value="${t.lon ?? ''}" data-id="${t.id}" data-field="lon"></td>
+                <td><input type="number" class="form-control form-control-sm" value="${t.number_of_laps ?? ''}" data-id="${t.id}" data-field="number_of_laps"></td>
+                <td><input type="number" step="0.001" class="form-control form-control-sm" value="${t.circuit_length ?? ''}" data-id="${t.id}" data-field="circuit_length"></td>
+                <td><input type="number" step="0.001" class="form-control form-control-sm" value="${t.race_distance ?? ''}" data-id="${t.id}" data-field="race_distance"></td>
+                <td><input type="number" class="form-control form-control-sm" value="${t.first_grand_prix ?? ''}" data-id="${t.id}" data-field="first_grand_prix"></td>
+                <td><input type="number" step="0.000001" class="form-control form-control-sm" value="${t.lat ?? ''}" data-id="${t.id}" data-field="lat"></td>
+                <td><input type="number" step="0.000001" class="form-control form-control-sm" value="${t.lon ?? ''}" data-id="${t.id}" data-field="lon"></td>
                 <td><button class="btn btn-danger btn-sm" onclick="deleteTrack(${t.id})">Delete</button></td>
             </tr>`;
         });
@@ -2956,23 +3110,23 @@
     // === GLOBAL FUNCTION EXPORTS
     // ============================================================
 
-    window.updatePlayer        = updatePlayer;
-    window.deletePlayer        = deletePlayer;
+    window.updatePlayer         = updatePlayer;
+    window.deletePlayer         = deletePlayer;
     window.updatePlayerPassword = updatePlayerPassword;
-    window.updateTeam          = updateTeam;
-    window.deleteTeam          = deleteTeam;
-    window.deleteDriver        = deleteDriver;
-    window.deleteConstructor   = deleteConstructor;
-    window.deleteRace          = deleteRace;
-    window.addDriver           = addDriver;
-    window.addConstructor      = addConstructor;
-    window.addRace             = addRace;
-    window.addTrack            = addTrack;
-    window.deleteTrack         = deleteTrack;
-    window.populatePlayers     = populatePlayers;
-    window.populateTeams       = populateTeams;
+    window.updateTeam           = updateTeam;
+    window.deleteTeam           = deleteTeam;
+    window.deleteDriver         = deleteDriver;
+    window.deleteConstructor    = deleteConstructor;
+    window.deleteRace           = deleteRace;
+    window.addDriver            = addDriver;
+    window.addConstructor       = addConstructor;
+    window.addRace              = addRace;
+    window.addTrack             = addTrack;
+    window.deleteTrack          = deleteTrack;
+    window.populatePlayers      = populatePlayers;
+    window.populateTeams        = populateTeams;
     window.populateConstructors = fetchConstructors;
-    window.populateCalendar    = fetchCalendar;
+    window.populateCalendar     = fetchCalendar;
 </script>
 </body>
 </html>

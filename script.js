@@ -28,6 +28,56 @@ export async function fetchData(table, fields = '*') {
 }
 
 // =============================================================================
+// SECTION 1B — MULTI-ANSWER RESULT HELPERS
+// =============================================================================
+
+/**
+ * Encode multiple correct answers into storage format.
+ * e.g. ['VER', 'HAM'] → 'MULTI::VER::HAM'
+ * A single answer is stored as plain text (no prefix).
+ */
+export function encodeMultiResult(answers) {
+    const filtered = answers.filter(a => a && a.trim() !== '');
+    if (filtered.length === 0) return '';
+    if (filtered.length === 1) return filtered[0];
+    return 'MULTI::' + filtered.join('::');
+}
+
+/**
+ * Decode a stored result value.
+ * Returns { isExcluded, isMulti, values: [] }
+ */
+export function decodeResult(raw) {
+    if (!raw || raw === 'Excluded') return { isExcluded: true, isMulti: false, values: [] };
+    if (raw.startsWith('MULTI::')) {
+        const values = raw.slice(7).split('::').filter(Boolean);
+        return { isExcluded: false, isMulti: true, values };
+    }
+    return { isExcluded: false, isMulti: false, values: [raw] };
+}
+
+/**
+ * Convert a stored result to a human-readable display string.
+ * e.g. 'MULTI::VER::HAM' → 'VER & HAM'
+ */
+export function resultToDisplayText(raw) {
+    const decoded = decodeResult(raw);
+    if (decoded.isExcluded) return 'Excluded';
+    if (decoded.isMulti) return decoded.values.join(' & ');
+    return raw;
+}
+
+/**
+ * Check whether a player's response matches the result.
+ * Handles excluded, multi, and single results.
+ */
+export function responseMatchesResult(response, rawResult) {
+    const decoded = decodeResult(rawResult);
+    if (decoded.isExcluded) return false;
+    return decoded.values.includes(String(response));
+}
+
+// =============================================================================
 // SECTION 2 — SHARED DATA & COLOUR HELPERS (used across multiple pages)
 // =============================================================================
 
@@ -79,8 +129,6 @@ export function normalizeAvatarSettings(avatar_settings) {
 /**
  * Colour all th.your-results-header cells inside a given table element
  * using the logged-in player's avatar background colour.
- * @param {HTMLElement} tableEl  - the <table> element to search within
- * @param {object}      user     - player record with .name and .avatar_settings
  */
 export function applyHeaderColor(tableEl, user) {
     if (!tableEl || !user) return;
@@ -96,12 +144,6 @@ export function applyHeaderColor(tableEl, user) {
 // SECTION 3 — RACE DROPDOWN HELPER
 // =============================================================================
 
-/**
- * Populate a <select> element with races from team_scoring_{year}.
- * Selects the last (most recent) race by default.
- * @param {HTMLSelectElement} selectEl
- * @param {number|string}     year
- */
 export async function populateRaceDropdown(selectEl, year) {
     const { data, error } = await supabase
         .from(`team_scoring_${year}`)
@@ -128,25 +170,6 @@ export async function populateRaceDropdown(selectEl, year) {
 // SECTION 4 — RACE RESULTS: PLAYER TABLE
 // =============================================================================
 
-/**
- * Build and render the player race results table, podium, and "your results" box.
- *
- * @param {object} config
- * @param {number|string} config.year          - season year
- * @param {number|string} config.raceNumber    - race number to display
- * @param {HTMLElement}   config.tableEl       - <table> element to populate
- * @param {Array}         config.drivers       - drivers rows from DB
- * @param {Array}         config.constructors  - constructors rows from DB
- * @param {object|null}   config.podium        - null = skip podium; or object with:
- *                                               { firstNamesEl, secondNamesEl, thirdNamesEl,
- *                                                 firstScoreEl, secondScoreEl, thirdScoreEl,
- *                                                 containerEl }
- * @param {object|null}   config.yourResults   - null = skip; or { boxEl, contentEl }
- * @param {HTMLElement|null} config.lowestEl   - element to show "did not play" text
- * @param {HTMLElement|null} config.toggleEl   - "Show Detailed Scoring" checkbox
- * @param {HTMLElement|null} config.pinBothEl  - "Pin both" checkbox to enable/disable
- * @returns {Promise<void>}
- */
 export async function buildRaceResultsPlayerTable(config) {
     const {
         year, raceNumber, tableEl,
@@ -171,14 +194,12 @@ export async function buildRaceResultsPlayerTable(config) {
     let   players      = formResponses.filter(r => r.entry_type === 'player');
     const lowestScores = formResponses.filter(r => r.entry_type === 'player_lowest_score');
 
-    // Move current user to front
     let userResultPulled = false;
     if (currentUserId) {
         const idx = players.findIndex(p => p.player_id == currentUserId);
         if (idx !== -1) { userResultPulled = true; const [up] = players.splice(idx, 1); players.unshift(up); }
     }
 
-    // Merge avatar_settings onto player rows
     const { data: playersData } = await supabase.from('players').select('id, avatar_settings, name');
     const pm = {};
     (playersData || []).forEach(p => { pm[p.id] = p; });
@@ -186,7 +207,6 @@ export async function buildRaceResultsPlayerTable(config) {
 
     if (pinBothEl) pinBothEl.disabled = !userResultPulled;
 
-    // ── Build table ──
     tableEl.innerHTML = '';
 
     const thead = document.createElement('thead');
@@ -209,7 +229,7 @@ export async function buildRaceResultsPlayerTable(config) {
         if (isTotalCol) {
             const row = document.createElement('tr');
             const tdL = document.createElement('td'); tdL.textContent = label; row.appendChild(tdL);
-            row.appendChild(document.createElement('td')); // empty Results cell for total rows
+            row.appendChild(document.createElement('td'));
             players.forEach(player => {
                 const td = document.createElement('td');
                 td.textContent = player[id];
@@ -221,7 +241,11 @@ export async function buildRaceResultsPlayerTable(config) {
         } else if (results && results[`form_id_${id}`] !== null) {
             const row = document.createElement('tr');
             const tdL = document.createElement('td'); tdL.textContent = label; row.appendChild(tdL);
-            const rt = document.createElement('td'); rt.textContent = results[`form_id_${id}`]; row.appendChild(rt);
+            // Display multi-results in human-readable form
+            const rawResult = results[`form_id_${id}`];
+            const rt = document.createElement('td');
+            rt.textContent = resultToDisplayText(rawResult);
+            row.appendChild(rt);
             players.forEach(player => {
                 const td = document.createElement('td');
                 td.textContent = player[`form_id_${id}`];
@@ -248,7 +272,6 @@ export async function buildRaceResultsPlayerTable(config) {
     createRow('grand_total', 'Grand Total');
     tableEl.appendChild(tbody);
 
-    // ── Colour formatting ──
     const applyFmt = (cell, value) => {
         if (/^[A-Z]{3}$/.test(value)) {
             const drv = drivers?.find(d => d.abbreviation === value);
@@ -265,7 +288,6 @@ export async function buildRaceResultsPlayerTable(config) {
     };
     tableEl.querySelectorAll('tbody td').forEach(cell => applyFmt(cell, cell.textContent));
 
-    // ── Highlight highest scores ──
     const highlightHighest = (cells, colors) => {
         const items = cells.map(c => ({ cell: c, value: parseFloat(c.textContent) })).filter(i => !isNaN(i.value));
         items.sort((a, b) => b.value - a.value);
@@ -281,7 +303,6 @@ export async function buildRaceResultsPlayerTable(config) {
         if (p?.form_id_28_score === 1) { cell.style.backgroundColor = 'lightyellow'; cell.style.color = 'black'; }
     });
 
-    // ── Podium ──
     if (podium) {
         const grandTotals = players
             .map(p => ({ id: p.player_id, name: p.player_name, total: parseFloat(p.grand_total), avatar_settings: p.avatar_settings }))
@@ -319,7 +340,6 @@ export async function buildRaceResultsPlayerTable(config) {
         if (podium.containerEl)   podium.containerEl.style.display = 'flex';
     }
 
-    // ── Your results box ──
     if (yourResults && currentUserId && userResultPulled) {
         const userPlayer = players.find(p => p.player_id == currentUserId);
         const sortedTotals = [...players].map(p => parseFloat(p.grand_total)).sort((a, b) => b - a);
@@ -336,7 +356,6 @@ export async function buildRaceResultsPlayerTable(config) {
         }
     }
 
-    // ── Toggle detailed scoring ──
     if (toggleEl) {
         const newToggle = toggleEl.cloneNode(true);
         toggleEl.parentNode.replaceChild(newToggle, toggleEl);
@@ -358,14 +377,12 @@ export async function buildRaceResultsPlayerTable(config) {
         });
     }
 
-    // ── Lowest scores text ──
     if (lowestEl) {
         lowestEl.textContent = lowestScores.length > 0
             ? `Did not play (receives lowest score): ${lowestScores.map(p => p.player_name).join(', ')}`
             : '';
     }
 
-    // ── Header colour for logged-in user ──
     const user = await getCurrentUser();
     if (user) applyHeaderColor(tableEl, user);
 }
@@ -374,15 +391,6 @@ export async function buildRaceResultsPlayerTable(config) {
 // SECTION 5 — RACE RESULTS: TEAM TABLE
 // =============================================================================
 
-/**
- * Build and render the team race results table into tableEl.
- * The collapsible panel wrapper is handled by the calling page.
- *
- * @param {object} config
- * @param {number|string} config.year
- * @param {number|string} config.raceNumber
- * @param {HTMLElement}   config.tableEl
- */
 export async function buildTeamResultsTable(config) {
     const { year, raceNumber, tableEl } = config;
 
@@ -464,7 +472,6 @@ export async function buildTeamResultsTable(config) {
     html += '</tbody>';
     tableEl.innerHTML = html;
 
-    // ── Highlight logged-in user's team ──
     const user = await getCurrentUser();
     if (user?.participant_team_id) {
         const bg = getUserBackgroundColor(user.name, normalizeAvatarSettings(user.avatar_settings));
@@ -488,15 +495,6 @@ export async function buildTeamResultsTable(config) {
 // SECTION 6 — SEASON PLAYER TABLE
 // =============================================================================
 
-/**
- * Build and render the season player standings table.
- *
- * @param {object} config
- * @param {number|string} config.year
- * @param {HTMLElement}   config.tableEl
- * @param {boolean}       [config.detailed=true]  - true = show all race columns;
- *                                                   false = rank / name / total only
- */
 export async function buildSeasonPlayerTable(config) {
     const { year, tableEl, detailed = true } = config;
 
@@ -517,14 +515,12 @@ export async function buildSeasonPlayerTable(config) {
     for (let i = 1; i <= 32; i++) { if (raceNamesRow[`race_${i}`]) lastRace = i; else break; }
     if (!lastRace) { tableEl.innerHTML = '<tr><td colspan="3">No race scores available yet.</td></tr>'; return; }
 
-    // Header
     let headerHTML = '<thead><tr><th>Rank</th><th>Player</th><th>Total</th>';
     if (detailed) {
         for (let i = 1; i <= lastRace; i++) headerHTML += `<th>${raceNamesRow[`race_${i}`]}</th>`;
     }
     headerHTML += '</tr></thead>';
 
-    // Standings
     const playerRows = seasonData.filter(r => r.player_id !== 0);
     const standings = playerRows.map(row => {
         let total = 0, prevTotal = 0; const raceScores = [];
@@ -573,7 +569,6 @@ export async function buildSeasonPlayerTable(config) {
     tableEl.querySelectorAll('thead th').forEach(c => { c.style.textAlign = 'center'; });
 
     if (detailed) {
-        // Grey out (LS) cells and colour top 3 per race column
         tableEl.querySelectorAll('tbody tr').forEach(row => {
             const cells = row.querySelectorAll('td');
             for (let j = 3; j < cells.length; j++) {
@@ -587,7 +582,6 @@ export async function buildSeasonPlayerTable(config) {
         for (let col = 3; col < numCols; col++) {
             const colCells = Array.from(tableEl.querySelectorAll(`tbody tr td:nth-child(${col + 1})`));
             const values   = colCells.map(c => parseFloat(c.textContent.trim())).filter(v => !isNaN(v));
-            // const sorted   = [...new Set(values)].sort((a, b) => b - a);
             const colors   = ['gold', 'silver', '#cd7f32'];
             colCells.forEach(cell => {
                 const v = parseFloat(cell.textContent.trim());
@@ -599,7 +593,6 @@ export async function buildSeasonPlayerTable(config) {
         }
     }
 
-    // Highlight logged-in player row in name column
     const user = await getCurrentUser();
     if (user) {
         const bg = getUserBackgroundColor(user.name, normalizeAvatarSettings(user.avatar_settings));
@@ -619,15 +612,6 @@ export async function buildSeasonPlayerTable(config) {
 // SECTION 7 — SEASON TEAM TABLE
 // =============================================================================
 
-/**
- * Build and render the season team standings table.
- *
- * @param {object} config
- * @param {number|string} config.year
- * @param {HTMLElement}   config.tableEl
- * @param {boolean}       [config.detailed=true]  - true = show all race columns with card icons;
- *                                                   false = rank / team / total only
- */
 export async function buildSeasonTeamTable(config) {
     const { year, tableEl, detailed = true } = config;
 
@@ -724,7 +708,6 @@ export async function buildSeasonTeamTable(config) {
     tableEl.querySelectorAll('thead th').forEach(c => { c.style.textAlign = 'center'; });
 
     if (detailed) {
-        // Grey out LS and colour top 3 per column
         tableEl.querySelectorAll('tbody tr').forEach(row => {
             const cells = row.querySelectorAll('td');
             for (let j = 3; j < cells.length; j++) {
@@ -738,7 +721,6 @@ export async function buildSeasonTeamTable(config) {
         for (let col = 3; col < numCols; col++) {
             const colCells = Array.from(tableEl.querySelectorAll(`tbody tr td:nth-child(${col + 1})`));
             const values   = colCells.map(c => parseFloat(c.textContent.trim())).filter(v => !isNaN(v));
-            // const sorted   = [...new Set(values)].sort((a, b) => b - a);
             const colors   = ['gold', 'silver', '#cd7f32'];
             colCells.forEach(cell => {
                 const v = parseFloat(cell.textContent.trim());
@@ -750,7 +732,6 @@ export async function buildSeasonTeamTable(config) {
         }
     }
 
-    // Highlight logged-in user's team
     const user = await getCurrentUser();
     if (user?.participant_team_id) {
         const bg = getUserBackgroundColor(user.name, normalizeAvatarSettings(user.avatar_settings));
@@ -771,24 +752,12 @@ export async function buildSeasonTeamTable(config) {
 const FULL_COLORS = ['#e6194b','#3cb44b','#ffe119','#4363d8','#f58231','#911eb4','#46f0f0','#f032e6','#bcf60c','#fabebe','#008080','#e6beff','#9a6324','#fffac8','#800000','#aaffc3','#808000','#ffd8b1','#000075','#808080'];
 const GREY_SHADES = ['#bbbbbb','#aaaaaa','#999999','#888888','#777777','#666666','#b0b0b0','#c0c0c0','#a0a0a0','#909090','#d0d0d0','#707070','#808080','#606060','#505050','#404040','#c8c8c8','#d8d8d8','#787878','#686868'];
 
-// Each page keeps its own chartInstances map and passes the canvas/toggle refs in.
-
 function _lineColor(highlightMode, isSelf, selfColor, gi, fi) {
     return !highlightMode ? FULL_COLORS[fi % FULL_COLORS.length]
         : isSelf ? selfColor
         : GREY_SHADES[gi % GREY_SHADES.length];
 }
 
-/**
- * Render (or re-render) the player standings line chart.
- *
- * @param {object} config
- * @param {number|string}       config.year
- * @param {HTMLCanvasElement}   config.canvasEl
- * @param {HTMLElement|null}    config.toggleEl           - highlight-my-line checkbox
- * @param {HTMLElement|null}    config.toggleContainerEl  - wrapper div to show/hide
- * @param {object}              config.chartInstances     - caller-owned map; keyed by canvasEl.id
- */
 export async function renderSeasonPlayerChart(config) {
     const { year, canvasEl, toggleEl = null, toggleContainerEl = null, chartInstances } = config;
     if (!canvasEl) return;
@@ -859,16 +828,6 @@ export async function renderSeasonPlayerChart(config) {
     } catch (e) { console.error('Player chart error:', e); }
 }
 
-/**
- * Render (or re-render) the team standings line chart.
- *
- * @param {object} config
- * @param {number|string}       config.year
- * @param {HTMLCanvasElement}   config.canvasEl
- * @param {HTMLElement|null}    config.toggleEl
- * @param {HTMLElement|null}    config.toggleContainerEl
- * @param {object}              config.chartInstances
- */
 export async function renderSeasonTeamChart(config) {
     const { year, canvasEl, toggleEl = null, toggleContainerEl = null, chartInstances } = config;
     if (!canvasEl) return;
@@ -1045,7 +1004,330 @@ export function createHeadsTailsInput(container, id) {
     });
 }
 
-export async function generateFormBlocks() {
+// =============================================================================
+// SECTION 9B — ADMIN RESULTS ENTRY HELPERS
+// =============================================================================
+
+/**
+ * CSS injected once for admin results entry controls.
+ * Called automatically by generateFormBlocks when isAdmin=true.
+ */
+function injectAdminResultsStyles() {
+    if (document.getElementById('admin-results-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'admin-results-styles';
+    style.textContent = `
+        .admin-results-controls {
+            margin-top: 6px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: flex-start;
+        }
+        .admin-exclude-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.82rem;
+        }
+        .admin-exclude-wrap input[type=checkbox] {
+            width: 1.1em;
+            height: 1.1em;
+            cursor: pointer;
+        }
+        .admin-exclude-wrap label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: #664d03;
+        }
+        .admin-add-answer-btn {
+            font-size: 0.8rem;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+        .admin-extra-answers {
+            margin-top: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .admin-extra-answer-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .admin-extra-answer-row .remove-answer-btn {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            flex-shrink: 0;
+        }
+        .admin-results-excluded-notice {
+            font-size: 0.8rem;
+            color: #664d03;
+            font-style: italic;
+            margin-top: 4px;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+/**
+ * Build the admin controls (Exclude toggle + Add Answer button) for a block.
+ * @param {HTMLElement} block         - the .mb-3 container div for this question
+ * @param {string}      inputName     - the form input name (e.g. 'input-5')
+ * @param {string}      responseType  - the config.response_type string
+ * @param {object}      dropdownOpts  - { options, defaultText } for Select types
+ *                                      null for Number/Radio types
+ */
+function attachAdminResultsControls(block, inputName, responseType, dropdownOpts) {
+    const isSelectType = responseType.startsWith('Select -');
+    const inputEl = block.querySelector(`[name="${inputName}"]`) || block.querySelector(`#${inputName}`);
+
+    // ── Controls row ──
+    const controlsRow = document.createElement('div');
+    controlsRow.className = 'admin-results-controls';
+
+    // ── Exclude toggle ──
+    const excludeWrap = document.createElement('div');
+    excludeWrap.className = 'admin-exclude-wrap';
+    const excludeId = `exclude-${inputName}`;
+    const excludeChk = document.createElement('input');
+    excludeChk.type = 'checkbox';
+    excludeChk.id = excludeId;
+    const excludeLbl = document.createElement('label');
+    excludeLbl.htmlFor = excludeId;
+    excludeLbl.textContent = 'Exclude question';
+    excludeWrap.appendChild(excludeChk);
+    excludeWrap.appendChild(excludeLbl);
+    controlsRow.appendChild(excludeWrap);
+
+    // ── Add Correct Answer button (Select types only) ──
+    let extraAnswersContainer = null;
+    let addAnswerBtn = null;
+    if (isSelectType) {
+        addAnswerBtn = document.createElement('button');
+        addAnswerBtn.type = 'button';
+        addAnswerBtn.className = 'btn btn-outline-success admin-add-answer-btn';
+        addAnswerBtn.textContent = '+ Add Correct Answer';
+        controlsRow.appendChild(addAnswerBtn);
+
+        extraAnswersContainer = document.createElement('div');
+        extraAnswersContainer.className = 'admin-extra-answers';
+    }
+
+    block.appendChild(controlsRow);
+    if (extraAnswersContainer) block.appendChild(extraAnswersContainer);
+
+    // ── Excluded notice (shown when exclude is checked) ──
+    const excludedNotice = document.createElement('div');
+    excludedNotice.className = 'admin-results-excluded-notice';
+    excludedNotice.textContent = 'This question will be excluded — all players receive 0 points.';
+    excludedNotice.style.display = 'none';
+    block.appendChild(excludedNotice);
+
+    // ── Exclude toggle behaviour ──
+    excludeChk.addEventListener('change', () => {
+        const excluded = excludeChk.checked;
+        // Disable/enable all primary inputs in the block
+        block.querySelectorAll(`[name="${inputName}"]`).forEach(el => {
+            el.disabled = excluded;
+        });
+        // Disable/enable extra answer selects
+        if (extraAnswersContainer) {
+            extraAnswersContainer.querySelectorAll('select').forEach(el => { el.disabled = excluded; });
+            if (addAnswerBtn) addAnswerBtn.disabled = excluded;
+        }
+        excludedNotice.style.display = excluded ? 'block' : 'none';
+    });
+
+    // ── Add Correct Answer behaviour (Select types) ──
+    if (addAnswerBtn && extraAnswersContainer && dropdownOpts) {
+        addAnswerBtn.addEventListener('click', () => {
+            const row = document.createElement('div');
+            row.className = 'admin-extra-answer-row';
+
+            // Clone a new dropdown
+            const newSelect = document.createElement('select');
+            newSelect.className = 'form-select custom-dropdown admin-extra-answer-select';
+            newSelect.style.flexGrow = '1';
+
+            // Add blank default option
+            const defOpt = document.createElement('option');
+            defOpt.value = ''; defOpt.textContent = dropdownOpts.defaultText;
+            defOpt.disabled = true; defOpt.selected = true;
+            newSelect.appendChild(defOpt);
+
+            // Populate options
+            dropdownOpts.options.forEach(opt => {
+                const o = document.createElement('option');
+                o.value = opt.id; o.textContent = opt.name;
+                if (opt.bgColor) o.dataset.bgcolor = opt.bgColor;
+                if (opt.textColor) o.dataset.textcolor = opt.textColor;
+                newSelect.appendChild(o);
+            });
+
+            // Colour-change handler
+            newSelect.addEventListener('change', function() {
+                const sel = newSelect.options[newSelect.selectedIndex];
+                const bg = sel.dataset.bgcolor;
+                const fg = sel.dataset.textcolor;
+                if (bg && fg) {
+                    newSelect.style.setProperty('background-color', bg, 'important');
+                    newSelect.style.setProperty('color', fg, 'important');
+                } else {
+                    newSelect.style.removeProperty('background-color');
+                    newSelect.style.removeProperty('color');
+                }
+            });
+
+            // Remove button
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn btn-outline-danger btn-sm remove-answer-btn';
+            removeBtn.textContent = '✕';
+            removeBtn.addEventListener('click', () => row.remove());
+
+            row.appendChild(newSelect);
+            row.appendChild(removeBtn);
+            extraAnswersContainer.appendChild(row);
+        });
+    }
+}
+
+/**
+ * Read the admin results entry value for a given question block.
+ * Returns the encoded result string (plain, MULTI::, or 'Excluded').
+ *
+ * @param {HTMLElement} block     - the .mb-3 container for this question
+ * @param {string}      inputName - e.g. 'input-5'
+ * @param {string}      responseType
+ */
+export function readAdminResultValue(block, inputName, responseType) {
+    // Check exclude
+    const excludeChk = block.querySelector(`#exclude-${inputName}`);
+    if (excludeChk?.checked) return 'Excluded';
+
+    const isSelectType = responseType.startsWith('Select -');
+
+    if (isSelectType) {
+        // Primary answer
+        const primary = block.querySelector(`[name="${inputName}"]`);
+        const primaryVal = primary ? primary.value : '';
+
+        // Extra answers
+        const extras = Array.from(
+            block.querySelectorAll('.admin-extra-answer-select')
+        ).map(s => s.value).filter(v => v && v !== '');
+
+        const all = [primaryVal, ...extras].filter(v => v && v !== '');
+        return encodeMultiResult(all);
+    }
+
+    // Radio
+    if (responseType.startsWith('Radio -')) {
+        const checked = block.querySelector(`[name="${inputName}"]:checked`);
+        return checked ? checked.value : '';
+    }
+
+    // Number
+    const el = block.querySelector(`[name="${inputName}"]`) || block.querySelector(`#${inputName}`);
+    return el ? el.value : '';
+}
+
+/**
+ * Pre-fill the admin results entry block from a stored raw result value.
+ * Handles 'Excluded', 'MULTI::...', and plain values.
+ *
+ * @param {HTMLElement} block
+ * @param {string}      inputName
+ * @param {string}      responseType
+ * @param {string}      rawValue      - stored value from DB
+ * @param {object|null} dropdownOpts  - needed for Select types to rebuild extra rows
+ */
+export function prefillAdminResultBlock(block, inputName, responseType, rawValue, dropdownOpts) {
+    if (!rawValue) return;
+
+    const excludeChk = block.querySelector(`#exclude-${inputName}`);
+
+    if (rawValue === 'Excluded') {
+        if (excludeChk) {
+            excludeChk.checked = true;
+            excludeChk.dispatchEvent(new Event('change'));
+        }
+        return;
+    }
+
+    const decoded = decodeResult(rawValue);
+    const isSelectType = responseType.startsWith('Select -');
+
+    if (isSelectType && decoded.isMulti && decoded.values.length > 1) {
+        // Set primary
+        const primary = block.querySelector(`[name="${inputName}"]`);
+        if (primary) {
+            primary.value = decoded.values[0];
+            primary.dispatchEvent(new Event('change'));
+        }
+        // Click "Add Correct Answer" for each additional value and fill it
+        const addBtn = block.querySelector('.admin-add-answer-btn');
+        const extraContainer = block.querySelector('.admin-extra-answers');
+        decoded.values.slice(1).forEach(val => {
+            if (addBtn) addBtn.click(); // creates a new row
+            // find the last empty extra select and set it
+            if (extraContainer) {
+                const selects = extraContainer.querySelectorAll('.admin-extra-answer-select');
+                const last = selects[selects.length - 1];
+                if (last) {
+                    last.value = val;
+                    last.dispatchEvent(new Event('change'));
+                }
+            }
+        });
+    } else {
+        // Single value — set primary input
+        const primary = block.querySelector(`[name="${inputName}"]`) || block.querySelector(`#${inputName}`);
+        if (primary) {
+            if (primary.type === 'radio') {
+                // handled below for radio groups
+            } else {
+                primary.value = decoded.values[0] || '';
+                primary.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+        // Radio groups
+        if (responseType.startsWith('Radio -')) {
+            const radios = block.querySelectorAll(`[name="${inputName}"]`);
+            radios.forEach(r => {
+                if (r.value === (decoded.values[0] || '')) {
+                    r.checked = true;
+                    r.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+        }
+    }
+}
+
+// =============================================================================
+// SECTION 9C — generateFormBlocks (supports isAdmin flag)
+// =============================================================================
+
+/**
+ * Generate form question blocks.
+ *
+ * @param {object} [opts]
+ * @param {boolean} [opts.isAdmin=false]
+ *   When true, adds Exclude toggle and (for Select types) Add Correct Answer button.
+ *   The player name field (id=1) is pre-filled as "Results" and made read-only.
+ */
+export async function generateFormBlocks(opts = {}) {
+    const isAdmin = opts.isAdmin === true;
+
+    if (isAdmin) injectAdminResultsStyles();
+
     const formContainer1 = document.getElementById('form-section-1');
     const formContainer2 = document.getElementById('form-section-2');
     const formContainer3 = document.getElementById('form-section-3');
@@ -1069,42 +1351,77 @@ export async function generateFormBlocks() {
             const block = document.createElement('div'); block.className = 'mb-3';
             const label = document.createElement('label'); label.textContent = config.text; label.className = 'form-label';
 
-            if (config.scoring_type === 'Plus Minus One (2)') {
-                const s = document.createElement('small'); s.textContent = ' (2 points for correct, 1 point for +/- 1)'; s.style.fontSize = 'smaller'; label.appendChild(s);
-            } else if (config.scoring_type === 'Driver + Team (2)') {
-                const s = document.createElement('small'); s.textContent = ' (2 points for correct driver, 1 point for correct team)'; s.style.fontSize = 'smaller'; label.appendChild(s);
+            if (!isAdmin) {
+                if (config.scoring_type === 'Plus Minus One (2)') {
+                    const s = document.createElement('small'); s.textContent = ' (2 points for correct, 1 point for +/- 1)'; s.style.fontSize = 'smaller'; label.appendChild(s);
+                } else if (config.scoring_type === 'Driver + Team (2)') {
+                    const s = document.createElement('small'); s.textContent = ' (2 points for correct driver, 1 point for correct team)'; s.style.fontSize = 'smaller'; label.appendChild(s);
+                }
             }
             block.appendChild(label);
 
+            // Tracking dropdown options for admin re-use
+            let dropdownOpts = null;
+
             switch (config.response_type) {
                 case 'Select - Driver List': {
-                    const sortedDrivers = [...drivers].sort((a, b) => a.id - b.id).map(d => ({ id: d.id, name: `${d.name} (${constructorMap[d.constructor_id]?.name || 'Unknown'})`, bgColor: constructorMap[d.constructor_id]?.background_colour || '', textColor: constructorMap[d.constructor_id]?.text_colour || '' }));
-                    createDropdown(block, sortedDrivers, `input-${config.id}`, 'Select a driver'); break;
+                    const sortedDrivers = [...drivers].sort((a, b) => a.id - b.id).map(d => ({
+                        id: d.id,
+                        name: `${d.name} (${constructorMap[d.constructor_id]?.name || 'Unknown'})`,
+                        bgColor: constructorMap[d.constructor_id]?.background_colour || '',
+                        textColor: constructorMap[d.constructor_id]?.text_colour || ''
+                    }));
+                    createDropdown(block, sortedDrivers, `input-${config.id}`, 'Select a driver');
+                    if (isAdmin) dropdownOpts = { options: sortedDrivers, defaultText: 'Select a driver' };
+                    break;
                 }
                 case 'Select - Driver List + DNF': {
-                    const sortedDrivers = [...drivers].sort((a, b) => a.id - b.id).map(d => ({ id: d.id, name: `${d.name} (${constructorMap[d.constructor_id]?.name || 'Unknown'})`, bgColor: constructorMap[d.constructor_id]?.background_colour || '', textColor: constructorMap[d.constructor_id]?.text_colour || '' }));
+                    const sortedDrivers = [...drivers].sort((a, b) => a.id - b.id).map(d => ({
+                        id: d.id,
+                        name: `${d.name} (${constructorMap[d.constructor_id]?.name || 'Unknown'})`,
+                        bgColor: constructorMap[d.constructor_id]?.background_colour || '',
+                        textColor: constructorMap[d.constructor_id]?.text_colour || ''
+                    }));
                     sortedDrivers.push({ id: 'no-dnf', name: 'No DNFs', bgColor: '', textColor: '' });
-                    createDropdown(block, sortedDrivers, `input-${config.id}`, 'Select a driver or no DNFs'); break;
+                    createDropdown(block, sortedDrivers, `input-${config.id}`, 'Select a driver or no DNFs');
+                    if (isAdmin) dropdownOpts = { options: sortedDrivers, defaultText: 'Select a driver or no DNFs' };
+                    break;
                 }
                 case 'Select - Team List': {
-                    const teamOptions = sortedConstructors.map(c => ({ id: c.id, name: c.name, bgColor: c.background_colour, textColor: c.text_colour }));
-                    createDropdown(block, teamOptions, `input-${config.id}`, 'Select a team'); break;
+                    const teamOptions = sortedConstructors.map(c => ({
+                        id: c.id, name: c.name,
+                        bgColor: c.background_colour, textColor: c.text_colour
+                    }));
+                    createDropdown(block, teamOptions, `input-${config.id}`, 'Select a team');
+                    if (isAdmin) dropdownOpts = { options: teamOptions, defaultText: 'Select a team' };
+                    break;
                 }
                 case 'Select - Name List': {
-                    const loggedInPlayerId = getCookie("playerId");
-                    let displayText = "Please log in", hiddenValue = "";
-                    if (loggedInPlayerId) {
-                        const matchingPlayer = players.find(p => String(p.id) === String(loggedInPlayerId));
-                        if (matchingPlayer) { displayText = matchingPlayer.name; hiddenValue = loggedInPlayerId; }
+                    if (isAdmin) {
+                        // In admin results entry, this is the player identifier — show as read-only "Results"
+                        const visibleInput = document.createElement('input');
+                        visibleInput.type = 'text'; visibleInput.value = 'Results';
+                        visibleInput.className = 'form-control'; visibleInput.readOnly = true; visibleInput.disabled = true;
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden'; hiddenInput.name = `input-${config.id}`; hiddenInput.value = '0';
+                        block.appendChild(visibleInput); block.appendChild(hiddenInput);
+                    } else {
+                        const loggedInPlayerId = getCookie("playerId");
+                        let displayText = "Please log in", hiddenValue = "";
+                        if (loggedInPlayerId) {
+                            const matchingPlayer = players.find(p => String(p.id) === String(loggedInPlayerId));
+                            if (matchingPlayer) { displayText = matchingPlayer.name; hiddenValue = loggedInPlayerId; }
+                        }
+                        const visibleInput = document.createElement('input');
+                        visibleInput.type = 'text'; visibleInput.value = displayText;
+                        visibleInput.id = `input-${config.id}-visible`; visibleInput.className = 'form-control autofilled-player-name';
+                        visibleInput.readOnly = true; visibleInput.disabled = true;
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden'; hiddenInput.name = `input-${config.id}`;
+                        hiddenInput.id = `input-${config.id}`; hiddenInput.value = hiddenValue;
+                        block.appendChild(visibleInput); block.appendChild(hiddenInput);
                     }
-                    const visibleInput = document.createElement('input');
-                    visibleInput.type = 'text'; visibleInput.value = displayText;
-                    visibleInput.id = `input-${config.id}-visible`; visibleInput.className = 'form-control autofilled-player-name';
-                    visibleInput.readOnly = true; visibleInput.disabled = true;
-                    const hiddenInput = document.createElement('input');
-                    hiddenInput.type = 'hidden'; hiddenInput.name = `input-${config.id}`;
-                    hiddenInput.id = `input-${config.id}`; hiddenInput.value = hiddenValue;
-                    block.appendChild(visibleInput); block.appendChild(hiddenInput); break;
+                    break;
                 }
                 case 'Number - Integer (0 - 22)': createNumberInput(block, `input-${config.id}`, false); break;
                 case 'Number - Integer (0 - 1000)': createNumberInput2(block, `input-${config.id}`, false); break;
@@ -1114,7 +1431,15 @@ export async function generateFormBlocks() {
                 default: console.error('Unknown response type:', config.response_type);
             }
 
-            block.querySelectorAll('input, select').forEach(input => { if (input.type !== 'radio') input.classList.add('form-control'); });
+            block.querySelectorAll('input, select').forEach(input => { if (input.type !== 'radio' && input.type !== 'hidden') input.classList.add('form-control'); });
+
+            // Attach admin controls (skip Select - Name List as it's always id=1 / player identifier)
+            if (isAdmin && config.response_type !== 'Select - Name List') {
+                attachAdminResultsControls(block, `input-${config.id}`, config.response_type, dropdownOpts);
+                // Tag the block with data attributes for easy reading later
+                block.dataset.inputName = `input-${config.id}`;
+                block.dataset.responseType = config.response_type;
+            }
 
             if (config.id === 1) formContainer1.appendChild(block);
             else if (config.id >= 2 && config.id <= 7) formContainer2.appendChild(block);
