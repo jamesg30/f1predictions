@@ -92,6 +92,8 @@
         #form-configuration table thead th:nth-child(3) { min-width: 220px; }
         #form-configuration table thead th:nth-child(4) { min-width: 180px; }
         #form-configuration table thead th:nth-child(5) { min-width: 180px; }
+        #form-configuration-rows td:nth-child(6) { min-width: 200px; }
+        #form-configuration table thead th:nth-child(6) { min-width: 200px; }
                 /* inside your <style> block */
         #form-configuration-rows td:nth-child(3) textarea {
             white-space: normal;
@@ -405,7 +407,7 @@
                     <table class="table">
                     <thead>
                         <tr>
-                        <th>ID</th><th>Enabled</th><th>Text</th><th>Response Type</th><th>Scoring Type</th>
+                            <th>ID</th><th>Enabled</th><th>Text</th><th>Response Type</th><th>Scoring Type</th><th>Additional Info</th>
                         </tr>
                     </thead>
                     <tbody id="form-configuration-rows"></tbody>
@@ -827,7 +829,7 @@
     </main>
 
     <footer class="bg-light text-black text-center py-1 body-text-xs">
-        <p>&copy; 2025 F1 Predictions Form | Build 242b</p>
+        <p>&copy; 2025 F1 Predictions Form | Build 243a</p>
     </footer>
 
 <script src="/js/bootstrap.bundle.min.js"></script>
@@ -1045,6 +1047,7 @@ Changes:
                     <option value="Off (0)" ${row.scoring_type === 'Off (0)' ? 'selected' : ''}>Off (0)</option>
                 </select>
                 </td>
+                <td><textarea class="form-control auto-expand" id="additionalInfo${row.id}" rows="1" ${disableAttr}>${row.additional_info || ''}</textarea></td>
             </tr>`;
         });
         expandNewTextareas(rowsContainer);
@@ -1079,6 +1082,7 @@ Changes:
                     text: row.querySelector('textarea').value.trim(),
                     response_type: row.querySelector('td:nth-child(4) select').value,
                     scoring_type: row.querySelector('td:nth-child(5) select').value,
+                    additional_info: row.querySelector('td:nth-child(6) textarea').value.trim(),
                 };
             });
 

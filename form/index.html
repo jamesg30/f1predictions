@@ -252,7 +252,13 @@
 
           <!-- Starting Grid Block with Image -->
           <div id="starting-grid">
-            <h5 class="mb-3 heading-text-3">Starting Grid</h5>
+            <div style="display:flex;align-items:center;margin-bottom:1rem;">
+                <h5 class="heading-text-3" style="margin-bottom:0;">Starting Grid</h5>
+                <button type="button" id="pinGridBtn" class="btn btn-outline-secondary btn-sm" style="margin-left:auto;display:flex;align-items:center;gap:5px;">
+                    <img id="pinIconImg" src="/media/symbols/pin.png" alt="pin" style="width:14px;height:14px;object-fit:contain;">
+                    Pin Grid
+                </button>
+            </div>
             <!-- Placeholder shown while image loads -->
             <div id="startingGridPlaceholderContainer">
               <p class="placeholder-glow">
@@ -1028,6 +1034,147 @@
 
     // Call the function on page load
     document.addEventListener('DOMContentLoaded', updateFormAlert);
+
+    // ── PIN GRID ──
+    (function() {
+        const pinBtn = document.getElementById('pinGridBtn');
+
+        function updatePinIcon() {
+            const icon = document.getElementById('pinIconImg');
+            if (!icon) return;
+            const dark = localStorage.getItem('darkMode') === 'true';
+            icon.style.filter = dark ? 'invert(1)' : 'none';
+        }
+        updatePinIcon();
+        window.addEventListener('themeChanged', updatePinIcon);
+
+
+        if (!pinBtn) return;
+
+
+        // The pinned container — created once, inserted after the navbar
+        let pinnedBar = null;
+
+        function createPinnedBar(src) {
+          pinnedBar = document.createElement('div');
+          pinnedBar.id = 'pinned-grid-bar';
+
+          const navbar = document.querySelector('header nav');
+          const navHeight = navbar ? navbar.getBoundingClientRect().height : 56;
+
+          // Detect dark mode
+          const isDark = localStorage.getItem('darkMode') === 'true';
+          const bgColor = isDark ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)';
+
+          pinnedBar.style.cssText = `
+              position: sticky;
+              top: ${navHeight}px;
+              z-index: 800;
+              background: ${bgColor};
+              backdrop-filter: blur(6px);
+              -webkit-backdrop-filter: blur(6px);
+              border-bottom: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+              padding: 8px 12px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              gap: 8px;
+          `;
+
+          // Match the responsive sizes from the form page's existing CSS:
+          // default 200px, ≥576px → 250px, ≥992px → 300px
+          const img = document.createElement('img');
+          img.src = src;
+          img.alt = 'Starting Grid';
+          img.id = 'pinned-grid-image';
+          img.style.cssText = `
+              height: 200px;
+              width: auto;
+              object-fit: contain;
+              display: block;
+          `;
+
+          // Apply the same responsive breakpoints as the original grid image
+          function updatePinnedImageHeight() {
+              if (window.innerWidth >= 992) {
+                  img.style.height = '250px';
+              } else if (window.innerWidth >= 576) {
+                  img.style.height = '250px';
+              } else {
+                  img.style.height = '200px';
+              }
+          }
+          updatePinnedImageHeight();
+          window.addEventListener('resize', updatePinnedImageHeight);
+
+          const unpinBtn = document.createElement('button');
+          unpinBtn.type = 'button';
+          unpinBtn.textContent = '✕ Unpin';
+          unpinBtn.className = 'btn btn-outline-secondary btn-sm';
+          const isDarkBtn = localStorage.getItem('darkMode') === 'true';
+          unpinBtn.style.cssText = `
+              flex-shrink: 0;
+              position: absolute;
+              right: 12px;
+              top: 8px;
+              backdrop-filter: blur(8px);
+              -webkit-backdrop-filter: blur(8px);
+              background: ${isDarkBtn ? 'rgba(30,30,30,0.85)' : 'rgba(255,255,255,0.85)'};
+              border-color: ${isDarkBtn ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'};
+              color: ${isDarkBtn ? '#fff' : '#111'};
+              font-size: 0.75rem;
+              padding: 2px 8px;
+              border-radius: 6px;
+              border-width: 1px;
+              border-style: solid;
+              cursor: pointer;
+          `;
+          unpinBtn.addEventListener('click', () => {
+              window.removeEventListener('resize', updatePinnedImageHeight);
+              unpinGrid();
+          });
+
+          // Also clean up resize listener when unpinned via unpinGrid directly
+          const originalUnpin = unpinGrid;
+
+          pinnedBar.appendChild(img);
+          pinnedBar.appendChild(unpinBtn);
+
+          const mainContainer = document.querySelector('main.container');
+          mainContainer.insertAdjacentElement('afterbegin', pinnedBar);
+
+          pinBtn.textContent = '📌 Pinned';
+          pinBtn.disabled = true;
+
+          // Re-detect if dark mode changes while pinned
+          window.addEventListener('themeChanged', () => {
+              const dark = localStorage.getItem('darkMode') === 'true';
+              pinnedBar.style.background = dark ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)';
+              pinnedBar.style.borderBottomColor = dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+
+              unpinBtn.style.background = dark ? 'rgba(30,30,30,0.85)' : 'rgba(255,255,255,0.85)';
+              unpinBtn.style.borderColor = dark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)';
+              unpinBtn.style.color = dark ? '#fff' : '#111';
+          });
+      }
+
+        function unpinGrid() {
+            if (pinnedBar) {
+                pinnedBar.remove();
+                pinnedBar = null;
+            }
+            pinBtn.textContent = '📌 Pin Grid';
+            pinBtn.disabled = false;
+        }
+
+        pinBtn.addEventListener('click', () => {
+            // Get the src from whichever image is currently visible
+            const gridImg = document.getElementById('startingGridImage');
+            if (!gridImg || !gridImg.src) return;
+            createPinnedBar(gridImg.src);
+        });
+    })();
+
 </script>
 <!-- Bootstrap JS Bundle -->
 <script src="/js/bootstrap.bundle.min.js"></script>

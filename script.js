@@ -1349,7 +1349,15 @@ export async function generateFormBlocks(opts = {}) {
 
         for (const config of formConfig) {
             const block = document.createElement('div'); block.className = 'mb-3';
-            const label = document.createElement('label'); label.textContent = config.text; label.className = 'form-label';
+
+            // Label wrapper so text and (i) button sit inline and wrap together
+            const labelWrap = document.createElement('div');
+            labelWrap.style.cssText = 'display:flex;align-items:center;flex-wrap:nowrap;gap:4px;margin-bottom:0.25rem;width:100%;';
+
+            const label = document.createElement('label');
+            label.textContent = config.text;
+            label.className = 'form-label';
+            label.style.marginBottom = '0';
 
             if (!isAdmin) {
                 if (config.scoring_type === 'Plus Minus One (2)') {
@@ -1358,7 +1366,70 @@ export async function generateFormBlocks(opts = {}) {
                     const s = document.createElement('small'); s.textContent = ' (2 points for correct driver, 1 point for correct team)'; s.style.fontSize = 'smaller'; label.appendChild(s);
                 }
             }
-            block.appendChild(label);
+            labelWrap.appendChild(label);
+
+            // Info button — only shown if additional_info is populated
+            if (config.additional_info?.trim()) {
+                const infoBtn = document.createElement('button');
+                infoBtn.type = 'button';
+                infoBtn.style.cssText = `
+                    display:inline-flex;align-items:center;justify-content:center;
+                    width:1.1rem;height:1.1rem;border-radius:50%;
+                    border:1px solid #0d6efd;background:transparent;color:#0d6efd;
+                    font-size:0.65rem;font-weight:700;cursor:pointer;
+                    flex-shrink:0;padding:0;line-height:1;
+                    margin-left:auto;
+                `;
+                infoBtn.textContent = 'i';
+                infoBtn.setAttribute('aria-label', 'More information');
+
+                // Tooltip element
+                const tooltip = document.createElement('div');
+                tooltip.textContent = config.additional_info.trim();
+                tooltip.style.cssText = `
+                    display:none;position:absolute;z-index:1000;
+                    background:#333;color:#fff;font-size:0.78rem;
+                    padding:6px 10px;border-radius:6px;max-width:280px;
+                    white-space:normal;line-height:1.4;
+                    box-shadow:0 2px 8px rgba(0,0,0,0.25);
+                    right:auto;
+                `;
+                document.body.appendChild(tooltip);
+
+                // Position tooltip near the button
+                function positionTooltip() {
+                    const rect = infoBtn.getBoundingClientRect();
+                    tooltip.style.left = 'auto';
+                    tooltip.style.right = `${window.innerWidth - rect.right - window.scrollX}px`;
+                    tooltip.style.top  = `${rect.bottom + window.scrollY + 4}px`;
+                }
+
+                // Show/hide on hover
+                infoBtn.addEventListener('mouseenter', () => {
+                    positionTooltip();
+                    tooltip.style.display = 'block';
+                });
+                infoBtn.addEventListener('mouseleave', () => {
+                    tooltip.style.display = 'none';
+                });
+
+                // Toggle on click/tap (for mobile)
+                infoBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const visible = tooltip.style.display === 'block';
+                    tooltip.style.display = visible ? 'none' : 'block';
+                    if (!visible) positionTooltip();
+                });
+
+                // Close on click anywhere else
+                document.addEventListener('click', () => {
+                    tooltip.style.display = 'none';
+                }, { capture: true });
+
+                labelWrap.appendChild(infoBtn);
+            }
+
+            block.appendChild(labelWrap);
 
             // Tracking dropdown options for admin re-use
             let dropdownOpts = null;
