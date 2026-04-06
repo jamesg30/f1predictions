@@ -103,11 +103,10 @@
                 <a id="latest-form-link">
                     <button id="latest-form-button" type="button" class="btn btn-dark" disabled>Loading...</button>
                 </a>
-                <div id="formPreviousSubmissionContainer" style="display:none; margin-top:10px;">
-                  <span id="formPreviousSubmissionText" class="badge bg-success">Predictions Submitted</span>
-                </div>
-                <div id="teamMateAlertContainer" style="display:none; margin-top:10px;">
-                  <span id="formTeammateSubmissionText" class="badge bg-dark">Teammate Submitted</span>
+<div id="statusPillsContainer" style="display:none; margin-top:10px; flex-direction:column; align-items:center; gap:6px;">
+                  <span id="pillFormSubmission" class="badge"></span>
+                  <span id="pillTeammate" class="badge"></span>
+                  <span id="pillCardCasino" class="badge"></span>
                 </div>
                 <div id="formStatusContainer" style="display:none; margin-top:15px">
                     <i id="formStatusText" class="mb-3"></i>
@@ -545,42 +544,129 @@
   // === FORM SUBMISSION STATUS
   // ============================================================
 
-  let hasFormPreviousSubmission = false;
-
-  function updateFormPreviousSubmissionStatus() {
-    document.getElementById('formPreviousSubmissionContainer').style.display = hasFormPreviousSubmission ? 'block' : 'none';
+  // Pill rendering helper
+  function setPill(el, text, solid, colour) {
+    // colour: 'green' | 'red' | 'dark' | 'secondary'
+    const colourMap = {
+      green:     { bg: '#198754', border: '#198754', text: '#fff' },
+      red:       { bg: 'transparent', border: '#dc3545', text: '#dc3545' },
+      dark:      { bg: '#212529', border: '#212529', text: '#fff' },
+      darkHollow:{ bg: 'transparent', border: '#212529', text: '#212529' },
+      secondary: { bg: '#6c757d', border: '#6c757d', text: '#fff' },
+      secondaryHollow: { bg: 'transparent', border: '#6c757d', text: '#6c757d' },
+    };
+    const c = colourMap[colour] || colourMap.dark;
+    el.textContent = text;
+    el.style.backgroundColor = c.bg;
+    el.style.border = `1.5px solid ${c.border}`;
+    el.style.color = c.text;
+    el.style.display = 'inline-block';
   }
 
-  async function loadFormPreviousSubmissionHomePage() {
-    try {
-      const { data: fd } = await supabase.from('form_details').select('race_number').eq('id', 1).single();
-      const playerIdStr = getCookie('playerId');
-      if (!playerIdStr) { hasFormPreviousSubmission = false; updateFormPreviousSubmissionStatus(); return; }
-      const { data, error } = await supabase.from('form_raw').select('*').eq('race_number', fd.race_number).eq('player_id', Number(playerIdStr)).single();
-      hasFormPreviousSubmission = !error && !!data;
-      updateFormPreviousSubmissionStatus();
-    } catch { }
-  }
+  async function loadStatusPills() {
+    const container   = document.getElementById('statusPillsContainer');
+    const pillForm    = document.getElementById('pillFormSubmission');
+    const pillMate    = document.getElementById('pillTeammate');
+    const pillCC      = document.getElementById('pillCardCasino');
 
-  async function updateTeamMateSubmissionAlert() {
+    // Hide everything to start
+    container.style.display = 'none';
+    [pillForm, pillMate, pillCC].forEach(p => p.style.display = 'none');
+
+    // Check form_details directly to see if the form is open
+    const { data: formCheck } = await supabase.from('form_details')
+      .select('form_enabled, race_number').eq('id', 1).single();
+    if (!formCheck) return;
+
+    const { data: raceCheck } = await supabase.from('calendar')
+      .select('date').eq('race_number', formCheck.race_number).single();
+    const raceHasStarted = raceCheck && new Date() >= new Date(raceCheck.date);
+
+    if (!formCheck.form_enabled || raceHasStarted) return; // Form shut — show nothing
+
+    // --- Form is open: get shared data ---
     const playerIdStr = getCookie('playerId');
-    if (!playerIdStr) { document.getElementById('teamMateAlertContainer').style.display = 'none'; return; }
+    if (!playerIdStr) return; // Not logged in — no pills
+
     const playerId = Number(playerIdStr);
-    const { data: pd } = await supabase.from('players').select('participant_team_id').eq('id', playerId).single();
-    if (!pd?.participant_team_id) { document.getElementById('teamMateAlertContainer').style.display = 'none'; return; }
-    const { data: tp } = await supabase.from('players').select('id').eq('participant_team_id', pd.participant_team_id);
-    const teammate = (tp || []).find(p => p.id !== playerId);
-    if (!teammate) { document.getElementById('teamMateAlertContainer').style.display = 'none'; return; }
-    const { data: fd } = await supabase.from('form_details').select('race_number').eq('id', 1).single();
-    const { data: subs } = await supabase.from('form_raw').select('player_id').eq('race_number', fd.race_number);
-    document.getElementById('teamMateAlertContainer').style.display =
-      (subs || []).some(s => s.player_id === teammate.id) ? 'block' : 'none';
+
+    // Fetch race number and casino flag together
+    const { data: fd } = await supabase.from('form_details')
+      .select('race_number, casino_enabled').eq('id', 1).single();
+    if (!fd) return;
+
+    container.style.display = 'flex';
+
+    // ── PILL 1: Form Submission ──
+    const { data: formSub } = await supabase.from('form_raw')
+      .select('player_id').eq('race_number', fd.race_number).eq('player_id', playerId).single();
+    if (formSub) {
+      setPill(pillForm, 'Form Submitted', true, 'green');
+    } else {
+      setPill(pillForm, 'No Submission', false, 'red');
+    }
+    pillForm.style.display = 'inline-block';
+
+    // ── PILL 2: Teammate Submission ──
+    const { data: pd } = await supabase.from('players')
+      .select('participant_team_id').eq('id', playerId).single();
+    const teamId = pd?.participant_team_id;
+
+    if (teamId) {
+      const { data: teammates } = await supabase.from('players')
+        .select('id').eq('participant_team_id', teamId);
+      const teammate = (teammates || []).find(p => p.id !== playerId);
+      if (teammate) {
+        const { data: mateSub } = await supabase.from('form_raw')
+          .select('player_id').eq('race_number', fd.race_number).eq('player_id', teammate.id).single();
+        if (mateSub) {
+          setPill(pillMate, 'Teammate Submitted', true, 'dark');
+        } else {
+          setPill(pillMate, 'No Teammate Submission', false, 'darkHollow');
+        }
+        pillMate.style.display = 'inline-block';
+      }
+    }
+
+    // ── PILL 3: Card / Casino Submission ──
+    if (fd.casino_enabled) {
+      // Casino round — check casino table for team's bets
+      let casinoSubmitted = false;
+      if (teamId) {
+        const { data: casinoRow } = await supabase.from('casino')
+          .select('*').eq('team_id', teamId).single();
+        if (casinoRow) {
+          casinoSubmitted = [1,2,3,4,5].some(i => Number(casinoRow[`bet_${i}`]) > 0);
+        }
+      }
+      if (casinoSubmitted) {
+        setPill(pillCC, 'Casino Submitted', true, 'secondary');
+      } else {
+        setPill(pillCC, 'No Casino Submission', false, 'secondaryHollow');
+      }
+    } else {
+      // Card round — check teams table for any card_xxx_played > 0
+      let cardSubmitted = false;
+      if (teamId) {
+        const { data: teamRow } = await supabase.from('teams')
+          .select('card_aero_played, card_double_played, card_safetycar_played, card_halo_played, card_report_played, card_swap_played')
+          .eq('id', teamId).single();
+        if (teamRow) {
+          cardSubmitted = ['aero','double','safetycar','halo','report','swap']
+            .some(c => Number(teamRow[`card_${c}_played`]) > 0);
+        }
+      }
+      if (cardSubmitted) {
+        setPill(pillCC, 'Card Submitted', true, 'secondary');
+      } else {
+        setPill(pillCC, 'No Card Submission', false, 'secondaryHollow');
+      }
+    }
+    pillCC.style.display = 'inline-block';
   }
 
-  document.addEventListener('DOMContentLoaded', async () => {
-    await loadFormPreviousSubmissionHomePage();
-    await updateTeamMateSubmissionAlert();
-  });
+  document.addEventListener('DOMContentLoaded', loadStatusPills);
+  document.addEventListener('loginStateChanged', loadStatusPills);
 
   // ============================================================
   // === RESULTS DISPLAY
@@ -731,7 +817,7 @@
 
   document.addEventListener('loginStateChanged', async () => {
     await loadResultsPredictions();
-    await loadFormPreviousSubmissionHomePage();
+    await loadStatusPills();
     await loadHomeStandings();
     await loadHomeTeamStandings();
     await renderHomeCharts();
